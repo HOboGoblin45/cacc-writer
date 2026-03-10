@@ -1,0 +1,14 @@
+{
+  "id": "1693d4ff8218",
+  "formType": "commercial",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Sales Comparison Approach was developed through the analysis of comparable sales of similar automotive and service-related commercial properties within the subject’s market area and other competitive markets, with appropriate adjustments applied for differences in location, size, age, condition, utility, and other relevant factors. Primary reliance was placed on the Sales Comparison Approach, as the subject is an owner-occupied automotive repair and tire service facility and similar properties in the market are most commonly purchased by owner-users or local investors who place significant emphasis on comparable sales data. The selected comparable sales were considered representative of the subject property and were appropriately adjusted to reflect differences in physical characteristics, location, and overall utility. The resulting indication from the Sales Comparison Approach is considered well supported by market evidence.",
+  "createdAt": "2026-03-07T21:05:39.657Z",
+  "updatedAt": "2026-03-07T21:05:39.657Z"
+}

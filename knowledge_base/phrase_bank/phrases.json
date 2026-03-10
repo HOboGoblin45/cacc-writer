@@ -1,0 +1,114 @@
+{
+  "_comment": "Phrase bank for CACC Writer. Each entry is a reusable clause the AI can incorporate into narratives. Add new entries here — they are injected into the prompt builder automatically. Tags are used for filtering by context.",
+  "version": "1.0.0",
+  "phrases": [
+    {
+      "id": "flood_zone_x",
+      "tag": "flood_zone",
+      "context": "flood zone statement — Zone X (minimal hazard)",
+      "text": "The subject property is located in FEMA Flood Zone X, which is outside the 100-year and 500-year flood plains. Flood insurance is not required by federal law for properties in Zone X, though it may be obtained voluntarily."
+    },
+    {
+      "id": "flood_zone_ae",
+      "tag": "flood_zone",
+      "context": "flood zone statement — Zone AE (high hazard, base flood elevation established)",
+      "text": "The subject property is located in FEMA Flood Zone AE, which is within the 100-year flood plain. Flood insurance is required by federal law for federally backed mortgages on properties in Zone AE. This is considered a negative influence on marketability; however, the market segment interested in the subject has demonstrated acceptance of this condition."
+    },
+    {
+      "id": "rural_acreage_marketability",
+      "tag": "rural_acreage",
+      "context": "rural acreage marketability statement",
+      "text": "The subject's rural location and acreage are considered typical for the market area. The market segment interested in the subject property consists of buyers seeking rural residential properties with acreage. Demand for this property type is considered adequate, with reasonable marketing times observed in the market area."
+    },
+    {
+      "id": "fha_well_septic",
+      "tag": "fha_well_septic",
+      "context": "FHA well and septic statement",
+      "text": "The subject property is served by a private well and septic system. These utilities are considered typical for the market area and are not considered a negative influence on marketability. The well and septic system are assumed to be in adequate working condition and in compliance with applicable local health department requirements, subject to inspection."
+    },
+    {
+      "id": "adu_description",
+      "tag": "accessory_dwelling",
+      "context": "accessory dwelling unit (ADU) description",
+      "text": "The subject property includes an accessory dwelling unit (ADU). The ADU is considered a contributory feature to the overall value of the property. The market segment interested in the subject has demonstrated acceptance of properties with ADUs, and the presence of the ADU is considered a positive influence on marketability."
+    },
+    {
+      "id": "zoning_conforming",
+      "tag": "zoning",
+      "context": "zoning statement — legal conforming use",
+      "text": "The subject property is zoned [ZONING CLASSIFICATION], which permits the existing use as a single-family residence. The current use is a legal conforming use under the applicable zoning ordinance."
+    },
+    {
+      "id": "zoning_nonconforming",
+      "tag": "zoning",
+      "context": "zoning statement — legal non-conforming use",
+      "text": "The subject property is zoned [ZONING CLASSIFICATION]. The existing use as a single-family residence is a legal non-conforming use under the current zoning ordinance. The non-conforming status is considered typical for the market area and is not considered a significant negative influence on marketability, as the market segment interested in the subject has demonstrated acceptance of this condition."
+    },
+    {
+      "id": "market_stable",
+      "tag": "market_conditions",
+      "context": "stable market conditions statement",
+      "text": "The subject market area is considered stable. Supply and demand are in reasonable balance. Marketing times are typical, and no significant oversupply or undersupply is evident. Values are considered stable with no significant appreciation or depreciation observed over the prior 12-month period."
+    },
+    {
+      "id": "market_appreciating",
+      "tag": "market_conditions",
+      "context": "appreciating market conditions statement",
+      "text": "The subject market area is experiencing increasing demand with limited supply. Marketing times have shortened, and values have demonstrated appreciation over the prior 12-month period. This trend is considered supportable based on available market data."
+    },
+    {
+      "id": "highest_best_use_conforming",
+      "tag": "highest_best_use",
+      "context": "highest and best use — as improved, conforming residential",
+      "text": "The highest and best use of the subject property as improved is the continued use as a single-family residence. The existing improvements are legally permissible, physically possible, financially feasible, and maximally productive. Accordingly, the highest and best use as improved is the continued residential use."
+    },
+    {
+      "id": "concession_adjustment",
+      "tag": "sales_comparison",
+      "context": "seller concession adjustment explanation",
+      "text": "The comparable sale included seller-paid concessions of $[AMOUNT], representing [PCT]% of the sale price. A downward adjustment of $[AMOUNT] has been applied to reflect the net effect of the concessions on the indicated sale price. This adjustment is considered supportable based on paired sales analysis and market participant interviews."
+    },
+    {
+      "id": "gla_adjustment",
+      "tag": "sales_comparison",
+      "context": "GLA adjustment explanation",
+      "text": "An adjustment for gross living area (GLA) has been applied at $[RATE] per square foot, which is considered supportable based on paired sales analysis within the subject market area. This rate reflects the contributory value of additional living area as recognized by market participants."
+    },
+    {
+      "id": "c3_condition_standard",
+      "tag": "condition",
+      "context": "C3 condition description — well maintained, limited depreciation, some updated components",
+      "text": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+    },
+    {
+      "id": "market_time_adjustment_pct",
+      "tag": "market_conditions",
+      "context": "Market time adjustment applied to comparables — replace [PCT] with actual percentage",
+      "text": "Due to recent market trends the comparables have received a market time adjustment of [PCT]% based on the sales statistics chart included in this report."
+    },
+    {
+      "id": "seller_concessions_typical",
+      "tag": "market_conditions",
+      "context": "Statement that seller-paid concessions are typical in the subject market",
+      "text": "Typical sales do involve seller paid concessions."
+    },
+    {
+      "id": "supply_demand_favor_demand",
+      "tag": "market_conditions",
+      "context": "Supply and demand statement — demand exceeds supply in subject market",
+      "text": "Supply and demand of similar homes appear to be in favor of demand."
+    },
+    {
+      "id": "reconciliation_sca_primary_cost_not_developed",
+      "tag": "reconciliation",
+      "context": "Reconciliation — greatest weight to SCA, Cost Approach not developed at lender request, Income Approach not applicable",
+      "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data."
+    },
+    {
+      "id": "zero_lot_line_comp_search",
+      "tag": "sales_comparison",
+      "context": "Comp search rationale for zero lot line properties — limited supply requires expanded search area",
+      "text": "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find zero lot lines of a similar location, design, quality, condition, and room count."
+    }
+  ]
+}

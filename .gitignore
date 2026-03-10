@@ -1,0 +1,5 @@
+.env
+node_modules/
+cases/
+voice_pdfs/**/*.pdf
+voice_pdfs/**/*.PDF

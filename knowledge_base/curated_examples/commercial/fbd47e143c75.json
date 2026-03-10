@@ -1,0 +1,14 @@
+{
+  "id": "fbd47e143c75",
+  "formType": "commercial",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Sales Comparison Approach was developed by identifying, researching, and analyzing recent sales of comparable small-scale neighborhood retail properties in the Bloomington market. Selected sales reflect arm’s-length transactions and were adjusted for differences in factors such as access, age, size, condition, construction quality, and location. The adjusted sale prices provided a range of indications of value for the subject property. After reconciliation, this approach yielded a credible value indicator aligned with what buyers are currently paying for similar retail assets within the local market.",
+  "createdAt": "2026-03-07T21:05:39.442Z",
+  "updatedAt": "2026-03-07T21:05:39.442Z"
+}

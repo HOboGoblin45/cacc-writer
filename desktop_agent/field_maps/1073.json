@@ -1,0 +1,76 @@
+{
+  "_comment": "Field map for FNMA Form 1073 — Individual Condominium Unit Appraisal.",
+  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1073 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py — copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1073 to verify.",
+  "_schema": {
+    "label":          "Human-readable field label (used for label-match fallback)",
+    "automation_id":  "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
+    "class_name":     "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
+    "class_index":    "0-based index among controls of this class_name. Fill in from /calibrate output.",
+    "control_index":  "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
+    "notes":          "Human notes about this field"
+  },
+
+  "neighborhood_description": {
+    "label":          "Neighborhood Description",
+    "tab_name":       "Neig",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Neighborhood section — TX32 addendum editor. Tab: Neig..."
+  },
+  "site_comments": {
+    "label":          "Site Description",
+    "tab_name":       "Site",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Site section — TX32 addendum editor. Tab: Site"
+  },
+  "improvements_condition": {
+    "label":          "Improvements",
+    "tab_name":       "Impro",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Improvements section — TX32 addendum editor. Tab: Impro..."
+  },
+  "condo_project_analysis": {
+    "label":          "Project Information",
+    "tab_name":       "Subj",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Condo project analysis — in Subject section. Tab: Subj..."
+  },
+  "sales_comparison_commentary": {
+    "label":          "Sales Comparison Analysis",
+    "tab_name":       "Sales",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Sales comparison section — TX32 addendum editor. Tab: Sales..."
+  },
+  "reconciliation": {
+    "label":          "Reconciliation",
+    "tab_name":       "Reco",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Reconciliation section — TX32 addendum editor. Tab: Reco... HIGH PRIORITY."
+  },
+  "market_conditions": {
+    "label":          "Market Conditions",
+    "tab_name":       "Neig",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Market conditions — in Neighborhood section. Tab: Neig..."
+  }
+}

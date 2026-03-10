@@ -1,0 +1,14 @@
+{
+  "id": "a9f0d7e7c4ce",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Due to a lack of market inventory it appears there were multiple offers made. Sales concessions are typical for the market area and have not significantly impacted the sale price. Due to recent market trends the comparables have received a market time adjustment of 6.6% based on the sales statistics chart included in this report.",
+  "createdAt": "2026-03-07T21:05:38.140Z",
+  "updatedAt": "2026-03-07T21:05:38.140Z"
+}

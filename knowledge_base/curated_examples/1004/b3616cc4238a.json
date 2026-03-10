@@ -1,0 +1,14 @@
+{
+  "id": "b3616cc4238a",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+  "createdAt": "2026-03-07T21:05:38.536Z",
+  "updatedAt": "2026-03-07T21:05:38.536Z"
+}

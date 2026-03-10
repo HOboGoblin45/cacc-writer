@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "UAD condition language templates and narrative guidance for 1004 URAR single-family appraisals.",
+    "source": "Fannie Mae UAD Appendix D — Condition Ratings and Definitions",
+    "lastUpdated": "2026-03-09"
+  },
+
+  "condition": {
+    "C1": {
+      "uadDefinition": "The improvements have been very recently constructed and have not previously been occupied. The entire structure and all components are new and the dwelling features no physical depreciation.",
+      "narrativeGuidance": "Describe the subject as newly constructed with no prior occupancy. All components are new. No physical depreciation is present. Use language consistent with new construction.",
+      "promptInstruction": "The subject is rated C1 (new construction, no prior occupancy). Describe all components as new. Do not reference any deferred maintenance, wear, or depreciation. Use new construction language throughout."
+    },
+    "C2": {
+      "uadDefinition": "The improvements feature no deferred maintenance, little or no physical depreciation, and require no repairs. Virtually all building components are new or have been recently repaired, refinished, or rehabilitated. All outdated components and finishes have been updated and/or replaced with components that meet current standards.",
+      "narrativeGuidance": "Describe the subject as near-new or recently fully renovated. No deferred maintenance. All components updated to current standards. Minimal physical depreciation.",
+      "promptInstruction": "The subject is rated C2 (near-new or recently fully renovated). Describe the property as having no deferred maintenance and little or no physical depreciation. All major components are new or recently updated. Avoid language suggesting wear, aging, or needed repairs."
+    },
+    "C3": {
+      "uadDefinition": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "narrativeGuidance": "Describe the subject as well maintained with limited physical depreciation from normal wear and tear. Some components may be updated. The structure is well maintained overall. This is the most common condition rating for owner-occupied residential properties.",
+      "promptInstruction": "The subject is rated C3 (well maintained, limited depreciation from normal wear and tear). Describe the property as well maintained. Note that some components may be updated or recently rehabilitated, but not all. Avoid overstating condition issues — this is average-to-good condition. Do not imply significant deferred maintenance or needed repairs unless explicitly stated in the facts."
+    },
+    "C4": {
+      "uadDefinition": "The improvements feature some deferred maintenance and physical deterioration due to normal wear and tear. The dwelling has been adequately maintained and requires only minimal repairs to building components/mechanical systems and cosmetic repairs. All major building components have been adequately maintained and are functionally adequate.",
+      "narrativeGuidance": "Describe the subject as adequately maintained with some deferred maintenance and physical deterioration from normal wear and tear. Minimal repairs needed to building components and cosmetic items. All major components are functionally adequate. Be specific about deferred maintenance items if provided in facts.",
+      "promptInstruction": "The subject is rated C4 (adequately maintained, some deferred maintenance and physical deterioration from normal wear and tear). Describe the property as adequately maintained but note specific deferred maintenance items if provided in the facts. Minimal repairs are needed to building components/mechanical systems and cosmetic items. All major building components are functionally adequate. Use measured, factual language — do not overstate condition issues beyond what the facts support."
+    },
+    "C5": {
+      "uadDefinition": "The improvements feature obvious deferred maintenance and are in need of some significant repairs. Some building components need repairs, rehabilitation, or updating. The functional utility and overall livability is somewhat diminished due to condition, but the dwelling remains useable and functional as a residence.",
+      "narrativeGuidance": "Describe the subject as having obvious deferred maintenance requiring significant repairs. Some building components need repair, rehabilitation, or updating. Functional utility is somewhat diminished but the dwelling remains useable. Be specific about items needing repair if provided in facts.",
+      "promptInstruction": "The subject is rated C5 (obvious deferred maintenance, significant repairs needed). Describe specific building components that need repair, rehabilitation, or updating based on the facts provided. Note that functional utility and livability are somewhat diminished but the dwelling remains useable and functional as a residence. Use [INSERT] for specific repair items not provided in facts."
+    },
+    "C6": {
+      "uadDefinition": "The improvements have substantial damage or deferred maintenance with deficiencies or defects that are severe enough to affect the safety, soundness, or structural integrity of the improvements. The improvements are in need of substantial repairs and rehabilitation, including many or most major components.",
+      "narrativeGuidance": "Describe the subject as having substantial damage or deferred maintenance affecting safety, soundness, or structural integrity. Substantial repairs and rehabilitation are needed including many or most major components. Be specific about deficiencies if provided in facts.",
+      "promptInstruction": "The subject is rated C6 (substantial damage or deferred maintenance affecting safety, soundness, or structural integrity). Describe the specific deficiencies and defects based on the facts provided. Note that substantial repairs and rehabilitation are needed including many or most major components. Use [INSERT] for specific items not provided in facts. This rating requires careful, factual language — do not speculate beyond what the facts support."
+    }
+  },
+
+  "market_conditions": {
+    "stable": {
+      "narrativeGuidance": "Describe market conditions as stable. Supply and demand are in balance. Prices are stable with minimal appreciation or depreciation. Marketing times are typical for the area.",
+      "promptInstruction": "Market conditions are stable. Describe supply and demand as balanced. Prices are stable. Marketing times are typical. Reference the market statistics chart if a market_stat is provided in the facts."
+    },
+    "appreciating": {
+      "narrativeGuidance": "Describe market conditions as appreciating. Demand exceeds supply. Prices are increasing. Marketing times are shorter than typical. Buyer competition may be noted.",
+      "promptInstruction": "Market conditions are appreciating. Describe demand as exceeding supply. Prices are increasing. Marketing times are shorter than typical. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific appreciation percentages unless provided in facts."
+    },
+    "declining": {
+      "narrativeGuidance": "Describe market conditions as declining. Supply exceeds demand. Prices are decreasing or under pressure. Marketing times are longer than typical.",
+      "promptInstruction": "Market conditions are declining. Describe supply as exceeding demand. Prices are under downward pressure. Marketing times are longer than typical. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific decline percentages unless provided in facts."
+    }
+  },
+
+  "neighborhood_description": {
+    "suburban": {
+      "narrativeGuidance": "Describe a suburban neighborhood with typical residential land use, proximity to employment centers, schools, shopping, and services. Note built-up percentage and growth rate where supported by facts.",
+      "promptInstruction": "Describe a suburban neighborhood. Cover proximity to employment, schools, shopping, and services. Note land use mix and built-up percentage if provided in facts. Use direct, factual language consistent with Charlie Cresci's style."
+    },
+    "urban": {
+      "narrativeGuidance": "Describe an urban neighborhood with high density, mixed land use, and proximity to urban amenities. Note any transition or gentrification trends if supported by facts.",
+      "promptInstruction": "Describe an urban neighborhood. Cover density, land use mix, proximity to employment and amenities. Note any neighborhood transition trends if supported by facts. Use direct, factual language."
+    },
+    "rural": {
+      "narrativeGuidance": "Describe a rural neighborhood with low density, agricultural or open land use, and limited services. Note distance to employment centers and services.",
+      "promptInstruction": "Describe a rural neighborhood. Cover low density, land use characteristics, distance to employment and services. Note agricultural or open land characteristics if applicable. Use direct, factual language."
+    }
+  },
+
+  "highest_best_use": {
+    "residential_improved": {
+      "narrativeGuidance": "For a 1004 single-family residential property, highest and best use as improved is typically continued use as a single-family residence, assuming the use is legally permissible, physically possible, financially feasible, and maximally productive.",
+      "promptInstruction": "For the highest and best use as improved, conclude that continued use as a single-family residence is the highest and best use, supported by the four tests: legally permissible (zoning), physically possible (site/improvements), financially feasible (market demand), and maximally productive (current use). Use [INSERT] for zoning details if not provided in facts."
+    }
+  },
+
+  "reconciliation": {
+    "sales_comparison_primary": {
+      "narrativeGuidance": "For a 1004 single-family residential appraisal, the sales comparison approach is typically given primary weight. The cost approach may be considered but given less weight. The income approach is typically not applicable for owner-occupied single-family properties.",
+      "promptInstruction": "In the reconciliation, give primary weight to the sales comparison approach. Note that the cost approach was considered but given less weight due to the availability of comparable sales data. Note that the income approach is not applicable for an owner-occupied single-family residence. Do not invent a final value — use [INSERT final value opinion] as a placeholder."
+    }
+  }
+}

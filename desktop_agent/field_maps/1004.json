@@ -1,0 +1,199 @@
+{
+  "_comment": "Field map for FNMA Form 1004 URAR — Single Family Residential.",
+  "_phase": "Phase 2 — calibrated 2026-03-09. All 12 fields confirmed via live ACI test (12/12 found, tx32_label_proximity). calibrated=true set on all fields.",
+  "_calibration_date": "2026-03-09",
+  "_calibration_note": "TX32 fields do not use UIA automation_ids. All fields targeted via label-proximity strategy. calibrated=true confirms live test passed. Re-run calibrate_aci.py if ACI version changes.",
+  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1004 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py. 4) Re-run: python _test_aci_live.py 1004 to confirm 24/24 pass.",
+  "_schema": {
+    "label":             "Human-readable field label — used for label-proximity TX32 matching",
+    "aliases":           "Alternative label texts to try if primary label does not match",
+    "tab_name":          "Partial tab name to click before targeting (e.g. 'Neig' matches 'Neighborhood' tab)",
+    "automation_id":     "UIA AutomationId — fill from /calibrate output if available",
+    "class_name":        "Windows class name for RichEdit controls — fill from /calibrate if available",
+    "class_index":       "0-based index among controls of this class_name",
+    "control_index":     "0-based index among ALL text-input controls — last resort fallback",
+    "expected_classes":  "Expected Windows control classes for this field — used for validation",
+    "verification_mode": "How to verify insertion: tx32_readback | uia_get_value | skip",
+    "notes":             "Human notes about this field"
+  },
+
+  "neighborhood_description": {
+    "label":              "Neighborhood Description",
+    "aliases":            ["Neighborhood Desc", "Neighborhood", "Neigh Description"],
+    "tab_name":           "Neig",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "aci_full_addendum_view",
+    "notes":              "Primary narrative field on Neighborhood tab. TX32 content area. Tab partial: 'Neig'. No label title strip found — uses aci_full_addendum_view (largest content TX32). Confirmed live 2026-03-09."
+  },
+
+  "market_conditions": {
+    "label":              "Market Conditions Comments",
+    "aliases":            ["Market Conditions", "Market Conditions Addendum", "Market Cond"],
+    "tab_name":           "Neig",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity:Market Conditions Comments",
+    "notes":              "Market conditions narrative on Neighborhood tab. ACI label text confirmed: 'Market Conditions Comments'. Confirmed live 2026-03-09."
+  },
+
+  "site_comments": {
+    "label":              "Site Comments",
+    "aliases":            ["Site", "Site Description", "Site Comment"],
+    "tab_name":           "Site",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity:Site Comments",
+    "notes":              "Site section narrative. Tab partial: 'Site'. ACI label text confirmed: 'Site Comments'. Confirmed live 2026-03-09."
+  },
+
+  "improvements_condition": {
+    "label":              "Improvements Comments",
+    "aliases":            ["Improvements", "Improvements Condition", "Condition of Improvements", "Subject Improvements"],
+    "tab_name":           "Impro",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity:Improvements Comments",
+    "notes":              "Improvements/condition narrative. Tab partial: 'Impro'. ACI label text confirmed: 'Improvements Comments'. Confirmed live 2026-03-09."
+  },
+
+  "sales_comparison_commentary": {
+    "label":              "Sales Comparison Comments",
+    "aliases":            ["Sales Comparison Analysis", "Sales Comparison", "Sales Comparison Approach", "Sales Comp Analysis"],
+    "tab_name":           "Sales",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity:Sales Comparison Comments",
+    "notes":              "Sales comparison narrative. Tab partial: 'Sales'. ACI label text confirmed: 'Sales Comparison Comments'. HIGH PRIORITY. Confirmed live 2026-03-09."
+  },
+
+  "reconciliation": {
+    "label":              "Reconciliation Comments",
+    "aliases":            ["Reconciliation", "Final Reconciliation", "Value Reconciliation"],
+    "tab_name":           "Reco",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity:Reconciliation Comments",
+    "notes":              "Reconciliation narrative. Tab partial: 'Reco'. ACI label text confirmed: 'Reconciliation Comments'. HIGH PRIORITY. Confirmed live 2026-03-09."
+  },
+
+  "cost_approach": {
+    "label":              "Cost Approach Comments",
+    "aliases":            ["Cost Approach", "Cost Approach Analysis", "Cost Approach Narrative"],
+    "tab_name":           "Cost",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Cost approach narrative. Tab partial: 'Cost'. Confirmed live 2026-03-09."
+  },
+
+  "income_approach": {
+    "label":              "Income Approach Comments",
+    "aliases":            ["Income Approach", "Income Approach Analysis", "Income Approach Narrative"],
+    "tab_name":           "Income",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Income approach narrative. Tab partial: 'Income'. Confirmed live 2026-03-09."
+  },
+
+  "offering_history": {
+    "label":              "Offering History",
+    "aliases":            ["Prior Sales History", "Offering History Comments", "Prior Listing History"],
+    "tab_name":           "Sales",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Offering/prior sales history narrative. On Sales tab. Confirmed live 2026-03-09."
+  },
+
+  "contract_analysis": {
+    "label":              "Contract Analysis",
+    "aliases":            ["Contract Comments", "Purchase Contract Analysis", "Contract"],
+    "tab_name":           "Sales",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Contract analysis narrative. On Sales tab. Confirmed live 2026-03-09."
+  },
+
+  "functional_utility": {
+    "label":              "Functional Utility",
+    "aliases":            ["Functional Obsolescence", "Functional Utility Comments"],
+    "tab_name":           "Impro",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Functional utility/obsolescence narrative. On Improvements tab. Confirmed live 2026-03-09."
+  },
+
+  "adverse_conditions": {
+    "label":              "Adverse Conditions",
+    "aliases":            ["Adverse Site Conditions", "External Factors", "Adverse Conditions Comments"],
+    "tab_name":           "Site",
+    "automation_id":      "",
+    "class_name":         "",
+    "class_index":        null,
+    "control_index":      null,
+    "expected_classes":   ["TX32"],
+    "verification_mode":  "tx32_readback",
+    "calibrated":         true,
+    "calibration_method": "label_proximity",
+    "notes":              "Adverse conditions / external factors narrative. On Site tab. Confirmed live 2026-03-09."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "85a2554379b7",
+  "formType": "commercial",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The final opinion of value is based upon consideration of the applicable approaches to value and the relevance and reliability of the data available for each. The sales comparison approach was given the greatest weight in the reconciliation process, due to the quality and quantity of comparable sales data and its reflection of market participant behavior in small-town commercial property segments. The income approach was used to support the analysis and provide investor perspective, but the cost approach was omitted given the age of the improvements. The market value conclusion is considered reasonable and well supported based on current market conditions, the subject’s location, utility, and overall condition, as well as the available transactional evidence from the local and regional market.",
+  "createdAt": "2026-03-07T21:05:39.606Z",
+  "updatedAt": "2026-03-07T21:05:39.606Z"
+}

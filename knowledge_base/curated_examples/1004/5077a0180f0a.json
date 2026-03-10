@@ -1,0 +1,14 @@
+{
+  "id": "5077a0180f0a",
+  "formType": "1004",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+  "createdAt": "2026-03-07T21:05:38.717Z",
+  "updatedAt": "2026-03-07T21:05:38.717Z"
+}

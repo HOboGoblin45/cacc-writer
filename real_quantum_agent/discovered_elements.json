@@ -1,0 +1,320 @@
+{
+  "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+  "title": "Transmittal Letter for First State Bank",
+  "elements": [
+    {
+      "query_type": "text_input",
+      "tag": "input",
+      "id": "assignment_letter_date_placeholder",
+      "name": "assignment[letter_date_placeholder]",
+      "class_list": "form-control input",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "(set when report is run)",
+      "unique_sel": "input#assignment_letter_date_placeholder[name=\"assignment[letter_date_placeholder]\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 359,
+        "w": 481,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "text_input",
+      "tag": "input",
+      "id": "assignment_transmittal_letter_subject",
+      "name": "assignment[transmittal_letter_subject]",
+      "class_list": "form-control input",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "RE: Appraisal Report for the property located at 505 E Locus",
+      "unique_sel": "input#assignment_transmittal_letter_subject[name=\"assignment[transmittal_letter_subject]\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 457,
+        "w": 737,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "tinymce_iframe",
+      "tag": "iframe",
+      "id": "transmittal_letter_body_text_area_ifr",
+      "name": "",
+      "class_list": "tox-edit-area__iframe",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "iframe#transmittal_letter_body_text_area_ifr",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 614,
+        "y": 645,
+        "w": 736,
+        "h": 287
+      }
+    },
+    {
+      "query_type": "tinymce_iframe",
+      "tag": "iframe",
+      "id": "transmittal_letter_conclusions_remarks_text_area_ifr",
+      "name": "",
+      "class_list": "tox-edit-area__iframe",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "iframe#transmittal_letter_conclusions_remarks_text_area_ifr",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 614,
+        "y": 1262,
+        "w": 736,
+        "h": 103
+      }
+    },
+    {
+      "query_type": "button",
+      "tag": "button",
+      "id": "_pendo-badge_YJPd4jy2Gxlsq-jfdpT1FwOIp7I",
+      "name": "",
+      "class_list": "_pendo-badge _pendo-badge_",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "button#_pendo-badge_YJPd4jy2Gxlsq-jfdpT1FwOIp7I",
+      "data_attrs": {
+        "data-layout": "badgeBlank"
+      },
+      "visible": true,
+      "rect": {
+        "x": 568,
+        "y": 470,
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "query_type": "button",
+      "tag": "button",
+      "id": "",
+      "name": "",
+      "class_list": "tox-mbtn tox-mbtn--select",
+      "text_content": "Edit",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "button",
+      "data_attrs": {
+        "data-alloy-tabstop": "true"
+      },
+      "visible": true,
+      "rect": {
+        "x": 626,
+        "y": 566,
+        "w": 39,
+        "h": 28
+      }
+    },
+    {
+      "query_type": "button",
+      "tag": "button",
+      "id": "_pendo-badge_-8RI2igDuHv2mXsbeNOybFICO7M",
+      "name": "",
+      "class_list": "_pendo-badge _pendo-badge_",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "button#_pendo-badge_-8RI2igDuHv2mXsbeNOybFICO7M",
+      "data_attrs": {
+        "data-layout": "badgeBlank"
+      },
+      "visible": true,
+      "rect": {
+        "x": 1163,
+        "y": 983,
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "query_type": "label",
+      "tag": "label",
+      "id": "",
+      "name": "",
+      "class_list": "control-label col-md-2",
+      "text_content": "Letterhead Logo",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "label",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 341,
+        "y": 193,
+        "w": 256,
+        "h": 27
+      }
+    },
+    {
+      "query_type": "form_group",
+      "tag": "div",
+      "id": "",
+      "name": "",
+      "class_list": "form-group",
+      "text_content": "Letterhead Logo",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "div",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 331,
+        "y": 192,
+        "w": 1554,
+        "h": 152
+      }
+    },
+    {
+      "query_type": "editor_class",
+      "tag": "div",
+      "id": "",
+      "name": "",
+      "class_list": "tox-editor-container",
+      "text_content": "EditViewInsertFormatTableTo open the popup, press Shift+EnterTo open the popup, press Shift+EnterTo open the popup, pres",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "div",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 614,
+        "y": 557,
+        "w": 736,
+        "h": 375
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "input",
+      "id": "assignment_letter_date_placeholder",
+      "name": "assignment[letter_date_placeholder]",
+      "class_list": "form-control input",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "(set when report is run)",
+      "unique_sel": "input#assignment_letter_date_placeholder[name=\"assignment[letter_date_placeholder]\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 359,
+        "w": 481,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "select",
+      "id": "assignment_client_contact_id",
+      "name": "assignment[client_contact_id]",
+      "class_list": "form-control input",
+      "text_content": "--- select ---\nKristen Wilson",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "select#assignment_client_contact_id[name=\"assignment[client_contact_id]\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 408,
+        "w": 481,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "input",
+      "id": "assignment_transmittal_letter_subject",
+      "name": "assignment[transmittal_letter_subject]",
+      "class_list": "form-control input",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "RE: Appraisal Report for the property located at 505 E Locus",
+      "unique_sel": "input#assignment_transmittal_letter_subject[name=\"assignment[transmittal_letter_subject]\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 457,
+        "w": 737,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "select",
+      "id": "transmittal_letter_body_content",
+      "name": "transmittal_letter_body_content",
+      "class_list": "form-control input",
+      "text_content": "--- Select Content ---TEMPLATE_VALUE",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "select#transmittal_letter_body_content[name=\"transmittal_letter_body_content\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 506,
+        "w": 740,
+        "h": 34
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "input",
+      "id": "",
+      "name": "highlight_value",
+      "class_list": "",
+      "text_content": "",
+      "placeholder": "",
+      "value_preview": "on",
+      "unique_sel": "input[name=\"highlight_value\"]",
+      "data_attrs": {
+        "data-perspective-id": "a2969403-7a59-445c-af67-41677b2db0aa",
+        "data-assignment-value-conclusions-target": "highlightValues",
+        "data-action": "click->assignment-value-conclusions#toggleHighlightValue"
+      },
+      "visible": true,
+      "rect": {
+        "x": 1765,
+        "y": 1056,
+        "w": 13,
+        "h": 13
+      }
+    },
+    {
+      "query_type": "named_element",
+      "tag": "select",
+      "id": "transmittal_letter_conclusions_remarks_content",
+      "name": "transmittal_letter_conclusions_remarks_content",
+      "class_list": "form-control input",
+      "text_content": "--- Select Content ---",
+      "placeholder": "",
+      "value_preview": "",
+      "unique_sel": "select#transmittal_letter_conclusions_remarks_content[name=\"transmittal_letter_conclusions_remarks_content\"]",
+      "data_attrs": {},
+      "visible": true,
+      "rect": {
+        "x": 612,
+        "y": 1123,
+        "w": 740,
+        "h": 34
+      }
+    }
+  ]
+}

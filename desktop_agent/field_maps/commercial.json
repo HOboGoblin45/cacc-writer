@@ -1,0 +1,37 @@
+{
+  "_comment": "Field map for commercial appraisal in ACI software (fallback).",
+  "_comment2": "NOTE: Real Quantum is the primary tool for commercial appraisals. This file is a fallback in case ACI is used for a commercial assignment. Update 'label' values to match what you see in ACI if they differ.",
+
+  "site_description": {
+    "label": "Site Description",
+    "notes": "Site comments — legal description, utilities, access, zoning."
+  },
+  "improvement_description": {
+    "label": "Improvements",
+    "notes": "Building class, construction type, age, condition, functional utility."
+  },
+  "market_area": {
+    "label": "Market Area Analysis",
+    "notes": "Submarket conditions, vacancy, absorption, rent and cap rate trends."
+  },
+  "hbu_analysis": {
+    "label": "Highest and Best Use",
+    "notes": "As vacant and as improved HBU conclusions."
+  },
+  "income_approach": {
+    "label": "Income Approach Comments",
+    "notes": "PGI, vacancy/collection loss, EGI, expenses, NOI, cap rate, value indication."
+  },
+  "sales_comparison": {
+    "label": "Sales Comparison Analysis",
+    "notes": "Comparable selection rationale, unit of comparison, adjustment discussion."
+  },
+  "cost_approach": {
+    "label": "Cost Approach Comments",
+    "notes": "Land value, replacement cost new, depreciation categories."
+  },
+  "reconciliation": {
+    "label": "Reconciliation",
+    "notes": "Weight of approaches, final reconciliation, value conclusion."
+  }
+}

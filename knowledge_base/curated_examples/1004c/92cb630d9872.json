@@ -1,0 +1,14 @@
+{
+  "id": "92cb630d9872",
+  "formType": "1004c",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "There is an adequate supply of homes in the area, and days on market are considered typical. Sales concessions are common, and there is no significant evidence of distressed property sales affecting values. Market conditions appear stable, with no notable increase or decrease in property values at this time.",
+  "createdAt": "2026-03-07T21:05:39.306Z",
+  "updatedAt": "2026-03-07T21:05:39.306Z"
+}

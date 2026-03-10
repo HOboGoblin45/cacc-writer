@@ -1,0 +1,14 @@
+{
+  "id": "ed719214995c",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Due to recent market trends the comparables have received a market time adjustment of 3.9% based on the sales statistics chart included in this report.",
+  "createdAt": "2026-03-07T21:05:38.690Z",
+  "updatedAt": "2026-03-07T21:05:38.690Z"
+}

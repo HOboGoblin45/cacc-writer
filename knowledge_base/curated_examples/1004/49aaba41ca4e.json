@@ -1,0 +1,14 @@
+{
+  "id": "49aaba41ca4e",
+  "formType": "1004",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+  "createdAt": "2026-03-07T21:05:39.902Z",
+  "updatedAt": "2026-03-07T21:05:39.902Z"
+}

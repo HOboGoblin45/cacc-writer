@@ -1,0 +1,14 @@
+{
+  "id": "ce76bd6e10e0",
+  "formType": "1025",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The appraisal is made with the subject in 'as is' condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Income Approach has been developed and Gross Rent Multiplier was derived from the range provided by the comparables used in the Sales Comparison Approach to value.",
+  "createdAt": "2026-03-07T21:05:38.882Z",
+  "updatedAt": "2026-03-07T21:05:38.882Z"
+}

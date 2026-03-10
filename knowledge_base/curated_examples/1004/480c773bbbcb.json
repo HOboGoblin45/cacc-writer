@@ -1,0 +1,14 @@
+{
+  "id": "480c773bbbcb",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Sales concessions are typical for the market area and have not significantly impacted the sale price. There are comparable properties currently offered for sale in the subject neighborhood ranging in price from $ to $. There are comparable sales in the subject neighborhood within the past twelve months ranging in sale price from $ to $. Due to recent market trends the comparables have received a market time adjustment of 4.2% based on the sales statistics chart included in this report.",
+  "createdAt": "2026-03-07T21:05:38.337Z",
+  "updatedAt": "2026-03-07T21:05:38.337Z"
+}

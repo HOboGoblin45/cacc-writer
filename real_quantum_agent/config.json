@@ -1,0 +1,35 @@
+{
+  "_comment": "Configuration for the CACC Real Quantum desktop automation agent.",
+  "_comment2": "Real Quantum is a web-based SaaS app. This agent attaches to an existing Chrome session via Chrome DevTools Protocol (CDP).",
+
+  "agent_port": 5181,
+
+  "_comment_cdp": "CDP URL for the Chrome remote debugging port. Launch Chrome with: chrome.exe --remote-debugging-port=9222 --user-data-dir=C:\\rq-session",
+  "cdp_url": "http://127.0.0.1:9222",
+
+  "_comment_rq": "Base URL of Real Quantum. Used to identify the correct browser tab.",
+  "rq_base_url": "https://cacc.realquantumapp.com",
+
+  "_comment_browser": "Browser to use. 'chromium' works with both Chrome and Chromium. Change to 'chrome' if needed.",
+  "browser": "chromium",
+
+  "insert_delay_ms": 300,
+  "max_retries": 3,
+  "verify_insertion": true,
+
+  "_comment_nav": "Timeout in milliseconds for waiting on navigation selectors to appear.",
+  "navigation_timeout_ms": 10000,
+
+  "_comment_verify": "verify_insertion reads the field back after insert to confirm success. Disable if it causes slowness.",
+
+  "screenshot_on_failure": true,
+  "_comment_screenshot": "screenshot_on_failure saves a PNG to real_quantum_agent/screenshots/ on insertion failure. Useful for debugging selector issues.",
+
+  "log_level": "INFO",
+
+  "default_form_type": "commercial",
+
+  "_comment_setup": "FIRST-TIME SETUP: 1) Launch Chrome with --remote-debugging-port=9222, 2) Log into Real Quantum, 3) Open your commercial report, 4) Run python real_quantum_agent/agent.py",
+
+  "_comment_selectors": "To discover the correct CSS selectors for each field, call GET http://localhost:5181/list-sections while your report is open. Update field_maps/commercial.json with the results."
+}

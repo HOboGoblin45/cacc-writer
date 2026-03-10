@@ -1,0 +1,202 @@
+{"ts":"2026-03-10T01:22:32.938Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-10.log"}
+{"ts":"2026-03-10T01:22:32.939Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-10T01:24:10.589Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":11}
+{"ts":"2026-03-10T01:24:10.628Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":25}
+{"ts":"2026-03-10T01:24:10.679Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:24:10.818Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":219,"skipped":172,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":138}
+{"ts":"2026-03-10T01:24:10.821Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":145}
+{"ts":"2026-03-10T01:24:10.825Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:24:10.894Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":68}
+{"ts":"2026-03-10T01:24:10.897Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":72}
+{"ts":"2026-03-10T01:24:10.941Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":40}
+{"ts":"2026-03-10T01:24:10.951Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":4}
+{"ts":"2026-03-10T01:24:11.023Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":61}
+{"ts":"2026-03-10T01:24:13.029Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/0c1a1d51-912c-44ab-8fa4-9719e775d40f/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:24:15.037Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/0c1a1d51-912c-44ab-8fa4-9719e775d40f/status","status":200,"ms":4}
+{"ts":"2026-03-10T01:24:17.024Z","level":"info","msg":"[orchestrator] run complete","runId":"0c1a1d51-912c-44ab-8fa4-9719e775d40f","ok":true}
+{"ts":"2026-03-10T01:24:17.042Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/0c1a1d51-912c-44ab-8fa4-9719e775d40f/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:24:17.050Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/0c1a1d51-912c-44ab-8fa4-9719e775d40f/result","status":200,"ms":2}
+{"ts":"2026-03-10T01:24:17.056Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:24:18.570Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":200,"ms":1508}
+{"ts":"2026-03-10T01:24:18.574Z","level":"info","msg":"http","method":"POST","path":"/api/cases/NONEXISTENT_CASE_XYZ/generate-full-draft","status":400,"ms":1}
+{"ts":"2026-03-10T01:24:18.577Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/status","status":404,"ms":0}
+{"ts":"2026-03-10T01:24:18.580Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/result","status":404,"ms":1}
+{"ts":"2026-03-10T01:24:18.583Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":400,"ms":0}
+{"ts":"2026-03-10T01:37:25.895Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-10.log"}
+{"ts":"2026-03-10T01:37:25.896Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-10T01:37:29.434Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":11}
+{"ts":"2026-03-10T01:37:29.483Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":33}
+{"ts":"2026-03-10T01:37:29.524Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:37:29.579Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":51}
+{"ts":"2026-03-10T01:37:29.581Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":60}
+{"ts":"2026-03-10T01:37:29.585Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:37:29.640Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":52}
+{"ts":"2026-03-10T01:37:29.642Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":57}
+{"ts":"2026-03-10T01:37:29.674Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":30}
+{"ts":"2026-03-10T01:37:29.680Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:29.809Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":122}
+{"ts":"2026-03-10T01:37:31.814Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:33.821Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:35.828Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:37:37.835Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:39.842Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:41.847Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:43.851Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:45.854Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:46.936Z","level":"info","msg":"[orchestrator] run complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","ok":true}
+{"ts":"2026-03-10T01:37:47.859Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:49.863Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:51.867Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:53.871Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:55.875Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:57.878Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:59.882Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:01.886Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:03.889Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:05.893Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:07.897Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:09.900Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:11.904Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:13.908Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:15.912Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:17.915Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:19.919Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:21.922Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:23.926Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:25.930Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:27.932Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:29.937Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:31.940Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:33.944Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:35.947Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:37.950Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:39.953Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:41.959Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:43.963Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:45.968Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:47.972Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:49.977Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:51.981Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:53.984Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:55.988Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:57.994Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:59.999Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:39:00.011Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/result","status":200,"ms":3}
+{"ts":"2026-03-10T01:39:00.017Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:39:03.059Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":200,"ms":3036}
+{"ts":"2026-03-10T01:39:03.071Z","level":"info","msg":"http","method":"POST","path":"/api/cases/NONEXISTENT_CASE_XYZ/generate-full-draft","status":400,"ms":2}
+{"ts":"2026-03-10T01:39:03.076Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/status","status":404,"ms":2}
+{"ts":"2026-03-10T01:39:03.081Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/result","status":404,"ms":2}
+{"ts":"2026-03-10T01:39:03.087Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":400,"ms":2}
+{"ts":"2026-03-10T01:44:29.234Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":0}
+{"ts":"2026-03-10T01:44:29.250Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:29.255Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:44:29.332Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":76}
+{"ts":"2026-03-10T01:44:29.334Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":79}
+{"ts":"2026-03-10T01:44:29.339Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:44:29.420Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":79}
+{"ts":"2026-03-10T01:44:29.423Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":84}
+{"ts":"2026-03-10T01:44:29.480Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":53}
+{"ts":"2026-03-10T01:44:29.486Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:29.551Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":57}
+{"ts":"2026-03-10T01:44:31.557Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:33.562Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:35.567Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:37.573Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:39.578Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:41.584Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:43.591Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:44.346Z","level":"info","msg":"[orchestrator] run complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","ok":true}
+{"ts":"2026-03-10T01:44:45.594Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:47.597Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:49.601Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:51.608Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:44:53.612Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:55.615Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:57.618Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:59.622Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:01.625Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:03.629Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:05.632Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:07.637Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:09.639Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:11.642Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:13.645Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":0}
+{"ts":"2026-03-10T01:45:15.649Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:17.652Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:19.655Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:21.657Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:23.660Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:25.663Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:27.666Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:29.671Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:31.675Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:33.678Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:35.682Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:37.686Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:39.691Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:41.695Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:46.487Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-10.log"}
+{"ts":"2026-03-10T01:45:46.488Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-10T01:46:04.848Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":9}
+{"ts":"2026-03-10T01:46:13.049Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:13.097Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":32}
+{"ts":"2026-03-10T01:46:13.139Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:46:13.231Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":90}
+{"ts":"2026-03-10T01:46:13.232Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":97}
+{"ts":"2026-03-10T01:46:13.238Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:46:13.306Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":67}
+{"ts":"2026-03-10T01:46:13.309Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":72}
+{"ts":"2026-03-10T01:46:13.350Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":37}
+{"ts":"2026-03-10T01:46:13.358Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":3}
+{"ts":"2026-03-10T01:46:13.512Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":144}
+{"ts":"2026-03-10T01:46:15.520Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":4}
+{"ts":"2026-03-10T01:46:17.526Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:46:19.534Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:21.564Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:46:23.570Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:25.610Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:46:27.624Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:29.629Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:31.633Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:46:33.323Z","level":"info","msg":"[orchestrator] run complete","runId":"258e4fce-9917-4741-9997-9f79966a11eb","ok":true}
+{"ts":"2026-03-10T01:46:33.637Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:33.645Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/258e4fce-9917-4741-9997-9f79966a11eb/result","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:33.649Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:46:37.600Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":200,"ms":3947}
+{"ts":"2026-03-10T01:46:37.608Z","level":"info","msg":"http","method":"POST","path":"/api/cases/ffffffff/generate-full-draft","status":404,"ms":1}
+{"ts":"2026-03-10T01:46:37.612Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/status","status":404,"ms":1}
+{"ts":"2026-03-10T01:46:37.615Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/result","status":404,"ms":1}
+{"ts":"2026-03-10T01:46:37.618Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":400,"ms":1}
+{"ts":"2026-03-10T01:47:24.066Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:24.093Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:47:24.101Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:47:24.185Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":81}
+{"ts":"2026-03-10T01:47:24.186Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":85}
+{"ts":"2026-03-10T01:47:24.193Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+{"ts":"2026-03-10T01:47:24.263Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":69}
+{"ts":"2026-03-10T01:47:24.265Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":73}
+{"ts":"2026-03-10T01:47:24.308Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":40}
+{"ts":"2026-03-10T01:47:24.316Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:24.381Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":57}
+{"ts":"2026-03-10T01:47:26.386Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:28.390Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:30.398Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:32.403Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:34.409Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:36.413Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:38.418Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:40.423Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:42.428Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:44.217Z","level":"info","msg":"[orchestrator] run complete","runId":"c6f11467-f81a-439c-b7c2-b627090fed4b","ok":true}
+{"ts":"2026-03-10T01:47:44.434Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:47:44.442Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/c6f11467-f81a-439c-b7c2-b627090fed4b/result","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:44.447Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":1}
+{"ts":"2026-03-10T01:47:47.046Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":200,"ms":2593}
+{"ts":"2026-03-10T01:47:47.052Z","level":"info","msg":"http","method":"POST","path":"/api/cases/ffffffff/generate-full-draft","status":404,"ms":1}
+{"ts":"2026-03-10T01:47:47.055Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/status","status":404,"ms":1}
+{"ts":"2026-03-10T01:47:47.058Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/result","status":404,"ms":1}
+{"ts":"2026-03-10T01:47:47.062Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":400,"ms":1}
+{"ts":"2026-03-10T03:32:28.776Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-10.log"}
+{"ts":"2026-03-10T03:32:28.776Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-10T03:34:38.879Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":11}

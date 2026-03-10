@@ -1,0 +1,2421 @@
+{
+  "assignment_uuid": "feb03938-8e5f-4327-8230-0e31d20a6b2c",
+  "base_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c",
+  "sections": {
+    "introduction": {
+      "label": "Introduction",
+      "section_slug": "introduction",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+      "tinymce_iframes": [
+        {
+          "id": "introduction_section_content_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 361,
+            "w": 736,
+            "h": 106
+          }
+        },
+        {
+          "id": "general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "introduction_section_content_content",
+          "name": "introduction_section_content_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "market_area": {
+      "label": "Market Data",
+      "section_slug": "market_data",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+      "tinymce_iframes": [
+        {
+          "id": "national_overview_section_content_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 361,
+            "w": 736,
+            "h": 106
+          }
+        },
+        {
+          "id": "regional_overview_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "local_market_analysis_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "industry_overview_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "neighborhood_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "demographics_section_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "demographics_conclusions_content_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "national_overview_section_content_content",
+          "name": "national_overview_section_content_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "property_data": {
+      "label": "Property Data",
+      "section_slug": "property_data",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+      "tinymce_iframes": [
+        {
+          "id": "zoning_remarks_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 5011,
+            "w": 736,
+            "h": 106
+          }
+        },
+        {
+          "id": "site_description_conclusions_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 5303,
+            "w": 736,
+            "h": 225
+          }
+        },
+        {
+          "id": "improvement_description_conclusions_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "real_estate_taxes_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "real_estate_taxes_comparables_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_msa",
+          "name": "assignment[property_sites_attributes][0][msa]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_market_type_id",
+          "name": "assignment[property_sites_attributes][0][market_type_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_submarket",
+          "name": "assignment[property_sites_attributes][0][submarket]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_submarket_type_id",
+          "name": "assignment[property_sites_attributes][0][submarket_type_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_census_tract",
+          "name": "assignment[property_sites_attributes][0][census_tract]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_plat_book_map_number",
+          "name": "assignment[property_sites_attributes][0][plat_book_map_number]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_section_township_range",
+          "name": "assignment[property_sites_attributes][0][section_township_range]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_block",
+          "name": "assignment[property_sites_attributes][0][block]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_lot",
+          "name": "assignment[property_sites_attributes][0][lot]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_legal_description",
+          "name": "assignment[property_sites_attributes][0][legal_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_location_classification_id",
+          "name": "assignment[property_sites_attributes][0][location_classification_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_location_description",
+          "name": "assignment[property_sites_attributes][0][location_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_parcel_identifier",
+          "name": "assignment[property_sites_attributes][0][parcel_identifier]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_parcel_location_id",
+          "name": "assignment[property_sites_attributes][0][parcel_location_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_land_acres",
+          "name": "assignment[property_sites_attributes][0][land_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_land_sq_ft",
+          "name": "assignment[property_sites_attributes][0][land_sq_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_land_description",
+          "name": "assignment[property_sites_attributes][0][land_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_surplus_land_acres",
+          "name": "assignment[property_sites_attributes][0][surplus_land_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_surplus_land_sq_ft",
+          "name": "assignment[property_sites_attributes][0][surplus_land_sq_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_surplus_land_description",
+          "name": "assignment[property_sites_attributes][0][surplus_land_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_excess_land_acres",
+          "name": "assignment[property_sites_attributes][0][excess_land_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_excess_land_sq_ft",
+          "name": "assignment[property_sites_attributes][0][excess_land_sq_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_excess_land_description",
+          "name": "assignment[property_sites_attributes][0][excess_land_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_usable_land_acres",
+          "name": "assignment[property_sites_attributes][0][usable_land_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_usable_land_sq_ft",
+          "name": "assignment[property_sites_attributes][0][usable_land_sq_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_usable_land_percent",
+          "name": "assignment[property_sites_attributes][0][usable_land_percent]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_usable_land_description",
+          "name": "assignment[property_sites_attributes][0][usable_land_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_proposed_building_sq_ft",
+          "name": "assignment[property_sites_attributes][0][proposed_building_sq_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_proposed_number_of_units",
+          "name": "assignment[property_sites_attributes][0][proposed_number_of_units]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_number_of_lots",
+          "name": "assignment[property_sites_attributes][0][number_of_lots]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_lot_depth_ft",
+          "name": "assignment[property_sites_attributes][0][lot_depth_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_site_dimensions",
+          "name": "assignment[property_sites_attributes][0][site_dimensions]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_comparison_unit_label",
+          "name": "assignment[property_sites_attributes][0][comparison_unit_label]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_comparison_unit_value",
+          "name": "assignment[property_sites_attributes][0][comparison_unit_value]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_traffic_count",
+          "name": "assignment[property_sites_attributes][0][traffic_count]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_secondary_traffic_count",
+          "name": "assignment[property_sites_attributes][0][secondary_traffic_count]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_traffic_counter_desc",
+          "name": "assignment[property_sites_attributes][0][traffic_counter_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_primary_frontage_ft",
+          "name": "assignment[property_sites_attributes][0][primary_frontage_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_primary_frontage_type_id",
+          "name": "assignment[property_sites_attributes][0][primary_frontage_type_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_primary_frontage_curb_cuts",
+          "name": "assignment[property_sites_attributes][0][primary_frontage_curb_cuts]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_secondary_frontage_ft",
+          "name": "assignment[property_sites_attributes][0][secondary_frontage_ft]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_secondary_frontage_type_id",
+          "name": "assignment[property_sites_attributes][0][secondary_frontage_type_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_secondary_frontage_curb_cuts",
+          "name": "assignment[property_sites_attributes][0][secondary_frontage_curb_cuts]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_frontage_desc",
+          "name": "assignment[property_sites_attributes][0][frontage_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_rail_desc",
+          "name": "assignment[property_sites_attributes][0][rail_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_water_port_access_desc",
+          "name": "assignment[property_sites_attributes][0][water_port_access_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_access_classification_id",
+          "name": "assignment[property_sites_attributes][0][access_classification_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "access_desc_qet",
+          "name": "access_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "access_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][access_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "signal_desc_qet",
+          "name": "signal_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "signal_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][signal_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_sf_in_flood_plain",
+          "name": "assignment[property_sites_attributes][0][sf_in_flood_plain]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_flood_area_percent",
+          "name": "assignment[property_sites_attributes][0][flood_area_percent]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_flood_zone",
+          "name": "assignment[property_sites_attributes][0][flood_zone]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_flood_map_number",
+          "name": "assignment[property_sites_attributes][0][flood_map_number]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "flood_plain_desc_qet",
+          "name": "flood_plain_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "flood_plain_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][flood_plain_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "environmental_desc_qet",
+          "name": "environmental_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "environmental_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][environmental_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "wetlands_description_qet",
+          "name": "wetlands_description_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "wetlands_description_text_area",
+          "name": "assignment[property_sites_attributes][0][wetlands_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "earthquake_zone_comments_qet",
+          "name": "earthquake_zone_comments_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "earthquake_zone_comments_text_area",
+          "name": "assignment[property_sites_attributes][0][earthquake_zone_comments]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "liquefaction_description_qet",
+          "name": "liquefaction_description_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "liquefaction_description_text_area",
+          "name": "assignment[property_sites_attributes][0][liquefaction_description]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "encumbrances_easements_desc_qet",
+          "name": "encumbrances_easements_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "encumbrances_easements_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][encumbrances_easements_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_ground_lease_desc",
+          "name": "assignment[property_sites_attributes][0][ground_lease_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_current_use",
+          "name": "assignment[property_sites_attributes][0][current_use]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_zoning_jurisdiction",
+          "name": "assignment[property_sites_attributes][0][zoning_jurisdiction]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_zoning_code",
+          "name": "assignment[property_sites_attributes][0][zoning_code]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_zoning_desc",
+          "name": "assignment[property_sites_attributes][0][zoning_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_general_plan_desc",
+          "name": "assignment[property_sites_attributes][0][general_plan_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_permitted_uses",
+          "name": "assignment[property_sites_attributes][0][permitted_uses]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_conditional_uses_and_exceptions",
+          "name": "assignment[property_sites_attributes][0][conditional_uses_and_exceptions]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_zoning_comments",
+          "name": "assignment[property_sites_attributes][0][zoning_comments]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_conformity_conclusion_id",
+          "name": "assignment[property_sites_attributes][0][conformity_conclusion_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "conformity_comments_qet",
+          "name": "conformity_comments_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "conformity_comments_text_area",
+          "name": "assignment[property_sites_attributes][0][conformity_comments]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_minimum_lot_area",
+          "name": "assignment[property_sites_attributes][0][minimum_lot_area]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_minimum_lot_area_uom_id",
+          "name": "assignment[property_sites_attributes][0][minimum_lot_area_uom_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_maximum_building_height",
+          "name": "assignment[property_sites_attributes][0][maximum_building_height]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_maximum_lot_coverage",
+          "name": "assignment[property_sites_attributes][0][maximum_lot_coverage]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_maximum_floor_area_ratio",
+          "name": "assignment[property_sites_attributes][0][maximum_floor_area_ratio]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_required_parking",
+          "name": "assignment[property_sites_attributes][0][required_parking]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_front",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_front]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_rear",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_rear]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_side",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_side]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_minimum_lot_area_conformity_id",
+          "name": "assignment[property_sites_attributes][0][minimum_lot_area_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_maximum_building_height_conformity_id",
+          "name": "assignment[property_sites_attributes][0][maximum_building_height_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_maximum_lot_coverage_conformity_id",
+          "name": "assignment[property_sites_attributes][0][maximum_lot_coverage_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_maximum_floor_area_ratio_conformity_id",
+          "name": "assignment[property_sites_attributes][0][maximum_floor_area_ratio_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_required_parking_conformity_id",
+          "name": "assignment[property_sites_attributes][0][required_parking_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_front_conformity_id",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_front_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_rear_conformity_id",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_rear_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_minimum_yard_setback_side_conformity_id",
+          "name": "assignment[property_sites_attributes][0][minimum_yard_setback_side_conformity_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_site_shape_id",
+          "name": "assignment[property_sites_attributes][0][site_shape_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_site_topography_id",
+          "name": "assignment[property_sites_attributes][0][site_topography_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_site_grade_id",
+          "name": "assignment[property_sites_attributes][0][site_grade_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_drainage",
+          "name": "assignment[property_sites_attributes][0][drainage]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "soil_type_desc_qet",
+          "name": "soil_type_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "soil_type_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][soil_type_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_land_cover",
+          "name": "assignment[property_sites_attributes][0][land_cover]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_view_appeal_id",
+          "name": "assignment[property_sites_attributes][0][view_appeal_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "assignment_property_sites_attributes_0_type_of_land",
+          "name": "assignment[property_sites_attributes][0][type_of_land]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_utility_type_ids",
+          "name": "assignment[property_sites_attributes][0][utility_type_ids][]",
+          "classes": "form-control bs-select input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "utilities_desc_qet",
+          "name": "utilities_desc_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "utilities_desc_text_area",
+          "name": "assignment[property_sites_attributes][0][utilities_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "site_improvements_qet",
+          "name": "site_improvements_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "site_improvements_text_area",
+          "name": "assignment[property_sites_attributes][0][site_improvements]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "assignment_property_sites_attributes_0_site_utility_id",
+          "name": "assignment[property_sites_attributes][0][site_utility_id]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_usable_crop_acres",
+          "name": "assignment[property_sites_attributes][0][ag_usable_crop_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_pasture_area_acres",
+          "name": "assignment[property_sites_attributes][0][ag_pasture_area_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_woods_waste_area_in_acres",
+          "name": "assignment[property_sites_attributes][0][ag_woods_waste_area_in_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_type_of_livestock",
+          "name": "assignment[property_sites_attributes][0][ag_type_of_livestock]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_type_of_crops",
+          "name": "assignment[property_sites_attributes][0][ag_type_of_crops]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_average_age_of_crops_in_years",
+          "name": "assignment[property_sites_attributes][0][ag_average_age_of_crops_in_years]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_yield_of_crops_per_acre",
+          "name": "assignment[property_sites_attributes][0][ag_yield_of_crops_per_acre]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_type_of_timber",
+          "name": "assignment[property_sites_attributes][0][ag_type_of_timber]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_average_timber_age",
+          "name": "assignment[property_sites_attributes][0][ag_average_timber_age]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_timber_yield_in_mbf",
+          "name": "assignment[property_sites_attributes][0][ag_timber_yield_in_mbf]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_usable_timber_acres",
+          "name": "assignment[property_sites_attributes][0][ag_usable_timber_acres]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "input",
+          "id": "assignment_property_sites_attributes_0_ag_irrigation_water_desc",
+          "name": "assignment[property_sites_attributes][0][ag_irrigation_water_desc]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "zoning_remarks_content",
+          "name": "zoning_remarks_content",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "site_description_conclusions_content",
+          "name": "site_description_conclusions_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "hbu_analysis": {
+      "label": "Highest and Best Use",
+      "section_slug": "highest_best_use",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+      "tinymce_iframes": [
+        {
+          "id": "highest_and_best_use_as_vacant_remarks_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 361,
+            "w": 736,
+            "h": 857
+          }
+        },
+        {
+          "id": "highest_and_best_use_as_improved_remarks_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 1543,
+            "w": 736,
+            "h": 106
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "highest_and_best_use_as_vacant_remarks_content",
+          "name": "highest_and_best_use_as_vacant_remarks_content",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "highest_and_best_use_as_vacant_qet",
+          "name": "highest_and_best_use_as_vacant_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "highest_and_best_use_as_vacant_text_area",
+          "name": "assignment[highest_and_best_use_as_vacant]",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "highest_and_best_use_as_improved_remarks_content",
+          "name": "highest_and_best_use_as_improved_remarks_content",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "highest_and_best_use_as_improved_qet",
+          "name": "highest_and_best_use_as_improved_qet",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "textarea",
+          "id": "highest_and_best_use_as_improved_text_area",
+          "name": "assignment[highest_and_best_use_as_improved]",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "land_valuation": {
+      "label": "Land Valuation",
+      "section_slug": "land_valuation",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+      "tinymce_iframes": [
+        {
+          "id": "land_valuation_reconciliation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "cost_approach": {
+      "label": "Cost Approach",
+      "section_slug": "cost_approach",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+      "tinymce_iframes": [
+        {
+          "id": "replacement_cost_new_remarks_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 362,
+            "w": 736,
+            "h": 185
+          }
+        },
+        {
+          "id": "depreciation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "insurable_replacement_cost_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "replacement_cost_new_remarks_content",
+          "name": "replacement_cost_new_remarks_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "sales_comparison": {
+      "label": "Sales Comparison",
+      "section_slug": "sales_comparison",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sales_comparison",
+      "tinymce_iframes": [],
+      "text_inputs": [],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "market_rent_analysis": {
+      "label": "Market Rent Analysis",
+      "section_slug": "market_rent_analysis",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+      "tinymce_iframes": [
+        {
+          "id": "income_approach_intro_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 361,
+            "w": 736,
+            "h": 252
+          }
+        },
+        {
+          "id": "rent_roll_remarks_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 952,
+            "w": 736,
+            "h": 229
+          }
+        },
+        {
+          "id": "rent_reconciliation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "other_revenue_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "commercial_market_summary_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "vacancy_and_credit_loss_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "commercial_market_summary_standalone_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "income_approach_intro_content",
+          "name": "income_approach_intro_content",
+          "classes": "form-control input",
+          "visible": true
+        },
+        {
+          "tag": "select",
+          "id": "rent_roll_remarks_content",
+          "name": "rent_roll_remarks_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "income_approach": {
+      "label": "Income Approach",
+      "section_slug": "income_approach",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+      "tinymce_iframes": [
+        {
+          "id": "expense_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "investment_classifications_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "investor_survey_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "direct_capitalization_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "investment_considerations_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "property_class_investment_overview_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "market_participants_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "direct_capitalization_conclusion_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "dcf_assumptions_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "dcf_analysis_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "dcf_conclusions_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "dcf_reconciliation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "income_approach_reconciliation_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "income_approach_conclusion_remarks_text_area_ifr",
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ],
+      "text_inputs": [],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    },
+    "reconciliation": {
+      "label": "Reconciliation",
+      "section_slug": "reconciliation",
+      "section_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+      "tinymce_iframes": [
+        {
+          "id": "reconciliation_section_content_text_area_ifr",
+          "visible": true,
+          "rect": {
+            "x": 358,
+            "y": 493,
+            "w": 736,
+            "h": 584
+          }
+        }
+      ],
+      "text_inputs": [
+        {
+          "tag": "select",
+          "id": "reconciliation_section_content_content",
+          "name": "reconciliation_section_content_content",
+          "classes": "form-control input",
+          "visible": true
+        }
+      ],
+      "nav_links": [
+        {
+          "text": "Appraisal Scope",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/appraisal_scope",
+          "classes": ""
+        },
+        {
+          "text": "Cover Page",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cover_page",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter",
+          "classes": ""
+        },
+        {
+          "text": "Certification",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/certification",
+          "classes": ""
+        },
+        {
+          "text": "Executive Summary",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/executive_summary",
+          "classes": ""
+        },
+        {
+          "text": "Introduction",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+          "classes": ""
+        },
+        {
+          "text": "Market Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+          "classes": ""
+        },
+        {
+          "text": "Property Data",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+          "classes": ""
+        },
+        {
+          "text": "Highest Best Use",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+          "classes": ""
+        },
+        {
+          "text": "Land Valuation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Cost Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+          "classes": ""
+        },
+        {
+          "text": "Sales Comparison",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+          "classes": ""
+        },
+        {
+          "text": "Market Rent Analysis",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+          "classes": ""
+        },
+        {
+          "text": "Income Approach",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+          "classes": ""
+        },
+        {
+          "text": "Reconciliation",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+          "classes": ""
+        },
+        {
+          "text": "Addenda",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/addenda",
+          "classes": ""
+        },
+        {
+          "text": "Reports",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reports",
+          "classes": ""
+        },
+        {
+          "text": "Transmittal Letter",
+          "href": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/transmittal_letter#subtab_transmittal_letter_section_transmittal_letter",
+          "classes": "text-center"
+        }
+      ]
+    }
+  }
+}

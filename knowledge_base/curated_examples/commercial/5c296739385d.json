@@ -1,0 +1,14 @@
+{
+  "id": "5c296739385d",
+  "formType": "commercial",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Sales Comparison Approach was developed through the selection and analysis of comparable sales of small multi-tenant office and medical buildings within the Bloomington-Normal market and similar regional markets. Adjustments were made to the sale prices of comparables to account for differences in location, size, age, condition, occupancy, and building features relative to the subject property. The comparison relied primarily on sales data from similar Class B office buildings with comparable tenant mixes and physical characteristics. The adjusted sale prices provided a bracket for the market value estimate, which was reconciled to the subject based on the degree of comparability and recent market trends observed in the competitive set.",
+  "createdAt": "2026-03-07T21:05:40.106Z",
+  "updatedAt": "2026-03-07T21:05:40.106Z"
+}

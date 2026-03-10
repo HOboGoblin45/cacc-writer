@@ -1,0 +1,14 @@
+{
+  "id": "f09ab016484a",
+  "formType": "1004",
+  "fieldId": "final_value_opinion",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value.",
+  "createdAt": "2026-03-07T21:05:38.195Z",
+  "updatedAt": "2026-03-07T21:05:38.195Z"
+}

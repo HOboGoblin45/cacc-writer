@@ -1,0 +1,14 @@
+{
+  "id": "df1aa3d52ff9",
+  "formType": "commercial",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The final opinion of market value for the subject property was derived through consideration and reconciliation of the applicable valuation approaches. The Sales Comparison Approach and Income Capitalization Approach were developed and analyzed, while the Cost Approach was not developed due to the age of the improvements and limited market support for reliable land value and depreciation estimates for properties of this type. Primary reliance was placed on the Sales Comparison Approach, which reflects the behavior of typical market participants for properties of this type, while the Income Capitalization Approach was developed as a secondary, supportive analysis. Based on the analysis and reconciliation of the applicable approaches, the final opinion of market value reflects the actions of typical market participants and is considered reasonable and supported by current market conditions as of the effective date of the appraisal.",
+  "createdAt": "2026-03-07T21:05:39.677Z",
+  "updatedAt": "2026-03-07T21:05:39.677Z"
+}

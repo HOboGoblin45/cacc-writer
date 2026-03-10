@@ -1,0 +1,14 @@
+{
+  "id": "cb79f8f291dc",
+  "formType": "1025",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach has been developed and Gross Rent Multiplier was derived from the range provided by the comparables used in the Sales Comparaison Approach to value.",
+  "createdAt": "2026-03-07T21:05:39.230Z",
+  "updatedAt": "2026-03-07T21:05:39.230Z"
+}

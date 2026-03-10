@@ -1,0 +1,14 @@
+{
+  "id": "99ead997f56a",
+  "formType": "1004",
+  "fieldId": "contract_analysis",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Residential Sales Contract lists the contract price as $155,000 with sales concessions in the form of the seller paying 3% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+  "createdAt": "2026-03-07T21:05:38.026Z",
+  "updatedAt": "2026-03-07T21:05:38.026Z"
+}

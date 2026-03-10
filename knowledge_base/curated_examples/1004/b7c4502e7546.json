@@ -1,0 +1,14 @@
+{
+  "id": "b7c4502e7546",
+  "formType": "1004",
+  "fieldId": "prior_sales_subject",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred.",
+  "createdAt": "2026-03-07T21:05:40.194Z",
+  "updatedAt": "2026-03-07T21:05:40.194Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "c6f54859ab7a",
+  "formType": "commercial",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Income Approach was developed as the subject property is an income-producing retail asset and market participants typically evaluate such properties based on income potential. Market rent was estimated based on comparable leases in similar neighborhood retail properties. Appropriate allowances for vacancy and collection loss, as well as stabilized operating expenses, were applied. The resulting net operating income was then capitalized at a market-supported capitalization rate derived from investor surveys and comparable property sales. This approach provides a supported indication of value that reflects prevailing investor expectations for stabilized, small-scale retail properties in the local market.",
+  "createdAt": "2026-03-07T21:05:39.434Z",
+  "updatedAt": "2026-03-07T21:05:39.434Z"
+}

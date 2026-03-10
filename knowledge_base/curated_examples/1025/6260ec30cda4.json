@@ -1,0 +1,14 @@
+{
+  "id": "6260ec30cda4",
+  "formType": "1025",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The appraisal is made with the subject in 'as is' condition. There is no personal property included in the final estimate of value.",
+  "createdAt": "2026-03-07T21:05:38.965Z",
+  "updatedAt": "2026-03-07T21:05:38.965Z"
+}

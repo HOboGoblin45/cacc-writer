@@ -1,0 +1,44 @@
+{
+  "_comment": "Configuration for the CACC ACI desktop automation agent. Edit these values to match your ACI installation.",
+
+  "agent_port": 5180,
+
+  "aci_window_title": "ACI",
+  "aci_window_pattern": ".*ACI.*",
+
+  "_comment_window": "To find the exact window title, start ACI, then run: GET http://localhost:5180/list-windows",
+
+  "insert_delay_ms": 200,
+  "max_retries": 3,
+  "verify_insertion": true,
+
+  "_comment_verify": "verify_insertion reads the field back after insert to confirm success. Disable if it causes slowness.",
+
+  "screenshot_on_failure": true,
+
+  "_comment_screenshot": "screenshot_on_failure saves a PNG to desktop_agent/screenshots/ whenever an insertion fails. Requires pillow (pip install pillow). Set false to disable.",
+
+  "log_level": "INFO",
+
+  "default_form_type": "1004",
+
+  "_comment_phase2": "Phase 2 settings — label-aware TX32 targeting and learned targets persistence.",
+
+  "learned_targets_enabled": true,
+  "_comment_learned": "learned_targets_enabled: after each successful insertion, save the winning strategy to learned_targets.json so future attempts reuse it first.",
+
+  "tx32_content_min_height": 120,
+  "_comment_tx32_content": "TX32 controls taller than this (px) are treated as editable content areas.",
+
+  "tx32_title_max_height": 70,
+  "_comment_tx32_title": "TX32 controls shorter than this (px) are treated as label/title strips.",
+
+  "tx32_min_width": 80,
+  "_comment_tx32_width": "TX32 controls narrower than this (px) are ignored (scrollbars, decorations).",
+
+  "tab_wait_ms": 500,
+  "_comment_tab_wait": "Milliseconds to wait after clicking a section tab before discovering TX32 controls.",
+
+  "probe_before_insert": false,
+  "_comment_probe": "If true, run a dry-run probe before every insert to log TX32 candidates. Useful for debugging. Disable in production for speed."
+}

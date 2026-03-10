@@ -1,0 +1,14 @@
+{
+  "id": "2caa6220aec9",
+  "formType": "1025",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Gross Rent Multiplier was derived from the range provided by the comparables used in the Sales Comparison Approach to value.",
+  "createdAt": "2026-03-07T21:05:38.920Z",
+  "updatedAt": "2026-03-07T21:05:38.920Z"
+}

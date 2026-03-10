@@ -1,0 +1,23 @@
+{
+  "id": "d8a73dca47eb",
+  "text": "Primary emphasis is placed on the Sales Comparison Approach, as it best reflects the actions of typical buyers and sellers in the subject's market area. The Cost Approach and Income Approach were not developed due to [INSERT: explanation supporting lack of applicability or supporting data], and are typically less relevant for single-family residential properties in this area. The available sales data is considered the most reliable indicator of market value for the subject property as of the effective date of appraisal. The final opinion of value reflects consideration of all available data and developed approaches, with primary reliance on the Sales Comparison Approach based on the data analyzed.",
+  "sectionType": "reconciliation",
+  "formType": "1004",
+  "propertyType": "Single Family",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "IL",
+  "county": "Sangamon",
+  "city": "Springfield",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-09T22:54:46.673Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "4c7f66cb",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-09T22:54:46.673Z",
+  "updatedAt": "2026-03-09T22:54:46.673Z",
+  "approvedBy": "cresci"
+}
