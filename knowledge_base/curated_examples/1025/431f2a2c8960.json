@@ -1,0 +1,14 @@
+{
+  "id": "431f2a2c8960",
+  "formType": "1025",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Income Approach has been developed and Gross Rent Multiplier was derived from the range provided by the comparables used in the Sales Comparaison Approach to value.",
+  "createdAt": "2026-03-07T21:05:39.005Z",
+  "updatedAt": "2026-03-07T21:05:39.005Z"
+}

@@ -1,0 +1,7119 @@
+[
+  {
+    "slug": "introduction",
+    "label": "Introduction",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+    "iframes": [
+      {
+        "id": "introduction_section_content_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 106,
+        "top": 361
+      },
+      {
+        "id": "general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_introductio",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 296,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 296,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 296,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 296,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 296,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  },
+  {
+    "slug": "market_data",
+    "label": "Market Data",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+    "iframes": [
+      {
+        "id": "national_overview_section_content_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 106,
+        "top": 361
+      },
+      {
+        "id": "regional_overview_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "local_market_analysis_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "industry_overview_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "neighborhood_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "demographics_section_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "demographics_conclusions_content_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "text-center",
+          "title": "",
+          "text": "regional overview",
+          "href": "#subtab_market_data_section_regional_overview",
+          "x": 576,
+          "y": 161,
+          "w": 152,
+          "h": 42
+        },
+        "modal_class": null,
+        "iframes": [
+          {
+            "id": "regional_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106,
+            "top": 361
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "text-center",
+          "title": "",
+          "text": "industry overview",
+          "href": "#subtab_market_data_section_industry_overview",
+          "x": 903,
+          "y": 161,
+          "w": 150,
+          "h": 42
+        },
+        "modal_class": null,
+        "iframes": [
+          {
+            "id": "industry_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106,
+            "top": 361
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_market_data_report_options.js",
+          "x": 1287,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "national_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "regional_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "local_market_analysis_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "industry_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106
+          },
+          {
+            "id": "neighborhood_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_conclusions_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn btn-sm btn-primary float-right",
+          "title": "",
+          "text": "preview",
+          "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_national_ov",
+          "x": 1837,
+          "y": 155,
+          "w": 66,
+          "h": 30
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "national_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "regional_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "local_market_analysis_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "industry_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106
+          },
+          {
+            "id": "neighborhood_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_conclusions_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "edit",
+          "href": "",
+          "x": 390,
+          "y": 296,
+          "w": 39,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "national_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "regional_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "local_market_analysis_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "industry_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106
+          },
+          {
+            "id": "neighborhood_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_conclusions_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "view",
+          "href": "",
+          "x": 433,
+          "y": 296,
+          "w": 46,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "national_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "regional_overview_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "local_market_analysis_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "industry_overview_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106
+          },
+          {
+            "id": "neighborhood_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_section_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "demographics_conclusions_content_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "text-center",
+        "title": "",
+        "text": "national overview",
+        "href": "#subtab_market_data_section_national_overview",
+        "x": 422,
+        "y": 161,
+        "w": 152,
+        "h": 42
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "text-center",
+        "title": "",
+        "text": "regional overview",
+        "href": "#subtab_market_data_section_regional_overview",
+        "x": 576,
+        "y": 161,
+        "w": 152,
+        "h": 42
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "text-center",
+        "title": "",
+        "text": "industry overview",
+        "href": "#subtab_market_data_section_industry_overview",
+        "x": 903,
+        "y": 161,
+        "w": 150,
+        "h": 42
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_market_data_report_options.js",
+        "x": 1287,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_national_ov",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 296,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 296,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 296,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 296,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 296,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  },
+  {
+    "slug": "property_data",
+    "label": "Property Data",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+    "iframes": [
+      {
+        "id": "zoning_remarks_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 106,
+        "top": 5011
+      },
+      {
+        "id": "site_description_conclusions_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 225,
+        "top": 5303
+      },
+      {
+        "id": "improvement_description_conclusions_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "real_estate_taxes_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "real_estate_taxes_comparables_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_property_data_report_options.js",
+          "x": 1275,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "zoning_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 106
+          },
+          {
+            "id": "site_description_conclusions_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 225
+          },
+          {
+            "id": "improvement_description_conclusions_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "real_estate_taxes_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "real_estate_taxes_comparables_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_property_data_report_options.js",
+        "x": 1275,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_site_descri",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 4946,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 4946,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 4946,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 4946,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 4946,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 4987,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 4987,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 4987,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 4987,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 4987,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 5238,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 5238,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 5238,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 5238,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 5238,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 5279,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 5279,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 5279,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 5279,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 5279,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  },
+  {
+    "slug": "highest_best_use",
+    "label": "Highest & Best Use",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+    "iframes": [
+      {
+        "id": "highest_and_best_use_as_vacant_remarks_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 857,
+        "top": 361
+      },
+      {
+        "id": "highest_and_best_use_as_improved_remarks_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 106,
+        "top": 1543
+      }
+    ],
+    "sub_sections": [],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_highest_and",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 296,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 296,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 296,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 296,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 296,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 1478,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 1478,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 1478,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 1478,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 1478,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 1519,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 1519,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 1519,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 1519,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 1519,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  },
+  {
+    "slug": "cost_approach",
+    "label": "Cost Approach",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+    "iframes": [
+      {
+        "id": "replacement_cost_new_remarks_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 185,
+        "top": 362
+      },
+      {
+        "id": "depreciation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "insurable_replacement_cost_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_cost_approach_report_options.js",
+          "x": 1058,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn btn-sm btn-primary float-right",
+          "title": "",
+          "text": "preview",
+          "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_cost_approa",
+          "x": 1837,
+          "y": 155,
+          "w": 66,
+          "h": 30
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "Xbtn Xbtn-primary expand-collapse-link",
+          "title": "",
+          "text": "replacement cost new remarks",
+          "href": "#replacement_cost_new_remarks_accordion",
+          "x": 726,
+          "y": 200,
+          "w": 740,
+          "h": 16
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "h5",
+          "id": "",
+          "cls": "expand-collapse-title title_heading margin-bottom-15",
+          "title": "",
+          "text": "replacement cost new remarks",
+          "href": "",
+          "x": 726,
+          "y": 200,
+          "w": 740,
+          "h": 16
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "edit",
+          "href": "",
+          "x": 390,
+          "y": 297,
+          "w": 39,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "view",
+          "href": "",
+          "x": 433,
+          "y": 297,
+          "w": 46,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "insert",
+          "href": "",
+          "x": 482,
+          "y": 297,
+          "w": 51,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "replacement_cost_new_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 185
+          },
+          {
+            "id": "depreciation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "insurable_replacement_cost_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_cost_approach_report_options.js",
+        "x": 1058,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_cost_approa",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "Xbtn Xbtn-primary expand-collapse-link",
+        "title": "",
+        "text": "replacement cost new remarks",
+        "href": "#replacement_cost_new_remarks_accordion",
+        "x": 726,
+        "y": 200,
+        "w": 740,
+        "h": 16
+      },
+      {
+        "tag": "h5",
+        "id": "",
+        "cls": "expand-collapse-title title_heading margin-bottom-15",
+        "title": "",
+        "text": "replacement cost new remarks",
+        "href": "",
+        "x": 726,
+        "y": 200,
+        "w": 740,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 297,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 297,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 297,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 297,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 297,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 338,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 338,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 338,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 338,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 338,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "(add)",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_replacement_cost_new_cost_details/new.js?replacement_cost_t",
+        "x": 1149,
+        "y": 583,
+        "w": 28,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "(add)",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_replacement_cost_new_cost_details/new.js?replacement_cost_t",
+        "x": 1176,
+        "y": 678,
+        "w": 28,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "(add)",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_replacement_cost_new_cost_details/new.js?replacement_cost_t",
+        "x": 1142,
+        "y": 773,
+        "w": 28,
+        "h": 16
+      }
+    ]
+  },
+  {
+    "slug": "sale_valuation",
+    "label": "Sales Comparison",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation",
+    "iframes": [
+      {
+        "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_sale_valuation_report_options.js",
+          "x": 596,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn btn-sm btn-primary float-right",
+          "title": "",
+          "text": "preview",
+          "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_sale_compar",
+          "x": 1837,
+          "y": 155,
+          "w": 66,
+          "h": 30
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/new.js",
+          "x": 406,
+          "y": 210,
+          "w": 11,
+          "h": 19
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+          "x": 377,
+          "y": 247,
+          "w": 18,
+          "h": 19
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "details_link",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+          "x": 410,
+          "y": 247,
+          "w": 18,
+          "h": 19
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+          "x": 439,
+          "y": 247,
+          "w": 11,
+          "h": 19
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_sale_valuation_report_options.js",
+        "x": 596,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_sale_compar",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/new.js",
+        "x": 406,
+        "y": 210,
+        "w": 11,
+        "h": 19
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+        "x": 377,
+        "y": 247,
+        "w": 18,
+        "h": 19
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "details_link",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+        "x": 410,
+        "y": 247,
+        "w": 18,
+        "h": 19
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/assignment_sale_valuation_summaries/b7846b63-a1f9-46cd-b9a2-e29e72ce2a",
+        "x": 439,
+        "y": 247,
+        "w": 11,
+        "h": 19
+      }
+    ]
+  },
+  {
+    "slug": "market_rent_analysis",
+    "label": "Market Rent Analysis",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+    "iframes": [
+      {
+        "id": "income_approach_intro_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 252,
+        "top": 361
+      },
+      {
+        "id": "rent_roll_remarks_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 229,
+        "top": 952
+      },
+      {
+        "id": "rent_reconciliation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "other_revenue_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "commercial_market_summary_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "vacancy_and_credit_loss_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "commercial_market_summary_standalone_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "editTableOptionsFromCurrentTab",
+          "cls": "btn",
+          "title": "Edit table options from current tab",
+          "text": "",
+          "href": "#",
+          "x": 1107,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "income_approach_intro_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 252
+          },
+          {
+            "id": "rent_roll_remarks_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 229
+          },
+          {
+            "id": "rent_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "other_revenue_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "commercial_market_summary_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "vacancy_and_credit_loss_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "commercial_market_summary_standalone_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "editTableOptionsFromCurrentTab",
+        "cls": "btn",
+        "title": "Edit table options from current tab",
+        "text": "",
+        "href": "#",
+        "x": 1107,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_income_appr",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 296,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 296,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 296,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 296,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 296,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--enabled",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 337,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 337,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 887,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 887,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 887,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 887,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 887,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 928,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 928,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 928,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 928,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 928,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  },
+  {
+    "slug": "income_approach",
+    "label": "Income Approach",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+    "iframes": [
+      {
+        "id": "expense_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "investment_classifications_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "investor_survey_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "direct_capitalization_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "investment_considerations_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "property_class_investment_overview_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "market_participants_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "direct_capitalization_conclusion_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "dcf_assumptions_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "dcf_analysis_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "dcf_conclusions_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "dcf_reconciliation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "income_approach_reconciliation_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      },
+      {
+        "id": "income_approach_conclusion_remarks_text_area_ifr",
+        "visible": false,
+        "w": 0,
+        "h": 0,
+        "top": 0
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_income_approach_report_options.js",
+          "x": 725,
+          "y": 201,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "expense_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "investment_classifications_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "investor_survey_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "direct_capitalization_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "investment_considerations_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "property_class_investment_overview_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "market_participants_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "direct_capitalization_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "dcf_assumptions_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "dcf_analysis_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "dcf_conclusions_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "dcf_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "income_approach_reconciliation_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          },
+          {
+            "id": "income_approach_conclusion_remarks_text_area_ifr",
+            "visible": false,
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_income_approach_report_options.js",
+        "x": 725,
+        "y": 201,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_income_appr",
+        "x": 1837,
+        "y": 196,
+        "w": 66,
+        "h": 30
+      }
+    ]
+  },
+  {
+    "slug": "reconciliation",
+    "label": "Reconciliation",
+    "url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+    "iframes": [
+      {
+        "id": "reconciliation_section_content_text_area_ifr",
+        "visible": true,
+        "w": 736,
+        "h": 584,
+        "top": 493
+      }
+    ],
+    "sub_sections": [
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn",
+          "title": "",
+          "text": "",
+          "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_reconciliation_report_options.js",
+          "x": 500,
+          "y": 160,
+          "w": 46,
+          "h": 34
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "a",
+          "id": "",
+          "cls": "btn btn-sm btn-primary float-right",
+          "title": "",
+          "text": "preview",
+          "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_reconciliat",
+          "x": 1837,
+          "y": 155,
+          "w": 66,
+          "h": 30
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "edit",
+          "href": "",
+          "x": 390,
+          "y": 428,
+          "w": 39,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "view",
+          "href": "",
+          "x": 433,
+          "y": 428,
+          "w": 46,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "insert",
+          "href": "",
+          "x": 482,
+          "y": 428,
+          "w": 51,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "format",
+          "href": "",
+          "x": 538,
+          "y": 428,
+          "w": 60,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      },
+      {
+        "trigger_button": {
+          "tag": "button",
+          "id": "",
+          "cls": "tox-mbtn tox-mbtn--select",
+          "title": "",
+          "text": "table",
+          "href": "",
+          "x": 593,
+          "y": 428,
+          "w": 48,
+          "h": 28
+        },
+        "modal_class": "page-container-bg-solid page-header-menu-fixed modal-open",
+        "iframes": [
+          {
+            "id": "reconciliation_section_content_text_area_ifr",
+            "visible": true,
+            "w": 736,
+            "h": 584
+          }
+        ]
+      }
+    ],
+    "expand_buttons": [
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "dropdown-toggle hover-initialized",
+        "title": "",
+        "text": "search",
+        "href": "javascript:;",
+        "x": 466,
+        "y": 26,
+        "w": 80,
+        "h": 51
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "client: first state bank",
+        "href": "/clients/8261c082-c5ee-477e-a31e-42a5d883ea84/details",
+        "x": 209,
+        "y": 104,
+        "w": 156,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "",
+        "title": "",
+        "text": "property: locust st multi-family, bloomi",
+        "href": "/properties/8db793f6-8238-4389-b819-cfda5ae223ce/details",
+        "x": 471,
+        "y": 104,
+        "w": 339,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn",
+        "title": "",
+        "text": "",
+        "href": "/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/edit_reconciliation_report_options.js",
+        "x": 500,
+        "y": 160,
+        "w": 46,
+        "h": 34
+      },
+      {
+        "tag": "a",
+        "id": "",
+        "cls": "btn btn-sm btn-primary float-right",
+        "title": "",
+        "text": "preview",
+        "href": "/report_preview/feb03938-8e5f-4327-8230-0e31d20a6b2c?preview=true&preview_section%5b%5d=section_heading_name_reconciliat",
+        "x": 1837,
+        "y": 155,
+        "w": 66,
+        "h": 30
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "edit",
+        "href": "",
+        "x": 390,
+        "y": 428,
+        "w": 39,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "view",
+        "href": "",
+        "x": 433,
+        "y": 428,
+        "w": 46,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "insert",
+        "href": "",
+        "x": 482,
+        "y": 428,
+        "w": 51,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "format",
+        "href": "",
+        "x": 538,
+        "y": 428,
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-mbtn tox-mbtn--select",
+        "title": "",
+        "text": "table",
+        "href": "",
+        "x": 593,
+        "y": 428,
+        "w": 48,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Undo",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 387,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn tox-tbtn--disabled",
+        "title": "Redo",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 422,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Source code",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 457,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Clear formatting",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 492,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Page break",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 527,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Cut",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 562,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Copy",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 597,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Paste",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 632,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Text color Black",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 675,
+        "y": 469,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 667,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Bold",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 718,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Italic",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 753,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align left",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 788,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align center",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 823,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Align right",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 858,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Justify",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 893,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Bullet list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 936,
+        "y": 469,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 928,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "div",
+        "id": "",
+        "cls": "tox-split-button",
+        "title": "Numbered list",
+        "text": "to open the popup, press shift+enter",
+        "href": "",
+        "x": 987,
+        "y": 469,
+        "w": 50,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 979,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      },
+      {
+        "tag": "button",
+        "id": "",
+        "cls": "tox-tbtn",
+        "title": "Reveal or hide additional toolbar items",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 469,
+        "w": 34,
+        "h": 28
+      },
+      {
+        "tag": "span",
+        "id": "",
+        "cls": "tox-icon tox-tbtn__icon-wrap",
+        "title": "",
+        "text": "",
+        "href": "",
+        "x": 1054,
+        "y": 469,
+        "w": 24,
+        "h": 24
+      }
+    ]
+  }
+]

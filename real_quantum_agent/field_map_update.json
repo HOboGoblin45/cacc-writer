@@ -1,0 +1,109 @@
+{
+  "introduction": {
+    "label": "Introduction",
+    "nav_selector": "a[href*='/introduction']",
+    "nav_text": "Introduction",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "introduction_section_content_text_area_ifr",
+    "tinymce_id": "introduction_section_content_text_area",
+    "input_selector": "iframe#introduction_section_content_text_area_ifr"
+  },
+  "market_area": {
+    "label": "Market Data",
+    "nav_selector": "a[href*='/market_data']",
+    "nav_text": "Market Data",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "national_overview_section_content_text_area_ifr",
+    "tinymce_id": "national_overview_section_content_text_area",
+    "input_selector": "iframe#national_overview_section_content_text_area_ifr"
+  },
+  "property_data": {
+    "label": "Property Data",
+    "nav_selector": "a[href*='/property_data']",
+    "nav_text": "Property Data",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "site_description_conclusions_text_area_ifr",
+    "tinymce_id": "site_description_conclusions_text_area",
+    "input_selector": "iframe#site_description_conclusions_text_area_ifr"
+  },
+  "hbu_analysis": {
+    "label": "Highest and Best Use",
+    "nav_selector": "a[href*='/highest_best_use']",
+    "nav_text": "Highest and Best Use",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "highest_and_best_use_as_vacant_remarks_text_area_ifr",
+    "tinymce_id": "highest_and_best_use_as_vacant_remarks_text_area",
+    "input_selector": "iframe#highest_and_best_use_as_vacant_remarks_text_area_ifr"
+  },
+  "land_valuation": {
+    "label": "Land Valuation",
+    "nav_selector": "a[href*='/land_valuation']",
+    "nav_text": "Land Valuation",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/land_valuation",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "UNKNOWN \u2014 no TinyMCE found on land_valuation page",
+    "input_selector": ""
+  },
+  "cost_approach": {
+    "label": "Cost Approach",
+    "nav_selector": "a[href*='/cost_approach']",
+    "nav_text": "Cost Approach",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "replacement_cost_new_remarks_text_area_ifr",
+    "tinymce_id": "replacement_cost_new_remarks_text_area",
+    "input_selector": "iframe#replacement_cost_new_remarks_text_area_ifr"
+  },
+  "sales_comparison": {
+    "label": "Sales Comparison",
+    "nav_selector": "a[href*='/sales_comparison']",
+    "nav_text": "Sales Comparison",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sales_comparison",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "UNKNOWN \u2014 no TinyMCE found on sales_comparison page",
+    "input_selector": ""
+  },
+  "market_rent_analysis": {
+    "label": "Market Rent Analysis",
+    "nav_selector": "a[href*='/market_rent_analysis']",
+    "nav_text": "Market Rent Analysis",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "income_approach_intro_text_area_ifr",
+    "tinymce_id": "income_approach_intro_text_area",
+    "input_selector": "iframe#income_approach_intro_text_area_ifr"
+  },
+  "income_approach": {
+    "label": "Income Approach",
+    "nav_selector": "a[href*='/income_approach']",
+    "nav_text": "Income Approach",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "UNKNOWN \u2014 no TinyMCE found on income_approach page",
+    "input_selector": ""
+  },
+  "reconciliation": {
+    "label": "Reconciliation",
+    "nav_selector": "a[href*='/reconciliation']",
+    "nav_text": "Reconciliation",
+    "nav_url": "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation",
+    "input_type": "tinymce",
+    "clear_method": "select_all",
+    "tinymce_iframe_id": "reconciliation_section_content_text_area_ifr",
+    "tinymce_id": "reconciliation_section_content_text_area",
+    "input_selector": "iframe#reconciliation_section_content_text_area_ifr"
+  }
+}

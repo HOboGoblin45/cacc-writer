@@ -1,0 +1,14 @@
+{
+  "id": "de0ecaaa1631",
+  "formType": "1004c",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The appraisal is made with the subject in 'as is' condition. There is no personal property incuded in the final estimate of value. The Sales Comparison Approach is most indicative of market value and carries the most weight in the final reconciliation.",
+  "createdAt": "2026-03-07T21:05:39.341Z",
+  "updatedAt": "2026-03-07T21:05:39.341Z"
+}

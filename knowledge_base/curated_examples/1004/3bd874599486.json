@@ -1,0 +1,14 @@
+{
+  "id": "3bd874599486",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "All comparables have been found in the subject's neighborhood on the eastside of Bloomington, IL and were selected to demonstrate the marketability of houses of a similar location, design, age, GLA, room count, and basement finsh. Due to recent market trends the comparables have received a market time adjustment of 7.1% based on the sales statistics chart included in this report.",
+  "createdAt": "2026-03-07T21:05:39.966Z",
+  "updatedAt": "2026-03-07T21:05:39.966Z"
+}

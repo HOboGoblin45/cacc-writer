@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cresci Appraisal Writer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b1020;--text:#e9edf7;--muted:#a9b3cc;--border:rgba(255,255,255,.12);--gold:#d7b35a;--danger:#ff5c5c;--ok:#55d18f;--warn:#f5c842;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:radial-gradient(1200px 800px at 20% 0%,rgba(215,179,90,.10),transparent 55%),radial-gradient(1200px 800px at 80% 0%,rgba(62,95,190,.10),transparent 55%),var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.02);}
+header h1{font-size:16px;font-weight:800;}
+header .sub{color:var(--muted);font-size:11px;margin-top:3px;}
+.badge{padding:5px 10px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:11px;display:flex;gap:7px;align-items:center;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+.dot.ok{background:var(--ok);}
+.dot.err{background:var(--danger);}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);padding:0 14px;}
+.tab{padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.4px;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--text);}
+.page{display:none;padding:14px;gap:14px;}
+.page.active{display:flex;flex-wrap:wrap;}
+.col{display:flex;flex-direction:column;gap:12px;min-width:280px;}
+.col.wide{flex:2;}
+.col.narrow{flex:1;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.card-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.02);}
+.card-head h3{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+.card-body{padding:12px 14px;}
+label{display:block;font-size:11px;color:var(--muted);margin:8px 0 4px;}
+input[type=text],input[type=file],textarea,select{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;outline:none;font-family:var(--sans);font-size:13px;}
+input:focus,textarea:focus,select:focus{border-color:rgba(215,179,90,.4);}
+select option{background:#1a2240;color:var(--text);}
+textarea{resize:vertical;min-height:80px;}
+.row2{display:flex;gap:10px;}
+.row2>*{flex:1;}
+.fact-val-input{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:3px 7px;width:100%;font-family:var(--mono);margin-top:2px;}
+.fact-val-input:focus{outline:none;border-color:var(--gold);}
+.fact-row-edit{display:flex;flex-direction:column;gap:2px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.fact-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.tpl-item{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.tpl-item:last-child{border-bottom:none;}
+.tpl-name{flex:1;font-size:12px;color:var(--gold);cursor:pointer;font-weight:600;}
+.tpl-name:hover{text-decoration:underline;}
+.case-status{font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid;font-weight:700;cursor:pointer;margin-left:4px;}
+.cs-active{color:var(--ok);border-color:var(--ok);}
+.cs-submitted{color:var(--gold);border-color:var(--gold);}
+.cs-archived{color:var(--muted);border-color:var(--muted);}
+.form-badge{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(215,179,90,.35);color:var(--gold);background:rgba(215,179,90,.08);font-weight:700;white-space:nowrap;}
+.filt-btn{padding:3px 10px;font-size:11px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
+.filt-btn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.filt-btn:hover:not(.active){border-color:var(--text);color:var(--text);}
+.hist-drop{margin-top:8px;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:6px;padding:8px;display:none;}
+.hist-drop.open{display:block;}
+.hist-item{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+.hist-item:last-child{border-bottom:none;}
+.hist-meta{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.hist-preview{color:var(--text);font-size:11px;white-space:pre-wrap;max-height:60px;overflow:hidden;line-height:1.4;opacity:.8;}
+.conc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.conc-result{background:rgba(215,179,90,.08);border:1px solid rgba(215,179,90,.25);border-radius:6px;padding:8px;font-size:12px;margin-top:8px;line-height:1.6;}
+.conc-result b{color:var(--gold);}
+button{border:1px solid rgba(215,179,90,.35);background:linear-gradient(180deg,rgba(215,179,90,.22),rgba(215,179,90,.12));color:var(--text);border-radius:8px;padding:9px 12px;font-weight:700;font-size:12px;cursor:pointer;transition:transform .05s;white-space:nowrap;}
+button:hover{transform:translateY(-1px);}
+button.sec{border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));font-weight:600;}
+button.ghost{border:1px solid transparent;background:transparent;color:var(--muted);padding:7px 10px;}
+button.danger{border-color:rgba(255,92,92,.4);background:rgba(255,92,92,.1);color:#ffaaaa;}
+button.sm{padding:5px 9px;font-size:11px;}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.status{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.status.ok{color:var(--ok);}
+.status.err{color:var(--danger);}
+.status.warn{color:var(--warn);}
+.errbox{margin-top:8px;border:1px solid rgba(255,92,92,.3);background:rgba(255,92,92,.07);border-radius:8px;padding:10px 12px;color:#ffd3d3;font-size:11px;font-family:var(--mono);white-space:pre-wrap;display:none;}
+.chip{font-size:10px;color:var(--muted);border:1px solid var(--border);padding:3px 7px;border-radius:999px;}
+.chip.ok{color:var(--ok);border-color:rgba(85,209,143,.3);}
+.chip.warn{color:var(--warn);border-color:rgba(245,200,66,.3);}
+.chip.err{color:var(--danger);border-color:rgba(255,92,92,.3);}
+.case-list{max-height:200px;overflow-y:auto;}
+.case-item{padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;margin-bottom:4px;}
+.case-item:hover{background:rgba(255,255,255,.04);border-color:var(--border);}
+.case-item.active{background:rgba(215,179,90,.08);border-color:rgba(215,179,90,.25);}
+.doc-slot{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.doc-slot:last-child{border-bottom:none;}
+.doc-slot .ds-label{font-size:12px;font-weight:600;min-width:150px;}
+.doc-slot .ds-status{font-size:10px;color:var(--muted);}
+.doc-slot .ds-status.uploaded{color:var(--ok);}
+.facts-section{margin-bottom:14px;}
+.facts-section h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--gold);margin-bottom:8px;}
+.conf-high{font-size:10px;padding:1px 5px;border-radius:999px;background:rgba(85,209,143,.15);color:var(--ok);margin-left:4px;}
+.conf-medium{font-size:10px;padding:1px 5px;border-radius:999px;background:rgba(245,200,66,.15);color:var(--warn);margin-left:4px;}
+.conf-low,.conf-null{font-size:10px;padding:1px 5px;border-radius:999px;background:rgba(255,92,92,.12);color:var(--danger);margin-left:4px;}
+.flist{max-height:340px;overflow-y:auto;}
+.fitem{display:flex;gap:10px;align-items:flex-start;padding:8px 4px;border-bottom:1px dashed rgba(255,255,255,.06);}
+.fitem:last-child{border-bottom:none;}
+.fitem input[type=checkbox]{margin-top:3px;accent-color:var(--gold);}
+.ftitle{font-size:12px;font-weight:700;}
+.fmeta{font-size:10px;color:var(--muted);margin-top:2px;}
+.outwrap{display:flex;flex-direction:column;gap:10px;}
+.outcard{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.10);}
+.outcard.edited{border-color:rgba(215,179,90,.35);}
+.outhead{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.02);}
+.otitle{font-weight:800;font-size:12px;}
+.otools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.outbody{padding:12px;font-family:var(--mono);font-size:11px;line-height:1.5;white-space:pre-wrap;}
+.outedit{padding:0 12px 12px;}
+.outedit textarea{min-height:140px;font-family:var(--mono);font-size:11px;}
+.thumb{padding:5px 8px;font-size:13px;background:transparent;border:1px solid var(--border);border-radius:6px;}
+.thumb.up.active{border-color:var(--ok);background:rgba(85,209,143,.1);}
+.thumb.down.active{border-color:var(--danger);background:rgba(255,92,92,.1);}
+.score-ring{display:flex;flex-direction:column;align-items:center;padding:20px 0;}
+.score-num{font-size:64px;font-weight:900;letter-spacing:-2px;line-height:1;}
+.score-label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
+.grade-section{margin-bottom:14px;}
+.grade-section h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;color:var(--muted);}
+.grade-item{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:12px;}
+.grade-item.critical{background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.25);}
+.grade-item.major{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.25);}
+.grade-item.minor{background:rgba(0,0,0,.15);border:1px solid var(--border);}
+.grade-item.strength{background:rgba(85,209,143,.08);border:1px solid rgba(85,209,143,.2);color:var(--ok);}
+.sev{font-size:10px;font-weight:800;text-transform:uppercase;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+.sev.critical{background:rgba(255,92,92,.25);color:#ffaaaa;}
+.sev.major{background:rgba(245,200,66,.2);color:var(--warn);}
+.sev.minor{background:rgba(255,255,255,.1);color:var(--muted);}
+.hint{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px;}
+.sep{height:1px;background:var(--border);margin:10px 0;}
+.voice-import{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.voice-import-head{padding:9px 12px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.voice-import-filename{font-size:12px;font-weight:700;color:var(--gold);}
+.voice-import-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.voice-field-chips{padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px;}
+.vchip{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(85,209,143,.3);background:rgba(85,209,143,.07);color:var(--ok);}
+.vchip.missing{border-color:rgba(255,255,255,.1);background:transparent;color:var(--muted);}
+@media print{header,.tabs,.col.narrow,#pastedText,.btnrow,button,.otools,.outedit{display:none!important;}.col.wide{width:100%!important;}.page{display:block!important;padding:0!important;}#tab-qc{display:block!important;}body{background:white!important;color:#111!important;}.card{border:1px solid #ccc!important;background:white!important;}.card-head{border-bottom:1px solid #ccc!important;}}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px;}
+/* ── Assignment 4-card layout ───────────────────────────────────────────────── */
+.assign-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+.assign-grid .full{grid-column:1/-1;}
+@media(max-width:600px){.assign-grid{grid-template-columns:1fr;}}
+.card-row{display:flex;gap:12px;flex-wrap:wrap;}
+.card-row>.card{flex:1;min-width:240px;}
+/* ── Workflow status badge ──────────────────────────────────────────────────── */
+.wf-badge{font-size:10px;padding:3px 10px;border-radius:999px;font-weight:700;border:1px solid;white-space:nowrap;display:inline-flex;align-items:center;}
+.wf-ok{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.wf-warn{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.08);}
+.wf-err{color:var(--danger);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.08);}
+/* ── Missing facts warning panel ────────────────────────────────────────────── */
+.missing-panel{border:1px solid rgba(245,200,66,.35);background:rgba(245,200,66,.05);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:none;}
+.missing-panel.visible{display:block;}
+.missing-panel-head{font-size:11px;font-weight:800;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.missing-item{font-size:11px;padding:2px 0;display:flex;align-items:center;gap:6px;}
+.missing-item.req{color:#ffcccc;}
+.missing-item.rec{color:var(--muted);}
+/* ── Case metadata chips ────────────────────────────────────────────────────── */
+.meta-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.meta-chip{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
+.meta-chip.purpose{border-color:rgba(215,179,90,.3);color:var(--gold);background:rgba(215,179,90,.06);}
+.meta-chip.loan{border-color:rgba(100,140,255,.3);color:#8aabff;background:rgba(100,140,255,.06);}
+.meta-chip.condition{border-color:rgba(255,92,92,.3);color:#ffaaaa;background:rgba(255,92,92,.06);}
+.meta-chip.geo{border-color:rgba(85,209,143,.25);color:var(--ok);background:rgba(85,209,143,.05);}
+.meta-chip.cond-rating{border-color:rgba(245,200,66,.3);color:var(--warn);background:rgba(245,200,66,.06);}
+/* ── Field helper text ──────────────────────────────────────────────────────── */
+.field-hint{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+/* ── Form picker (active vs deferred two-section layout) ────────────────────── */
+.form-picker{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.form-picker-section-head{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
+.form-picker-section-head.active-head{color:var(--gold);}
+.form-picker-options{display:flex;flex-direction:column;gap:4px;}
+.form-picker-option{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s,background .15s;background:rgba(255,255,255,.02);}
+.form-picker-option:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2);}
+.form-picker-option.selected{border-color:rgba(215,179,90,.5);background:rgba(215,179,90,.08);}
+.form-picker-option.deferred-option{opacity:.6;}
+.form-picker-option.deferred-option:hover{opacity:.85;}
+.form-picker-option.deferred-option.selected{border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.06);}
+.form-picker-radio{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+.form-picker-option.selected .form-picker-radio{border-color:var(--gold);}
+.form-picker-option.selected .form-picker-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);}
+.form-picker-option.deferred-option.selected .form-picker-radio{border-color:var(--warn);}
+.form-picker-option.deferred-option.selected .form-picker-radio::after{background:var(--warn);}
+.form-picker-label{flex:1;font-size:12px;font-weight:600;}
+.form-picker-badge{font-size:9px;padding:1px 6px;border-radius:999px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;}
+.form-picker-badge.active-badge{border:1px solid rgba(85,209,143,.35);color:var(--ok);background:rgba(85,209,143,.08);}
+.form-picker-badge.deferred-badge{border:1px solid rgba(245,200,66,.3);color:var(--warn);background:rgba(245,200,66,.06);}
+.deferred-section-toggle{font-size:10px;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:transparent;transition:color .15s;}
+.deferred-section-toggle:hover{color:var(--text);}
+.deferred-section-body{display:none;}
+.deferred-section-body.open{display:block;}
+/* ── Deferred form banner ────────────────────────────────────────────────────── */
+.deferred-banner{border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.06);border-radius:8px;padding:9px 12px;margin-bottom:10px;display:none;}
+.deferred-banner.visible{display:block;}
+.deferred-banner-head{font-size:11px;font-weight:800;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
+.deferred-banner-body{font-size:11px;color:var(--muted);line-height:1.4;}
+/* ── Deferred form badge in case list ───────────────────────────────────────── */
+.form-badge.deferred{border-color:rgba(245,200,66,.3);color:var(--warn);background:rgba(245,200,66,.06);}
+/* ── Section status badges (Phase 2 generate-core lifecycle) ─────────────────── */
+.ss-badge{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;border:1px solid;white-space:nowrap;flex-shrink:0;}
+.ss-not_started{color:var(--muted);border-color:var(--border);background:transparent;}
+.ss-drafted{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.07);}
+.ss-reviewed{color:#8aabff;border-color:rgba(100,140,255,.35);background:rgba(100,140,255,.07);}
+.ss-approved{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.ss-inserted{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
+.ss-verified{color:var(--ok);border-color:rgba(85,209,143,.5);background:rgba(85,209,143,.12);font-weight:900;}
+.ss-error{color:var(--danger);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.08);}
+/* ── Service health strip ────────────────────────────────────────────────────── */
+.health-strip{display:flex;align-items:center;gap:6px;padding:5px 18px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.18);flex-wrap:wrap;min-height:30px;}
+.health-strip-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-right:4px;white-space:nowrap;}
+.hs-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.03);white-space:nowrap;cursor:default;transition:border-color .2s,color .2s;}
+.hs-chip.healthy{color:var(--ok);border-color:rgba(85,209,143,.3);background:rgba(85,209,143,.05);}
+.hs-chip.degraded{color:var(--warn);border-color:rgba(245,200,66,.3);background:rgba(245,200,66,.05);}
+.hs-chip.offline{color:var(--danger);border-color:rgba(255,92,92,.3);background:rgba(255,92,92,.05);}
+.hs-chip.checking{color:var(--muted);border-color:var(--border);opacity:.7;}
+.hs-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.hs-spacer{flex:1;}
+.hs-export-btn{padding:2px 10px;font-size:10px;border-radius:6px;border:1px solid rgba(215,179,90,.3);background:rgba(215,179,90,.08);color:var(--gold);cursor:pointer;font-weight:700;white-space:nowrap;transition:background .15s;}
+.hs-export-btn:hover{background:rgba(215,179,90,.16);}
+.hs-export-btn:disabled{opacity:.5;cursor:not-allowed;}
+.hs-refresh-btn{padding:2px 7px;font-size:10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;transition:color .15s;}
+.hs-refresh-btn:hover{color:var(--text);}
+/* ── Version badge ───────────────────────────────────────────────────────────── */
+.version-badge{font-size:10px;color:var(--muted);padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);white-space:nowrap;font-family:var(--mono);}
+/* ── Export status toast ─────────────────────────────────────────────────────── */
+.export-toast{position:fixed;bottom:18px;right:18px;padding:10px 16px;border-radius:10px;border:1px solid rgba(85,209,143,.4);background:rgba(11,16,32,.95);color:var(--ok);font-size:12px;font-weight:700;z-index:9999;display:none;box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.export-toast.err{border-color:rgba(255,92,92,.4);color:var(--danger);}
+.export-toast.visible{display:block;}
+/* ── Core sections status panel ──────────────────────────────────────────────── */
+.core-panel{border:1px solid rgba(215,179,90,.3);background:rgba(215,179,90,.04);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none;}
+.core-panel.visible{display:block;}
+.core-panel-head{font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.core-section-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.05);}
+.core-section-row:last-child{border-bottom:none;}
+.core-section-name{flex:1;color:var(--text);}
+/* ── Comp Commentary Panel ───────────────────────────────────────────────────── */
+.comp-adj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px 8px;margin-top:4px;}
+.comp-adj-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;border:1px solid transparent;cursor:pointer;transition:background .12s,border-color .12s;}
+.comp-adj-item:hover{background:rgba(255,255,255,.04);border-color:var(--border);}
+.comp-adj-item input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;flex-shrink:0;cursor:pointer;}
+.comp-adj-item label{font-size:11px;color:var(--muted);cursor:pointer;user-select:none;}
+.comp-adj-item:has(input:checked){background:rgba(215,179,90,.07);border-color:rgba(215,179,90,.25);}
+.comp-adj-item:has(input:checked) label{color:var(--text);}
+.comp-out-area{margin-top:10px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.15);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.6;white-space:pre-wrap;color:var(--text);min-height:80px;display:none;}
+.comp-out-area.visible{display:block;}
+.comp-out-meta{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+/* ── Full Draft Orchestrator Panel ───────────────────────────────────────────── */
+.fd-panel{border:1px solid rgba(215,179,90,.35);background:rgba(215,179,90,.04);border-radius:12px;overflow:hidden;margin-bottom:10px;display:none;}
+.fd-panel.visible{display:block;}
+.fd-panel-head{padding:10px 14px;border-bottom:1px solid rgba(215,179,90,.2);display:flex;justify-content:space-between;align-items:center;background:rgba(215,179,90,.06);}
+.fd-panel-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--gold);}
+.fd-panel-elapsed{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.fd-panel-body{padding:12px 14px;}
+.fd-phase-strip{display:flex;gap:3px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.fd-phase{font-size:9px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:transparent;white-space:nowrap;transition:all .2s;text-transform:uppercase;letter-spacing:.3px;}
+.fd-phase.active{color:var(--warn);border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.08);}
+.fd-phase.done{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.07);}
+.fd-phase.error{color:var(--danger);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.07);}
+.fd-phase-arrow{color:var(--border);font-size:9px;margin:0 1px;}
+.fd-progress-wrap{margin-bottom:10px;}
+.fd-progress-bar-bg{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:5px;}
+.fd-progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),rgba(215,179,90,.55));border-radius:2px;transition:width .5s ease;}
+.fd-progress-label{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.fd-sections{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.fd-section-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;font-size:11px;border:1px solid transparent;transition:background .2s,border-color .2s;}
+.fd-section-row.pending{color:var(--muted);}
+.fd-section-row.running{background:rgba(245,200,66,.06);border-color:rgba(245,200,66,.2);}
+.fd-section-row.done{background:rgba(85,209,143,.04);border-color:rgba(85,209,143,.15);}
+.fd-section-row.error{background:rgba(255,92,92,.05);border-color:rgba(255,92,92,.2);}
+.fd-section-icon{width:16px;text-align:center;flex-shrink:0;font-size:12px;}
+.fd-section-name{flex:1;}
+.fd-section-ms{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.fd-metrics{background:rgba(0,0,0,.18);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:8px;display:none;}
+.fd-metrics.visible{display:block;}
+.fd-metrics-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-bottom:8px;}
+.fd-metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px 12px;}
+.fd-metric-item{display:flex;flex-direction:column;gap:2px;}
+.fd-metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
+.fd-metric-value{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--text);}
+.fd-metric-value.ok{color:var(--ok);}
+.fd-metric-value.warn{color:var(--warn);}
+.fd-metric-value.err{color:var(--danger);}
+.fd-warnings{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:none;}
+.fd-warnings.visible{display:block;}
+.fd-warning-item{font-size:11px;color:var(--warn);padding:2px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
+.fd-run-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cresci Appraisal Writer</h1>
+    <div class="sub" id="headerSub">Case-based, fact-grounded, Cresci voice</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <span class="version-badge" id="versionBadge">v2.0.0</span>
+    <div class="badge"><span class="dot" id="serverDot"></span><span id="serverBadge">Connecting...</span></div>
+    <!-- ACI Agent badge -->
+    <div class="badge" id="aciAgentBadge" title="ACI desktop agent (residential forms: 1004, 1025, 1073, 1004c)">
+      <span class="dot err" id="aciDot"></span>
+      <span id="aciLabel" style="font-size:11px;">ACI</span>
+      <button id="aciBtn" onclick="toggleAgent('aci')" style="padding:2px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-weight:700;margin-left:2px;">Start</button>
+    </div>
+    <!-- RQ Agent badge -->
+    <div class="badge" id="rqAgentBadge" title="Real Quantum agent (commercial form)">
+      <span class="dot err" id="rqDot"></span>
+      <span id="rqLabel" style="font-size:11px;">RQ</span>
+      <button id="rqBtn" onclick="toggleAgent('rq')" style="padding:2px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-weight:700;margin-left:2px;">Start</button>
+    </div>
+    <div id="caseBadge" class="badge" style="display:none;">
+      <span style="color:var(--gold);">Case:</span>
+      <span id="caseAddrBadge"></span>
+      <span id="caseFormBadge" class="form-badge" style="display:none;"></span>
+    </div>
+    <div id="workflowBadge" class="wf-badge" style="display:none;"></div>
+  </div>
+</header>
+
+<!-- ── Service Health Strip ─────────────────────────────────────────────────── -->
+<div class="health-strip" id="healthStrip">
+  <span class="health-strip-label">Services</span>
+  <span class="hs-chip checking" id="hs-server"    title="CACC Writer server (port 5178)"><span class="hs-dot"></span>Server</span>
+  <span class="hs-chip checking" id="hs-aciAgent"  title="ACI desktop agent — start desktop_agent/agent.py"><span class="hs-dot"></span>ACI Agent</span>
+  <span class="hs-chip checking" id="hs-rqAgent"   title="Real Quantum agent — start real_quantum_agent/agent.py"><span class="hs-dot"></span>RQ Agent</span>
+  <span class="hs-chip checking" id="hs-kb"        title="Knowledge base read/write"><span class="hs-dot"></span>KB</span>
+  <span class="hs-chip checking" id="hs-narratives" title="Approved narratives store"><span class="hs-dot"></span>Narratives</span>
+  <span class="hs-spacer"></span>
+  <button class="hs-refresh-btn" onclick="loadHealthStatus()" title="Refresh service health">↻</button>
+  <button class="hs-export-btn" id="exportBundleBtn" onclick="createSupportBundle()" title="Create support bundle (cases + narratives + logs as ZIP)">⬇ Export Bundle</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('case')">Case</div>
+  <div class="tab" onclick="showTab('facts')">Facts</div>
+  <div class="tab" onclick="showTab('generate')">Generate</div>
+  <div class="tab" onclick="showTab('qc')">QC Grade</div>
+  <div class="tab" onclick="showTab('voice')">Voice</div>
+</div>
+
+<!-- ===== TAB: CASE ===== -->
+<div class="page active" id="tab-case">
+
+  <!-- Left narrow col: case list + basic fields -->
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Cases</h3><button class="sm" onclick="loadCases()">Refresh</button></div>
+      <div class="card-body">
+        <label>Address</label>
+        <input id="newAddress" type="text" placeholder="123 Main St, Springfield IL"/>
+        <label>Borrower (optional)</label>
+        <input id="newBorrower" type="text" placeholder="Smith"/>
+        <label>Internal Notes</label>
+        <textarea id="caseNotes" placeholder="Internal notes, lender contact, file number..." style="min-height:48px;"></textarea>
+        <div class="btnrow"><button onclick="createCase()">New Case</button><button class="sec" onclick="updateCase()">Update Case</button></div>
+        <div class="sep"></div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+          <button class="filt-btn active" onclick="setCaseFilter('all',this)">All</button>
+          <button class="filt-btn" onclick="setCaseFilter('active',this)">Active</button>
+          <button class="filt-btn" onclick="setCaseFilter('submitted',this)">Submitted</button>
+          <button class="filt-btn" onclick="setCaseFilter('archived',this)">Archived</button>
+        </div>
+        <div class="case-list" id="caseList"><div class="hint">No cases yet. Create one above.</div></div>
+        <div id="caseStatus" class="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right wide col: 4 assignment cards + documents -->
+  <div class="col wide">
+
+    <!-- Row 1: Basic Assignment Info + Assignment Details -->
+    <div class="card-row">
+
+      <!-- Card 1: Basic Assignment Info -->
+      <div class="card">
+        <div class="card-head"><h3>Basic Assignment Info</h3></div>
+        <div class="card-body">
+          <div class="assign-grid">
+            <div class="full">
+              <label>Form Type</label>
+              <!-- Deferred form banner — shown when a deferred form type is active -->
+              <div id="deferredFormBanner" class="deferred-banner">
+                <div class="deferred-banner-head">⚠ Deferred Form Type</div>
+                <div class="deferred-banner-body" id="deferredFormBannerText">This form type is outside active production scope. Generation and insertion are not available.</div>
+              </div>
+              <!-- Two-section form picker: Active Production + Deferred/Future -->
+              <div class="form-picker" id="formPicker">
+                <!-- Active Production section -->
+                <div>
+                  <div class="form-picker-section-head active-head">Active Production</div>
+                  <div class="form-picker-options" id="activeFormOptions">
+                    <!-- Populated by initFormRegistry() -->
+                    <div class="form-picker-option selected" data-form-id="1004" onclick="selectFormFromPicker('1004',this)">
+                      <div class="form-picker-radio"></div>
+                      <span class="form-picker-label">1004 URAR — Single Family</span>
+                      <span class="form-picker-badge active-badge">Active</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Deferred / Future section (collapsed by default) -->
+                <div>
+                  <div class="form-picker-section-head">
+                    <span style="color:var(--muted);">Deferred / Future</span>
+                    <button class="deferred-section-toggle" id="deferredToggleBtn" onclick="toggleDeferredSection()">Show</button>
+                  </div>
+                  <div class="deferred-section-body" id="deferredFormOptions">
+                    <!-- Populated by initFormRegistry() -->
+                  </div>
+                </div>
+              </div>
+              <!-- Hidden select kept for backward compat with createCase()/updateCase() -->
+              <select id="newFormType" style="display:none;"><option value="1004">1004 URAR — Single Family</option></select>
+            </div>
+            <div class="full">
+              <label>Property Type</label>
+              <select id="propertyType">
+                <option value="">— Select —</option>
+                <option value="Single Family">Single Family</option>
+                <option value="2-4 Unit">2-4 Unit</option>
+                <option value="Condo">Condo</option>
+                <option value="PUD">PUD</option>
+                <option value="Manufactured">Manufactured</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed Use">Mixed Use</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Assignment Purpose</label>
+              <select id="assignmentPurpose">
+                <option value="">— Select —</option>
+                <option value="Sale">Sale</option>
+                <option value="Refinance">Refinance</option>
+                <option value="Construction">Construction</option>
+                <option value="Purchase">Purchase</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Loan Program</label>
+              <select id="loanProgram">
+                <option value="">— Select —</option>
+                <option value="Conventional">Conventional</option>
+                <option value="FHA">FHA</option>
+                <option value="USDA">USDA</option>
+                <option value="VA">VA</option>
+                <option value="Construction">Construction</option>
+                <option value="Cash">Cash</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Assignment Details -->
+      <div class="card">
+        <div class="card-head"><h3>Assignment Details</h3></div>
+        <div class="card-body">
+          <div class="assign-grid">
+            <div>
+              <label>Occupancy</label>
+              <select id="occupancyType">
+                <option value="">— Select —</option>
+                <option value="Owner Occupied">Owner Occupied</option>
+                <option value="Tenant Occupied">Tenant Occupied</option>
+                <option value="Vacant">Vacant</option>
+                <option value="Proposed">Proposed</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Subject Condition</label>
+              <select id="subjectCondition">
+                <option value="">— Select —</option>
+                <option value="C1">C1 — New</option>
+                <option value="C2">C2 — Excellent</option>
+                <option value="C3">C3 — Good</option>
+                <option value="C4">C4 — Average</option>
+                <option value="C5">C5 — Fair</option>
+                <option value="C6">C6 — Poor</option>
+              </select>
+            </div>
+            <div class="full">
+              <label>Report Condition</label>
+              <select id="reportConditionMode">
+                <option value="">— Select —</option>
+                <option value="As Is">As Is</option>
+                <option value="Subject To Completion">Subject To Completion</option>
+                <option value="Subject To Repairs">Subject To Repairs</option>
+                <option value="Subject As Complete per Plans/Specs">Subject As Complete per Plans/Specs</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Client Name</label>
+              <input id="clientName" type="text" placeholder="e.g. First National Bank"/>
+            </div>
+            <div>
+              <label>Lender Name</label>
+              <input id="lenderName" type="text" placeholder="e.g. ABC Mortgage"/>
+            </div>
+            <div class="full">
+              <label>AMC Name <span class="field-hint" style="display:inline;">(optional)</span></label>
+              <input id="amcName" type="text" placeholder="e.g. Nationwide AMC"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Location & Market + Notes -->
+    <div class="card-row">
+
+      <!-- Card 3: Location & Market -->
+      <div class="card">
+        <div class="card-head"><h3>Location &amp; Market</h3></div>
+        <div class="card-body">
+          <div class="assign-grid">
+            <div>
+              <label>State</label>
+              <input id="metaState" type="text" placeholder="IL"/>
+            </div>
+            <div>
+              <label>County</label>
+              <input id="metaCounty" type="text" placeholder="e.g. McLean"/>
+            </div>
+            <div>
+              <label>City</label>
+              <input id="metaCity" type="text" placeholder="e.g. Bloomington"/>
+            </div>
+            <div>
+              <label>Market Area</label>
+              <input id="marketArea" type="text" placeholder="e.g. Bloomington-Normal"/>
+            </div>
+            <div>
+              <label>Neighborhood</label>
+              <input id="metaNeighborhood" type="text" placeholder="e.g. Veterans Pkwy Corridor"/>
+            </div>
+            <div>
+              <label>Market Type</label>
+              <select id="marketType">
+                <option value="">— Select —</option>
+                <option value="urban">Urban</option>
+                <option value="suburban">Suburban</option>
+                <option value="rural">Rural</option>
+                <option value="agricultural">Agricultural</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Notes / Special Instructions -->
+      <div class="card">
+        <div class="card-head"><h3>Notes / Special Instructions</h3></div>
+        <div class="card-body">
+          <label>Assignment Notes</label>
+          <textarea id="assignmentNotes" placeholder="Special instructions, lender requirements, scope notes, extraordinary assumptions, hypothetical conditions..." style="min-height:130px;"></textarea>
+          <div class="field-hint">Injected into AI prompt context for all generated sections.</div>
+          <div id="metaChips" class="meta-chips" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents card -->
+    <div class="card">
+      <div class="card-head"><h3>Documents</h3><button class="sec sm" onclick="extractFacts()">Extract Facts from Docs</button></div>
+      <div class="card-body">
+        <div class="hint" id="docHint">Select or create a case to upload documents.</div>
+        <div id="docSlots"></div>
+        <div id="docStatus" class="status"></div>
+        <div id="docErrBox" class="errbox"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB: FACTS ===== -->
+<div class="page" id="tab-facts">
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Questionnaire</h3><button class="sm" onclick="generateQuestions()">Generate Questions</button></div>
+      <div class="card-body">
+        <div class="hint">Generates targeted questions for missing/low-confidence facts.</div>
+        <div id="questionnaireList"></div>
+        <div class="btnrow" id="questionnaireBtns" style="display:none;">
+          <button onclick="saveAnswers()">Save Answers + Re-extract</button>
+        </div>
+        <div id="questionnaireStatus" class="status"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Neighborhood Templates</h3><button class="sm" onclick="saveAsTemplate()">Save Current</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Click a template name to apply boundaries+description to current facts.</div>
+        <div id="templateList"><div class="hint">No templates saved.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head">
+        <h3>Extracted Facts</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="sm" onclick="saveFacts()">Save Facts</button>
+          <button class="sec sm" onclick="extractFacts()">Re-extract from Docs</button>
+          <button class="sec sm" onclick="loadCase(STATE.caseId)">Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="factsCompleteness" style="display:none;"></div>
+        <div id="factsDisplay"><div class="hint">No facts extracted yet. Upload documents, then click Extract Facts.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: GENERATE ===== -->
+<div class="page" id="tab-generate">
+
+  <!-- Command Strip -->
+  <div class="gen-strip">
+    <div class="gen-strip-left">
+      <span class="gen-strip-title">Generate</span>
+      <span class="gen-strip-sep" aria-hidden="true"></span>
+      <span class="gen-strip-case" id="genStripCase">No case selected</span>
+      <span class="gen-strip-report" id="genStripReport"></span>
+    </div>
+    <div class="gen-strip-actions">
+      <button id="genFullDraftBtn" onclick="generateFullDraft()" title="Context-driven full-draft generation via orchestrator">&#x26A1; Generate Full Draft</button>
+      <button onclick="generateSelected()">Regenerate Selected</button>
+      <button class="sec" onclick="copyAll()">Copy All</button>
+      <button class="ghost sm" id="retryBtn" style="display:none;" onclick="retryFailed()">Retry Failed</button>
+    </div>
+    <div class="gen-strip-meta">
+      <span class="gen-strip-lastrun" id="genStripLastRun"></span>
+      <span class="gen-strip-health" id="genStripHealth"></span>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="gen-layout">
+
+    <!-- Main Workspace -->
+    <div class="gen-workspace">
+
+      <!-- Panel 1: Full Draft Control -->
+      <div class="gen-panel">
+        <div class="gen-panel-head">
+          <h3 class="gen-panel-title">Full Draft</h3>
+          <div class="gen-panel-head-actions">
+            <button id="genCoreBtn" class="sec sm" onclick="generateCoreSections()" title="Generate + review all core sections for this form type">&#x26A1; Core Sections</button>
+            <button class="ghost sm" onclick="clearOutput()">Clear</button>
+          </div>
+        </div>
+        <div class="gen-panel-body">
+          <p class="gen-panel-desc">Generate a complete first-pass report draft using assignment context, approved memory, and comparable analysis.</p>
+          <div class="gen-input-grid">
+            <div>
+              <label>Subject City / Area</label>
+              <input id="subject_area" type="text" placeholder="e.g. Springfield, IL"/>
+            </div>
+            <div>
+              <label>Market Trend Stat</label>
+              <input id="market_stat" type="text" placeholder="e.g. 3.9%"/>
+            </div>
+            <div class="gen-input-full">
+              <label id="subjectSummaryLabel">Subject Summary</label>
+              <textarea id="subject_summary" placeholder="e.g. Ranch SFR, 3 bed, 2 bath, 1,400 sf GLA, crawl space, 2-car garage, above-average updates, C3 condition, Q4 quality."></textarea>
+            </div>
+          </div>
+          <div id="missingFactsPanel" class="missing-panel">
+            <div class="missing-panel-head">
+              <span>&#x26A0; Missing Facts</span>
+              <button class="ghost sm" onclick="dismissMissingFacts()">&#x2715;</button>
+            </div>
+            <div id="missingFactsList" style="margin-bottom:8px;"></div>
+            <div class="gen-panel-action-row" style="margin-top:4px;">
+              <button class="sm" id="proceedAnywayBtn" onclick="proceedWithGeneration()">Generate with Placeholders</button>
+              <button class="ghost sm" onclick="dismissMissingFacts();showTab('facts')">Go to Facts</button>
+            </div>
+          </div>
+          <div class="gen-panel-action-row">
+            <button class="gen-btn-primary" onclick="generateFullDraft()" title="Context-driven full-draft generation via orchestrator">&#x26A1; Generate Full Draft</button>
+            <button onclick="generateSelected()">Generate Selected</button>
+            <button class="sec" onclick="generateAll()">Generate All</button>
+          </div>
+          <div id="genStatus" class="status">Ready.</div>
+          <div id="genErrBox" class="errbox"></div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Section Progress -->
+      <div class="gen-panel">
+        <div class="gen-panel-head">
+          <h3 class="gen-panel-title">Section Progress</h3>
+          <div class="gen-panel-head-actions">
+            <button class="ghost sm" onclick="checkAll(true)">All</button>
+            <button class="ghost sm" onclick="checkAll(false)">None</button>
+          </div>
+        </div>
+        <div class="gen-panel-body gen-panel-body--compact">
+          <div id="coreSectionsPanel" class="core-panel">
+            <div class="core-panel-head">
+              <span>&#x26A1; Core Sections</span>
+              <button class="ghost sm" onclick="$('coreSectionsPanel').classList.remove('visible')">&#x2715;</button>
+            </div>
+            <div id="coreSectionsList"></div>
+          </div>
+          <div class="flist" id="fieldList"></div>
+        </div>
+      </div>
+
+      <!-- Panel 3: Output / Section Editor -->
+      <div class="gen-panel">
+        <div class="gen-panel-head">
+          <h3 class="gen-panel-title">Output</h3>
+          <div class="gen-panel-head-actions">
+            <button class="sec sm" onclick="copyAll()">Copy All</button>
+            <button class="ghost sm" onclick="exportAll()">Export .txt</button>
+          </div>
+        </div>
+        <div class="gen-panel-body">
+          <p class="gen-panel-desc">Click Copy on each card to paste into ACI. Edit inline and rate to train your voice.</p>
+          <div id="output" class="outwrap" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <!-- Panel 4: Full Draft Orchestrator Progress -->
+      <div class="fd-panel" id="fullDraftPanel">
+        <div class="fd-panel-head">
+          <span class="fd-panel-title">Full Draft Generation</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="fd-panel-elapsed" id="fdElapsed"></span>
+            <button class="ghost sm" onclick="closeFullDraftPanel()">&#x2715;</button>
+          </div>
+        </div>
+        <div class="fd-panel-body">
+          <div class="fd-phase-strip" id="fdPhaseStrip">
+            <span class="fd-phase" id="fdp-context">Context</span>
+            <span class="fd-phase-arrow">&#x203A;</span>
+            <span class="fd-phase" id="fdp-plan">Plan</span>
+            <span class="fd-phase-arrow">&#x203A;</span>
+            <span class="fd-phase" id="fdp-retrieval">Retrieval</span>
+            <span class="fd-phase-arrow">&#x203A;</span>
+            <span class="fd-phase" id="fdp-analysis">Analysis</span>
+            <span class="fd-phase-arrow">&#x203A;</span>
+            <span class="fd-phase" id="fdp-drafting">Drafting</span>
+            <span class="fd-phase-arrow">&#x203A;</span>
+            <span class="fd-phase" id="fdp-validation">Validation</span>
+          </div>
+          <div class="fd-progress-wrap">
+            <div class="fd-progress-bar-bg"><div class="fd-progress-bar-fill" id="fdProgressFill" style="width:0%"></div></div>
+            <div class="fd-progress-label">
+              <span id="fdProgressLabel">Starting&#x2026;</span>
+              <span id="fdProgressPct"></span>
+            </div>
+          </div>
+          <div class="fd-sections" id="fdSections"></div>
+          <div class="fd-metrics" id="fdMetrics">
+            <div class="fd-metrics-title">Run Metrics</div>
+            <div class="fd-metrics-grid" id="fdMetricsGrid"></div>
+          </div>
+          <div class="fd-warnings" id="fdWarnings"></div>
+          <div class="fd-run-actions" id="fdRunActions" style="display:none;">
+            <button onclick="loadFullDraftResult()" id="fdLoadResultBtn">Load Sections into Output</button>
+            <button class="ghost sm" onclick="closeFullDraftPanel()">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 5: Comparable Commentary -->
+      <div class="gen-panel" id="compCommentaryPanel">
+        <div class="gen-panel-head">
+          <h3 class="gen-panel-title">Comparable Commentary</h3>
+          <div class="gen-panel-head-actions">
+            <span class="chip" id="compCommStatus" style="display:none;"></span>
+            <button class="ghost sm" onclick="clearCompCommentary()" title="Clear output">Clear</button>
+          </div>
+        </div>
+        <div class="gen-panel-body">
+          <p class="gen-panel-desc">Generate USPAP-compliant sales comparison commentary. Select the adjustment categories applied to your comps, then generate.</p>
+          <div class="gen-input-grid">
+            <div>
+              <label>Market Time Adjustment (%)</label>
+              <input id="compMktTimeAdj" type="number" step="0.1" min="0" max="25" placeholder="e.g. 3.9"/>
+            </div>
+            <div>
+              <label>Number of Comps</label>
+              <input id="compCount" type="number" min="1" max="6" placeholder="3"/>
+            </div>
+          </div>
+          <label style="margin-top:16px;display:block;">Adjustment Categories Applied</label>
+          <div class="comp-adj-grid" id="compAdjGrid">
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_site" value="Site Size"/><label for="cadj_site">Site Size</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_view" value="View"/><label for="cadj_view">View</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_age" value="Age"/><label for="cadj_age">Age</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_gla" value="GLA"/><label for="cadj_gla">GLA</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_condition" value="Condition"/><label for="cadj_condition">Condition</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_bath" value="Bathroom Count"/><label for="cadj_bath">Bathroom Count</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_bed" value="Bedroom Count"/><label for="cadj_bed">Bedroom Count</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_bsmt" value="Basement Finish"/><label for="cadj_bsmt">Basement Finish</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_garage" value="Garage"/><label for="cadj_garage">Garage</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_fence" value="Fence"/><label for="cadj_fence">Fence</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_lot" value="Lot Utility"/><label for="cadj_lot">Lot Utility</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_quality" value="Quality"/><label for="cadj_quality">Quality</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_location" value="Location"/><label for="cadj_location">Location</label></div>
+            <div class="comp-adj-item"><input type="checkbox" id="cadj_conc" value="Concessions"/><label for="cadj_conc">Concessions</label></div>
+          </div>
+          <label style="margin-top:16px;display:block;">Comp Search Notes <span class="gen-label-optional">(optional)</span></label>
+          <textarea id="compSearchNotes" placeholder="e.g. Extensive search for zero lot lines of similar location, design, quality, and condition..." style="min-height:56px;resize:vertical;"></textarea>
+          <div class="gen-panel-action-row" style="margin-top:16px;">
+            <button class="gen-btn-primary" onclick="generateCompCommentary()" id="compGenBtn">Generate Commentary</button>
+            <button class="sec sm" onclick="copyCompCommentary()" id="compCopyBtn" style="display:none;">Copy</button>
+            <button class="ghost sm" onclick="insertCompCommentary()" id="compInsertBtn" style="display:none;" title="Insert into ACI via desktop agent">Insert into ACI</button>
+          </div>
+          <div class="comp-out-area" id="compOutArea"></div>
+          <div class="comp-out-meta" id="compOutMeta" style="display:none;"></div>
+          <div id="compGenStatus" class="status" style="display:none;"></div>
+        </div>
+      </div>
+
+    </div><!-- /.gen-workspace -->
+
+    <!-- Right Inspector -->
+    <div class="gen-inspector">
+
+      <!-- Run Status -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Run Status</div>
+        <div class="gen-insp-body">
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Status</span>
+            <span class="gen-insp-value" id="inspStatus">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Elapsed</span>
+            <span class="gen-insp-value" id="inspElapsed">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Completed</span>
+            <span class="gen-insp-value" id="inspCompleted">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Retries</span>
+            <span class="gen-insp-value" id="inspRetries">&#x2014;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Used -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Memory Used</div>
+        <div class="gen-insp-body">
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Approved Narratives</span>
+            <span class="gen-insp-value" id="inspNarratives">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Phrase Bank</span>
+            <span class="gen-insp-value" id="inspPhrases">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Voice Examples</span>
+            <span class="gen-insp-value" id="inspVoice">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Cache</span>
+            <span class="gen-insp-value" id="inspCache">&#x2014;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warnings -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Warnings</div>
+        <div class="gen-insp-body" id="inspWarningsBody">
+          <div class="gen-insp-empty">No warnings</div>
+        </div>
+      </div>
+
+      <!-- Section Detail -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Section Detail</div>
+        <div class="gen-insp-body">
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Selected</span>
+            <span class="gen-insp-value" id="inspSelected">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Profile</span>
+            <span class="gen-insp-value" id="inspProfile">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Duration</span>
+            <span class="gen-insp-value" id="inspDuration">&#x2014;</span>
+          </div>
+          <div class="gen-insp-row">
+            <span class="gen-insp-label">Output</span>
+            <span class="gen-insp-value" id="inspOutput">&#x2014;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concession Calculator -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Concession Calculator</div>
+        <div class="gen-insp-body">
+          <p class="gen-insp-desc">Net-adjust a comp for seller concessions.</p>
+          <div class="gen-insp-input-row">
+            <div>
+              <label>Sale Price ($)</label>
+              <input id="concSalePrice" type="number" placeholder="325000" oninput="concCalc()"/>
+            </div>
+            <div>
+              <label>Concessions ($)</label>
+              <input id="concAmount" type="number" placeholder="5000" oninput="concCalc()"/>
+            </div>
+          </div>
+          <div class="conc-result" id="concResult" style="display:none;margin-top:12px;">
+            Net Adjusted Price: <b id="concNet"></b><br/>
+            Concession %: <b id="concPct"></b>
+            <div style="margin-top:6px;font-size:11px;" id="concText"></div>
+            <div style="margin-top:8px;">
+              <button class="ghost sm" onclick="insertConcession()">Insert into SCA Prompt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.gen-inspector -->
+  </div><!-- /.gen-layout -->
+</div><!-- /#tab-generate -->
+
+<!-- ===== TAB: QC GRADE ===== -->
+<div class="page" id="tab-qc">
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Grade Settings</h3></div>
+      <div class="card-body">
+        <div class="hint">Grades current case narratives against extracted facts. Checks USPAP compliance, unsupported claims, and likely underwriter questions.</div>
+        <label>Paste additional report text (optional)</label>
+        <textarea id="pastedText" placeholder="Paste any ACI export text here to include in grading..." style="min-height:120px;"></textarea>
+        <div class="btnrow"><button onclick="gradeNarratives()">Grade Narratives</button></div>
+        <div id="qcStatus" class="status">Ready.</div>
+        <div id="qcErrBox" class="errbox"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head"><h3>QC Report</h3><button class="ghost sm" onclick="window.print()">Print Report</button></div>
+      <div class="card-body">
+        <div id="gradeDisplay"><div class="hint">Run Grade Narratives to see results.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: VOICE TRAINING ===== -->
+<div class="page" id="tab-voice">
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Import Completed Appraisal</h3></div>
+      <div class="card-body">
+        <div class="hint" id="voiceImportHint">Upload a completed appraisal PDF to extract your narrative voice. The AI identifies narrative sections and uses them as writing examples for future generation.</div>
+        <label>Form Type</label>
+        <select id="voiceFormType" onchange="loadVoiceExamples()"><option value="1004">1004 URAR — Single Family</option></select>
+        <label>Select Completed Appraisal PDF</label>
+        <input type="file" id="voicePdfFile" accept=".pdf"/>
+        <div class="btnrow"><button onclick="uploadVoicePdf()">Import PDF</button></div>
+        <div id="voiceImportStatus" class="status"></div>
+        <div class="sep"></div>
+        <div class="hint" style="margin-bottom:6px;">Or scan the <b>voice_pdfs/</b> folder — drop PDFs into the matching subfolder, then click Scan.</div>
+        <div id="folderStatus" style="font-size:11px;color:var(--muted);margin-bottom:6px;min-height:16px;"></div>
+        <div class="btnrow">
+          <button class="sec" onclick="scanVoiceFolder()">Scan Folder</button>
+          <button class="ghost sm" onclick="checkFolderStatus()">Check Folder</button>
+        </div>
+        <div id="folderScanStatus" class="status"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>About Voice Training</h3></div>
+      <div class="card-body">
+        <div class="hint">Voice training examples are injected into every generation prompt so the AI writes in your exact style.<br><br>Import completed appraisal PDFs one at a time. Select the correct form type before importing.<br><br>More examples = better voice matching. Import 5-10 past reports for best results.</div>
+      </div>
+    </div>
+  </div>
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head"><h3>Imported Reports</h3><button class="sm sec" onclick="loadVoiceExamples()">Refresh</button></div>
+      <div class="card-body">
+        <div id="voiceExamplesList"><div class="hint">No reports imported yet.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Export toast notification ─────────────────────────────────────────────── -->
+<div class="export-toast" id="exportToast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CACC Writer — Phase 1 Design System
+     Scope: Generate tab · Full Draft panel · Comp Commentary panel
+     Strategy: --ds-* tokens (additive) + #tab-generate scoped overrides
+     All existing tabs unaffected.
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<style>
+/* ── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --ds-bg:        #0c0c0e;
+  --ds-surface:   #131315;
+  --ds-surface-2: #1a1a1d;
+  --ds-surface-3: #222226;
+  --ds-surface-4: #2a2a2e;
+  --ds-text:      #e8e8ec;
+  --ds-muted:     #72727c;
+  --ds-subtle:    #44444c;
+  --ds-border:    rgba(255,255,255,.07);
+  --ds-border-md: rgba(255,255,255,.12);
+  --ds-border-lg: rgba(255,255,255,.18);
+  --ds-accent:    #c8a84a;
+  --ds-accent-bg: rgba(200,168,74,.10);
+  --ds-accent-bd: rgba(200,168,74,.22);
+  --ds-ok:        #4ade80;
+  --ds-ok-bg:     rgba(74,222,128,.08);
+  --ds-ok-bd:     rgba(74,222,128,.18);
+  --ds-warn:      #fbbf24;
+  --ds-warn-bg:   rgba(251,191,36,.08);
+  --ds-warn-bd:   rgba(251,191,36,.18);
+  --ds-danger:    #f87171;
+  --ds-danger-bg: rgba(248,113,113,.08);
+  --ds-danger-bd: rgba(248,113,113,.18);
+  --ds-r-sm:      4px;
+  --ds-r-md:      6px;
+  --ds-r-lg:      9px;
+  --ds-r-pill:    999px;
+  --ds-sans:      system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --ds-mono:      "SF Mono",ui-monospace,Menlo,Monaco,Consolas,monospace;
+}
+
+/* ── Generate Tab: Layout ──────────────────────────────────────────────────── */
+#tab-generate {
+  background: var(--ds-bg);
+  padding: 14px;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* ── Generate Tab: Cards ───────────────────────────────────────────────────── */
+#tab-generate .card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-lg);
+  overflow: hidden;
+  box-shadow: none;
+}
+#tab-generate .card-head {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--ds-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--ds-surface-2);
+}
+#tab-generate .card-head h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ds-muted);
+}
+#tab-generate .card-body {
+  padding: 12px 14px;
+}
+
+/* ── Generate Tab: Typography ──────────────────────────────────────────────── */
+#tab-generate label {
+  display: block;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin: 8px 0 3px;
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+#tab-generate .hint {
+  font-size: 11px;
+  color: var(--ds-muted);
+  line-height: 1.5;
+}
+#tab-generate .sep {
+  height: 1px;
+  background: var(--ds-border);
+  margin: 10px 0;
+}
+
+/* ── Generate Tab: Inputs ──────────────────────────────────────────────────── */
+#tab-generate input[type=text],
+#tab-generate input[type=number],
+#tab-generate textarea,
+#tab-generate select {
+  width: 100%;
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-text);
+  border-radius: var(--ds-r-md);
+  padding: 7px 10px;
+  outline: none;
+  font-family: var(--ds-sans);
+  font-size: 13px;
+  transition: border-color .12s;
+  -webkit-font-smoothing: antialiased;
+}
+#tab-generate input:focus,
+#tab-generate textarea:focus,
+#tab-generate select:focus {
+  border-color: var(--ds-accent-bd);
+}
+#tab-generate select option { background: var(--ds-surface-2); color: var(--ds-text); }
+#tab-generate textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+/* ── Generate Tab: Buttons ─────────────────────────────────────────────────── */
+#tab-generate button {
+  border: 1px solid var(--ds-border-md);
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+  border-radius: var(--ds-r-md);
+  padding: 7px 13px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+  white-space: nowrap;
+  font-family: var(--ds-sans);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: .01em;
+  transform: none;
+}
+#tab-generate button:hover {
+  background: var(--ds-surface-3);
+  border-color: var(--ds-border-md);
+  transform: none;
+}
+#tab-generate button.sec {
+  border-color: var(--ds-border);
+  background: transparent;
+  color: var(--ds-muted);
+}
+#tab-generate button.sec:hover {
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+}
+#tab-generate button.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ds-muted);
+  padding: 6px 10px;
+}
+#tab-generate button.ghost:hover {
+  color: var(--ds-text);
+  background: var(--ds-surface-2);
+  border-color: var(--ds-border);
+}
+#tab-generate button.sm { padding: 4px 9px; font-size: 11px; }
+#tab-generate button.danger {
+  border-color: var(--ds-danger-bd);
+  background: var(--ds-danger-bg);
+  color: #fca5a5;
+}
+#tab-generate button.danger:hover { background: rgba(248,113,113,.14); }
+
+/* Full Draft — primary accent button */
+#tab-generate #genFullDraftBtn {
+  border-color: var(--ds-accent-bd);
+  background: var(--ds-accent-bg);
+  color: var(--ds-accent);
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+#tab-generate #genFullDraftBtn:hover {
+  background: rgba(200,168,74,.16);
+  border-color: rgba(200,168,74,.35);
+  color: var(--ds-accent);
+}
+#tab-generate #retryBtn {
+  border-color: var(--ds-warn-bd) !important;
+  background: var(--ds-warn-bg) !important;
+  color: var(--ds-warn) !important;
+}
+#tab-generate .btnrow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  align-items: center;
+}
+
+/* ── Generate Tab: Status ──────────────────────────────────────────────────── */
+#tab-generate .status {
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ds-border);
+  line-height: 1.4;
+}
+#tab-generate .status.ok   { color: var(--ds-ok); }
+#tab-generate .status.err  { color: var(--ds-danger); }
+#tab-generate .status.warn { color: var(--ds-warn); }
+#tab-generate .errbox {
+  margin-top: 8px;
+  border: 1px solid var(--ds-danger-bd);
+  background: var(--ds-danger-bg);
+  border-radius: var(--ds-r-md);
+  padding: 10px 12px;
+  color: #fca5a5;
+  font-size: 11px;
+  font-family: var(--ds-mono);
+  white-space: pre-wrap;
+  display: none;
+  line-height: 1.5;
+}
+
+/* ── Generate Tab: Chips ───────────────────────────────────────────────────── */
+#tab-generate .chip {
+  font-size: 10px;
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  padding: 2px 7px;
+  border-radius: var(--ds-r-pill);
+  font-weight: 500;
+}
+#tab-generate .chip.ok   { color: var(--ds-ok);     border-color: var(--ds-ok-bd);     }
+#tab-generate .chip.warn { color: var(--ds-warn);   border-color: var(--ds-warn-bd);   }
+#tab-generate .chip.err  { color: var(--ds-danger); border-color: var(--ds-danger-bd); }
+
+/* ── Generate Tab: Field List ──────────────────────────────────────────────── */
+#tab-generate .flist {
+  max-height: 340px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+#tab-generate .fitem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-sm);
+  transition: background .1s;
+}
+#tab-generate .fitem:last-child { border-bottom: none; }
+#tab-generate .fitem:hover { background: var(--ds-surface-2); }
+#tab-generate .fitem input[type=checkbox] {
+  width: auto;
+  margin-top: 2px;
+  accent-color: var(--ds-accent);
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+#tab-generate .ftitle { font-size: 12px; font-weight: 600; color: var(--ds-text); }
+#tab-generate .fmeta  { font-size: 10px; color: var(--ds-muted); margin-top: 2px; line-height: 1.3; }
+
+/* ── Generate Tab: Missing Facts Panel ─────────────────────────────────────── */
+#tab-generate .missing-panel {
+  border: 1px solid var(--ds-warn-bd);
+  background: var(--ds-warn-bg);
+  border-radius: var(--ds-r-md);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: none;
+}
+#tab-generate .missing-panel.visible { display: block; }
+#tab-generate .missing-panel-head {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-warn);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#tab-generate .missing-item { font-size: 11px; padding: 2px 0; display: flex; align-items: center; gap: 6px; color: var(--ds-muted); }
+#tab-generate .missing-item.req { color: #fca5a5; }
+
+/* ── Generate Tab: Core Sections Panel ─────────────────────────────────────── */
+#tab-generate .core-panel {
+  border: 1px solid var(--ds-accent-bd);
+  background: var(--ds-accent-bg);
+  border-radius: var(--ds-r-md);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  display: none;
+}
+#tab-generate .core-panel.visible { display: block; }
+#tab-generate .core-panel-head {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-accent);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#tab-generate .core-section-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 11px;
+  border-bottom: 1px solid var(--ds-border);
+  color: var(--ds-text);
+}
+#tab-generate .core-section-row:last-child { border-bottom: none; }
+
+/* ── Generate Tab: Concession Calculator ───────────────────────────────────── */
+#tab-generate .conc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+#tab-generate .conc-result {
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-border-md);
+  border-radius: var(--ds-r-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  margin-top: 8px;
+  line-height: 1.7;
+  color: var(--ds-text);
+}
+#tab-generate .conc-result b { color: var(--ds-accent); }
+
+/* ── Generate Tab: Section Status Badges ───────────────────────────────────── */
+#tab-generate .ss-badge {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: var(--ds-r-pill);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#tab-generate .ss-not_started { color: var(--ds-subtle);  border-color: var(--ds-border);    background: transparent; }
+#tab-generate .ss-drafted     { color: var(--ds-warn);    border-color: var(--ds-warn-bd);   background: var(--ds-warn-bg); }
+#tab-generate .ss-reviewed    { color: #8aabff;           border-color: rgba(100,140,255,.25); background: rgba(100,140,255,.07); }
+#tab-generate .ss-approved    { color: var(--ds-ok);      border-color: var(--ds-ok-bd);     background: var(--ds-ok-bg); }
+#tab-generate .ss-inserted    { color: var(--ds-accent);  border-color: var(--ds-accent-bd); background: var(--ds-accent-bg); }
+#tab-generate .ss-error       { color: var(--ds-danger);  border-color: var(--ds-danger-bd); background: var(--ds-danger-bg); }
+
+/* ── Generate Tab: Output Cards ────────────────────────────────────────────── */
+#tab-generate .outwrap { display: flex; flex-direction: column; gap: 8px; }
+#tab-generate .outcard {
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-lg);
+  overflow: hidden;
+  background: var(--ds-surface);
+  transition: border-color .15s;
+}
+#tab-generate .outcard.edited { border-color: var(--ds-accent-bd); }
+#tab-generate .outhead {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ds-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--ds-surface-2);
+}
+#tab-generate .otitle { font-weight: 700; font-size: 11px; color: var(--ds-text); letter-spacing: .01em; }
+#tab-generate .otools { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+#tab-generate .outbody {
+  padding: 12px;
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  color: var(--ds-text);
+}
+#tab-generate .outedit { padding: 0 12px 12px; }
+#tab-generate .outedit textarea { min-height: 140px; font-family: var(--ds-mono); font-size: 11px; line-height: 1.6; }
+#tab-generate .thumb {
+  padding: 4px 8px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-sm);
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+#tab-generate .thumb:hover { background: var(--ds-surface-2); }
+#tab-generate .thumb.up.active  { border-color: var(--ds-ok-bd);     background: var(--ds-ok-bg);     color: var(--ds-ok); }
+#tab-generate .thumb.down.active{ border-color: var(--ds-danger-bd); background: var(--ds-danger-bg); color: var(--ds-danger); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Full Draft Orchestrator Panel — Complete Redesign
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fd-panel {
+  border: 1px solid var(--ds-border-md);
+  background: var(--ds-surface);
+  border-radius: var(--ds-r-lg);
+  overflow: hidden;
+  margin-bottom: 10px;
+  display: none;
+}
+.fd-panel.visible { display: block; }
+
+/* Header */
+.fd-panel-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ds-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ds-surface-2);
+}
+.fd-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-text);
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.fd-panel-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  flex-shrink: 0;
+}
+.fd-panel-elapsed {
+  font-size: 11px;
+  color: var(--ds-muted);
+  font-family: var(--ds-mono);
+  letter-spacing: .02em;
+}
+
+/* Body */
+.fd-panel-body { padding: 14px; }
+
+/* Phase strip */
+.fd-phase-strip {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.fd-phase {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--ds-r-pill);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-subtle);
+  background: transparent;
+  white-space: nowrap;
+  transition: all .2s;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.fd-phase.active {
+  color: var(--ds-warn);
+  border-color: var(--ds-warn-bd);
+  background: var(--ds-warn-bg);
+}
+.fd-phase.done {
+  color: var(--ds-ok);
+  border-color: var(--ds-ok-bd);
+  background: var(--ds-ok-bg);
+}
+.fd-phase.error {
+  color: var(--ds-danger);
+  border-color: var(--ds-danger-bd);
+  background: var(--ds-danger-bg);
+}
+.fd-phase-arrow {
+  color: var(--ds-subtle);
+  font-size: 10px;
+  margin: 0 1px;
+  flex-shrink: 0;
+}
+
+/* Progress bar */
+.fd-progress-wrap { margin-bottom: 12px; }
+.fd-progress-bar-bg {
+  height: 2px;
+  background: var(--ds-border-md);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.fd-progress-bar-fill {
+  height: 100%;
+  background: var(--ds-accent);
+  border-radius: 2px;
+  transition: width .5s ease;
+  opacity: .85;
+}
+.fd-progress-label {
+  font-size: 10px;
+  color: var(--ds-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--ds-mono);
+}
+
+/* Section rows */
+.fd-sections { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.fd-section-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 8px;
+  border-radius: var(--ds-r-sm);
+  font-size: 11px;
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s;
+  color: var(--ds-muted);
+}
+.fd-section-row.pending { color: var(--ds-subtle); }
+.fd-section-row.running {
+  background: var(--ds-warn-bg);
+  border-color: var(--ds-warn-bd);
+  color: var(--ds-text);
+}
+.fd-section-row.done {
+  background: var(--ds-ok-bg);
+  border-color: var(--ds-ok-bd);
+  color: var(--ds-text);
+}
+.fd-section-row.error {
+  background: var(--ds-danger-bg);
+  border-color: var(--ds-danger-bd);
+  color: var(--ds-text);
+}
+.fd-section-icon { width: 14px; text-align: center; flex-shrink: 0; font-size: 11px; }
+.fd-section-name { flex: 1; font-weight: 500; }
+.fd-section-ms   { font-size: 10px; color: var(--ds-muted); font-family: var(--ds-mono); }
+
+/* Metrics panel */
+.fd-metrics {
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-md);
+  padding: 10px 12px;
+  margin-top: 10px;
+  display: none;
+}
+.fd-metrics.visible { display: block; }
+.fd-metrics-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ds-subtle);
+  margin-bottom: 10px;
+}
+.fd-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px 16px;
+}
+.fd-metric-item { display: flex; flex-direction: column; gap: 3px; }
+.fd-metric-label {
+  font-size: 9px;
+  color: var(--ds-subtle);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 600;
+}
+.fd-metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--ds-mono);
+  color: var(--ds-text);
+  letter-spacing: -.01em;
+}
+.fd-metric-value.ok   { color: var(--ds-ok); }
+.fd-metric-value.warn { color: var(--ds-warn); }
+.fd-metric-value.err  { color: var(--ds-danger); }
+
+/* Warnings */
+.fd-warnings {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--ds-warn-bd);
+  background: var(--ds-warn-bg);
+  border-radius: var(--ds-r-md);
+  display: none;
+}
+.fd-warnings.visible { display: block; }
+.fd-warning-item {
+  font-size: 11px;
+  color: var(--ds-warn);
+  padding: 2px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  line-height: 1.4;
+}
+.fd-warning-item::before { content: '⚠'; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+
+/* Run actions */
+.fd-run-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ds-border);
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Comparable Sales Commentary Panel — Complete Redesign
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#compCommentaryPanel.card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-lg);
+  overflow: hidden;
+}
+#compCommentaryPanel .card-head {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--ds-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--ds-surface-2);
+}
+#compCommentaryPanel .card-head h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ds-muted);
+}
+#compCommentaryPanel .card-body { padding: 14px; }
+
+/* Adjustment grid */
+.comp-adj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 3px 6px;
+  margin-top: 6px;
+}
+.comp-adj-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: var(--ds-r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background .1s, border-color .1s;
+}
+.comp-adj-item:hover {
+  background: var(--ds-surface-2);
+  border-color: var(--ds-border);
+}
+.comp-adj-item input[type=checkbox] {
+  accent-color: var(--ds-accent);
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.comp-adj-item label {
+  font-size: 11px;
+  color: var(--ds-muted);
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+.comp-adj-item:has(input:checked) {
+  background: var(--ds-accent-bg);
+  border-color: var(--ds-accent-bd);
+}
+.comp-adj-item:has(input:checked) label { color: var(--ds-text); }
+
+/* Output area */
+.comp-out-area {
+  margin-top: 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-r-md);
+  background: var(--ds-surface-2);
+  padding: 12px;
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  color: var(--ds-text);
+  min-height: 80px;
+  display: none;
+}
+.comp-out-area.visible { display: block; }
+.comp-out-meta {
+  font-size: 10px;
+  color: var(--ds-muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--ds-border);
+  display: none;
+  font-family: var(--ds-mono);
+}
+
+/* Comp status chip */
+#compCommStatus {
+font-size: 10px; font-weight: 600; padding: 3px 8px;
+  border-radius: var(--ds-r-pill); border: 1px solid var(--ds-border-md);
+  color: var(--ds-muted); background: var(--ds-surface-2);
+  letter-spacing: .04em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+:root {
+  --gen-bg:#FFFFFF; --gen-surface:#FFFFFF; --gen-muted:#F5F5F5;
+  --gen-fg:#000000; --gen-fg-muted:#525252;
+  --gen-border:#E5E5E5; --gen-border-strong:#000000;
+  --gen-accent:#000000; --gen-accent-fg:#FFFFFF; --gen-focus:#000000;
+  --gen-ok:#166534; --gen-ok-bg:#F0FDF4; --gen-ok-border:#BBF7D0;
+  --gen-warn:#92400E; --gen-warn-bg:#FFFBEB; --gen-warn-border:#FDE68A;
+  --gen-danger:#991B1B; --gen-danger-bg:#FEF2F2; --gen-danger-border:#FECACA;
+  --gen-font-display:"Playfair Display",Georgia,serif;
+  --gen-font-body:"Source Serif 4",Georgia,serif;
+  --gen-font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --gen-radius:0px; --gen-strip-h:60px;
+}
+#tab-generate {
+  display:block !important; padding:0 !important; gap:0 !important;
+  background:var(--gen-bg) !important; color:var(--gen-fg) !important;
+  font-family:var(--gen-font-body) !important;
+  min-height:calc(100vh - 44px);
+}
+.gen-strip {
+  height:var(--gen-strip-h); border-bottom:1px solid var(--gen-border);
+  display:flex; align-items:center; padding:0 24px;
+  background:var(--gen-bg); position:sticky; top:0; z-index:20;
+}
+.gen-strip-left { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+.gen-strip-title { font-family:var(--gen-font-body); font-size:15px; font-weight:600; color:var(--gen-fg); white-space:nowrap; }
+.gen-strip-sep { width:1px; height:18px; background:var(--gen-border); flex-shrink:0; }
+.gen-strip-case { font-family:var(--gen-font-body); font-size:13px; color:var(--gen-fg-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+.gen-strip-report { font-family:var(--gen-font-mono); font-size:11px; color:var(--gen-fg); background:var(--gen-muted); padding:2px 8px; border:1px solid var(--gen-border); white-space:nowrap; flex-shrink:0; }
+.gen-strip-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.gen-strip-meta { display:flex; align-items:center; gap:12px; margin-left:16px; flex-shrink:0; }
+.gen-strip-lastrun { font-family:var(--gen-font-mono); font-size:11px; color:var(--gen-fg-muted); white-space:nowrap; }
+.gen-strip-health { font-size:11px; color:var(--gen-ok); font-family:var(--gen-font-body); white-space:nowrap; }
+
+#tab-generate button,.gen-strip button {
+  font-family:var(--gen-font-body) !important; border-radius:var(--gen-radius) !important;
+  font-size:12px !important; font-weight:600 !important; letter-spacing:0.04em !important;
+  cursor:pointer !important; transition:background 80ms,color 80ms,border-color 80ms !important;
+  border:1px solid var(--gen-border-strong) !important; background:var(--gen-bg) !important;
+  color:var(--gen-fg) !important; padding:7px 14px !important;
+  text-transform:uppercase !important; box-shadow:none !important;
+}
+#tab-generate button:hover,.gen-strip button:hover { background:var(--gen-fg) !important; color:var(--gen-accent-fg) !important; border-color:var(--gen-fg) !important; }
+#tab-generate button.sec,.gen-strip button.sec { background:transparent !important; color:var(--gen-fg) !important; border:1px solid var(--gen-border) !important; }
+#tab-generate button.sec:hover,.gen-strip button.sec:hover { background:var(--gen-muted) !important; border-color:var(--gen-border) !important; color:var(--gen-fg) !important; }
+#tab-generate button.ghost,.gen-strip button.ghost { background:transparent !important; color:var(--gen-fg-muted) !important; border:1px solid transparent !important; }
+#tab-generate button.ghost:hover,.gen-strip button.ghost:hover { background:var(--gen-muted) !important; color:var(--gen-fg) !important; border-color:var(--gen-border) !important; }
+#tab-generate button.sm,.gen-strip button.sm { padding:4px 10px !important; font-size:11px !important; }
+.gen-btn-primary { background:var(--gen-fg) !important; color:var(--gen-accent-fg) !important; border:1px solid var(--gen-fg) !important; padding:10px 20px !important; font-size:13px !important; font-weight:700 !important; letter-spacing:0.06em !important; text-transform:uppercase !important; }
+.gen-btn-primary:hover { background:var(--gen-bg) !important; color:var(--gen-fg) !important; border-color:var(--gen-fg) !important; }
+#tab-generate button:focus-visible,.gen-strip button:focus-visible { outline:3px solid var(--gen-focus) !important; outline-offset:3px !important; }
+#tab-generate input[type=text],#tab-generate input[type=number],#tab-generate textarea,#tab-generate select {
+  background:transparent !important; color:var(--gen-fg) !important;
+  border:none !important; border-bottom:2px solid var(--gen-fg) !important;
+  border-radius:0 !important; font-family:var(--gen-font-body) !important;
+  font-size:14px !important; padding:6px 0 !important; width:100% !important;
+  outline:none !important; transition:border-bottom-width 80ms !important; box-shadow:none !important;
+}
+#tab-generate input[type=text]:focus,#tab-generate input[type=number]:focus,#tab-generate textarea:focus,#tab-generate select:focus { border-bottom:3px solid var(--gen-fg) !important; outline:none !important; }
+#tab-generate input::placeholder,#tab-generate textarea::placeholder { color:var(--gen-fg-muted) !important; opacity:0.6 !important; }
+#tab-generate label { display:block !important; font-family:var(--gen-font-body) !important; font-size:11px !important; font-weight:600 !important; text-transform:uppercase !important; letter-spacing:0.08em !important; color:var(--gen-fg-muted) !important; margin-bottom:4px !important; margin-top:0 !important; }
+#tab-generate textarea { resize:vertical !important; min-height:72px !important; line-height:1.6 !important; }
+.gen-label-optional { font-size:10px !important; color:var(--gen-fg-muted) !important; font-weight:400 !important; text-transform:none !important; letter-spacing:0 !important; }
+.gen-layout { display:flex; align-items:flex-start; min-height:calc(100vh - var(--gen-strip-h) - 44px); }
+.gen-workspace { flex:1; min-width:0; padding:24px; display:flex; flex-direction:column; gap:24px; border-right:1px solid var(--gen-border); }
+.gen-inspector { width:360px; flex-shrink:0; padding:20px 16px; display:flex; flex-direction:column; gap:16px; background:var(--gen-bg); position:sticky; top:var(--gen-strip-h); max-height:calc(100vh - var(--gen-strip-h) - 44px); overflow-y:auto; }
+
+.gen-panel { background:var(--gen-bg); border:1px solid var(--gen-border); border-radius:var(--gen-radius); overflow:hidden; }
+.gen-panel-head { padding:14px 20px; border-bottom:1px solid var(--gen-border); display:flex; justify-content:space-between; align-items:center; gap:12px; background:var(--gen-bg); }
+.gen-panel-title { font-family:var(--gen-font-body); font-size:16px; font-weight:600; color:var(--gen-fg); letter-spacing:0; margin:0; }
+.gen-panel-head-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.gen-panel-body { padding:20px; }
+.gen-panel-body--compact { padding:0; }
+.gen-panel-desc { font-family:var(--gen-font-body); font-size:14px; color:var(--gen-fg-muted); line-height:1.6; margin-bottom:16px; }
+.gen-panel-action-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.gen-input-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; margin-bottom:4px; }
+.gen-input-full { grid-column:1 / -1; }
+.gen-insp-card { background:var(--gen-bg); border:1px solid var(--gen-border); border-radius:var(--gen-radius); overflow:hidden; }
+.gen-insp-head { padding:9px 14px; border-bottom:1px solid var(--gen-border); font-family:var(--gen-font-body); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--gen-fg-muted); background:var(--gen-muted); }
+.gen-insp-body { padding:10px 14px; }
+.gen-insp-row { display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:1px solid var(--gen-border); gap:8px; }
+.gen-insp-row:last-child { border-bottom:none; }
+.gen-insp-label { font-family:var(--gen-font-body); font-size:12px; color:var(--gen-fg-muted); flex-shrink:0; }
+.gen-insp-value { font-family:var(--gen-font-mono); font-size:12px; font-weight:500; color:var(--gen-fg); text-align:right; }
+.gen-insp-empty { font-family:var(--gen-font-body); font-size:12px; color:var(--gen-fg-muted); padding:4px 0; font-style:italic; }
+.gen-insp-desc { font-family:var(--gen-font-body); font-size:12px; color:var(--gen-fg-muted); margin-bottom:10px; line-height:1.5; }
+.gen-insp-input-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+#tab-generate .status { font-family:var(--gen-font-body) !important; font-size:13px !important; color:var(--gen-fg-muted) !important; background:transparent !important; border:none !important; padding:8px 0 0 !important; border-radius:0 !important; }
+#tab-generate .status.ok { color:var(--gen-ok) !important; }
+#tab-generate .status.err { color:var(--gen-danger) !important; }
+#tab-generate .errbox { font-family:var(--gen-font-body) !important; font-size:13px !important; color:var(--gen-danger) !important; background:var(--gen-danger-bg) !important; border:1px solid var(--gen-danger-border) !important; border-radius:var(--gen-radius) !important; padding:10px 14px !important; margin-top:8px !important; }
+#tab-generate .missing-panel { background:var(--gen-warn-bg) !important; border:1px solid var(--gen-warn-border) !important; border-radius:var(--gen-radius) !important; padding:12px 14px !important; margin-top:12px !important; display:none; }
+#tab-generate .missing-panel.visible { display:block !important; }
+#tab-generate .missing-panel-head { display:flex !important; justify-content:space-between !important; align-items:center !important; font-family:var(--gen-font-body) !important; font-size:12px !important; font-weight:700 !important; color:var(--gen-warn) !important; margin-bottom:8px !important; text-transform:uppercase !important; letter-spacing:0.06em !important; }
+#tab-generate .core-panel { background:var(--gen-muted) !important; border-bottom:1px solid var(--gen-border) !important; padding:12px 20px !important; display:none !important; }
+#tab-generate .core-panel.visible { display:block !important; }
+#tab-generate .core-panel-head { display:flex !important; justify-content:space-between !important; align-items:center !important; font-family:var(--gen-font-body) !important; font-size:11px !important; font-weight:700 !important; color:var(--gen-fg) !important; margin-bottom:8px !important; text-transform:uppercase !important; letter-spacing:0.06em !important; }
+#tab-generate .flist { display:flex !important; flex-direction:column !important; gap:0 !important; }
+#tab-generate .fitem { display:flex !important; align-items:center !important; gap:10px !important; padding:9px 20px !important; border-bottom:1px solid var(--gen-border) !important; cursor:pointer !important; transition:background 80ms !important; background:var(--gen-bg) !important; }
+#tab-generate .fitem:last-child { border-bottom:none !important; }
+#tab-generate .fitem:hover { background:var(--gen-muted) !important; }
+#tab-generate .fitem input[type=checkbox] { accent-color:var(--gen-fg) !important; width:14px !important; height:14px !important; flex-shrink:0 !important; border:none !important; border-bottom:none !important; padding:0 !important; width:auto !important; }
+#tab-generate .fitem label { font-family:var(--gen-font-body) !important; font-size:13px !important; color:var(--gen-fg) !important; font-weight:400 !important; text-transform:none !important; letter-spacing:0 !important; cursor:pointer !important; margin:0 !important; }
+#tab-generate .fitem .fstatus { font-family:var(--gen-font-mono) !important; font-size:10px !important; margin-left:auto !important; flex-shrink:0 !important; }
+#tab-generate .fitem .fstatus.ok { color:var(--gen-ok) !important; }
+#tab-generate .fitem .fstatus.err { color:var(--gen-danger) !important; }
+#tab-generate .fitem .fstatus.running { color:var(--gen-warn) !important; }
+
+#tab-generate .outwrap { display:flex; flex-direction:column; gap:16px; }
+#tab-generate .ocard { background:var(--gen-bg) !important; border:1px solid var(--gen-border) !important; border-radius:var(--gen-radius) !important; overflow:hidden !important; box-shadow:none !important; }
+#tab-generate .ocard-head { padding:10px 16px !important; border-bottom:1px solid var(--gen-border) !important; display:flex !important; justify-content:space-between !important; align-items:center !important; background:var(--gen-muted) !important; }
+#tab-generate .ocard-head h4 { font-family:var(--gen-font-body) !important; font-size:13px !important; font-weight:600 !important; color:var(--gen-fg) !important; text-transform:none !important; letter-spacing:0 !important; }
+#tab-generate .ocard-body { padding:16px !important; font-family:var(--gen-font-body) !important; font-size:14px !important; line-height:1.7 !important; color:var(--gen-fg) !important; white-space:pre-wrap !important; }
+#tab-generate .ocard-body[contenteditable=true]:focus { outline:none !important; border-bottom:2px solid var(--gen-fg) !important; }
+#tab-generate .ocard-foot { padding:8px 16px !important; border-top:1px solid var(--gen-border) !important; display:flex !important; gap:8px !important; align-items:center !important; background:var(--gen-bg) !important; }
+.fd-panel { background:var(--gen-bg); border:1px solid var(--gen-border); border-radius:var(--gen-radius); overflow:hidden; display:none; }
+.fd-panel.visible { display:block; }
+.fd-panel-head { padding:12px 20px; border-bottom:1px solid var(--gen-border); display:flex; justify-content:space-between; align-items:center; background:var(--gen-muted); }
+.fd-panel-title { font-family:var(--gen-font-body); font-size:14px; font-weight:600; color:var(--gen-fg); }
+.fd-panel-elapsed { font-family:var(--gen-font-mono); font-size:12px; color:var(--gen-fg-muted); }
+.fd-panel-body { padding:20px; display:flex; flex-direction:column; gap:16px; }
+.fd-phase-strip { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.fd-phase { font-family:var(--gen-font-body); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--gen-fg-muted); padding:3px 8px; border:1px solid var(--gen-border); border-radius:var(--gen-radius); transition:all 80ms; }
+.fd-phase.active { background:var(--gen-fg); color:var(--gen-accent-fg); border-color:var(--gen-fg); }
+.fd-phase.done { background:var(--gen-ok-bg); color:var(--gen-ok); border-color:var(--gen-ok-border); }
+.fd-phase.error { background:var(--gen-danger-bg); color:var(--gen-danger); border-color:var(--gen-danger-border); }
+.fd-phase-arrow { color:var(--gen-border); font-size:14px; }
+.fd-progress-wrap { display:flex; flex-direction:column; gap:6px; }
+.fd-progress-bar-bg { height:3px; background:var(--gen-border); border-radius:0; overflow:hidden; }
+.fd-progress-bar-fill { height:100%; background:var(--gen-fg); transition:width 200ms; }
+.fd-progress-label { display:flex; justify-content:space-between; font-family:var(--gen-font-body); font-size:12px; color:var(--gen-fg-muted); }
+.fd-sections { display:flex; flex-direction:column; gap:0; border:1px solid var(--gen-border); border-radius:var(--gen-radius); overflow:hidden; }
+.fd-section-row { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--gen-border); font-family:var(--gen-font-body); font-size:13px; color:var(--gen-fg); background:var(--gen-bg); }
+.fd-section-row:last-child { border-bottom:none; }
+.fd-section-row .fd-sec-status { font-family:var(--gen-font-mono); font-size:10px; margin-left:auto; flex-shrink:0; }
+.fd-section-row .fd-sec-status.ok { color:var(--gen-ok); }
+.fd-section-row .fd-sec-status.err { color:var(--gen-danger); }
+.fd-section-row .fd-sec-status.running { color:var(--gen-warn); }
+.fd-metrics { display:none; }
+.fd-metrics.visible { display:block; }
+.fd-metrics-title { font-family:var(--gen-font-body); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--gen-fg-muted); margin-bottom:8px; }
+.fd-metrics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; }
+.fd-metric-item { background:var(--gen-muted); border:1px solid var(--gen-border); padding:8px 12px; border-radius:var(--gen-radius); }
+.fd-metric-label { font-family:var(--gen-font-body); font-size:10px; color:var(--gen-fg-muted); text-transform:uppercase; letter-spacing:0.07em; }
+.fd-metric-value { font-family:var(--gen-font-mono); font-size:14px; font-weight:600; color:var(--gen-fg); margin-top:2px; }
+.fd-warnings { display:flex; flex-direction:column; gap:6px; }
+.fd-warning-item { background:var(--gen-warn-bg); border:1px solid var(--gen-warn-border); border-radius:var(--gen-radius); padding:8px 12px; font-family:var(--gen-font-body); font-size:12px; color:var(--gen-warn); }
+.fd-run-actions { display:flex; gap:8px; align-items:center; padding-top:4px; }
+#tab-generate .comp-adj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:4px 8px; margin-top:8px; }
+#tab-generate .comp-adj-item { display:flex; align-items:center; gap:7px; padding:5px 8px; border:1px solid transparent; cursor:pointer; transition:background 80ms,border-color 80ms; border-radius:var(--gen-radius); }
+#tab-generate .comp-adj-item:hover { background:var(--gen-muted); border-color:var(--gen-border); }
+#tab-generate .comp-adj-item input[type=checkbox] { accent-color:var(--gen-fg); width:13px; height:13px; flex-shrink:0; border:none !important; border-bottom:none !important; padding:0 !important; width:auto !important; }
+#tab-generate .comp-adj-item label { font-size:12px !important; color:var(--gen-fg-muted) !important; cursor:pointer; user-select:none; margin:0 !important; font-weight:500 !important; letter-spacing:0.01em !important; text-transform:none !important; }
+#tab-generate .comp-adj-item:has(input:checked) { background:var(--gen-fg); border-color:var(--gen-fg); }
+#tab-generate .comp-adj-item:has(input:checked) label { color:var(--gen-accent-fg) !important; }
+#tab-generate .comp-out-area { margin-top:12px; border:1px solid var(--gen-border); background:var(--gen-muted); padding:14px; font-family:var(--gen-font-mono); font-size:12px; line-height:1.65; white-space:pre-wrap; color:var(--gen-fg); min-height:80px; display:none; border-radius:var(--gen-radius); }
+#tab-generate .comp-out-area.visible { display:block; }
+#tab-generate .comp-out-meta { font-size:10px; color:var(--gen-fg-muted); margin-top:6px; padding-top:6px; border-top:1px solid var(--gen-border); display:none; font-family:var(--gen-font-mono); }
+#tab-generate .conc-result { font-family:var(--gen-font-body); font-size:13px; color:var(--gen-fg); background:var(--gen-muted); border:1px solid var(--gen-border); padding:12px 14px; border-radius:var(--gen-radius); line-height:1.7; }
+#tab-generate .chip { font-size:10px; font-weight:600; padding:3px 8px; border:1px solid var(--gen-border); color:var(--gen-fg-muted); background:var(--gen-muted); letter-spacing:.04em; text-transform:uppercase; display:inline-flex; align-items:center; gap:4px; border-radius:var(--gen-radius); }
+
+</style>
+</body>
+</html>

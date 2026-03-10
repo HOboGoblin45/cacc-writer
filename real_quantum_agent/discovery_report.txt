@@ -1,0 +1,225 @@
+CACC Writer — Real Quantum Full Field Discovery Report
+============================================================
+
+SECTION: Introduction (introduction)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction
+  TinyMCE iframes (2):
+    [visible 736x106] introduction_section_content_text_area_ifr
+    [hidden] general_assumptions_and_limiting_conditions_section_content_text_area_ifr
+
+SECTION: Market Data (market_data)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_data
+  TinyMCE iframes (7):
+    [visible 736x106] national_overview_section_content_text_area_ifr
+    [hidden] regional_overview_section_content_text_area_ifr
+    [hidden] local_market_analysis_section_content_text_area_ifr
+    [hidden] industry_overview_section_content_text_area_ifr
+    [hidden] neighborhood_section_content_text_area_ifr
+    [hidden] demographics_section_content_text_area_ifr
+    [hidden] demographics_conclusions_content_text_area_ifr
+  Sub-sections via expand buttons (6):
+    Button: 'regional overview'
+      iframe: regional_overview_section_content_text_area_ifr
+    Button: 'industry overview'
+      iframe: industry_overview_section_content_text_area_ifr
+    Button: 'btn'
+      iframe: national_overview_section_content_text_area_ifr
+      iframe: regional_overview_section_content_text_area_ifr
+      iframe: local_market_analysis_section_content_text_area_ifr
+      iframe: industry_overview_section_content_text_area_ifr
+      iframe: neighborhood_section_content_text_area_ifr
+      iframe: demographics_section_content_text_area_ifr
+      iframe: demographics_conclusions_content_text_area_ifr
+    Button: 'preview'
+      iframe: national_overview_section_content_text_area_ifr
+      iframe: regional_overview_section_content_text_area_ifr
+      iframe: local_market_analysis_section_content_text_area_ifr
+      iframe: industry_overview_section_content_text_area_ifr
+      iframe: neighborhood_section_content_text_area_ifr
+      iframe: demographics_section_content_text_area_ifr
+      iframe: demographics_conclusions_content_text_area_ifr
+    Button: 'edit'
+      iframe: national_overview_section_content_text_area_ifr
+      iframe: regional_overview_section_content_text_area_ifr
+      iframe: local_market_analysis_section_content_text_area_ifr
+      iframe: industry_overview_section_content_text_area_ifr
+      iframe: neighborhood_section_content_text_area_ifr
+      iframe: demographics_section_content_text_area_ifr
+      iframe: demographics_conclusions_content_text_area_ifr
+    Button: 'view'
+      iframe: national_overview_section_content_text_area_ifr
+      iframe: regional_overview_section_content_text_area_ifr
+      iframe: local_market_analysis_section_content_text_area_ifr
+      iframe: industry_overview_section_content_text_area_ifr
+      iframe: neighborhood_section_content_text_area_ifr
+      iframe: demographics_section_content_text_area_ifr
+      iframe: demographics_conclusions_content_text_area_ifr
+
+SECTION: Property Data (property_data)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data
+  TinyMCE iframes (5):
+    [visible 736x106] zoning_remarks_text_area_ifr
+    [visible 736x225] site_description_conclusions_text_area_ifr
+    [hidden] improvement_description_conclusions_text_area_ifr
+    [hidden] real_estate_taxes_remarks_text_area_ifr
+    [hidden] real_estate_taxes_comparables_remarks_text_area_ifr
+  Sub-sections via expand buttons (1):
+    Button: 'btn'
+      iframe: zoning_remarks_text_area_ifr
+      iframe: site_description_conclusions_text_area_ifr
+      iframe: improvement_description_conclusions_text_area_ifr
+      iframe: real_estate_taxes_remarks_text_area_ifr
+      iframe: real_estate_taxes_comparables_remarks_text_area_ifr
+
+SECTION: Highest & Best Use (highest_best_use)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use
+  TinyMCE iframes (2):
+    [visible 736x857] highest_and_best_use_as_vacant_remarks_text_area_ifr
+    [visible 736x106] highest_and_best_use_as_improved_remarks_text_area_ifr
+
+SECTION: Cost Approach (cost_approach)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/cost_approach
+  TinyMCE iframes (5):
+    [visible 736x185] replacement_cost_new_remarks_text_area_ifr
+    [hidden] depreciation_remarks_text_area_ifr
+    [hidden] cost_approach_reconciliation_remarks_text_area_ifr
+    [hidden] cost_approach_final_conclusion_remarks_text_area_ifr
+    [hidden] insurable_replacement_cost_remarks_text_area_ifr
+  Sub-sections via expand buttons (7):
+    Button: 'btn'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'preview'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'replacement cost new remarks'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'replacement cost new remarks'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'edit'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'view'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+    Button: 'insert'
+      iframe: replacement_cost_new_remarks_text_area_ifr
+      iframe: depreciation_remarks_text_area_ifr
+      iframe: cost_approach_reconciliation_remarks_text_area_ifr
+      iframe: cost_approach_final_conclusion_remarks_text_area_ifr
+      iframe: insurable_replacement_cost_remarks_text_area_ifr
+
+SECTION: Sales Comparison (sale_valuation)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation
+  TinyMCE iframes (1):
+    [hidden] sale_valuation_reconciliation_remarks_text_area_ifr
+  Sub-sections via expand buttons (6):
+    Button: 'btn'
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+    Button: 'preview'
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+    Button: ''
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+    Button: ''
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+    Button: 'details_link'
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+    Button: ''
+      iframe: sale_valuation_reconciliation_remarks_text_area_ifr
+
+SECTION: Market Rent Analysis (market_rent_analysis)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis
+  TinyMCE iframes (8):
+    [visible 736x252] income_approach_intro_text_area_ifr
+    [visible 736x229] rent_roll_remarks_text_area_ifr
+    [hidden] rent_reconciliation_remarks_text_area_ifr
+    [hidden] lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr
+    [hidden] other_revenue_remarks_text_area_ifr
+    [hidden] commercial_market_summary_text_area_ifr
+    [hidden] vacancy_and_credit_loss_remarks_text_area_ifr
+    [hidden] commercial_market_summary_standalone_text_area_ifr
+  Sub-sections via expand buttons (1):
+    Button: 'Edit table options from current tab'
+      iframe: income_approach_intro_text_area_ifr
+      iframe: rent_roll_remarks_text_area_ifr
+      iframe: rent_reconciliation_remarks_text_area_ifr
+      iframe: lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr
+      iframe: other_revenue_remarks_text_area_ifr
+      iframe: commercial_market_summary_text_area_ifr
+      iframe: vacancy_and_credit_loss_remarks_text_area_ifr
+      iframe: commercial_market_summary_standalone_text_area_ifr
+
+SECTION: Income Approach (income_approach)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/income_approach
+  TinyMCE iframes (14):
+    [hidden] expense_remarks_text_area_ifr
+    [hidden] investment_classifications_text_area_ifr
+    [hidden] investor_survey_remarks_text_area_ifr
+    [hidden] direct_capitalization_remarks_text_area_ifr
+    [hidden] investment_considerations_text_area_ifr
+    [hidden] property_class_investment_overview_text_area_ifr
+    [hidden] market_participants_text_area_ifr
+    [hidden] direct_capitalization_conclusion_remarks_text_area_ifr
+    [hidden] dcf_assumptions_remarks_text_area_ifr
+    [hidden] dcf_analysis_remarks_text_area_ifr
+    [hidden] dcf_conclusions_remarks_text_area_ifr
+    [hidden] dcf_reconciliation_remarks_text_area_ifr
+    [hidden] income_approach_reconciliation_remarks_text_area_ifr
+    [hidden] income_approach_conclusion_remarks_text_area_ifr
+  Sub-sections via expand buttons (1):
+    Button: 'btn'
+      iframe: expense_remarks_text_area_ifr
+      iframe: investment_classifications_text_area_ifr
+      iframe: investor_survey_remarks_text_area_ifr
+      iframe: direct_capitalization_remarks_text_area_ifr
+      iframe: investment_considerations_text_area_ifr
+      iframe: property_class_investment_overview_text_area_ifr
+      iframe: market_participants_text_area_ifr
+      iframe: direct_capitalization_conclusion_remarks_text_area_ifr
+      iframe: dcf_assumptions_remarks_text_area_ifr
+      iframe: dcf_analysis_remarks_text_area_ifr
+      iframe: dcf_conclusions_remarks_text_area_ifr
+      iframe: dcf_reconciliation_remarks_text_area_ifr
+      iframe: income_approach_reconciliation_remarks_text_area_ifr
+      iframe: income_approach_conclusion_remarks_text_area_ifr
+
+SECTION: Reconciliation (reconciliation)
+  URL: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/reconciliation
+  TinyMCE iframes (1):
+    [visible 736x584] reconciliation_section_content_text_area_ifr
+  Sub-sections via expand buttons (7):
+    Button: 'btn'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'preview'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'edit'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'view'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'insert'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'format'
+      iframe: reconciliation_section_content_text_area_ifr
+    Button: 'table'
+      iframe: reconciliation_section_content_text_area_ifr
+

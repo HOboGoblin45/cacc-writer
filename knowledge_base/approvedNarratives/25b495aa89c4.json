@@ -1,0 +1,23 @@
+{
+  "id": "25b495aa89c4",
+  "text": "The subject neighborhood is a well-established suburban area in Bloomington, McLean County, Illinois, characterized by stable market conditions.",
+  "sectionType": "neighborhood_description",
+  "formType": "1004",
+  "propertyType": "single_family",
+  "assignmentPurpose": "purchase",
+  "loanProgram": "conventional",
+  "subjectCondition": "C3",
+  "state": "IL",
+  "county": "McLean",
+  "city": "Bloomington",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-09T06:18:07.891Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "test-case-001",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-09T06:18:07.891Z",
+  "updatedAt": "2026-03-09T06:18:07.891Z",
+  "approvedBy": "cresci"
+}

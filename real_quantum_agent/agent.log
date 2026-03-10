@@ -1,0 +1,87 @@
+[rq_agent] 18:19:44 INFO: CACC Real Quantum Agent v2.0 starting on port 5181
+[rq_agent] 18:19:44 INFO: Playwright available: True
+[rq_agent] 18:19:44 INFO: CDP URL (Chrome remote debugging): http://127.0.0.1:9222
+[rq_agent] 18:19:44 INFO: Field maps directory: C:\Users\ccres\OneDrive\Desktop\cacc-writer\real_quantum_agent\field_maps
+[rq_agent] 18:19:44 INFO: Screenshots directory: C:\Users\ccres\OneDrive\Desktop\cacc-writer\real_quantum_agent\screenshots
+[rq_agent] 18:19:44 INFO: 
+[rq_agent] 18:19:44 INFO: SETUP REMINDER:
+[rq_agent] 18:19:44 INFO:   1. Launch Chrome: chrome.exe --remote-debugging-port=9222 --user-data-dir=C:\rq-session
+[rq_agent] 18:19:44 INFO:   2. Log into Real Quantum and open your commercial report
+[rq_agent] 18:19:44 INFO:   3. Then use CACC Writer to generate and insert narratives
+[rq_agent] 18:19:44 INFO: 
+ * Serving Flask app 'agent'
+ * Debug mode: off
+[rq_agent] 18:19:44 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5181
+[rq_agent] 18:19:44 INFO: [33mPress CTRL+C to quit[0m
+[rq_agent] 18:19:51 INFO: Connecting to Chrome at http://127.0.0.1:9222...
+(node:26360) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[rq_agent] 18:19:52 INFO: Found Real Quantum tab: https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation
+[rq_agent] 18:19:52 INFO: 127.0.0.1 - - [07/Mar/2026 18:19:52] "GET /health HTTP/1.1" 200 -
+[rq_agent] 18:20:01 INFO: Loaded field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\real_quantum_agent\field_maps\commercial.json (20 fields)
+[rq_agent] 18:20:01 INFO: Navigating to section: introduction \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction
+[rq_agent] 18:20:04 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:04] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:20:04 INFO: Navigating to section: property_data \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data
+[rq_agent] 18:20:08 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:08] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:20:08 INFO: Navigating to section: highest_best_use \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use
+[rq_agent] 18:20:11 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:11] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:20:11 INFO: Navigating to section: market_rent_analysis \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis
+[rq_agent] 18:20:14 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:14] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:20:15 INFO: BATCH INSERT 'Introduction' (105 chars)
+[rq_agent] 18:20:15 INFO: Navigating to section: introduction \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction
+[rq_agent] 18:20:17 INFO: Inserted via TinyMCE JS API: editor_id=introduction_section_content_text_area (105 chars)
+[rq_agent] 18:20:17 INFO: Verification passed \u2713
+[rq_agent] 18:20:18 INFO: BATCH INSERT 'Property Data — Site Description' (108 chars)
+[rq_agent] 18:20:18 INFO: Navigating to section: property_data \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data
+[rq_agent] 18:20:21 INFO: Inserted via TinyMCE JS API: editor_id=site_description_conclusions_text_area (108 chars)
+[rq_agent] 18:20:21 INFO: Verification passed \u2713
+[rq_agent] 18:20:21 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:21] "POST /insert-batch HTTP/1.1" 200 -
+[rq_agent] 18:20:21 INFO: Navigating to section: sale_valuation \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation
+[rq_agent] 18:20:24 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:24] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:20:24 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:24] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:20:25 INFO: 127.0.0.1 - - [07/Mar/2026 18:20:25] "GET /screenshot HTTP/1.1" 200 -
+[rq_agent] 18:39:14 INFO: Navigating to section: introduction \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction
+[rq_agent] 18:39:19 ERROR: URL navigation failed for slug 'introduction': Page.goto: Navigation to "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction" is interrupted by another navigation to "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction"
+Call log:
+  - navigating to "https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction", waiting until "domcontentloaded"
+
+[rq_agent] 18:39:21 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:21] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:39:21 INFO: Navigating to section: property_data \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data
+[rq_agent] 18:39:26 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:26] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:39:26 INFO: Navigating to section: highest_best_use \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/highest_best_use
+[rq_agent] 18:39:29 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:29] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:39:30 INFO: Navigating to section: market_rent_analysis \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/market_rent_analysis
+[rq_agent] 18:39:33 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:33] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:39:33 INFO: BATCH INSERT 'Introduction' (105 chars)
+[rq_agent] 18:39:33 INFO: Navigating to section: introduction \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/introduction
+[rq_agent] 18:39:36 INFO: Inserted via TinyMCE JS API: editor_id=introduction_section_content_text_area (105 chars)
+[rq_agent] 18:39:36 INFO: Verification passed \u2713
+[rq_agent] 18:39:36 INFO: BATCH INSERT 'Property Data — Site Description' (108 chars)
+[rq_agent] 18:39:36 INFO: Navigating to section: property_data \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/property_data
+[rq_agent] 18:39:39 INFO: Inserted via TinyMCE JS API: editor_id=site_description_conclusions_text_area (108 chars)
+[rq_agent] 18:39:40 INFO: Verification passed \u2713
+[rq_agent] 18:39:40 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:40] "POST /insert-batch HTTP/1.1" 200 -
+[rq_agent] 18:39:40 INFO: Navigating to section: sale_valuation \u2192 https://cacc.realquantumapp.com/assignments/feb03938-8e5f-4327-8230-0e31d20a6b2c/sale_valuation
+[rq_agent] 18:39:43 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:43] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:39:43 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:43] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:39:43 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:43] "GET /screenshot HTTP/1.1" 200 -
+[rq_agent] 18:39:54 INFO: 127.0.0.1 - - [07/Mar/2026 18:39:54] "GET /health HTTP/1.1" 200 -
+[rq_agent] 18:50:26 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:26] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:50:26 INFO: No navigation required for this field.
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:50:27 INFO: No navigation required for this field.
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "[33mPOST /list-detail-pages HTTP/1.1[0m" 404 -
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:50:27 INFO: 127.0.0.1 - - [07/Mar/2026 18:50:27] "[33mPOST /list-detail-pages HTTP/1.1[0m" 404 -
+[rq_agent] 18:54:21 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:21] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:54:21 INFO: No navigation required for this field.
+[rq_agent] 18:54:21 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:21] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:54:21 INFO: No navigation required for this field.
+[rq_agent] 18:54:22 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:22] "POST /test-field HTTP/1.1" 200 -
+[rq_agent] 18:54:22 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:22] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:54:22 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:22] "[33mPOST /list-detail-pages HTTP/1.1[0m" 404 -
+[rq_agent] 18:54:22 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:22] "GET /list-sections HTTP/1.1" 200 -
+[rq_agent] 18:54:22 INFO: 127.0.0.1 - - [07/Mar/2026 18:54:22] "[33mPOST /list-detail-pages HTTP/1.1[0m" 404 -

@@ -1,0 +1,14 @@
+{
+  "id": "0575671eaa09",
+  "formType": "1004",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "All comparables have been found in the subject's neighborhood and were selected to demonstrate the marketability of houses of a similar location, design, age, quality, condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of 3.1% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its condition due to recent updates, GLA, basement finished room count, and lack of an enclosed porch. Comparable #2 has been adjusted for its quality, lack of a finished basement, garage space count, and lack of an enclosed porch. Comparable #3 has been adjusted for its GLA and lack of an enclosed porch. After adjustments are made the comparables provide a good basis for an estimate of market value.",
+  "createdAt": "2026-03-07T21:05:38.636Z",
+  "updatedAt": "2026-03-07T21:05:38.636Z"
+}

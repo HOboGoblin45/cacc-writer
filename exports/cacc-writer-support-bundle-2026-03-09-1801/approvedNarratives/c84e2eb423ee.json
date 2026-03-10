@@ -1,0 +1,23 @@
+{
+  "id": "c84e2eb423ee",
+  "text": "The subject neighborhood is a suburban residential area in Sangamon County, Illinois. The area reportedly consists primarily of single-family housing and exhibits characteristics commonly associated with suburban markets in the region. Based on available information, overall market conditions appear to be stable, with supply and demand generally in balance. No significant evidence of oversupply or undersupply was noted; this is considered typical for the market area. [INSERT additional area-specific details if available.]",
+  "sectionType": "neighborhood_description",
+  "formType": "1004",
+  "propertyType": "Single Family",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "IL",
+  "county": "Sangamon",
+  "city": "Springfield",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-09T22:54:46.626Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "4c7f66cb",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-09T22:54:46.626Z",
+  "updatedAt": "2026-03-09T22:54:46.626Z",
+  "approvedBy": "cresci"
+}

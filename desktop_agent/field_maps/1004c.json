@@ -1,0 +1,78 @@
+{
+  "_comment": "Field map for FNMA Form 1004C — Manufactured Home Appraisal Report.",
+  "_comment2": "NOTE: 1004C shares all residential section tabs with 1004. The manufactured_home_comments field is the only 1004C-specific addition.",
+  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1004C report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py — copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1004c to verify.",
+  "_migrationStatus": "LEGACY_TRANSITIONAL — canonical source is server/fieldRegistry.js. Do not extend this file; add new fields to fieldRegistry.js first.",
+  "_schema": {
+    "label":          "Human-readable field label (used for label-match fallback)",
+    "automation_id":  "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
+    "class_name":     "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
+    "class_index":    "0-based index among controls of this class_name. Fill in from /calibrate output.",
+    "control_index":  "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
+    "notes":          "Human notes about this field"
+  },
+
+  "neighborhood_description": {
+    "label":          "Neighborhood Description",
+    "tab_name":       "Neig",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Neighborhood section — TX32 addendum editor. Tab: Neig. Shared with 1004."
+  },
+  "site_comments": {
+    "label":          "Site Description",
+    "tab_name":       "Site",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Site section — TX32 addendum editor. Tab: Site. Shared with 1004."
+  },
+  "improvements_condition": {
+    "label":          "Improvements",
+    "tab_name":       "Impro",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Improvements section — TX32 addendum editor. Tab: Impro. Shared with 1004."
+  },
+  "manufactured_home_comments": {
+    "label":          "Manufactured Housing Comments",
+    "tab_name":       "Impro",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "1004C-specific field. HUD labels, foundation certification, chassis/tow-hitch, marketability. Likely in Improvements tab — confirm during calibration."
+  },
+  "sales_comparison_commentary": {
+    "label":          "Sales Comparison Analysis",
+    "tab_name":       "Sales",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Sales comparison section — TX32 addendum editor. Tab: Sales. Shared with 1004."
+  },
+  "reconciliation": {
+    "label":          "Reconciliation",
+    "tab_name":       "Reco",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Reconciliation section — TX32 addendum editor. Tab: Reco. HIGH PRIORITY. Shared with 1004."
+  },
+  "market_conditions": {
+    "label":          "Market Conditions",
+    "tab_name":       "Neig",
+    "automation_id":  "",
+    "class_name":     "",
+    "class_index":    null,
+    "control_index":  null,
+    "notes":          "Market conditions — in Neighborhood section. Tab: Neig. Shared with 1004."
+  }
+}

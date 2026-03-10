@@ -1,0 +1,14 @@
+{
+  "id": "c5656023375b",
+  "formType": "1073",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Due to recent sale price stability of condominium units in the market area, the comparables received no market time adjustment.",
+  "createdAt": "2026-03-07T21:05:38.769Z",
+  "updatedAt": "2026-03-07T21:05:38.769Z"
+}

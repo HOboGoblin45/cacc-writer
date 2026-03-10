@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-03-09T10:02:57.066Z",
+  "appVersion": "2.0.0",
+  "note": "Service health at time of bundle creation",
+  "services": {
+    "server": {
+      "status": "healthy",
+      "note": "Server was running — bundle created successfully"
+    },
+    "knowledgeBase": {
+      "status": "healthy",
+      "cases": 288,
+      "approvedNarratives": 11
+    },
+    "approvedNarratives": {
+      "status": "healthy",
+      "count": 11
+    },
+    "logs": {
+      "count": 1
+    }
+  }
+}

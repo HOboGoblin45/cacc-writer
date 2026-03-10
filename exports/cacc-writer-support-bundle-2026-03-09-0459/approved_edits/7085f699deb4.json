@@ -1,0 +1,14 @@
+{
+  "id": "7085f699deb4",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "approved_edit",
+  "qualityScore": 90,
+  "tags": [],
+  "text": "Market conditions are stable with moderate demand.",
+  "createdAt": "2026-03-09T04:55:44.681Z",
+  "updatedAt": "2026-03-09T04:55:44.681Z"
+}

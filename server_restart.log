@@ -1,0 +1,192 @@
+[dotenv@17.3.1] injecting env (16) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+[dotenv@17.3.1] injecting env (16) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Prompts loaded: system_cacc_writer.txt + style_guide_cresci.txt (7819 chars)
+CACC Writer starting... Model: gpt-4.1
+{"ts":"2026-03-10T01:37:25.896Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+
+CACC Writer running at http://localhost:5178
+Model: gpt-4.1
+Open http://localhost:5178 in your browser.
+
+{"ts":"2026-03-10T01:37:29.434Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":11}
+{"ts":"2026-03-10T01:37:29.483Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":33}
+{"ts":"2026-03-10T01:37:29.524Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+[legacyKbImport] Starting legacy KB import...
+[legacyKbImport] approvedNarratives: 28 processed
+[legacyKbImport] approved_edits: 67 processed
+[legacyKbImport] kb/index.json: 296 processed
+[legacyKbImport] Complete — imported: 0, skipped: 391, upgraded: 0, errors: 0 (51ms)
+{"ts":"2026-03-10T01:37:29.579Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":51}
+{"ts":"2026-03-10T01:37:29.581Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":60}
+{"ts":"2026-03-10T01:37:29.585Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+[legacyKbImport] Starting legacy KB import...
+[legacyKbImport] approvedNarratives: 28 processed
+[legacyKbImport] approved_edits: 67 processed
+[legacyKbImport] kb/index.json: 296 processed
+[legacyKbImport] Complete — imported: 0, skipped: 391, upgraded: 0, errors: 0 (52ms)
+{"ts":"2026-03-10T01:37:29.640Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":52}
+{"ts":"2026-03-10T01:37:29.642Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":57}
+{"ts":"2026-03-10T01:37:29.674Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":30}
+{"ts":"2026-03-10T01:37:29.680Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+[orchestrator:start] {"ts":"2026-03-10T01:37:29.693Z","level":"info","phase":"start","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","caseId":"b01f98a9","formType":"1004"}
+[orchestrator:context-built] {"ts":"2026-03-10T01:37:29.696Z","level":"info","phase":"context-built","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","formType":"1004","caseId":"b01f98a9","durationMs":2,"assignmentId":"1aa5ee69-38bb-4f29-951b-2a75fcff7656"}
+[orchestrator:plan-built] {"ts":"2026-03-10T01:37:29.697Z","level":"info","phase":"plan-built","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","totalSections":10,"parallelCount":9,"dependentCount":1,"analysisJobs":["market_analysis","hbu_logic","comp_analysis"],"estimatedMs":17000,"durationMs":0}
+[orchestrator:retrieval-built] {"ts":"2026-03-10T01:37:29.699Z","level":"info","phase":"retrieval-built","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","fromCache":true,"totalMemoryScanned":391,"totalExamplesUsed":30,"durationMs":1}
+[orchestrator:analysis] {"ts":"2026-03-10T01:37:29.700Z","level":"info","phase":"analysis","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","artifactType":"market_analysis","durationMs":0,"ok":true}
+[orchestrator:analysis] {"ts":"2026-03-10T01:37:29.701Z","level":"info","phase":"analysis","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","artifactType":"hbu_logic","durationMs":0,"ok":true}
+[orchestrator:analysis] {"ts":"2026-03-10T01:37:29.702Z","level":"info","phase":"analysis","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","artifactType":"comp_analysis","durationMs":1,"ok":true}
+[orchestrator:analysis-complete] {"ts":"2026-03-10T01:37:29.702Z","level":"info","phase":"analysis-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","artifactTypes":["market_analysis","hbu_logic","comp_analysis"],"durationMs":2}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:37:29.703Z","level":"info","phase":"parallel-batch","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","batch":["neighborhood_description","market_conditions","site_description"],"batchNum":1}
+{"ts":"2026-03-10T01:37:29.809Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":122}
+{"ts":"2026-03-10T01:37:31.814Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:33.821Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:34.119Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"neighborhood_description","ok":true,"durationMs":4141,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:34.121Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"market_conditions","ok":true,"durationMs":3787,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:34.122Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"site_description","ok":true,"durationMs":4405,"attempts":1}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:37:34.123Z","level":"info","phase":"parallel-batch","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","batch":["improvements_description","condition_description","contract_analysis"],"batchNum":2}
+{"ts":"2026-03-10T01:37:35.828Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:37:37.835Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:39.576Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"improvements_description","ok":true,"durationMs":5452,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:39.579Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"condition_description","ok":true,"durationMs":3563,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:39.579Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"contract_analysis","ok":true,"durationMs":3346,"attempts":1}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:37:39.580Z","level":"info","phase":"parallel-batch","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","batch":["concessions_analysis","highest_best_use","sales_comparison_summary"],"batchNum":3}
+{"ts":"2026-03-10T01:37:39.842Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:41.847Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:43.851Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:44.326Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"concessions_analysis","ok":true,"durationMs":3463,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:44.329Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"highest_best_use","ok":true,"durationMs":3403,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:37:44.330Z","level":"info","phase":"section-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"sales_comparison_summary","ok":true,"durationMs":4743,"attempts":1}
+[orchestrator:parallel-complete] {"ts":"2026-03-10T01:37:44.331Z","level":"info","phase":"parallel-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sections":["neighborhood_description","market_conditions","site_description","improvements_description","condition_description","contract_analysis","concessions_analysis","highest_best_use","sales_comparison_summary"],"succeeded":9,"failed":0,"durationMs":14628}
+[orchestrator:synthesis-start] {"ts":"2026-03-10T01:37:44.332Z","level":"info","phase":"synthesis-start","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"reconciliation"}
+{"ts":"2026-03-10T01:37:45.854Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+[orchestrator:synthesis-complete] {"ts":"2026-03-10T01:37:46.930Z","level":"info","phase":"synthesis-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","sectionId":"reconciliation","ok":true,"durationMs":2596}
+[orchestrator:assembly-complete] {"ts":"2026-03-10T01:37:46.935Z","level":"info","phase":"assembly-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","status":"draft_ready","successCount":10,"errorCount":0,"warningCount":2,"totalMs":17240,"grade":"good"}
+[orchestrator:run-complete] {"ts":"2026-03-10T01:37:46.936Z","level":"info","phase":"run-complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","status":"completed","totalMs":17240,"successCount":10,"errorCount":0,"grade":"good"}
+{"ts":"2026-03-10T01:37:46.936Z","level":"info","msg":"[orchestrator] run complete","runId":"5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50","ok":true}
+{"ts":"2026-03-10T01:37:47.859Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:49.863Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:51.867Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:53.871Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:55.875Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:37:57.878Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:37:59.882Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:01.886Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:03.889Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:05.893Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:07.897Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:09.900Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:11.904Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:13.908Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:15.912Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:17.915Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:19.919Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:21.922Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:23.926Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:25.930Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:27.932Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:29.937Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:31.940Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:33.944Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:35.947Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:37.950Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:39.953Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:41.959Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:43.963Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:45.968Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:47.972Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:49.977Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:51.981Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:53.984Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:55.988Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:38:57.994Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:38:59.999Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:39:00.011Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/5f99e2a4-e94f-4cf5-a184-6e9fb1f2ec50/result","status":200,"ms":3}
+{"ts":"2026-03-10T01:39:00.017Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+{"ts":"2026-03-10T01:39:03.059Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":200,"ms":3036}
+{"ts":"2026-03-10T01:39:03.071Z","level":"info","msg":"http","method":"POST","path":"/api/cases/NONEXISTENT_CASE_XYZ/generate-full-draft","status":400,"ms":2}
+{"ts":"2026-03-10T01:39:03.076Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/status","status":404,"ms":2}
+{"ts":"2026-03-10T01:39:03.081Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/FAKE_RUN_ID_XYZ/result","status":404,"ms":2}
+{"ts":"2026-03-10T01:39:03.087Z","level":"info","msg":"http","method":"POST","path":"/api/generation/regenerate-section","status":400,"ms":2}
+{"ts":"2026-03-10T01:44:29.234Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":0}
+{"ts":"2026-03-10T01:44:29.250Z","level":"info","msg":"http","method":"GET","path":"/api/db/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:29.255Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+[legacyKbImport] Starting legacy KB import...
+[legacyKbImport] approvedNarratives: 28 processed
+[legacyKbImport] approved_edits: 67 processed
+[legacyKbImport] kb/index.json: 296 processed
+[legacyKbImport] Complete — imported: 0, skipped: 391, upgraded: 0, errors: 0 (76ms)
+{"ts":"2026-03-10T01:44:29.332Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":76}
+{"ts":"2026-03-10T01:44:29.334Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":79}
+{"ts":"2026-03-10T01:44:29.339Z","level":"info","msg":"[db] Starting legacy KB migration..."}
+[legacyKbImport] Starting legacy KB import...
+[legacyKbImport] approvedNarratives: 28 processed
+[legacyKbImport] approved_edits: 67 processed
+[legacyKbImport] kb/index.json: 296 processed
+[legacyKbImport] Complete — imported: 0, skipped: 391, upgraded: 0, errors: 0 (79ms)
+{"ts":"2026-03-10T01:44:29.420Z","level":"info","msg":"[db] Legacy KB migration complete","ok":true,"imported":0,"skipped":391,"upgraded":0,"errors":0,"sources":{"approvedNarratives":28,"approvedEdits":67,"kbIndex":296},"durationMs":79}
+{"ts":"2026-03-10T01:44:29.423Z","level":"info","msg":"http","method":"POST","path":"/api/db/migrate-legacy-kb","status":200,"ms":84}
+{"ts":"2026-03-10T01:44:29.480Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":53}
+{"ts":"2026-03-10T01:44:29.486Z","level":"info","msg":"http","method":"GET","path":"/api/cases/b01f98a9/generation-runs","status":200,"ms":2}
+[orchestrator:start] {"ts":"2026-03-10T01:44:29.496Z","level":"info","phase":"start","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","caseId":"b01f98a9","formType":"1004"}
+[orchestrator:context-built] {"ts":"2026-03-10T01:44:29.500Z","level":"info","phase":"context-built","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","formType":"1004","caseId":"b01f98a9","durationMs":2,"assignmentId":"1aa5ee69-38bb-4f29-951b-2a75fcff7656"}
+[orchestrator:plan-built] {"ts":"2026-03-10T01:44:29.501Z","level":"info","phase":"plan-built","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","totalSections":10,"parallelCount":9,"dependentCount":1,"analysisJobs":["market_analysis","hbu_logic","comp_analysis"],"estimatedMs":17000,"durationMs":1}
+[orchestrator:retrieval-built] {"ts":"2026-03-10T01:44:29.501Z","level":"info","phase":"retrieval-built","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","fromCache":true,"totalMemoryScanned":391,"totalExamplesUsed":30,"durationMs":0}
+[orchestrator:analysis] {"ts":"2026-03-10T01:44:29.502Z","level":"info","phase":"analysis","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","artifactType":"market_analysis","durationMs":0,"ok":true}
+[orchestrator:analysis] {"ts":"2026-03-10T01:44:29.503Z","level":"info","phase":"analysis","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","artifactType":"hbu_logic","durationMs":0,"ok":true}
+[orchestrator:analysis] {"ts":"2026-03-10T01:44:29.504Z","level":"info","phase":"analysis","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","artifactType":"comp_analysis","durationMs":0,"ok":true}
+[orchestrator:analysis-complete] {"ts":"2026-03-10T01:44:29.504Z","level":"info","phase":"analysis-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","artifactTypes":["market_analysis","hbu_logic","comp_analysis"],"durationMs":2}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:44:29.505Z","level":"info","phase":"parallel-batch","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","batch":["neighborhood_description","market_conditions","site_description"],"batchNum":1}
+{"ts":"2026-03-10T01:44:29.551Z","level":"info","msg":"http","method":"POST","path":"/api/cases/b01f98a9/generate-full-draft","status":200,"ms":57}
+{"ts":"2026-03-10T01:44:31.557Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:33.562Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:33.918Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"neighborhood_description","ok":true,"durationMs":4411,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:33.920Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"market_conditions","ok":true,"durationMs":2272,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:33.921Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"site_description","ok":true,"durationMs":3632,"attempts":1}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:44:33.922Z","level":"info","phase":"parallel-batch","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","batch":["improvements_description","condition_description","contract_analysis"],"batchNum":2}
+{"ts":"2026-03-10T01:44:35.567Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:37.573Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:37.756Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"improvements_description","ok":true,"durationMs":3570,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:37.758Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"condition_description","ok":true,"durationMs":2603,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:37.759Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"contract_analysis","ok":true,"durationMs":3830,"attempts":1}
+[orchestrator:parallel-batch] {"ts":"2026-03-10T01:44:37.759Z","level":"info","phase":"parallel-batch","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","batch":["concessions_analysis","highest_best_use","sales_comparison_summary"],"batchNum":3}
+{"ts":"2026-03-10T01:44:39.578Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:41.234Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"concessions_analysis","ok":true,"durationMs":2936,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:41.236Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"highest_best_use","ok":true,"durationMs":1693,"attempts":1}
+[orchestrator:section-complete] {"ts":"2026-03-10T01:44:41.237Z","level":"info","phase":"section-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"sales_comparison_summary","ok":true,"durationMs":3471,"attempts":1}
+[orchestrator:parallel-complete] {"ts":"2026-03-10T01:44:41.237Z","level":"info","phase":"parallel-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sections":["neighborhood_description","market_conditions","site_description","improvements_description","condition_description","contract_analysis","concessions_analysis","highest_best_use","sales_comparison_summary"],"succeeded":9,"failed":0,"durationMs":11732}
+[orchestrator:synthesis-start] {"ts":"2026-03-10T01:44:41.238Z","level":"info","phase":"synthesis-start","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"reconciliation"}
+{"ts":"2026-03-10T01:44:41.584Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:43.591Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+[orchestrator:synthesis-complete] {"ts":"2026-03-10T01:44:44.343Z","level":"info","phase":"synthesis-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","sectionId":"reconciliation","ok":true,"durationMs":3103}
+[orchestrator:assembly-complete] {"ts":"2026-03-10T01:44:44.344Z","level":"info","phase":"assembly-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","status":"draft_ready","successCount":10,"errorCount":0,"warningCount":3,"totalMs":14847,"grade":"good"}
+[orchestrator:run-complete] {"ts":"2026-03-10T01:44:44.345Z","level":"info","phase":"run-complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","status":"completed","totalMs":14847,"successCount":10,"errorCount":0,"grade":"good"}
+{"ts":"2026-03-10T01:44:44.346Z","level":"info","msg":"[orchestrator] run complete","runId":"d3a0eb72-151f-40e9-80ae-69af66ff4f48","ok":true}
+{"ts":"2026-03-10T01:44:45.594Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:47.597Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:49.601Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:51.608Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":3}
+{"ts":"2026-03-10T01:44:53.612Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:55.615Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:44:57.618Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:44:59.622Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:01.625Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:03.629Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:05.632Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:07.637Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:09.639Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:11.642Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:13.645Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":0}
+{"ts":"2026-03-10T01:45:15.649Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:17.652Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:19.655Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:21.657Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:23.660Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:25.663Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:27.666Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:29.671Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:31.675Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:33.678Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:35.682Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:37.686Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":1}
+{"ts":"2026-03-10T01:45:39.691Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}
+{"ts":"2026-03-10T01:45:41.695Z","level":"info","msg":"http","method":"GET","path":"/api/generation/runs/d3a0eb72-151f-40e9-80ae-69af66ff4f48/status","status":200,"ms":2}

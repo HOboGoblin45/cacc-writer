@@ -1,0 +1,14 @@
+{
+  "id": "16cb0290a4f1",
+  "formType": "1004",
+  "fieldId": "concessions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "approved_edit",
+  "qualityScore": 90,
+  "tags": [],
+  "text": "No seller concessions or financial assistance are reported for the subject transaction. If any concessions are present, they should be detailed here. Based on the available file information, [INSERT concessions]. This aspect has minimal impact on marketability in this segment of the Bloomington suburban residential market. Concessions remain typical for the area.",
+  "createdAt": "2026-03-07T22:20:57.105Z",
+  "updatedAt": "2026-03-07T22:20:57.105Z"
+}

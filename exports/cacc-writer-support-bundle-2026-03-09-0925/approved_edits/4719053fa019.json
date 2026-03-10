@@ -1,0 +1,14 @@
+{
+  "id": "4719053fa019",
+  "formType": "1004",
+  "fieldId": "neighborhood_description",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "approved_edit",
+  "qualityScore": 90,
+  "tags": [],
+  "text": "Edited and improved text here for smoke test.",
+  "createdAt": "2026-03-09T08:10:29.918Z",
+  "updatedAt": "2026-03-09T08:10:29.918Z"
+}

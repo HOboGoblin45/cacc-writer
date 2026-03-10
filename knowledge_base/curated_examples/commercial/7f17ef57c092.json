@@ -1,0 +1,14 @@
+{
+  "id": "7f17ef57c092",
+  "formType": "commercial",
+  "fieldId": "cost_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Cost Approach produced a value indication of $155,000, which was derived by estimating the replacement cost new of the improvements, less accrued depreciation, and adding the estimated site value of $75,000. While this approach provides a useful benchmark for value, it was given secondary consideration due to the inherent difficulty in accurately estimating depreciation and the limited relationship between construction cost and market value for properties of this type.",
+  "createdAt": "2026-03-07T21:05:39.527Z",
+  "updatedAt": "2026-03-07T21:05:39.527Z"
+}

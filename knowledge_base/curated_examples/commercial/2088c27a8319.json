@@ -1,0 +1,14 @@
+{
+  "id": "2088c27a8319",
+  "formType": "commercial",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The income approach to valuation was developed to estimate the subject property’s value as an income-producing asset. Market research was performed to identify market rents, typical expenses, and investor yield expectations for comparable properties in the local and regional context. The analysis applied both direct capitalization and discounted cash flow methodologies where data permitted, with primary emphasis on achievable market rent, existing lease terms, and the subject’s historical occupancy. Capitalization rates were selected based on prevailing investor expectations for small-town retail/service assets in Central Illinois, reflecting stable income profiles with moderate risk. The income approach provides support for the value conclusion, though market participants in this segment often place greater emphasis on comparable sales evidence.",
+  "createdAt": "2026-03-07T21:05:39.581Z",
+  "updatedAt": "2026-03-07T21:05:39.581Z"
+}

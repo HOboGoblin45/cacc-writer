@@ -1,0 +1,14 @@
+{
+  "id": "5f24bc0f72f3",
+  "formType": "1004",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "All comparables have been found in the subject's neighborhood on the eastside of Bloomington, IL and were selected to demonstrate the marketabiltiy of houses of a similar location, design, quality, condition, GLA, and room count. Due to recent market trends the comparables have received a 6.7% market time adjustment based on the sales statistics chart included in this report. Comparable #1 has been adjusted for GLA, basement finished room count, lack of an enclosed porch, and lack of a fence. Comparable #2 has been adjusted for its GLA, basement finished room count, lack of an enclosed porch, and lack of a fence. Comparable #3 has been adjusted for its site size, quality, age, GLA, and garage space count.",
+  "createdAt": "2026-03-07T21:05:38.292Z",
+  "updatedAt": "2026-03-07T21:05:38.292Z"
+}

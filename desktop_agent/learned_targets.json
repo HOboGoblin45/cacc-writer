@@ -1,0 +1,56 @@
+{
+  "1004::neighborhood_description": {
+    "formType": "1004",
+    "fieldId": "neighborhood_description",
+    "label": "Neighborhood Description",
+    "tabName": "Neig",
+    "strategy": "learned:tx32:label_proximity:Neighborhood",
+    "tx32_rect": {
+      "left": 1031,
+      "top": 735,
+      "width": 825,
+      "height": 271
+    },
+    "label_matched": "Neighborhood Description",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
+    "success_count": 13,
+    "last_success": "2026-03-09T09:27:33.224614",
+    "verified": true
+  },
+  "1004::market_conditions": {
+    "formType": "1004",
+    "fieldId": "market_conditions",
+    "label": "Market Conditions Comments",
+    "tabName": "Neig",
+    "strategy": "learned:tx32:label_proximity:Market Conditions Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 247
+    },
+    "label_matched": "Market Conditions Comments",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
+    "success_count": 6,
+    "last_success": "2026-03-09T09:27:37.195565",
+    "verified": false
+  },
+  "1004::reconciliation": {
+    "formType": "1004",
+    "fieldId": "reconciliation",
+    "label": "Reconciliation Comments",
+    "tabName": "Reco",
+    "strategy": "learned:tx32:label_proximity:Reconciliation Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 873
+    },
+    "label_matched": "Reconciliation Comments",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
+    "success_count": 2,
+    "last_success": "2026-03-09T09:17:20.632849",
+    "verified": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "836224547e4f",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The subject neighborhood is bordered to the North by Emerson St, to the South by Locust St, to the East by Towanda Ave, and to the West by Main St.",
+  "createdAt": "2026-03-07T21:05:40.145Z",
+  "updatedAt": "2026-03-07T21:05:40.145Z"
+}

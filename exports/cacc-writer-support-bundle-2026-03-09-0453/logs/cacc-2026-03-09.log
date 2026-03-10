@@ -1,0 +1,482 @@
+{"ts":"2026-03-09T08:10:06.498Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-09.log"}
+{"ts":"2026-03-09T08:10:06.499Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-09T08:10:17.537Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":3}
+{"ts":"2026-03-09T08:10:29.840Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:29.847Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:29.849Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:29.851Z","level":"info","msg":"http","method":"GET","path":"/api/forms/9999","status":404,"ms":0}
+{"ts":"2026-03-09T08:10:29.874Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":6}
+{"ts":"2026-03-09T08:10:29.896Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":21}
+{"ts":"2026-03-09T08:10:29.899Z","level":"info","msg":"http","method":"GET","path":"/api/cases/c70d40d8","status":200,"ms":2}
+{"ts":"2026-03-09T08:10:29.902Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/c70d40d8","status":200,"ms":2}
+{"ts":"2026-03-09T08:10:29.903Z","level":"info","msg":"http","method":"GET","path":"/api/cases/notavalidid","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:29.907Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/c70d40d8/pipeline","status":200,"ms":2}
+{"ts":"2026-03-09T08:10:29.909Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/c70d40d8/pipeline","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:29.912Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/c70d40d8/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:10:29.915Z","level":"info","msg":"http","method":"PUT","path":"/api/cases/c70d40d8/facts","status":200,"ms":2}
+{"ts":"2026-03-09T08:10:29.924Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c70d40d8/feedback","status":200,"ms":7}
+{"ts":"2026-03-09T08:10:29.926Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c70d40d8/feedback","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:29.928Z","level":"info","msg":"http","method":"GET","path":"/api/kb/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:30.055Z","level":"info","msg":"http","method":"POST","path":"/api/kb/reindex","status":200,"ms":126}
+{"ts":"2026-03-09T08:10:30.057Z","level":"info","msg":"http","method":"GET","path":"/api/cases/c70d40d8/history","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:30.058Z","level":"info","msg":"http","method":"GET","path":"/api/templates/neighborhood","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:30.089Z","level":"info","msg":"http","method":"GET","path":"/api/agents/status","status":200,"ms":30}
+{"ts":"2026-03-09T08:10:30.091Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:30.092Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:30.094Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c70d40d8/review-section","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:30.097Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c70d40d8/insert-all","status":400,"ms":2}
+{"ts":"2026-03-09T08:10:30.099Z","level":"info","msg":"http","method":"GET","path":"/api/voice/examples","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:30.101Z","level":"info","msg":"http","method":"GET","path":"/api/voice/folder-status","status":200,"ms":1}
+{"ts":"2026-03-09T08:10:30.105Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/c70d40d8","status":200,"ms":3}
+{"ts":"2026-03-09T08:10:30.106Z","level":"info","msg":"http","method":"GET","path":"/api/cases/c70d40d8","status":404,"ms":0}
+{"ts":"2026-03-09T08:10:50.710Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:50.720Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.722Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":2}
+{"ts":"2026-03-09T08:10:50.724Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.725Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:50.727Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.727Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:50.734Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":5}
+{"ts":"2026-03-09T08:10:50.741Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":5}
+{"ts":"2026-03-09T08:10:50.743Z","level":"info","msg":"http","method":"GET","path":"/api/cases/157c1fa2","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:50.745Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.746Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:50.748Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.748Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:50.750Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:50.751Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:54.414Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":200,"ms":3661}
+{"ts":"2026-03-09T08:10:54.418Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.419Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":2}
+{"ts":"2026-03-09T08:10:54.420Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.421Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:54.421Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.422Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:54.424Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.425Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":2}
+{"ts":"2026-03-09T08:10:54.426Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.426Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:54.427Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:10:54.428Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":1}
+{"ts":"2026-03-09T08:10:54.429Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":0}
+{"ts":"2026-03-09T08:10:54.430Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:54.431Z","level":"info","msg":"http","method":"GET","path":"/api/forms/commercial","status":200,"ms":0}
+{"ts":"2026-03-09T08:10:54.432Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1025","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.498Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":6}
+{"ts":"2026-03-09T08:11:12.512Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":6}
+{"ts":"2026-03-09T08:11:12.518Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/neighborhood_description/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:12.524Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/market_conditions/status","status":200,"ms":3}
+{"ts":"2026-03-09T08:11:12.527Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/reconciliation/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.529Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/neighborhood_description/status","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:12.532Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/BADID/sections/neighborhood_description/status","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:12.535Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:12.539Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.543Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.545Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.547Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.550Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:12.552Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/17b95cf4/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:12.553Z","level":"info","msg":"http","method":"GET","path":"/api/cases/17b95cf4/sections/status","status":200,"ms":0}
+{"ts":"2026-03-09T08:11:12.555Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID/sections/status","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:12.556Z","level":"info","msg":"http","method":"POST","path":"/api/cases/FAKEID/generate-core","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:12.558Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/:caseId/generate-core\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:11:12.559Z","level":"info","msg":"http","method":"POST","path":"/api/cases/def1025a/generate-core","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:17.901Z","level":"info","msg":"http","method":"POST","path":"/api/cases/17b95cf4/generate-core","status":200,"ms":5340}
+{"ts":"2026-03-09T08:11:27.744Z","level":"info","msg":"http","method":"POST","path":"/api/cases/7a125a6b/generate-core","status":200,"ms":9839}
+{"ts":"2026-03-09T08:11:27.749Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/17b95cf4","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:27.752Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/7a125a6b","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:37.025Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":0}
+{"ts":"2026-03-09T08:11:37.037Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":4}
+{"ts":"2026-03-09T08:11:37.043Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":4}
+{"ts":"2026-03-09T08:11:37.050Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/destination-registry","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:37.054Z","level":"info","msg":"http","method":"GET","path":"/api/cases/e0b7fdcb/destination-registry","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:37.057Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/destination-registry","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:37.063Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/sections/neighborhood_description/insert","status":503,"ms":4}
+{"ts":"2026-03-09T08:11:37.066Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/sections/nonexistent_field/insert","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:37.068Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/sections/neighborhood_description/insert","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:37.070Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:37.072Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:37.074Z","level":"info","msg":"http","method":"GET","path":"/api/cases/e0b7fdcb/exceptions","status":200,"ms":0}
+{"ts":"2026-03-09T08:11:37.075Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/exceptions","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:37.083Z","level":"info","msg":"[approval-to-memory] saved market_conditions (1004) to KB + approvedNarratives"}
+{"ts":"2026-03-09T08:11:37.084Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/04c5b239/sections/market_conditions/status","status":200,"ms":7}
+{"ts":"2026-03-09T08:11:37.086Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:37.088Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/04c5b239/sections/site_description/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:37.090Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/04c5b239/sections/reconciliation/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:37.092Z","level":"info","msg":"http","method":"POST","path":"/api/cases/e0b7fdcb/generate-comp-commentary","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:37.094Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/generate-comp-commentary","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:40.411Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/generate-comp-commentary","status":200,"ms":3316}
+{"ts":"2026-03-09T08:11:43.140Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/generate-comp-commentary","status":200,"ms":2727}
+{"ts":"2026-03-09T08:11:43.142Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/generate-comp-commentary","status":400,"ms":0}
+{"ts":"2026-03-09T08:11:43.147Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/insert-all","status":503,"ms":3}
+{"ts":"2026-03-09T08:11:43.150Z","level":"info","msg":"http","method":"POST","path":"/api/cases/04c5b239/insert-all","status":400,"ms":1}
+{"ts":"2026-03-09T08:11:43.152Z","level":"info","msg":"http","method":"GET","path":"/api/cases/e0b7fdcb/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:43.156Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T08:11:43.159Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/04c5b239/sections/site_description/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:43.160Z","level":"info","msg":"http","method":"GET","path":"/api/cases/04c5b239/exceptions","status":200,"ms":0}
+{"ts":"2026-03-09T08:11:43.163Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/04c5b239","status":200,"ms":2}
+{"ts":"2026-03-09T08:11:43.166Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/e0b7fdcb","status":200,"ms":2}
+{"ts":"2026-03-09T08:12:13.138Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:12:13.149Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:12:13.154Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:12:13.159Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:12:13.163Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":3}
+{"ts":"2026-03-09T08:12:13.165Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.167Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.168Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.170Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.172Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:13.173Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.174Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.176Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:13.177Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/commercial/neighborhood","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.178Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/9999/nonexistent_section","status":404,"ms":1}
+{"ts":"2026-03-09T08:12:13.179Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1025/neighborhood_description","status":404,"ms":1}
+{"ts":"2026-03-09T08:12:13.180Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:13.181Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.182Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.183Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.185Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.187Z","level":"info","msg":"http","method":"GET","path":"/api/logs/not-a-date","status":400,"ms":1}
+{"ts":"2026-03-09T08:12:13.187Z","level":"info","msg":"http","method":"GET","path":"/api/logs/03-15-2025","status":400,"ms":0}
+{"ts":"2026-03-09T08:12:13.188Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2000-01-01","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:13.190Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:13.194Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:12:13.197Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":2}
+{"ts":"2026-03-09T08:12:13.200Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":2}
+{"ts":"2026-03-09T08:12:13.203Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":2}
+{"ts":"2026-03-09T08:12:13.207Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:12:13.209Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:12:21.830Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-12-13.zip","isZip":true}
+{"ts":"2026-03-09T08:12:21.832Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":8623}
+{"ts":"2026-03-09T08:12:21.837Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:12:30.708Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-12-21.zip","isZip":true}
+{"ts":"2026-03-09T08:12:30.711Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":8874}
+{"ts":"2026-03-09T08:12:30.714Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:12:37.359Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-12-30.zip","isZip":true}
+{"ts":"2026-03-09T08:12:37.361Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":6647}
+{"ts":"2026-03-09T08:12:37.363Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:12:37.552Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-12-37","isZip":false}
+{"ts":"2026-03-09T08:12:37.554Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":191}
+{"ts":"2026-03-09T08:12:37.556Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:37.558Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":1}
+{"ts":"2026-03-09T08:12:37.559Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":0}
+{"ts":"2026-03-09T08:12:37.560Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:17.407Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.422Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.423Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:17.425Z","level":"info","msg":"http","method":"GET","path":"/api/forms/9999","status":404,"ms":1}
+{"ts":"2026-03-09T08:19:17.432Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":5}
+{"ts":"2026-03-09T08:19:17.440Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":7}
+{"ts":"2026-03-09T08:19:17.442Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3b0a2ef4","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:17.445Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3b0a2ef4","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.446Z","level":"info","msg":"http","method":"GET","path":"/api/cases/notavalidid","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.450Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3b0a2ef4/pipeline","status":200,"ms":2}
+{"ts":"2026-03-09T08:19:17.451Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3b0a2ef4/pipeline","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.453Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3b0a2ef4/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.456Z","level":"info","msg":"http","method":"PUT","path":"/api/cases/3b0a2ef4/facts","status":200,"ms":2}
+{"ts":"2026-03-09T08:19:17.463Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3b0a2ef4/feedback","status":200,"ms":6}
+{"ts":"2026-03-09T08:19:17.465Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3b0a2ef4/feedback","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.467Z","level":"info","msg":"http","method":"GET","path":"/api/kb/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.502Z","level":"info","msg":"http","method":"POST","path":"/api/kb/reindex","status":200,"ms":34}
+{"ts":"2026-03-09T08:19:17.505Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3b0a2ef4/history","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.506Z","level":"info","msg":"http","method":"GET","path":"/api/templates/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.509Z","level":"info","msg":"http","method":"GET","path":"/api/agents/status","status":200,"ms":3}
+{"ts":"2026-03-09T08:19:17.510Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.511Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.512Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3b0a2ef4/review-section","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.513Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3b0a2ef4/insert-all","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:17.514Z","level":"info","msg":"http","method":"GET","path":"/api/voice/examples","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:17.516Z","level":"info","msg":"http","method":"GET","path":"/api/voice/folder-status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:17.518Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/3b0a2ef4","status":200,"ms":2}
+{"ts":"2026-03-09T08:19:17.519Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3b0a2ef4","status":404,"ms":0}
+{"ts":"2026-03-09T08:19:28.629Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:28.638Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.639Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:28.640Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.641Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:28.642Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.643Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:28.648Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":4}
+{"ts":"2026-03-09T08:19:28.654Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":4}
+{"ts":"2026-03-09T08:19:28.655Z","level":"info","msg":"http","method":"GET","path":"/api/cases/abe044f3","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:28.656Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.657Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:28.659Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.659Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:28.661Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:28.661Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:31.860Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":200,"ms":3197}
+{"ts":"2026-03-09T08:19:31.864Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.866Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":2}
+{"ts":"2026-03-09T08:19:31.867Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.867Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:31.868Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.869Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:31.870Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.870Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:31.871Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.872Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:31.872Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:31.873Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:31.874Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:31.875Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:31.875Z","level":"info","msg":"http","method":"GET","path":"/api/forms/commercial","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:31.876Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1025","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:40.351Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":6}
+{"ts":"2026-03-09T08:19:40.361Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":3}
+{"ts":"2026-03-09T08:19:40.364Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/neighborhood_description/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.367Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/market_conditions/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.369Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/reconciliation/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.371Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/neighborhood_description/status","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:40.372Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/BADID/sections/neighborhood_description/status","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:40.374Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.377Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.380Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.382Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.384Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.386Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.387Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/5c786079/sections/sca_summary/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.389Z","level":"info","msg":"http","method":"GET","path":"/api/cases/5c786079/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:40.389Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID/sections/status","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:40.390Z","level":"info","msg":"http","method":"POST","path":"/api/cases/FAKEID/generate-core","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:40.392Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/:caseId/generate-core\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T08:19:40.393Z","level":"info","msg":"http","method":"POST","path":"/api/cases/def1025a/generate-core","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:44.069Z","level":"info","msg":"http","method":"POST","path":"/api/cases/5c786079/generate-core","status":200,"ms":3674}
+{"ts":"2026-03-09T08:19:50.313Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c1376a20/generate-core","status":200,"ms":6241}
+{"ts":"2026-03-09T08:19:50.318Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/5c786079","status":200,"ms":2}
+{"ts":"2026-03-09T08:19:50.322Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/c1376a20","status":200,"ms":3}
+{"ts":"2026-03-09T08:19:58.967Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:58.981Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":5}
+{"ts":"2026-03-09T08:19:58.987Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":4}
+{"ts":"2026-03-09T08:19:58.992Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:58.993Z","level":"info","msg":"http","method":"GET","path":"/api/cases/612bcbe8/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:58.995Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/destination-registry","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:58.999Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/sections/neighborhood_description/insert","status":503,"ms":2}
+{"ts":"2026-03-09T08:19:59.000Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/sections/nonexistent_field/insert","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:59.002Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/sections/neighborhood_description/insert","status":400,"ms":1}
+{"ts":"2026-03-09T08:19:59.003Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/sections/status","status":200,"ms":0}
+{"ts":"2026-03-09T08:19:59.005Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:59.006Z","level":"info","msg":"http","method":"GET","path":"/api/cases/612bcbe8/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:59.006Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/exceptions","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:59.012Z","level":"info","msg":"[approval-to-memory] saved market_conditions (1004) to KB + approvedNarratives"}
+{"ts":"2026-03-09T08:19:59.014Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/a85abecc/sections/market_conditions/status","status":200,"ms":7}
+{"ts":"2026-03-09T08:19:59.015Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:59.018Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/a85abecc/sections/site_description/status","status":200,"ms":2}
+{"ts":"2026-03-09T08:19:59.020Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/a85abecc/sections/reconciliation/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:19:59.021Z","level":"info","msg":"http","method":"POST","path":"/api/cases/612bcbe8/generate-comp-commentary","status":400,"ms":0}
+{"ts":"2026-03-09T08:19:59.023Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/generate-comp-commentary","status":400,"ms":1}
+{"ts":"2026-03-09T08:20:02.942Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/generate-comp-commentary","status":200,"ms":3918}
+{"ts":"2026-03-09T08:20:04.952Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/generate-comp-commentary","status":200,"ms":2007}
+{"ts":"2026-03-09T08:20:04.955Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/generate-comp-commentary","status":400,"ms":0}
+{"ts":"2026-03-09T08:20:04.960Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/insert-all","status":503,"ms":3}
+{"ts":"2026-03-09T08:20:04.962Z","level":"info","msg":"http","method":"POST","path":"/api/cases/a85abecc/insert-all","status":400,"ms":0}
+{"ts":"2026-03-09T08:20:04.964Z","level":"info","msg":"http","method":"GET","path":"/api/cases/612bcbe8/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:04.967Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:04.969Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/a85abecc/sections/site_description/status","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:04.971Z","level":"info","msg":"http","method":"GET","path":"/api/cases/a85abecc/exceptions","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:04.974Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/a85abecc","status":200,"ms":2}
+{"ts":"2026-03-09T08:20:04.977Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/612bcbe8","status":200,"ms":2}
+{"ts":"2026-03-09T08:20:12.974Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":5}
+{"ts":"2026-03-09T08:20:12.989Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":5}
+{"ts":"2026-03-09T08:20:12.995Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:20:13.001Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":5}
+{"ts":"2026-03-09T08:20:13.006Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":4}
+{"ts":"2026-03-09T08:20:13.008Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.010Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.011Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.013Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.016Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.017Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.018Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.019Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.022Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/commercial/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.023Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/9999/nonexistent_section","status":404,"ms":1}
+{"ts":"2026-03-09T08:20:13.024Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1025/neighborhood_description","status":404,"ms":0}
+{"ts":"2026-03-09T08:20:13.026Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.027Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.029Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.030Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.033Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":2}
+{"ts":"2026-03-09T08:20:13.035Z","level":"info","msg":"http","method":"GET","path":"/api/logs/not-a-date","status":400,"ms":0}
+{"ts":"2026-03-09T08:20:13.037Z","level":"info","msg":"http","method":"GET","path":"/api/logs/03-15-2025","status":400,"ms":0}
+{"ts":"2026-03-09T08:20:13.039Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2000-01-01","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:13.040Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:13.046Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":4}
+{"ts":"2026-03-09T08:20:13.051Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:20:13.055Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:20:13.059Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:20:13.063Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":3}
+{"ts":"2026-03-09T08:20:13.066Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:20:20.431Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-20-13.zip","isZip":true}
+{"ts":"2026-03-09T08:20:20.432Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":7366}
+{"ts":"2026-03-09T08:20:20.434Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:20:27.664Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-20-20.zip","isZip":true}
+{"ts":"2026-03-09T08:20:27.665Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":7231}
+{"ts":"2026-03-09T08:20:27.667Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:20:34.852Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-20-27.zip","isZip":true}
+{"ts":"2026-03-09T08:20:34.854Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":7187}
+{"ts":"2026-03-09T08:20:34.856Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T08:20:35.074Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\support-bundle-2026-03-09T08-20-34","isZip":false}
+{"ts":"2026-03-09T08:20:35.075Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":219}
+{"ts":"2026-03-09T08:20:35.077Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:35.078Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":1}
+{"ts":"2026-03-09T08:20:35.079Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":0}
+{"ts":"2026-03-09T08:20:35.081Z","level":"info","msg":"http","method":"GET","path":"/api/export/list","status":200,"ms":1}
+{"ts":"2026-03-09T09:45:03.704Z","level":"info","msg":"file-logger:init","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs\\cacc-2026-03-09.log"}
+{"ts":"2026-03-09T09:45:03.707Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
+{"ts":"2026-03-09T09:45:06.837Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":8}
+{"ts":"2026-03-09T09:45:06.853Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":3}
+{"ts":"2026-03-09T09:45:06.858Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":2}
+{"ts":"2026-03-09T09:45:06.862Z","level":"info","msg":"http","method":"GET","path":"/api/forms/9999","status":404,"ms":1}
+{"ts":"2026-03-09T09:45:06.926Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":22}
+{"ts":"2026-03-09T09:45:06.990Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":59}
+{"ts":"2026-03-09T09:45:06.998Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6bc1820e","status":200,"ms":5}
+{"ts":"2026-03-09T09:45:07.007Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6bc1820e","status":200,"ms":5}
+{"ts":"2026-03-09T09:45:07.013Z","level":"info","msg":"http","method":"GET","path":"/api/cases/notavalidid","status":400,"ms":2}
+{"ts":"2026-03-09T09:45:07.023Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6bc1820e/pipeline","status":200,"ms":6}
+{"ts":"2026-03-09T09:45:07.027Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6bc1820e/pipeline","status":400,"ms":1}
+{"ts":"2026-03-09T09:45:07.034Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6bc1820e/status","status":200,"ms":5}
+{"ts":"2026-03-09T09:45:07.046Z","level":"info","msg":"http","method":"PUT","path":"/api/cases/6bc1820e/facts","status":200,"ms":9}
+{"ts":"2026-03-09T09:45:07.076Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6bc1820e/feedback","status":200,"ms":27}
+{"ts":"2026-03-09T09:45:07.079Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6bc1820e/feedback","status":400,"ms":1}
+{"ts":"2026-03-09T09:45:07.085Z","level":"info","msg":"http","method":"GET","path":"/api/kb/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:45:07.374Z","level":"info","msg":"http","method":"POST","path":"/api/kb/reindex","status":200,"ms":287}
+{"ts":"2026-03-09T09:45:07.377Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6bc1820e/history","status":200,"ms":1}
+{"ts":"2026-03-09T09:45:07.380Z","level":"info","msg":"http","method":"GET","path":"/api/templates/neighborhood","status":200,"ms":2}
+{"ts":"2026-03-09T09:45:07.465Z","level":"info","msg":"http","method":"GET","path":"/api/agents/status","status":200,"ms":84}
+{"ts":"2026-03-09T09:45:07.471Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":2}
+{"ts":"2026-03-09T09:45:07.475Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":400,"ms":1}
+{"ts":"2026-03-09T09:45:07.479Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6bc1820e/review-section","status":400,"ms":1}
+{"ts":"2026-03-09T09:45:07.484Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6bc1820e/insert-all","status":400,"ms":3}
+{"ts":"2026-03-09T09:45:07.487Z","level":"info","msg":"http","method":"GET","path":"/api/voice/examples","status":200,"ms":1}
+{"ts":"2026-03-09T09:45:07.492Z","level":"info","msg":"http","method":"GET","path":"/api/voice/folder-status","status":200,"ms":2}
+{"ts":"2026-03-09T09:45:07.501Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/6bc1820e","status":200,"ms":7}
+{"ts":"2026-03-09T09:45:07.503Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6bc1820e","status":404,"ms":1}
+{"ts":"2026-03-09T09:46:34.333Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":1}
+{"ts":"2026-03-09T09:46:34.352Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.354Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":2}
+{"ts":"2026-03-09T09:46:34.359Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.361Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":2}
+{"ts":"2026-03-09T09:46:34.364Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/cases/create\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.365Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":1}
+{"ts":"2026-03-09T09:46:34.384Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":16}
+{"ts":"2026-03-09T09:46:34.401Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":13}
+{"ts":"2026-03-09T09:46:34.406Z","level":"info","msg":"http","method":"GET","path":"/api/cases/aab9582d","status":200,"ms":2}
+{"ts":"2026-03-09T09:46:34.409Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.410Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T09:46:34.413Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.416Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":3}
+{"ts":"2026-03-09T09:46:34.421Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/generate\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:34.422Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-09T09:46:37.488Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":200,"ms":3063}
+{"ts":"2026-03-09T09:46:37.503Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.506Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":4}
+{"ts":"2026-03-09T09:46:37.512Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.514Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":3}
+{"ts":"2026-03-09T09:46:37.520Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.523Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":3}
+{"ts":"2026-03-09T09:46:37.528Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.529Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":2}
+{"ts":"2026-03-09T09:46:37.532Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1073\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.535Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":3}
+{"ts":"2026-03-09T09:46:37.538Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1004c\" context=\"POST /api/workflow/run-batch\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:46:37.540Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":2}
+{"ts":"2026-03-09T09:46:37.543Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":1}
+{"ts":"2026-03-09T09:46:37.546Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":1}
+{"ts":"2026-03-09T09:46:37.550Z","level":"info","msg":"http","method":"GET","path":"/api/forms/commercial","status":200,"ms":1}
+{"ts":"2026-03-09T09:46:37.552Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1025","status":200,"ms":1}
+{"ts":"2026-03-09T09:48:06.480Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":16}
+{"ts":"2026-03-09T09:48:06.505Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":12}
+{"ts":"2026-03-09T09:48:06.513Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/neighborhood_description/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.522Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/market_conditions/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.528Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/reconciliation/status","status":200,"ms":3}
+{"ts":"2026-03-09T09:48:06.532Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/neighborhood_description/status","status":400,"ms":0}
+{"ts":"2026-03-09T09:48:06.537Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/BADID/sections/neighborhood_description/status","status":400,"ms":1}
+{"ts":"2026-03-09T09:48:06.542Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":3}
+{"ts":"2026-03-09T09:48:06.549Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.557Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.563Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.570Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.577Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.583Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3e14565f/sections/sca_summary/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:06.586Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3e14565f/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T09:48:06.590Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID/sections/status","status":400,"ms":2}
+{"ts":"2026-03-09T09:48:06.592Z","level":"info","msg":"http","method":"POST","path":"/api/cases/FAKEID/generate-core","status":400,"ms":0}
+{"ts":"2026-03-09T09:48:06.598Z","level":"warn","msg":"[SCOPE] Deferred form access blocked — formType=\"1025\" context=\"POST /api/cases/:caseId/generate-core\" Active scope: 1004, commercial. This form is deferred and not available for active production workflows."}
+{"ts":"2026-03-09T09:48:06.599Z","level":"info","msg":"http","method":"POST","path":"/api/cases/def1025a/generate-core","status":400,"ms":3}
+{"ts":"2026-03-09T09:48:14.070Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3e14565f/generate-core","status":200,"ms":7465}
+{"ts":"2026-03-09T09:48:21.374Z","level":"info","msg":"http","method":"POST","path":"/api/cases/d9cbda9e/generate-core","status":200,"ms":7295}
+{"ts":"2026-03-09T09:48:21.384Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/3e14565f","status":200,"ms":4}
+{"ts":"2026-03-09T09:48:21.392Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/d9cbda9e","status":200,"ms":6}
+{"ts":"2026-03-09T09:49:39.364Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":1}
+{"ts":"2026-03-09T09:49:39.397Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":17}
+{"ts":"2026-03-09T09:49:39.414Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":13}
+{"ts":"2026-03-09T09:49:39.429Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/destination-registry","status":200,"ms":4}
+{"ts":"2026-03-09T09:49:39.437Z","level":"info","msg":"http","method":"GET","path":"/api/cases/be0c986e/destination-registry","status":200,"ms":3}
+{"ts":"2026-03-09T09:49:39.441Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/destination-registry","status":400,"ms":1}
+{"ts":"2026-03-09T09:49:39.454Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/sections/neighborhood_description/insert","status":503,"ms":11}
+{"ts":"2026-03-09T09:49:39.458Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/sections/nonexistent_field/insert","status":400,"ms":1}
+{"ts":"2026-03-09T09:49:39.462Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/sections/neighborhood_description/insert","status":400,"ms":1}
+{"ts":"2026-03-09T09:49:39.467Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/sections/status","status":200,"ms":1}
+{"ts":"2026-03-09T09:49:39.471Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T09:49:39.475Z","level":"info","msg":"http","method":"GET","path":"/api/cases/be0c986e/exceptions","status":200,"ms":1}
+{"ts":"2026-03-09T09:49:39.478Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/exceptions","status":400,"ms":1}
+{"ts":"2026-03-09T09:49:39.499Z","level":"info","msg":"[approval-to-memory] saved market_conditions (1004) to KB + approvedNarratives"}
+{"ts":"2026-03-09T09:49:39.503Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f1ef67e5/sections/market_conditions/status","status":200,"ms":22}
+{"ts":"2026-03-09T09:49:39.507Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/sections/status","status":200,"ms":2}
+{"ts":"2026-03-09T09:49:39.514Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f1ef67e5/sections/site_description/status","status":200,"ms":5}
+{"ts":"2026-03-09T09:49:39.520Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f1ef67e5/sections/reconciliation/status","status":200,"ms":4}
+{"ts":"2026-03-09T09:49:39.524Z","level":"info","msg":"http","method":"POST","path":"/api/cases/be0c986e/generate-comp-commentary","status":400,"ms":2}
+{"ts":"2026-03-09T09:49:39.531Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/generate-comp-commentary","status":400,"ms":2}
+{"ts":"2026-03-09T09:49:43.695Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/generate-comp-commentary","status":200,"ms":4161}
+{"ts":"2026-03-09T09:49:45.660Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/generate-comp-commentary","status":200,"ms":1960}
+{"ts":"2026-03-09T09:49:45.663Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/generate-comp-commentary","status":400,"ms":2}
+{"ts":"2026-03-09T09:49:45.673Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/insert-all","status":503,"ms":7}
+{"ts":"2026-03-09T09:49:45.681Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f1ef67e5/insert-all","status":400,"ms":2}
+{"ts":"2026-03-09T09:49:45.685Z","level":"info","msg":"http","method":"GET","path":"/api/cases/be0c986e/destination-registry","status":200,"ms":2}
+{"ts":"2026-03-09T09:49:45.692Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/exceptions","status":200,"ms":2}
+{"ts":"2026-03-09T09:49:45.699Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f1ef67e5/sections/site_description/status","status":200,"ms":3}
+{"ts":"2026-03-09T09:49:45.702Z","level":"info","msg":"http","method":"GET","path":"/api/cases/f1ef67e5/exceptions","status":200,"ms":2}
+{"ts":"2026-03-09T09:49:45.708Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/f1ef67e5","status":200,"ms":5}
+{"ts":"2026-03-09T09:49:45.715Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/be0c986e","status":200,"ms":5}
+{"ts":"2026-03-09T09:51:47.393Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":13}
+{"ts":"2026-03-09T09:51:47.415Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":9}
+{"ts":"2026-03-09T09:51:47.428Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":11}
+{"ts":"2026-03-09T09:51:47.439Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":9}
+{"ts":"2026-03-09T09:51:47.449Z","level":"info","msg":"http","method":"GET","path":"/api/health/services","status":200,"ms":8}
+{"ts":"2026-03-09T09:51:47.455Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.459Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.462Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.465Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.469Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.473Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":0}
+{"ts":"2026-03-09T09:51:47.477Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.479Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1004/neighborhood_description","status":200,"ms":0}
+{"ts":"2026-03-09T09:51:47.482Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/commercial/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.486Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/9999/nonexistent_section","status":404,"ms":1}
+{"ts":"2026-03-09T09:51:47.489Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry/1025/neighborhood_description","status":404,"ms":1}
+{"ts":"2026-03-09T09:51:47.493Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":2}
+{"ts":"2026-03-09T09:51:47.497Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":2}
+{"ts":"2026-03-09T09:51:47.500Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.504Z","level":"info","msg":"http","method":"GET","path":"/api/logs","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.516Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":8}
+{"ts":"2026-03-09T09:51:47.521Z","level":"info","msg":"http","method":"GET","path":"/api/logs/not-a-date","status":400,"ms":2}
+{"ts":"2026-03-09T09:51:47.525Z","level":"info","msg":"http","method":"GET","path":"/api/logs/03-15-2025","status":400,"ms":1}
+{"ts":"2026-03-09T09:51:47.528Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2000-01-01","status":200,"ms":1}
+{"ts":"2026-03-09T09:51:47.534Z","level":"info","msg":"http","method":"GET","path":"/api/logs/2026-03-09","status":200,"ms":3}
+{"ts":"2026-03-09T09:51:47.553Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":15}
+{"ts":"2026-03-09T09:51:47.571Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":15}
+{"ts":"2026-03-09T09:51:47.585Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":12}
+{"ts":"2026-03-09T09:51:47.596Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":9}
+{"ts":"2026-03-09T09:51:47.607Z","level":"info","msg":"http","method":"GET","path":"/api/export/stats","status":200,"ms":9}
+{"ts":"2026-03-09T09:51:47.615Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T09:52:11.302Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-09-0451.zip","isZip":true}
+{"ts":"2026-03-09T09:52:11.304Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":23689}
+{"ts":"2026-03-09T09:52:11.310Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T09:52:35.551Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-09-0452.zip","isZip":true}
+{"ts":"2026-03-09T09:52:35.553Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":24243}
+{"ts":"2026-03-09T09:52:35.557Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-09T09:53:00.402Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-09-0452.zip","isZip":true}
+{"ts":"2026-03-09T09:53:00.404Z","level":"info","msg":"http","method":"POST","path":"/api/export/bundle","status":200,"ms":24847}
+{"ts":"2026-03-09T09:53:00.411Z","level":"info","msg":"[export] Creating support bundle..."}

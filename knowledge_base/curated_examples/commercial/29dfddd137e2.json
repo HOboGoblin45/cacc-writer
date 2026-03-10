@@ -1,0 +1,14 @@
+{
+  "id": "29dfddd137e2",
+  "formType": "commercial",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Income Approach was considered but not developed, as the subject property is owner-occupied and reliable rental and operating expense data for comparable properties within the subject’s market area is limited. Additionally, properties of this type in the local market are commonly purchased by owner-users rather than investors, making the Sales Comparison Approach more reflective of market behavior.",
+  "createdAt": "2026-03-07T21:05:39.508Z",
+  "updatedAt": "2026-03-07T21:05:39.508Z"
+}

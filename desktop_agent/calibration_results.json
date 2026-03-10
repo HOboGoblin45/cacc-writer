@@ -1,0 +1,332 @@
+{
+  "timestamp": "2026-03-09T08:33:13.116096",
+  "tab_requested": null,
+  "health": {
+    "agent": "cacc-aci-agent",
+    "learned_targets": 2,
+    "max_retries": 3,
+    "ok": true,
+    "phase": 2,
+    "pil": true,
+    "port": 5180,
+    "pyperclip": true,
+    "pywinauto": true,
+    "verify_enabled": true,
+    "version": "3.0.0",
+    "win32": true
+  },
+  "calibration": {
+    "current_tab": "",
+    "label_texts": [
+      "Extra Comments"
+    ],
+    "note": "TX32 controls found via descendants() \u2014 Phase 2 fix. Old calibration used children() and returned 0 controls.",
+    "ok": true,
+    "tab_requested": null,
+    "total_tx32": 4,
+    "tx32_controls": [
+      {
+        "height": 873,
+        "left": 1066,
+        "text": "",
+        "top": 109,
+        "type": "content",
+        "width": 849
+      },
+      {
+        "height": 890,
+        "left": 1090,
+        "text": "",
+        "top": 91,
+        "type": "content",
+        "width": 825
+      },
+      {
+        "height": 856,
+        "left": 1090,
+        "text": "",
+        "top": 125,
+        "type": "content",
+        "width": 825
+      },
+      {
+        "height": 34,
+        "left": 1090,
+        "text": "Extra Comments",
+        "top": 91,
+        "type": "title",
+        "width": 825
+      }
+    ],
+    "uia_edit_controls": [
+      {
+        "automation_id": "1001",
+        "class_name": "Edit",
+        "height": 15,
+        "left": 1624,
+        "top": 55,
+        "width": 62
+      }
+    ],
+    "window": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]"
+  },
+  "probe_results": {
+    "neighborhood_description": {
+      "best_candidate": {
+        "height": 873,
+        "left": 1066,
+        "text_preview": "",
+        "top": 109,
+        "width": 849
+      },
+      "fieldId": "neighborhood_description",
+      "fieldLabel": "Neighborhood Description",
+      "formType": "1004",
+      "learned_target": {
+        "fieldId": "neighborhood_description",
+        "formType": "1004",
+        "label": "Neighborhood Description",
+        "label_matched": "Neighborhood Description",
+        "last_success": "2026-03-08T23:52:47.145775",
+        "strategy": "clipboard",
+        "success_count": 7,
+        "tabName": "Neig",
+        "tx32_rect": null,
+        "verified": false,
+        "window_signature": "*1004 URAR ACI Common Narratives Charles Cresci.txt - Notepad"
+      },
+      "method": "aci_full_addendum_view",
+      "ok": true,
+      "score": 40,
+      "tabName": "Neig",
+      "tabNavigated": true,
+      "tx32_discovered": {
+        "all_content": [
+          {
+            "height": 873,
+            "left": 1066,
+            "text": "",
+            "top": 109,
+            "width": 849
+          },
+          {
+            "height": 890,
+            "left": 1090,
+            "text": "",
+            "top": 91,
+            "width": 825
+          },
+          {
+            "height": 856,
+            "left": 1090,
+            "text": "",
+            "top": 125,
+            "width": 825
+          }
+        ],
+        "content": 3,
+        "labels": [
+          "Extra Comments"
+        ],
+        "title": 1,
+        "total": 4
+      }
+    },
+    "site_comments": {
+      "best_candidate": {
+        "height": 873,
+        "left": 1066,
+        "text_preview": "",
+        "top": 109,
+        "width": 849
+      },
+      "fieldId": "site_comments",
+      "fieldLabel": "Site Comments",
+      "formType": "1004",
+      "learned_target": null,
+      "method": "label_proximity:Site Comments",
+      "ok": true,
+      "score": 60,
+      "tabName": "Site",
+      "tabNavigated": true,
+      "tx32_discovered": {
+        "all_content": [
+          {
+            "height": 873,
+            "left": 1066,
+            "text": "",
+            "top": 109,
+            "width": 849
+          },
+          {
+            "height": 890,
+            "left": 1090,
+            "text": "",
+            "top": 91,
+            "width": 825
+          },
+          {
+            "height": 856,
+            "left": 1090,
+            "text": "",
+            "top": 125,
+            "width": 825
+          }
+        ],
+        "content": 3,
+        "labels": [
+          "Extra Comments"
+        ],
+        "title": 1,
+        "total": 4
+      }
+    },
+    "improvements_condition": {
+      "best_candidate": {
+        "height": 873,
+        "left": 1066,
+        "text_preview": "",
+        "top": 109,
+        "width": 849
+      },
+      "fieldId": "improvements_condition",
+      "fieldLabel": "Improvements",
+      "formType": "1004",
+      "learned_target": null,
+      "method": "label_proximity:Improvements Comments",
+      "ok": true,
+      "score": 60,
+      "tabName": "Impro",
+      "tabNavigated": true,
+      "tx32_discovered": {
+        "all_content": [
+          {
+            "height": 873,
+            "left": 1066,
+            "text": "",
+            "top": 109,
+            "width": 849
+          },
+          {
+            "height": 890,
+            "left": 1090,
+            "text": "",
+            "top": 91,
+            "width": 825
+          },
+          {
+            "height": 856,
+            "left": 1090,
+            "text": "",
+            "top": 125,
+            "width": 825
+          }
+        ],
+        "content": 3,
+        "labels": [
+          "Extra Comments"
+        ],
+        "title": 1,
+        "total": 4
+      }
+    },
+    "sales_comparison_commentary": {
+      "best_candidate": {
+        "height": 873,
+        "left": 1066,
+        "text_preview": "",
+        "top": 109,
+        "width": 849
+      },
+      "fieldId": "sales_comparison_commentary",
+      "fieldLabel": "Sales Comparison Analysis",
+      "formType": "1004",
+      "learned_target": null,
+      "method": "label_proximity:Sales Comparison Comments",
+      "ok": true,
+      "score": 60,
+      "tabName": "Sales",
+      "tabNavigated": true,
+      "tx32_discovered": {
+        "all_content": [
+          {
+            "height": 873,
+            "left": 1066,
+            "text": "",
+            "top": 109,
+            "width": 849
+          },
+          {
+            "height": 890,
+            "left": 1090,
+            "text": "",
+            "top": 91,
+            "width": 825
+          },
+          {
+            "height": 856,
+            "left": 1090,
+            "text": "",
+            "top": 125,
+            "width": 825
+          }
+        ],
+        "content": 3,
+        "labels": [
+          "Extra Comments"
+        ],
+        "title": 1,
+        "total": 4
+      }
+    },
+    "reconciliation": {
+      "best_candidate": {
+        "height": 873,
+        "left": 1066,
+        "text_preview": "",
+        "top": 109,
+        "width": 849
+      },
+      "fieldId": "reconciliation",
+      "fieldLabel": "Reconciliation",
+      "formType": "1004",
+      "learned_target": null,
+      "method": "label_proximity:Reconciliation Comments",
+      "ok": true,
+      "score": 60,
+      "tabName": "Reco",
+      "tabNavigated": true,
+      "tx32_discovered": {
+        "all_content": [
+          {
+            "height": 873,
+            "left": 1066,
+            "text": "",
+            "top": 109,
+            "width": 849
+          },
+          {
+            "height": 890,
+            "left": 1090,
+            "text": "",
+            "top": 91,
+            "width": 825
+          },
+          {
+            "height": 856,
+            "left": 1090,
+            "text": "",
+            "top": 125,
+            "width": 825
+          }
+        ],
+        "content": 3,
+        "labels": [
+          "Extra Comments"
+        ],
+        "title": 1,
+        "total": 4
+      }
+    }
+  }
+}

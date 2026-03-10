@@ -1,0 +1,14 @@
+{
+  "id": "851643d5975e",
+  "formType": "commercial",
+  "fieldId": "cost_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Cost Approach was not developed for this assignment as it was not considered meaningful given the age of the improvements, the difficulty in accurately estimating depreciation, and the limited relevance of replacement cost to typical buyers of this property type. The availability of sufficient market data for both the Sales Comparison and Income Approaches further supported the decision to omit this approach.",
+  "createdAt": "2026-03-07T21:05:39.452Z",
+  "updatedAt": "2026-03-07T21:05:39.452Z"
+}

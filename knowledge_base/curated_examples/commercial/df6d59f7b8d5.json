@@ -1,0 +1,14 @@
+{
+  "id": "df6d59f7b8d5",
+  "formType": "commercial",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Income Capitalization Approach was developed using market-supported rents, stabilized vacancy and collection loss assumptions, and typical expense ratios for similar office properties in the Bloomington-Normal market. Market rent for the medical and office suites was established based on comparable leases, and a vacancy allowance reflective of stabilized occupancy was applied. Appropriate deductions were made for expenses such as taxes, insurance, maintenance, and management to derive the net operating income. The net operating income was then capitalized using a market-derived capitalization rate reflective of investor expectations and current financing conditions for small multi-tenant office properties. The concluded value from the Income Approach reflects the property’s income-generating potential under stabilized conditions.",
+  "createdAt": "2026-03-07T21:05:40.099Z",
+  "updatedAt": "2026-03-07T21:05:40.099Z"
+}

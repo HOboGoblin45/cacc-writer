@@ -1,0 +1,65 @@
+{
+  "capturedAt": "2026-03-09T23:01:34.254Z",
+  "note": "Section insertion status for all cases at time of bundle creation",
+  "cases": {
+    "5d7a0562": {
+      "neighborhood_description": {
+        "sectionStatus": "copied",
+        "insertedAt": null,
+        "copiedAt": "2026-03-09T10:02:57.120Z",
+        "statusNote": "Clipboard fallback: ACI agent not running",
+        "statusUpdatedAt": "2026-03-09T10:02:57.128Z"
+      }
+    },
+    "7d7c319c": {
+      "neighborhood_description": {
+        "sectionStatus": "approved",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      },
+      "market_conditions": {
+        "sectionStatus": "reviewed",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      },
+      "reconciliation": {
+        "sectionStatus": "error",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": "Insert failed: ACI timeout",
+        "statusUpdatedAt": null
+      }
+    },
+    "8afd0d2b": {
+      "neighborhood_description": {
+        "sectionStatus": "copied",
+        "insertedAt": null,
+        "copiedAt": "2026-03-09T14:25:56.988Z",
+        "statusNote": "Clipboard fallback: ACI agent not running",
+        "statusUpdatedAt": "2026-03-09T14:25:56.993Z"
+      }
+    },
+    "e8caf5b6": {
+      "market_area": {
+        "sectionStatus": "approved",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      }
+    },
+    "f3ea4f37": {
+      "neighborhood_description": {
+        "sectionStatus": "copied",
+        "insertedAt": null,
+        "copiedAt": "2026-03-09T09:59:29.710Z",
+        "statusNote": "Clipboard fallback: ACI agent not running",
+        "statusUpdatedAt": "2026-03-09T09:59:29.722Z"
+      }
+    }
+  }
+}

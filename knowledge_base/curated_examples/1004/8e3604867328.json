@@ -1,0 +1,14 @@
+{
+  "id": "8e3604867328",
+  "formType": "1004",
+  "fieldId": "prior_sales_subject",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The subject property has not sold in the past 36 months.",
+  "createdAt": "2026-03-07T21:05:40.011Z",
+  "updatedAt": "2026-03-07T21:05:40.011Z"
+}

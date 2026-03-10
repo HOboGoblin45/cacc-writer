@@ -1,0 +1,14 @@
+{
+  "id": "1a5e86d38ae6",
+  "formType": "1025",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Due to a lack of recent comparable sales in Washington, IL, an extensive search was made in the surrounding communities for recent 2-unit sales. The comparables were selected in order to demonstrate the marketability of 2-unit properties of a similar GBA, room count, and condition. Due to recent market trends the comparables received a market time adjustment of 6.9% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its site size and quality. Comparable #2 has been adjusted for its location, site size, age, and lack of a basement. Comparable #3 has been adjusted for its location, site size, age, inferior condition, GBA, bathroom count, and lack of a basement.",
+  "createdAt": "2026-03-07T21:05:38.874Z",
+  "updatedAt": "2026-03-07T21:05:38.874Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "25b4183288fc",
+  "formType": "commercial",
+  "fieldId": "income_approach",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "The Income Capitalization Approach was developed by estimating market rent for the subject property, applying appropriate vacancy and expense allowances, and capitalizing the resulting net operating income using a market-supported capitalization rate reflective of properties of similar use, risk, and market conditions. The Income Capitalization Approach was developed on a hypothetical basis using market rent derived from CoStar data and market-supported operating expense assumptions. While this approach provides meaningful support for the value conclusion, it was afforded secondary consideration due to the owner-occupied nature of the subject property and the limited availability of directly comparable lease data for automotive repair facilities.",
+  "createdAt": "2026-03-07T21:05:39.649Z",
+  "updatedAt": "2026-03-07T21:05:39.649Z"
+}

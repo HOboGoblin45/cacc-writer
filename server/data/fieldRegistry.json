@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "phase": "phase1_canonical_registry",
+    "description": "Canonical field registry stub. The authoritative runtime module is server/fieldRegistry.js.",
+    "canonicalSource": "server/fieldRegistry.js",
+    "notes": [
+      "This JSON file is a reference stub only.",
+      "The live registry data and all helper functions live in server/fieldRegistry.js.",
+      "Do NOT add field definitions here — add them to server/fieldRegistry.js FIELDS array.",
+      "Legacy sources (forms/*.js, desktop_agent/field_maps/*.json, real_quantum_agent/field_maps/commercial.json) remain operational but are TRANSITIONAL.",
+      "Do not extend legacy sources — all new fields must be added to server/fieldRegistry.js first."
+    ],
+    "formTypes": ["1004", "1025", "1073", "1004c", "commercial"],
+    "sectionNames": {
+      "residential": [
+        "Contract",
+        "Neighborhood",
+        "Site",
+        "Improvements",
+        "SalesComparison",
+        "CostApproach",
+        "IncomeApproach",
+        "Reconciliation",
+        "CondoProject",
+        "ManufacturedHome"
+      ],
+      "commercial": [
+        "Introduction",
+        "MarketData",
+        "PropertyData",
+        "HighestBestUse",
+        "CostApproach",
+        "SalesComparison",
+        "MarketRentAnalysis",
+        "IncomeApproach",
+        "Reconciliation"
+      ]
+    },
+    "migrationStatusValues": [
+      "canonical",
+      "legacy_transitional",
+      "aci_only",
+      "rq_only"
+    ],
+    "priorityValues": ["critical", "high", "medium", "low"],
+    "legacySources": {
+      "forms/1004.js":                              "LEGACY_TRANSITIONAL — generation fields; do not extend",
+      "forms/1025.js":                              "LEGACY_TRANSITIONAL — generation fields; do not extend",
+      "forms/1073.js":                              "LEGACY_TRANSITIONAL — generation fields; do not extend",
+      "forms/1004c.js":                             "LEGACY_TRANSITIONAL — generation fields; do not extend",
+      "forms/commercial.js":                        "LEGACY_TRANSITIONAL — generation fields; do not extend",
+      "desktop_agent/field_maps/1004.json":         "LEGACY_TRANSITIONAL — ACI targets; do not extend",
+      "desktop_agent/field_maps/1025.json":         "LEGACY_TRANSITIONAL — ACI targets; do not extend",
+      "desktop_agent/field_maps/1073.json":         "LEGACY_TRANSITIONAL — ACI targets; do not extend",
+      "desktop_agent/field_maps/commercial.json":   "LEGACY_TRANSITIONAL — ACI targets; do not extend",
+      "real_quantum_agent/field_maps/commercial.json": "LEGACY_TRANSITIONAL — RQ targets; do not extend",
+      "server/promptBuilder.js FIELD_LABELS":       "LEGACY_TRANSITIONAL — now derived from registry",
+      "server/promptBuilder.js FIELD_PHRASE_TAGS":  "LEGACY_TRANSITIONAL — now derived from registry"
+    }
+  }
+}

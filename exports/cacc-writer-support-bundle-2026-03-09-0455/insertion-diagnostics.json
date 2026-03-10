@@ -1,0 +1,38 @@
+{
+  "capturedAt": "2026-03-09T09:55:30.858Z",
+  "note": "Section insertion status for all cases at time of bundle creation",
+  "cases": {
+    "7d7c319c": {
+      "neighborhood_description": {
+        "sectionStatus": "approved",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      },
+      "market_conditions": {
+        "sectionStatus": "reviewed",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      },
+      "reconciliation": {
+        "sectionStatus": "error",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": "Insert failed: ACI timeout",
+        "statusUpdatedAt": null
+      }
+    },
+    "e8caf5b6": {
+      "market_area": {
+        "sectionStatus": "approved",
+        "insertedAt": null,
+        "copiedAt": null,
+        "statusNote": null,
+        "statusUpdatedAt": null
+      }
+    }
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "_meta": {
+    "comment": "Real Quantum commercial appraisal field map — ALL fields discovered from live session",
+    "discovery_date": "2026-03-07",
+    "assignment": "feb03938-8e5f-4327-8230-0e31d20a6b2c (Locust St Multi-Family, Bloomington IL)",
+    "total_fields": 46,
+    "total_sections": 9,
+    "navigation_strategies": {
+      "scroll": "Iframe is hidden on load — agent scrolls it into view to activate TinyMCE, then inserts",
+      "visible": "Iframe is visible on page load — insert directly",
+      "tab_click": "Must click a sub-tab link first to make iframe visible, then insert",
+      "detail_page": "Binoculars pattern — navigate to a detail sub-page URL, then insert into that page's editor"
+    },
+    "important_notes": [
+      "Sales Comparison uses URL slug 'sale_valuation' (NOT 'sales_comparison')",
+      "Income Approach has 14 sub-section iframes, ALL hidden on initial load",
+      "Market Data has 7 sub-sections — some require tab clicks to activate",
+      "detail_page fields require dynamic URL discovery (find a.details_link on the parent page)"
+    ]
+  },
+
+  "introduction": {
+    "label": "Introduction",
+    "nav_url_slug": "introduction",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "introduction_section_content_text_area",
+    "tinymce_iframe_id": "introduction_section_content_text_area_ifr",
+    "input_selector": "iframe#introduction_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "general_assumptions": {
+    "label": "Introduction — General Assumptions & Limiting Conditions",
+    "nav_url_slug": "introduction",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "general_assumptions_and_limiting_conditions_section_content_text_area",
+    "tinymce_iframe_id": "general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
+    "input_selector": "iframe#general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false,
+    "_comment": "Hidden on load — scroll into view to activate"
+  },
+
+  "market_area": {
+    "label": "Market Data — National Overview",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "national_overview_section_content_text_area",
+    "tinymce_iframe_id": "national_overview_section_content_text_area_ifr",
+    "input_selector": "iframe#national_overview_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "regional_overview": {
+    "label": "Market Data — Regional Overview",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "tab_click",
+    "tab_text": "regional overview",
+    "tab_selector": "a.text-center",
+    "tinymce_id": "regional_overview_section_content_text_area",
+    "tinymce_iframe_id": "regional_overview_section_content_text_area_ifr",
+    "input_selector": "iframe#regional_overview_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true,
+    "_comment": "Clicking 'regional overview' tab makes this iframe visible (confirmed 736x106)"
+  },
+
+  "local_market_analysis": {
+    "label": "Market Data — Local Market Analysis",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "local_market_analysis_section_content_text_area",
+    "tinymce_iframe_id": "local_market_analysis_section_content_text_area_ifr",
+    "input_selector": "iframe#local_market_analysis_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "industry_overview": {
+    "label": "Market Data — Industry Overview",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "tab_click",
+    "tab_text": "industry overview",
+    "tab_selector": "a.text-center",
+    "tinymce_id": "industry_overview_section_content_text_area",
+    "tinymce_iframe_id": "industry_overview_section_content_text_area_ifr",
+    "input_selector": "iframe#industry_overview_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true,
+    "_comment": "Clicking 'industry overview' tab makes this iframe visible (confirmed 736x106)"
+  },
+
+  "neighborhood_description": {
+    "label": "Market Data — Neighborhood",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "neighborhood_section_content_text_area",
+    "tinymce_iframe_id": "neighborhood_section_content_text_area_ifr",
+    "input_selector": "iframe#neighborhood_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "demographics": {
+    "label": "Market Data — Demographics",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "demographics_section_content_text_area",
+    "tinymce_iframe_id": "demographics_section_content_text_area_ifr",
+    "input_selector": "iframe#demographics_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "demographics_conclusions": {
+    "label": "Market Data — Demographics Conclusions",
+    "nav_url_slug": "market_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "demographics_conclusions_content_text_area",
+    "tinymce_iframe_id": "demographics_conclusions_content_text_area_ifr",
+    "input_selector": "iframe#demographics_conclusions_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "zoning_remarks": {
+    "label": "Property Data — Zoning Remarks",
+    "nav_url_slug": "property_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "zoning_remarks_text_area",
+    "tinymce_iframe_id": "zoning_remarks_text_area_ifr",
+    "input_selector": "iframe#zoning_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "site_description": {
+    "label": "Property Data — Site Description",
+    "nav_url_slug": "property_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "site_description_conclusions_text_area",
+    "tinymce_iframe_id": "site_description_conclusions_text_area_ifr",
+    "input_selector": "iframe#site_description_conclusions_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "improvement_description": {
+    "label": "Property Data — Improvement Description",
+    "nav_url_slug": "property_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "improvement_description_conclusions_text_area",
+    "tinymce_iframe_id": "improvement_description_conclusions_text_area_ifr",
+    "input_selector": "iframe#improvement_description_conclusions_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "real_estate_taxes_remarks": {
+    "label": "Property Data — Real Estate Taxes Remarks",
+    "nav_url_slug": "property_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "real_estate_taxes_remarks_text_area",
+    "tinymce_iframe_id": "real_estate_taxes_remarks_text_area_ifr",
+    "input_selector": "iframe#real_estate_taxes_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "real_estate_taxes_comparables": {
+    "label": "Property Data — Real Estate Taxes Comparables",
+    "nav_url_slug": "property_data",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "real_estate_taxes_comparables_remarks_text_area",
+    "tinymce_iframe_id": "real_estate_taxes_comparables_remarks_text_area_ifr",
+    "input_selector": "iframe#real_estate_taxes_comparables_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "hbu_analysis": {
+    "label": "Highest & Best Use — As Vacant",
+    "nav_url_slug": "highest_best_use",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "highest_and_best_use_as_vacant_remarks_text_area",
+    "tinymce_iframe_id": "highest_and_best_use_as_vacant_remarks_text_area_ifr",
+    "input_selector": "iframe#highest_and_best_use_as_vacant_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "hbu_as_improved": {
+    "label": "Highest & Best Use — As Improved",
+    "nav_url_slug": "highest_best_use",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "highest_and_best_use_as_improved_remarks_text_area",
+    "tinymce_iframe_id": "highest_and_best_use_as_improved_remarks_text_area_ifr",
+    "input_selector": "iframe#highest_and_best_use_as_improved_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "cost_approach": {
+    "label": "Cost Approach — Replacement Cost New",
+    "nav_url_slug": "cost_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "replacement_cost_new_remarks_text_area",
+    "tinymce_iframe_id": "replacement_cost_new_remarks_text_area_ifr",
+    "input_selector": "iframe#replacement_cost_new_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "depreciation_remarks": {
+    "label": "Cost Approach — Depreciation",
+    "nav_url_slug": "cost_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "depreciation_remarks_text_area",
+    "tinymce_iframe_id": "depreciation_remarks_text_area_ifr",
+    "input_selector": "iframe#depreciation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "cost_approach_reconciliation": {
+    "label": "Cost Approach — Reconciliation",
+    "nav_url_slug": "cost_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "cost_approach_reconciliation_remarks_text_area",
+    "tinymce_iframe_id": "cost_approach_reconciliation_remarks_text_area_ifr",
+    "input_selector": "iframe#cost_approach_reconciliation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "cost_approach_final_conclusion": {
+    "label": "Cost Approach — Final Conclusion",
+    "nav_url_slug": "cost_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "cost_approach_final_conclusion_remarks_text_area",
+    "tinymce_iframe_id": "cost_approach_final_conclusion_remarks_text_area_ifr",
+    "input_selector": "iframe#cost_approach_final_conclusion_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "insurable_replacement_cost": {
+    "label": "Cost Approach — Insurable Replacement Cost",
+    "nav_url_slug": "cost_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "insurable_replacement_cost_remarks_text_area",
+    "tinymce_iframe_id": "insurable_replacement_cost_remarks_text_area_ifr",
+    "input_selector": "iframe#insurable_replacement_cost_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "sales_comparison": {
+    "label": "Sales Comparison — Reconciliation",
+    "nav_url_slug": "sale_valuation",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "sale_valuation_reconciliation_remarks_text_area",
+    "tinymce_iframe_id": "sale_valuation_reconciliation_remarks_text_area_ifr",
+    "input_selector": "iframe#sale_valuation_reconciliation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true,
+    "_comment": "IMPORTANT: slug is 'sale_valuation' not 'sales_comparison'. Iframe hidden on load — scroll strategy activates it."
+  },
+
+  "sale_comparable_detail": {
+    "label": "Sales Comparison — Comparable Sale Detail (binoculars)",
+    "nav_url_slug": "sale_valuation",
+    "input_type": "detail_page",
+    "navigation_strategy": "detail_page",
+    "detail_link_selector": "a.details_link",
+    "detail_url_pattern": "/assignments/{uuid}/assignment_sale_valuation_summaries/{item_uuid}/details.html",
+    "tinymce_iframe_id": "DYNAMIC",
+    "verified": false,
+    "_comment": "Binoculars pattern: navigate to sale_valuation page, find all a.details_link elements, click each to open the detail sub-page, then discover and insert into TinyMCE editors on that page. The iframe ID on the detail page is dynamic and must be discovered at runtime."
+  },
+
+  "market_rent_analysis": {
+    "label": "Market Rent Analysis — Introduction",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "income_approach_intro_text_area",
+    "tinymce_iframe_id": "income_approach_intro_text_area_ifr",
+    "input_selector": "iframe#income_approach_intro_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "rent_roll_remarks": {
+    "label": "Market Rent Analysis — Rent Roll",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "rent_roll_remarks_text_area",
+    "tinymce_iframe_id": "rent_roll_remarks_text_area_ifr",
+    "input_selector": "iframe#rent_roll_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "rent_reconciliation": {
+    "label": "Market Rent Analysis — Rent Reconciliation",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "rent_reconciliation_remarks_text_area",
+    "tinymce_iframe_id": "rent_reconciliation_remarks_text_area_ifr",
+    "input_selector": "iframe#rent_reconciliation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "lease_gain_loss": {
+    "label": "Market Rent Analysis — Lease Gain/Loss, Concessions & Subsidies",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area",
+    "tinymce_iframe_id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
+    "input_selector": "iframe#lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "other_revenue": {
+    "label": "Market Rent Analysis — Other Revenue",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "other_revenue_remarks_text_area",
+    "tinymce_iframe_id": "other_revenue_remarks_text_area_ifr",
+    "input_selector": "iframe#other_revenue_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "commercial_market_summary": {
+    "label": "Market Rent Analysis — Commercial Market Summary",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "commercial_market_summary_text_area",
+    "tinymce_iframe_id": "commercial_market_summary_text_area_ifr",
+    "input_selector": "iframe#commercial_market_summary_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "vacancy_credit_loss": {
+    "label": "Market Rent Analysis — Vacancy & Credit Loss",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "vacancy_and_credit_loss_remarks_text_area",
+    "tinymce_iframe_id": "vacancy_and_credit_loss_remarks_text_area_ifr",
+    "input_selector": "iframe#vacancy_and_credit_loss_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "commercial_market_summary_standalone": {
+    "label": "Market Rent Analysis — Commercial Market Summary (Standalone)",
+    "nav_url_slug": "market_rent_analysis",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "commercial_market_summary_standalone_text_area",
+    "tinymce_iframe_id": "commercial_market_summary_standalone_text_area_ifr",
+    "input_selector": "iframe#commercial_market_summary_standalone_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "expense_remarks": {
+    "label": "Income Approach — Expense Remarks",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "expense_remarks_text_area",
+    "tinymce_iframe_id": "expense_remarks_text_area_ifr",
+    "input_selector": "iframe#expense_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "investment_classifications": {
+    "label": "Income Approach — Investment Classifications",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "investment_classifications_text_area",
+    "tinymce_iframe_id": "investment_classifications_text_area_ifr",
+    "input_selector": "iframe#investment_classifications_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "investor_survey_remarks": {
+    "label": "Income Approach — Investor Survey",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "investor_survey_remarks_text_area",
+    "tinymce_iframe_id": "investor_survey_remarks_text_area_ifr",
+    "input_selector": "iframe#investor_survey_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "income_approach": {
+    "label": "Income Approach — Direct Capitalization",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "direct_capitalization_remarks_text_area",
+    "tinymce_iframe_id": "direct_capitalization_remarks_text_area_ifr",
+    "input_selector": "iframe#direct_capitalization_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true
+  },
+
+  "investment_considerations": {
+    "label": "Income Approach — Investment Considerations",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "investment_considerations_text_area",
+    "tinymce_iframe_id": "investment_considerations_text_area_ifr",
+    "input_selector": "iframe#investment_considerations_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "property_class_investment_overview": {
+    "label": "Income Approach — Property Class Investment Overview",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "property_class_investment_overview_text_area",
+    "tinymce_iframe_id": "property_class_investment_overview_text_area_ifr",
+    "input_selector": "iframe#property_class_investment_overview_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "market_participants": {
+    "label": "Income Approach — Market Participants",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "market_participants_text_area",
+    "tinymce_iframe_id": "market_participants_text_area_ifr",
+    "input_selector": "iframe#market_participants_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "direct_capitalization_conclusion": {
+    "label": "Income Approach — Direct Capitalization Conclusion",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "direct_capitalization_conclusion_remarks_text_area",
+    "tinymce_iframe_id": "direct_capitalization_conclusion_remarks_text_area_ifr",
+    "input_selector": "iframe#direct_capitalization_conclusion_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "dcf_assumptions": {
+    "label": "Income Approach — DCF Assumptions",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "dcf_assumptions_remarks_text_area",
+    "tinymce_iframe_id": "dcf_assumptions_remarks_text_area_ifr",
+    "input_selector": "iframe#dcf_assumptions_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "dcf_analysis": {
+    "label": "Income Approach — DCF Analysis",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "dcf_analysis_remarks_text_area",
+    "tinymce_iframe_id": "dcf_analysis_remarks_text_area_ifr",
+    "input_selector": "iframe#dcf_analysis_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "dcf_conclusions": {
+    "label": "Income Approach — DCF Conclusions",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "dcf_conclusions_remarks_text_area",
+    "tinymce_iframe_id": "dcf_conclusions_remarks_text_area_ifr",
+    "input_selector": "iframe#dcf_conclusions_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "dcf_reconciliation": {
+    "label": "Income Approach — DCF Reconciliation",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "dcf_reconciliation_remarks_text_area",
+    "tinymce_iframe_id": "dcf_reconciliation_remarks_text_area_ifr",
+    "input_selector": "iframe#dcf_reconciliation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "income_approach_reconciliation": {
+    "label": "Income Approach — Reconciliation",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "income_approach_reconciliation_remarks_text_area",
+    "tinymce_iframe_id": "income_approach_reconciliation_remarks_text_area_ifr",
+    "input_selector": "iframe#income_approach_reconciliation_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "income_approach_conclusion": {
+    "label": "Income Approach — Conclusion",
+    "nav_url_slug": "income_approach",
+    "input_type": "tinymce",
+    "navigation_strategy": "scroll",
+    "tinymce_id": "income_approach_conclusion_remarks_text_area",
+    "tinymce_iframe_id": "income_approach_conclusion_remarks_text_area_ifr",
+    "input_selector": "iframe#income_approach_conclusion_remarks_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": false
+  },
+
+  "reconciliation": {
+    "label": "Reconciliation",
+    "nav_url_slug": "reconciliation",
+    "input_type": "tinymce",
+    "navigation_strategy": "visible",
+    "tinymce_id": "reconciliation_section_content_text_area",
+    "tinymce_iframe_id": "reconciliation_section_content_text_area_ifr",
+    "input_selector": "iframe#reconciliation_section_content_text_area_ifr",
+    "clear_method": "select_all",
+    "verified": true,
+    "_comment": "Single TinyMCE editor on Reconciliation page. Confirmed visible 736x584."
+  }
+}

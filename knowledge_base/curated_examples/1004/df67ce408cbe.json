@@ -1,0 +1,14 @@
+{
+  "id": "df67ce408cbe",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "All comparables have been found in the subject's neighborhood and were selected to demonstrate the marketability of houses of a similar location, design, age, quality, condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of 3.1% based on the sales statistics chart included in this report.",
+  "createdAt": "2026-03-07T21:05:38.613Z",
+  "updatedAt": "2026-03-07T21:05:38.613Z"
+}

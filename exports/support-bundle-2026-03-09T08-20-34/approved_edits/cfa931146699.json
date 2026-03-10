@@ -1,0 +1,14 @@
+{
+  "id": "cfa931146699",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "approved_edit",
+  "qualityScore": 90,
+  "tags": [],
+  "text": "The subject market demonstrates stable absorption rates with balanced supply and demand conditions as of the effective date.",
+  "createdAt": "2026-03-09T06:12:56.332Z",
+  "updatedAt": "2026-03-09T06:12:56.332Z"
+}

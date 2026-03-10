@@ -1,0 +1,23 @@
+{
+  "id": "fa430e8f24b6",
+  "text": "Edited and improved text here for smoke test.",
+  "sectionType": "neighborhood_description",
+  "formType": "1004",
+  "propertyType": "residential",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "IL",
+  "county": "",
+  "city": "",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-09T08:19:17.462Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "3b0a2ef4",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-09T08:19:17.462Z",
+  "updatedAt": "2026-03-09T08:19:17.462Z",
+  "approvedBy": "cresci"
+}

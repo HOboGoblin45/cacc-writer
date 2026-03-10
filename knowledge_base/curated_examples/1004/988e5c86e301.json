@@ -1,0 +1,14 @@
+{
+  "id": "988e5c86e301",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "",
+  "sourceType": "imported",
+  "qualityScore": 70,
+  "tags": [],
+  "text": "Due to a lack of market inventory it appears there were multiple offers made. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+  "createdAt": "2026-03-07T21:05:38.394Z",
+  "updatedAt": "2026-03-07T21:05:38.394Z"
+}
