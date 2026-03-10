@@ -32,6 +32,7 @@
 
 import { initPhase6Schema } from '../migration/phase6Schema.js';
 import { initPhase7Schema } from '../migration/phase7Schema.js';
+import { initPhase9Schema } from '../migration/phase9Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -485,5 +486,12 @@ export function initSchema(db) {
     initPhase7Schema(db);
   } catch (err) {
     console.error('[schema] Phase 7 schema init failed (non-fatal):', err.message);
+  }
+
+  // Run Phase 9 schema additions (insertion tracking + destination profiles)
+  try {
+    initPhase9Schema(db);
+  } catch (err) {
+    console.error('[schema] Phase 9 schema init failed (non-fatal):', err.message);
   }
 }

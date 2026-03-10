@@ -83,6 +83,7 @@ import intelligenceRouter from './server/api/intelligenceRoutes.js';
 import documentRouter    from './server/api/documentRoutes.js';
 import phase6MemoryRouter from './server/api/phase6Routes.js';
 import qcRouter           from './server/api/qcRoutes.js';
+import insertionRouter    from './server/api/insertionRoutes.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -149,6 +150,7 @@ app.use('/api',        intelligenceRouter);
 app.use('/api',        documentRouter);
 app.use('/api/memory', phase6MemoryRouter);
 app.use('/api',        qcRouter);
+app.use('/api',        insertionRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
