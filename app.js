@@ -39,6 +39,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"))t.classList.add('active');});
   if(name==='facts')loadNeighborhoodTemplates();
   if(name==='voice')loadVoiceExamples();
+  if(name==='docs')loadDocsTab();
 }
 
 // ====== FORM REGISTRY ======
@@ -2444,6 +2445,254 @@ function renderIntelligence(b) {
   const ctxJson = JSON.stringify(ctx, null, 2);
   document.getElementById('intelContext').innerHTML =
     '<pre style="white-space:pre-wrap;word-break:break-all;margin:0;">' + esc(ctxJson) + '</pre>';
+}
+
+// ====== PHASE 5 — DOCUMENTS TAB ======
+
+async function uploadDocument() {
+  if (!_caseId) return alert('Select a case first.');
+  const fileInput = document.getElementById('docFileInput');
+  const typeSelect = document.getElementById('docUploadType');
+  const statusEl = document.getElementById('docUploadStatus');
+  if (!fileInput.files.length) return alert('Choose a PDF file.');
+  const file = fileInput.files[0];
+  statusEl.innerHTML = '<span style="color:var(--ds-accent,#4af);">Uploading and processing...</span>';
+  const fd = new FormData();
+  fd.append('file', file);
+  const docType = typeSelect.value;
+  if (docType) fd.append('docType', docType);
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/documents/upload`, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Upload failed');
+    statusEl.innerHTML =
+      `<span style="color:var(--ds-green,#4c6);">Uploaded: ${esc(d.classification?.label || d.docType)}</span>` +
+      `<br><span style="font-size:11px;">` +
+      `${d.wordCount} words | ${d.pageCount} pages | classified by ${d.classification?.method} (${Math.round((d.classification?.confidence || 0) * 100)}%)` +
+      (d.extraction ? ` | ${d.extraction.factsExtracted} facts, ${d.extraction.sectionsExtracted} sections extracted` : '') +
+      `</span>`;
+    fileInput.value = '';
+    typeSelect.value = '';
+    loadDocuments();
+    loadExtractionSummary();
+    if (d.extraction?.factsExtracted > 0) loadExtractedFacts('pending');
+    if (d.extraction?.sectionsExtracted > 0) loadExtractedSections('pending');
+  } catch (e) {
+    statusEl.innerHTML = '<span style="color:var(--ds-red,#f44);">' + esc(e.message) + '</span>';
+  }
+}
+
+async function loadDocuments() {
+  if (!_caseId) return;
+  const el = document.getElementById('docList');
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/documents`);
+    const d = await r.json();
+    if (!d.ok || !d.documents.length) { el.innerHTML = '<div class="hint">No documents uploaded yet.</div>'; return; }
+    let html = '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr>' +
+      '<th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--ds-border,#333);">File</th>' +
+      '<th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--ds-border,#333);">Type</th>' +
+      '<th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--ds-border,#333);">Classification</th>' +
+      '<th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--ds-border,#333);">Extraction</th>' +
+      '<th style="text-align:center;padding:4px 6px;border-bottom:1px solid var(--ds-border,#333);">Actions</th>' +
+      '</tr></thead><tbody>';
+    for (const doc of d.documents) {
+      const confPct = Math.round((doc.classification_confidence || 0) * 100);
+      const sizeKb = Math.round((doc.file_size_bytes || 0) / 1024);
+      html += '<tr>' +
+        `<td style="padding:4px 6px;border-bottom:1px solid var(--ds-border-dim,#222);">${esc(doc.original_filename)}<br><span style="font-size:10px;color:var(--ds-text-muted,#888);">${sizeKb}KB | ${doc.page_count || 0}p</span></td>` +
+        `<td style="padding:4px 6px;border-bottom:1px solid var(--ds-border-dim,#222);"><span style="display:inline-block;background:var(--ds-surface-3,#222);padding:1px 6px;border-radius:3px;font-size:11px;">${esc(doc.label || doc.doc_type)}</span></td>` +
+        `<td style="padding:4px 6px;border-bottom:1px solid var(--ds-border-dim,#222);font-size:11px;">${esc(doc.classification_method || '')} (${confPct}%)</td>` +
+        `<td style="padding:4px 6px;border-bottom:1px solid var(--ds-border-dim,#222);"><span style="color:${doc.extraction_status === 'extracted' ? 'var(--ds-green,#4c6)' : 'var(--ds-text-muted,#888)'};">${esc(doc.extraction_status || 'pending')}</span></td>` +
+        `<td style="padding:4px 6px;border-bottom:1px solid var(--ds-border-dim,#222);text-align:center;">` +
+        `<button class="ghost sm" onclick="reExtractDoc('${doc.id}')" title="Re-extract">Re-extract</button> ` +
+        `<button class="ghost sm" onclick="deleteDoc('${doc.id}')" title="Delete" style="color:var(--ds-red,#f44);">Del</button>` +
+        `</td></tr>`;
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--ds-red,#f44);">' + esc(e.message) + '</div>';
+  }
+}
+
+async function loadExtractionSummary() {
+  if (!_caseId) return;
+  const el = document.getElementById('docExtractionSummary');
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/extraction-summary`);
+    const d = await r.json();
+    if (!d.ok) { el.innerHTML = '<div class="hint">No data.</div>'; return; }
+    let html = `<b>${d.totalDocuments}</b> documents uploaded<br>`;
+    const types = d.documentsByType || {};
+    if (Object.keys(types).length) {
+      html += '<div style="margin:4px 0;">' + Object.entries(types).map(([t, c]) =>
+        `<span style="display:inline-block;background:var(--ds-surface-3,#222);padding:1px 6px;border-radius:3px;margin:2px;font-size:11px;">${esc(t)}: ${c}</span>`
+      ).join('') + '</div>';
+    }
+    html += `<div style="margin-top:6px;">`;
+    html += `<b style="color:var(--ds-accent,#4af);">${d.pendingFacts}</b> facts pending review | `;
+    html += `<b style="color:var(--ds-green,#4c6);">${d.mergedFacts}</b> merged<br>`;
+    html += `<b style="color:var(--ds-accent,#4af);">${d.pendingSections}</b> sections pending | `;
+    html += `<b style="color:var(--ds-green,#4c6);">${d.approvedSections}</b> approved to memory`;
+    html += '</div>';
+    el.innerHTML = html;
+  } catch { el.innerHTML = '<div class="hint">Error loading summary.</div>'; }
+}
+
+async function loadExtractedFacts(status) {
+  if (!_caseId) return;
+  const el = document.getElementById('docExtractedFacts');
+  try {
+    const url = status ? `/api/cases/${_caseId}/extracted-facts?status=${status}` : `/api/cases/${_caseId}/extracted-facts`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (!d.ok || !d.facts.length) { el.innerHTML = '<div class="hint">No extracted facts found.</div>'; return; }
+    let html = '<div style="max-height:400px;overflow:auto;">';
+    for (const f of d.facts) {
+      const statusColor = f.review_status === 'merged' ? 'var(--ds-green,#4c6)' :
+        f.review_status === 'rejected' ? 'var(--ds-red,#f44)' :
+        f.review_status === 'accepted' ? 'var(--ds-accent,#4af)' : 'var(--ds-text-muted,#888)';
+      html += `<div style="padding:6px 0;border-bottom:1px solid var(--ds-border-dim,#222);display:flex;gap:8px;align-items:flex-start;">`;
+      if (f.review_status === 'pending') {
+        html += `<input type="checkbox" class="fact-check" data-fact-id="${f.id}" style="margin-top:3px;">`;
+      }
+      html += `<div style="flex:1;">` +
+        `<b>${esc(f.fact_path)}</b>: <span style="color:var(--ds-green,#4c6);">${esc(f.fact_value || '')}</span>` +
+        `<br><span style="font-size:10px;color:var(--ds-text-muted,#888);">` +
+        `confidence: ${f.confidence} | from: ${esc(f.original_filename || '')} | ` +
+        `<span style="color:${statusColor};">${f.review_status}</span>` +
+        `</span>`;
+      if (f.source_text) html += `<br><span style="font-size:10px;color:var(--ds-text-dim,#666);font-style:italic;">"${esc(f.source_text.slice(0, 120))}"</span>`;
+      html += `</div>`;
+      if (f.review_status === 'pending') {
+        html += `<button class="ghost sm" onclick="reviewFactAction('${f.id}','rejected')" style="color:var(--ds-red,#f44);">Reject</button>`;
+      }
+      html += `</div>`;
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--ds-red,#f44);">' + esc(e.message) + '</div>';
+  }
+}
+
+async function mergeSelectedFacts() {
+  if (!_caseId) return;
+  const checks = document.querySelectorAll('.fact-check:checked');
+  if (!checks.length) return alert('Select facts to merge using the checkboxes.');
+  const factIds = Array.from(checks).map(c => c.dataset.factId);
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/extracted-facts/merge`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ factIds }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    alert(`Merged ${d.merged} facts into case.`);
+    loadExtractedFacts('pending');
+    loadExtractionSummary();
+  } catch (e) { alert('Merge failed: ' + e.message); }
+}
+
+async function reviewFactAction(factId, action) {
+  if (!_caseId) return;
+  try {
+    await fetch(`/api/cases/${_caseId}/extracted-facts/review`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ factId, action }),
+    });
+    loadExtractedFacts('pending');
+    loadExtractionSummary();
+  } catch (e) { alert('Review failed: ' + e.message); }
+}
+
+async function loadExtractedSections(status) {
+  if (!_caseId) return;
+  const el = document.getElementById('docExtractedSections');
+  try {
+    const url = status ? `/api/cases/${_caseId}/extracted-sections?status=${status}` : `/api/cases/${_caseId}/extracted-sections`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (!d.ok || !d.sections.length) { el.innerHTML = '<div class="hint">No extracted sections found.</div>'; return; }
+    let html = '';
+    for (const s of d.sections) {
+      const statusColor = s.review_status === 'approved' ? 'var(--ds-green,#4c6)' :
+        s.review_status === 'rejected' ? 'var(--ds-red,#f44)' : 'var(--ds-text-muted,#888)';
+      html += `<div style="padding:8px 0;border-bottom:1px solid var(--ds-border-dim,#222);">`;
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;">`;
+      html += `<span><b>${esc(s.section_label || s.section_type)}</b> ` +
+        `<span style="font-size:10px;color:var(--ds-text-muted,#888);">${s.word_count}w | ${esc(s.form_type || '')} | ` +
+        `<span style="color:${statusColor};">${s.review_status}</span> | from: ${esc(s.original_filename || '')}</span></span>`;
+      if (s.review_status === 'pending') {
+        html += `<span>` +
+          `<button class="ghost sm" onclick="approveSectionAction('${s.id}')" style="color:var(--ds-green,#4c6);">Approve</button> ` +
+          `<button class="ghost sm" onclick="rejectSectionAction('${s.id}')" style="color:var(--ds-red,#f44);">Reject</button>` +
+          `</span>`;
+      }
+      html += `</div>`;
+      html += `<details style="margin-top:4px;"><summary style="font-size:11px;cursor:pointer;color:var(--ds-text-muted,#888);">Preview text</summary>` +
+        `<pre style="font-size:11px;white-space:pre-wrap;margin:4px 0;padding:6px;background:var(--ds-surface-2,#1a1a1a);border-radius:4px;max-height:200px;overflow:auto;">${esc(s.text)}</pre></details>`;
+      html += `</div>`;
+    }
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--ds-red,#f44);">' + esc(e.message) + '</div>';
+  }
+}
+
+async function approveSectionAction(sectionId) {
+  if (!_caseId) return;
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/extracted-sections/${sectionId}/approve`, { method: 'POST' });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    loadExtractedSections('pending');
+    loadExtractionSummary();
+  } catch (e) { alert('Approve failed: ' + e.message); }
+}
+
+async function rejectSectionAction(sectionId) {
+  if (!_caseId) return;
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/extracted-sections/${sectionId}/reject`, { method: 'POST' });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    loadExtractedSections('pending');
+    loadExtractionSummary();
+  } catch (e) { alert('Reject failed: ' + e.message); }
+}
+
+async function reExtractDoc(docId) {
+  if (!_caseId) return;
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/documents/${docId}/extract`, { method: 'POST' });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    alert(`Re-extracted: ${d.factsExtracted} facts, ${d.sectionsExtracted} sections.`);
+    loadDocuments();
+    loadExtractionSummary();
+    loadExtractedFacts('pending');
+    loadExtractedSections('pending');
+  } catch (e) { alert('Re-extraction failed: ' + e.message); }
+}
+
+async function deleteDoc(docId) {
+  if (!_caseId) return;
+  if (!confirm('Delete this document and all its extractions?')) return;
+  try {
+    const r = await fetch(`/api/cases/${_caseId}/documents/${docId}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    loadDocuments();
+    loadExtractionSummary();
+  } catch (e) { alert('Delete failed: ' + e.message); }
+}
+
+function loadDocsTab() {
+  if (!_caseId) return;
+  loadDocuments();
+  loadExtractionSummary();
 }
 
 // ====== INIT ======

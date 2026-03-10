@@ -337,6 +337,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('qc')">QC Grade</div>
   <div class="tab" onclick="showTab('voice')">Voice</div>
   <div class="tab" onclick="showTab('intel')">Intel</div>
+  <div class="tab" onclick="showTab('docs')">Docs</div>
 </div>
 
 <!-- ===== TAB: CASE ===== -->
@@ -1069,6 +1070,82 @@ button.sm{padding:5px 9px;font-size:11px;}
       <div class="card-head"><h3>Normalized Context (v2)</h3></div>
       <div class="card-body">
         <div id="intelContext" style="font-size:11px;font-family:var(--ds-mono,monospace);max-height:400px;overflow:auto;"><div class="hint">No bundle loaded.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: DOCS (Phase 5 — Document Intelligence) ===== -->
+<div class="page" id="tab-docs">
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Upload Document</h3></div>
+      <div class="card-body">
+        <div class="hint">Upload source documents to this case. Files are auto-classified, text-extracted, and structured facts are pulled out for review.</div>
+        <div style="margin:8px 0;">
+          <label style="font-size:12px;font-weight:600;">Document type (optional hint):</label>
+          <select id="docUploadType" style="width:100%;margin-top:4px;">
+            <option value="">Auto-detect</option>
+            <option value="order_sheet">Order Sheet</option>
+            <option value="engagement_letter">Engagement Letter</option>
+            <option value="contract">Purchase Contract</option>
+            <option value="mls_sheet">MLS Sheet</option>
+            <option value="assessor_record">Assessor / Tax Record</option>
+            <option value="zoning_document">Zoning Document</option>
+            <option value="flood_document">Flood / FEMA Document</option>
+            <option value="prior_appraisal">Prior Appraisal Report</option>
+            <option value="comp_sheet">Comparable Sale Sheet</option>
+            <option value="map_exhibit">Map / Exhibit</option>
+            <option value="photo_batch">Photo Addendum</option>
+            <option value="guideline">Guideline / Manual</option>
+          </select>
+        </div>
+        <div style="margin:8px 0;">
+          <input type="file" id="docFileInput" accept=".pdf" style="width:100%;font-size:12px;">
+        </div>
+        <button onclick="uploadDocument()">Upload &amp; Process</button>
+        <div id="docUploadStatus" class="status" style="margin-top:8px;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Extraction Summary</h3></div>
+      <div class="card-body">
+        <div id="docExtractionSummary" style="font-size:12px;"><div class="hint">No case selected.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head"><h3>Case Documents</h3></div>
+      <div class="card-body">
+        <div id="docList"><div class="hint">No documents uploaded yet.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Extracted Facts</h3>
+        <span style="font-size:11px;color:var(--ds-text-muted,#888);">Review and merge into case facts</span>
+      </div>
+      <div class="card-body">
+        <div class="btnrow" style="margin-bottom:8px;">
+          <button class="sm sec" onclick="loadExtractedFacts('pending')">Pending</button>
+          <button class="sm sec" onclick="loadExtractedFacts()">All</button>
+          <button class="sm" onclick="mergeSelectedFacts()">Merge Selected</button>
+        </div>
+        <div id="docExtractedFacts" style="font-size:12px;"><div class="hint">Upload documents to see extracted facts.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Extracted Sections</h3>
+        <span style="font-size:11px;color:var(--ds-text-muted,#888);">Narrative sections from prior appraisals — approve to add to memory</span>
+      </div>
+      <div class="card-body">
+        <div class="btnrow" style="margin-bottom:8px;">
+          <button class="sm sec" onclick="loadExtractedSections('pending')">Pending</button>
+          <button class="sm sec" onclick="loadExtractedSections()">All</button>
+        </div>
+        <div id="docExtractedSections" style="font-size:12px;"><div class="hint">Upload a prior appraisal to see extracted narrative sections.</div></div>
       </div>
     </div>
   </div>

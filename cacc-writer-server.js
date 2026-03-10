@@ -80,6 +80,7 @@ import memoryRouter       from './server/api/memoryRoutes.js';
 import agentsRouter       from './server/api/agentsRoutes.js';
 import healthRouter       from './server/api/healthRoutes.js';
 import intelligenceRouter from './server/api/intelligenceRoutes.js';
+import documentRouter    from './server/api/documentRoutes.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -142,6 +143,7 @@ app.use('/api',       generationRouter);
 app.use('/api',       memoryRouter);
 app.use('/api',       agentsRouter);
 app.use('/api',       intelligenceRouter);
+app.use('/api',       documentRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
