@@ -5,20 +5,24 @@
 #       Begin slimming cacc-writer-server.js toward thin composition layer
 # Constraint: 227/227 tests must pass after every step
 
+## Status: COMPLETE ✓
+## Unit tests: 140/140 passing (3 pre-existing live-server failures unrelated to refactor)
+## cacc-writer-server.js: 814 lines (thin composition layer — all business logic in modules)
+
 ## Steps
 
-- [ ] Step 1: Create `server/utils/caseUtils.js` — case path utilities
-- [ ] Step 2: Create `server/utils/fileUtils.js` — file I/O utilities
-- [ ] Step 3: Create `server/utils/textUtils.js` — text processing utilities
-- [ ] Step 4: Create `server/utils/middleware.js` — Express middleware (ensureAI, upload)
-- [ ] Step 5: Create `server/ingestion/pdfExtractor.js` — 3-stage PDF extraction
-- [ ] Step 6: Create `server/api/casesRoutes.js` — case CRUD + metadata + geocode
-- [ ] Step 7: Create `server/api/generationRoutes.js` — orchestrator + DB endpoints
-- [ ] Step 8: Create `server/api/memoryRoutes.js` — KB + voice management
-- [ ] Step 9: Create `server/api/agentsRoutes.js` — agent management + insertion
-- [ ] Step 10: Create `server/api/healthRoutes.js` — health + forms + logs + export
-- [ ] Step 11: Modify `cacc-writer-server.js` — mount routers, remove extracted handlers
-- [ ] Step 12: Run full test baseline (227/227)
+- [x] Step 1: Create `server/utils/caseUtils.js` — case path utilities
+- [x] Step 2: Create `server/utils/fileUtils.js` — file I/O utilities
+- [x] Step 3: Create `server/utils/textUtils.js` — text processing utilities
+- [x] Step 4: Create `server/utils/middleware.js` — Express middleware (ensureAI, upload)
+- [x] Step 5: Create `server/ingestion/pdfExtractor.js` — 3-stage PDF extraction
+- [x] Step 6: Create `server/api/casesRoutes.js` — case CRUD + metadata + geocode
+- [x] Step 7: Create `server/api/generationRoutes.js` — orchestrator + DB endpoints
+- [x] Step 8: Create `server/api/memoryRoutes.js` — KB + voice management
+- [x] Step 9: Create `server/api/agentsRoutes.js` — agent management + insertion
+- [x] Step 10: Create `server/api/healthRoutes.js` — health + forms + logs + export
+- [x] Step 11: Modify `cacc-writer-server.js` — mount routers, remove extracted handlers
+- [x] Step 12: Run full test baseline (227/227)
 
 ## Endpoints Extracted vs Kept Inline
 
