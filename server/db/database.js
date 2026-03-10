@@ -169,6 +169,11 @@ export function getTableCounts() {
     'analysis_artifacts',
     'ingest_jobs',
     'staged_memory_reviews',
+    'assignment_intelligence',
+    'case_documents',
+    'document_extractions',
+    'extracted_facts',
+    'extracted_sections',
   ];
 
   const counts = {};

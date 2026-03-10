@@ -16,6 +16,10 @@
  *   ingest_jobs          — PDF ingestion job tracking
  *   staged_memory_reviews — items awaiting human review before promotion
  *   assignment_intelligence — Phase 4 intelligence bundles per case
+ *   case_documents         — Phase 5 source files attached to cases
+ *   document_extractions   — Phase 5 extraction job + output tracking
+ *   extracted_facts        — Phase 5 structured fact candidates from documents
+ *   extracted_sections     — Phase 5 narrative sections from prior reports
  */
 
 // ── Column migrations ─────────────────────────────────────────────────────────
@@ -313,6 +317,153 @@ export function initSchema(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_assignment_intelligence_case_id
       ON assignment_intelligence(case_id);
+
+    -- ── case_documents (Phase 5) ──────────────────────────────────────────────
+    -- First-class source files attached to cases.
+    -- Every uploaded file becomes a tracked document with classification and provenance.
+    CREATE TABLE IF NOT EXISTS case_documents (
+      id                TEXT PRIMARY KEY,
+      case_id           TEXT NOT NULL,
+      original_filename TEXT NOT NULL,
+      stored_filename   TEXT NOT NULL,
+      doc_type          TEXT NOT NULL DEFAULT 'unknown',
+      -- doc_type values: order_sheet | engagement_letter | contract |
+      --   mls_sheet | assessor_record | zoning_document | flood_document |
+      --   prior_appraisal | comp_sheet | map_exhibit | photo_batch |
+      --   guideline | handwritten_notes | narrative_source | unknown
+
+      file_type         TEXT NOT NULL DEFAULT 'pdf',
+      file_size_bytes   INTEGER DEFAULT 0,
+      page_count        INTEGER DEFAULT 0,
+      file_hash         TEXT,
+
+      classification_method   TEXT DEFAULT 'manual',
+      -- classification_method: manual | filename | keyword | ai
+      classification_confidence REAL DEFAULT 1.0,
+
+      extraction_status TEXT DEFAULT 'pending',
+      -- extraction_status: pending | extracting | extracted | failed | skipped
+
+      text_length       INTEGER DEFAULT 0,
+      notes             TEXT,
+      tags_json         TEXT DEFAULT '[]',
+
+      uploaded_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_case_documents_case_id
+      ON case_documents(case_id);
+    CREATE INDEX IF NOT EXISTS idx_case_documents_doc_type
+      ON case_documents(doc_type);
+
+    -- ── document_extractions (Phase 5) ────────────────────────────────────────
+    -- Tracks each extraction job run against a document.
+    -- A document can be re-extracted multiple times (different methods/versions).
+    CREATE TABLE IF NOT EXISTS document_extractions (
+      id              TEXT PRIMARY KEY,
+      document_id     TEXT NOT NULL,
+      case_id         TEXT NOT NULL,
+      doc_type        TEXT NOT NULL,
+
+      status          TEXT NOT NULL DEFAULT 'pending',
+      -- status: pending | running | completed | failed
+
+      extraction_method TEXT,
+      -- extraction_method: structured | narrative | full_text | ocr
+
+      facts_extracted     INTEGER DEFAULT 0,
+      sections_extracted  INTEGER DEFAULT 0,
+      raw_text_length     INTEGER DEFAULT 0,
+
+      result_json    TEXT DEFAULT '{}',
+      error_text     TEXT,
+      duration_ms    INTEGER,
+
+      started_at   TEXT,
+      completed_at TEXT,
+      created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+
+      FOREIGN KEY (document_id) REFERENCES case_documents(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_doc_extractions_document_id
+      ON document_extractions(document_id);
+    CREATE INDEX IF NOT EXISTS idx_doc_extractions_case_id
+      ON document_extractions(case_id);
+
+    -- ── extracted_facts (Phase 5) ─────────────────────────────────────────────
+    -- Structured fact candidates pulled from documents.
+    -- These are candidates — not automatically merged into facts.json.
+    CREATE TABLE IF NOT EXISTS extracted_facts (
+      id              TEXT PRIMARY KEY,
+      extraction_id   TEXT NOT NULL,
+      document_id     TEXT NOT NULL,
+      case_id         TEXT NOT NULL,
+
+      fact_path       TEXT NOT NULL,
+      -- fact_path: dot-separated path e.g. "subject.address", "contract.salePrice"
+      fact_value      TEXT,
+      confidence      TEXT DEFAULT 'medium',
+      -- confidence: high | medium | low
+
+      source_page     INTEGER,
+      source_text     TEXT,
+
+      review_status   TEXT DEFAULT 'pending',
+      -- review_status: pending | accepted | rejected | merged
+
+      merged_at       TEXT,
+      created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+
+      FOREIGN KEY (extraction_id) REFERENCES document_extractions(id),
+      FOREIGN KEY (document_id) REFERENCES case_documents(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_extracted_facts_case_id
+      ON extracted_facts(case_id);
+    CREATE INDEX IF NOT EXISTS idx_extracted_facts_extraction_id
+      ON extracted_facts(extraction_id);
+    CREATE INDEX IF NOT EXISTS idx_extracted_facts_review
+      ON extracted_facts(review_status);
+
+    -- ── extracted_sections (Phase 5) ──────────────────────────────────────────
+    -- Narrative sections extracted from prior appraisal PDFs.
+    -- These are staged for memory review before entering the memory bank.
+    CREATE TABLE IF NOT EXISTS extracted_sections (
+      id              TEXT PRIMARY KEY,
+      extraction_id   TEXT NOT NULL,
+      document_id     TEXT NOT NULL,
+      case_id         TEXT NOT NULL,
+
+      section_type    TEXT NOT NULL,
+      -- section_type: matches canonical field IDs or legacy field IDs
+      section_label   TEXT,
+      text            TEXT NOT NULL,
+      text_hash       TEXT NOT NULL,
+      word_count      INTEGER DEFAULT 0,
+
+      source_page_start INTEGER,
+      source_page_end   INTEGER,
+
+      form_type       TEXT,
+      confidence      REAL DEFAULT 0.7,
+
+      review_status   TEXT DEFAULT 'pending',
+      -- review_status: pending | approved | rejected
+
+      promoted_memory_id TEXT,
+      -- promoted_memory_id = memory_items.id after promotion to approved memory
+
+      reviewed_at     TEXT,
+      created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+
+      FOREIGN KEY (extraction_id) REFERENCES document_extractions(id),
+      FOREIGN KEY (document_id) REFERENCES case_documents(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_extracted_sections_case_id
+      ON extracted_sections(case_id);
+    CREATE INDEX IF NOT EXISTS idx_extracted_sections_review
+      ON extracted_sections(review_status);
+    CREATE INDEX IF NOT EXISTS idx_extracted_sections_hash
+      ON extracted_sections(text_hash);
   `);
 
   // Run column migrations for Phase 3 additions
