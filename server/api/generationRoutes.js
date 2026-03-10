@@ -6,7 +6,8 @@
  * Mounted at: /api  (in cacc-writer-server.js)
  *
  * Extracted routes (new architecture path):
- *   POST  /cases/:caseId/generate-full-draft   — trigger full-draft orchestrator
+ *   POST  /cases/:caseId/generate-full-draft   — trigger full-draft orchestrator (primary)
+ *   POST  /generation/full-draft               — alias for above (caseId in body)
  *   GET   /generation/runs/:runId/status        — poll run status
  *   GET   /generation/runs/:runId/result        — get final result
  *   POST  /generation/regenerate-section        — regenerate one section
@@ -28,8 +29,10 @@ import { isDeferredForm, logDeferredAccess } from '../config/productionScope.js'
 import {
   runFullDraftOrchestrator,
   getRunStatus,
+  getRunResult,
   getGeneratedSectionsForRun,
 } from '../orchestrator/generationOrchestrator.js';
+import { RUN_STATUS } from '../db/repositories/generationRepo.js';
 import {
   runSectionJob,
 } from '../orchestrator/sectionJobRunner.js';
@@ -123,11 +126,14 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
     // Brief yield so orchestrator can create the run record in SQLite
     await new Promise(r => setTimeout(r, 50));
 
-    // Read the most recent pending/running run for this case
-    const db         = getDb();
-    const latestRun  = db.prepare(`
+    // Read the most recent active run for this case using canonical statuses
+    const db        = getDb();
+    const latestRun = db.prepare(`
       SELECT id FROM generation_runs
-       WHERE case_id = ? AND status IN ('pending', 'running')
+       WHERE case_id = ? AND status IN (
+         'queued','preparing','retrieving','analyzing',
+         'drafting','validating','assembling'
+       )
        ORDER BY created_at DESC LIMIT 1
     `).get(caseId);
     runId = latestRun?.id || null;
@@ -135,12 +141,108 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
     res.json({
       ok:                 true,
       runId,
-      status:             'running',
+      status:             RUN_STATUS.PREPARING,
       estimatedDurationMs,
       message:            'Full-draft generation started. Poll /api/generation/runs/:runId/status for progress.',
     });
   } catch (err) {
     log.error('[generate-full-draft]', err.message);
+    res.status(500).json({ ok: false, error: err.message, runId });
+  }
+});
+
+// ── POST /generation/full-draft ───────────────────────────────────────────────
+/**
+ * Alias for POST /cases/:caseId/generate-full-draft.
+ * Accepts caseId in the request body instead of the URL path.
+ * Useful for clients that prefer a flat API surface.
+ *
+ * Body:    { caseId, formType?: string, options?: object }
+ * Returns: { ok, runId, status, estimatedDurationMs, message }
+ */
+router.post('/generation/full-draft', async (req, res) => {
+  const { caseId, formType, options = {} } = req.body || {};
+
+  if (!caseId) {
+    return res.status(400).json({ ok: false, error: 'caseId is required in request body' });
+  }
+
+  // Delegate to the canonical route handler by forwarding to the same logic
+  req.params.caseId = caseId;
+  req.body.formType = formType;
+  req.body.options  = options;
+
+  // Resolve caseDir manually (router.param won't fire for this route)
+  const caseDir = resolveCaseDir(caseId);
+  if (!caseDir) {
+    return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
+  }
+  if (!fs.existsSync(caseDir)) {
+    return res.status(404).json({ ok: false, error: `Case not found: ${caseId}` });
+  }
+  req.caseDir = caseDir;
+
+  // Scope enforcement
+  const resolvedFormType = formType || 'unknown';
+  if (resolvedFormType !== 'unknown' && isDeferredForm(resolvedFormType)) {
+    logDeferredAccess(resolvedFormType, '/api/generation/full-draft', log);
+    return res.status(400).json({
+      ok:        false,
+      supported: false,
+      scope:     'deferred',
+      error:     `Form type "${resolvedFormType}" is deferred and not supported in the current production scope.`,
+    });
+  }
+
+  let runId = null;
+
+  try {
+    let estimatedDurationMs = 12_000;
+    try {
+      const ctx  = await buildAssignmentContext(caseId);
+      const plan = buildReportPlan(ctx);
+      estimatedDurationMs = plan.estimatedDurationMs || 12_000;
+    } catch { /* non-fatal */ }
+
+    const orchestratorPromise = runFullDraftOrchestrator({
+      caseId,
+      formType: resolvedFormType === 'unknown' ? undefined : resolvedFormType,
+      options,
+    });
+
+    orchestratorPromise
+      .then(result => {
+        if (result?.runId) {
+          _runResults.set(result.runId, result);
+          log.info('[orchestrator] run complete', { runId: result.runId, ok: result.ok });
+        }
+      })
+      .catch(err => {
+        log.error('[orchestrator] run error', { error: err.message });
+      });
+
+    await new Promise(r => setTimeout(r, 50));
+
+    const db        = getDb();
+    const latestRun = db.prepare(`
+      SELECT id FROM generation_runs
+       WHERE case_id = ? AND status IN (
+         'queued','preparing','retrieving','analyzing',
+         'drafting','validating','assembling'
+       )
+       ORDER BY created_at DESC LIMIT 1
+    `).get(caseId);
+    runId = latestRun?.id || null;
+
+    res.json({
+      ok:                 true,
+      runId,
+      status:             RUN_STATUS.PREPARING,
+      estimatedDurationMs,
+      message:            'Full-draft generation started. Poll /api/generation/runs/:runId/status for progress.',
+    });
+  } catch (err) {
+    log.error('[generation/full-draft]', err.message);
     res.status(500).json({ ok: false, error: err.message, runId });
   }
 });
@@ -169,12 +271,17 @@ router.get('/generation/runs/:runId/status', (req, res) => {
 /**
  * Get the final result of a completed generation run.
  *
- * Returns: { ok, runId, draftPackage, metrics, warnings, sections }
+ * Priority order:
+ *   1. In-memory _runResults (fastest — same server process, run just completed)
+ *   2. getRunResult() from orchestrator (reads draft_package_json from SQLite)
+ *   3. Section-by-section reconstruction from generated_sections rows
+ *
+ * Returns: { ok, runId, draftPackage, metrics, warnings, sections, fromCache }
  */
 router.get('/generation/runs/:runId/result', (req, res) => {
   const { runId } = req.params;
   try {
-    // Check in-memory store first (fastest path)
+    // ── 1. In-memory store (fastest path — run just completed this session) ──
     const cached = _runResults.get(runId);
     if (cached) {
       return res.json({
@@ -185,29 +292,62 @@ router.get('/generation/runs/:runId/result', (req, res) => {
         metrics:      cached.metrics,
         warnings:     cached.warnings || [],
         fromCache:    true,
+        source:       'memory',
       });
     }
 
-    // Fall back to SQLite
+    // ── 2. Check run status first ─────────────────────────────────────────────
     const status = getRunStatus(runId);
     if (!status) {
       return res.status(404).json({ ok: false, error: `Run not found: ${runId}` });
     }
 
-    if (status.status === 'running' || status.status === 'pending') {
+    // Run is still active — return progress info, not a result
+    const activeStatuses = [
+      RUN_STATUS.QUEUED,
+      RUN_STATUS.PREPARING,
+      RUN_STATUS.RETRIEVING,
+      RUN_STATUS.ANALYZING,
+      RUN_STATUS.DRAFTING,
+      RUN_STATUS.VALIDATING,
+      RUN_STATUS.ASSEMBLING,
+    ];
+    if (activeStatuses.includes(status.status)) {
       return res.json({
-        ok:        true,
+        ok:                true,
         runId,
-        status:    status.status,
-        message:   'Run is still in progress. Try again shortly.',
-        elapsedMs: status.elapsedMs,
+        status:            status.status,
+        legacyStatus:      status.legacyStatus,
+        message:           'Run is still in progress. Try again shortly.',
+        elapsedMs:         status.elapsedMs,
+        sectionsCompleted: status.sectionsCompleted,
+        sectionsTotal:     status.sectionsTotal,
+        sectionStatuses:   status.sectionStatuses,
       });
     }
 
-    // Load generated sections from SQLite
-    const sections    = getGeneratedSectionsForRun(runId);
+    // ── 3. Use getRunResult() — reads draft_package_json or reconstructs ──────
+    const result = getRunResult(runId);
+    if (result) {
+      return res.json({
+        ok:          true,
+        runId,
+        status:      status.status,
+        legacyStatus: status.legacyStatus,
+        draftPackage: result.draftPackage || null,
+        sections:    result.sections || {},
+        metrics:     result.metrics  || status.phaseTimings,
+        warnings:    result.warnings || status.warnings || [],
+        retrieval:   status.retrieval,
+        fromCache:   result.fromCache,
+        source:      result.fromCache ? 'sqlite-package' : 'sqlite-sections',
+      });
+    }
+
+    // ── 4. Fallback: manual section reconstruction ────────────────────────────
+    const sectionRows = getGeneratedSectionsForRun(runId);
     const sectionsMap = {};
-    for (const s of sections) {
+    for (const s of sectionRows) {
       sectionsMap[s.section_id] = {
         sectionId:    s.section_id,
         text:         s.final_text || s.draft_text || '',
@@ -222,11 +362,13 @@ router.get('/generation/runs/:runId/result', (req, res) => {
       ok:          true,
       runId,
       status:      status.status,
+      legacyStatus: status.legacyStatus,
       sections:    sectionsMap,
-      sectionList: sections,
       metrics:     status.phaseTimings,
       warnings:    status.warnings || [],
       retrieval:   status.retrieval,
+      fromCache:   false,
+      source:      'sqlite-fallback',
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

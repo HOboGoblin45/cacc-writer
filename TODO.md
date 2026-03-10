@@ -37,3 +37,35 @@
 - [x] Step 8: Verify required Cases IDs and key layout classes are still present — 52/52 checks passed
 
 ## Status: COMPLETE ✓
+
+---
+
+# Phase 3 — Workflow Authority TODO
+
+## Goal
+Make the full-draft orchestrator the real drafting engine.
+One run builds one context, one plan, one retrieval pack, one analysis layer,
+then drafts the report through a controlled job system.
+
+## Steps
+
+- [x] Step 1: `server/db/schema.js` — `runMigrations()` with Phase 3 columns
+- [x] Step 2: `server/db/repositories/generationRepo.js` — centralized DB layer (`RUN_STATUS`, `JOB_STATUS`, all CRUD)
+- [x] Step 3: `server/orchestrator/generationOrchestrator.js` — hardened with explicit lifecycle states, pre-created section jobs, draft package persistence, `getRunResult()` with SQLite fast-path
+- [x] Step 4: `server/orchestrator/sectionJobRunner.js` — accepts `existingJobId`, retrying status, warnings capture, retrieval source IDs, full generationRepo integration
+- [x] Step 5: `server/api/generationRoutes.js` — `POST /api/generation/full-draft` alias, canonical status queries, 4-tier result retrieval
+- [x] Step 6: `server/openaiClient.js` — `temperature` + `maxTokens` support added
+- [x] Step 7: `server/promptBuilder.js` — `systemHint` (Block 5.8) + `extraContext` (Block 5.9) added
+- [x] Step 8: All modules import cleanly (verified via node --input-type=module)
+
+## Pending Verification
+
+- [ ] Server restarts cleanly with no startup errors
+- [ ] `node _test_phase3.mjs` passes
+- [ ] `node _test_orchestrator_endpoints.mjs` passes
+- [ ] Full-draft run pre-creates all section job records immediately
+- [ ] Run lifecycle states progress correctly through all phases
+- [ ] Draft package persisted to SQLite and retrievable after server restart
+- [ ] Partial completion works when one section fails
+
+## Status: IMPLEMENTATION COMPLETE — PENDING LIVE TEST

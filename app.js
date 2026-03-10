@@ -2297,6 +2297,155 @@ function _updateInspector(status) {
   }
 }
 
+// ====== INTELLIGENCE TAB (Phase 4) ======
+
+let _intelBundle = null;
+
+async function buildIntelligence() {
+  const caseId = currentCaseId;
+  if (!caseId) return setStatus('intelStatus', 'No case selected.', 'error');
+  setStatus('intelStatus', 'Building intelligence bundle...', 'info');
+  try {
+    const res = await fetch(`/api/cases/${caseId}/intelligence/build`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Build failed');
+    _intelBundle = data.bundle;
+    setStatus('intelStatus', `Built in ${_intelBundle._buildMs}ms`, 'ok');
+    renderIntelligence(_intelBundle);
+  } catch (e) {
+    setStatus('intelStatus', e.message, 'error');
+  }
+}
+
+async function loadIntelligence() {
+  const caseId = currentCaseId;
+  if (!caseId) return setStatus('intelStatus', 'No case selected.', 'error');
+  setStatus('intelStatus', 'Loading cached bundle...', 'info');
+  try {
+    const res = await fetch(`/api/cases/${caseId}/intelligence`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Not found');
+    _intelBundle = data.bundle;
+    setStatus('intelStatus', `Loaded (built ${new Date(_intelBundle._builtAt).toLocaleString()})`, 'ok');
+    renderIntelligence(_intelBundle);
+  } catch (e) {
+    setStatus('intelStatus', e.message, 'error');
+  }
+}
+
+function renderIntelligence(b) {
+  if (!b) return;
+
+  // Summary
+  const ctx = b.context || {};
+  const fs = b.flagSummary || {};
+  const sp = b.sectionPlan || {};
+  document.getElementById('intelSummary').innerHTML = [
+    `<b>Form:</b> ${esc(ctx.formType || '?')}`,
+    `<b>Report Family:</b> ${esc(b.reportFamily?.displayName || '?')}`,
+    `<b>Purpose:</b> ${esc(ctx.assignmentPurpose || '?')}`,
+    `<b>Loan:</b> ${esc(ctx.loanProgram || '?')}`,
+    `<b>Property:</b> ${esc(ctx.propertyType || '?')}`,
+    `<b>Condition:</b> ${esc(ctx.valueCondition || '?')}`,
+    `<b>Active Flags:</b> ${fs.count || 0} / ${fs.total || 0}`,
+    `<b>Sections Planned:</b> ${sp.totalSections || 0} (${sp.requiredCount || 0} required, ${sp.commentaryCount || 0} commentary)`,
+    `<b>Fields:</b> ${b.canonicalFields?.totalApplicable || 0} applicable`,
+    `<b>Version:</b> ${esc(b._version || '?')}`,
+  ].join('<br>');
+
+  // Flags — show active flags with green, inactive grayed
+  const flags = b.flags || {};
+  const flagEntries = Object.entries(flags);
+  const activeFlags = flagEntries.filter(([,v]) => v === true);
+  const inactiveFlags = flagEntries.filter(([,v]) => v !== true);
+  document.getElementById('intelFlags').innerHTML =
+    (activeFlags.length > 0
+      ? '<div style="margin-bottom:8px;color:var(--ds-ok,#4ade80);">' + activeFlags.map(([k]) => k).join('<br>') + '</div>'
+      : '<div style="color:var(--ds-muted,#888);">No active flags</div>') +
+    '<details style="margin-top:4px;"><summary style="cursor:pointer;color:var(--ds-muted,#888);font-size:11px;">Inactive (' + inactiveFlags.length + ')</summary>' +
+    '<div style="color:var(--ds-muted,#666);margin-top:4px;">' + inactiveFlags.map(([k]) => k).join('<br>') + '</div></details>';
+
+  // Compliance
+  const comp = b.compliance || {};
+  const overlays = [];
+  if (comp.uspap_applicable) overlays.push('USPAP');
+  if (comp.fha_overlay) overlays.push('FHA');
+  if (comp.usda_overlay) overlays.push('USDA');
+  if (comp.va_overlay) overlays.push('VA');
+  document.getElementById('intelCompliance').innerHTML = [
+    `<b>Overlays:</b> ${overlays.join(', ') || 'None'}`,
+    `<b>Report Family:</b> ${esc(comp.report_family || '?')}`,
+    comp.property_type_implications?.length
+      ? '<b>Property Implications:</b><ul style="margin:2px 0 6px 18px;">' + comp.property_type_implications.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul>'
+      : '',
+    comp.assignment_condition_implications?.length
+      ? '<b>Assignment Conditions:</b><ul style="margin:2px 0 6px 18px;">' + comp.assignment_condition_implications.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul>'
+      : '',
+    comp.likely_commentary_families?.length
+      ? '<b>Commentary Families:</b> ' + comp.likely_commentary_families.map(f => '<span style="background:var(--ds-surface-3,#222);padding:1px 6px;border-radius:3px;margin:1px;">' + esc(f) + '</span>').join(' ')
+      : '',
+    comp.likely_qc_categories?.length
+      ? '<br><b>QC Categories:</b> ' + comp.likely_qc_categories.map(c => '<span style="background:var(--ds-surface-3,#222);padding:1px 6px;border-radius:3px;margin:1px;">' + esc(c) + '</span>').join(' ')
+      : '',
+  ].filter(Boolean).join('<br>');
+
+  // Report family
+  const rf = b.reportFamily || {};
+  document.getElementById('intelReportFamily').innerHTML = [
+    `<b>${esc(rf.displayName || '?')}</b>`,
+    rf.sectionGroups?.length
+      ? '<div style="margin-top:6px;">' + rf.sectionGroups.map(g =>
+          '<span style="display:inline-block;background:var(--ds-accent-bg,rgba(200,168,74,.1));border:1px solid var(--ds-accent-bd,rgba(200,168,74,.22));padding:2px 8px;border-radius:3px;margin:2px;font-size:11px;">' +
+          esc(g.label) + '</span>'
+        ).join('') + '</div>'
+      : '',
+    `<div style="margin-top:6px;color:var(--ds-muted,#888);font-size:11px;">Destination: ${esc(rf.destinationHints?.primary || '?')}</div>`,
+  ].join('');
+
+  // Section plan
+  const sections = sp.sections || [];
+  const excluded = sp.excludedSections || [];
+  let spHtml = '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  spHtml += '<tr style="border-bottom:1px solid var(--ds-border,rgba(255,255,255,.07));"><th style="text-align:left;padding:4px;">Section</th><th>Type</th><th>Required</th><th>Profile</th><th>Depends On</th></tr>';
+  for (const s of sections) {
+    const reqBadge = s.required
+      ? '<span style="color:var(--ds-ok,#4ade80);">Yes</span>'
+      : '<span style="color:var(--ds-muted,#888);">No</span>';
+    const depStr = s.dependsOn?.length > 0 ? s.dependsOn.join(', ') : '-';
+    spHtml += `<tr style="border-bottom:1px solid var(--ds-border,rgba(255,255,255,.04));">
+      <td style="padding:3px 4px;">${esc(s.label || s.id)}</td>
+      <td style="padding:3px 4px;text-align:center;"><span style="background:var(--ds-surface-3,#222);padding:1px 5px;border-radius:3px;font-size:10px;">${esc(s.contentType)}</span></td>
+      <td style="padding:3px 4px;text-align:center;">${reqBadge}</td>
+      <td style="padding:3px 4px;text-align:center;font-size:10px;">${esc(s.generatorProfile)}</td>
+      <td style="padding:3px 4px;font-size:10px;color:var(--ds-muted,#888);">${esc(depStr)}</td>
+    </tr>`;
+  }
+  spHtml += '</table>';
+  if (excluded.length > 0) {
+    spHtml += '<details style="margin-top:8px;"><summary style="cursor:pointer;color:var(--ds-muted,#888);font-size:11px;">Excluded (' + excluded.length + ')</summary>';
+    spHtml += '<div style="margin-top:4px;font-size:11px;color:var(--ds-muted,#666);">' +
+      excluded.map(e => `${esc(e.label || e.fieldId)}: ${esc(e.reason)}`).join('<br>') + '</div></details>';
+  }
+  document.getElementById('intelSectionPlan').innerHTML = spHtml;
+
+  // Canonical fields by group
+  const fieldGroups = b.canonicalFields?.byGroup || {};
+  let cfHtml = '';
+  for (const [group, fieldIds] of Object.entries(fieldGroups)) {
+    cfHtml += `<div style="margin-bottom:8px;"><b style="text-transform:capitalize;">${esc(group.replace(/_/g, ' '))}</b><br>`;
+    cfHtml += fieldIds.map(id =>
+      '<span style="display:inline-block;background:var(--ds-surface-3,#222);padding:1px 6px;border-radius:3px;margin:2px;font-size:11px;">' + esc(id) + '</span>'
+    ).join('');
+    cfHtml += '</div>';
+  }
+  document.getElementById('intelCanonicalFields').innerHTML = cfHtml || '<div class="hint">No fields.</div>';
+
+  // Context JSON (collapsible)
+  const ctxJson = JSON.stringify(ctx, null, 2);
+  document.getElementById('intelContext').innerHTML =
+    '<pre style="white-space:pre-wrap;word-break:break-all;margin:0;">' + esc(ctxJson) + '</pre>';
+}
+
 // ====== INIT ======
 (async()=>{
   await pingServer();

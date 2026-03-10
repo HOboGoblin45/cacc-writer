@@ -74,11 +74,12 @@ import { buildRetrievalPack } from './server/context/retrievalPackBuilder.js';
 import { runLegacyKbImport, getMemoryItemStats } from './server/migration/legacyKbImport.js';
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from './server/db/database.js';
 
-import casesRouter      from './server/api/casesRoutes.js';
-import generationRouter from './server/api/generationRoutes.js';
-import memoryRouter     from './server/api/memoryRoutes.js';
-import agentsRouter     from './server/api/agentsRoutes.js';
-import healthRouter     from './server/api/healthRoutes.js';
+import casesRouter        from './server/api/casesRoutes.js';
+import generationRouter   from './server/api/generationRoutes.js';
+import memoryRouter       from './server/api/memoryRoutes.js';
+import agentsRouter       from './server/api/agentsRoutes.js';
+import healthRouter       from './server/api/healthRoutes.js';
+import intelligenceRouter from './server/api/intelligenceRoutes.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -140,6 +141,7 @@ app.use('/api/cases', casesRouter);
 app.use('/api',       generationRouter);
 app.use('/api',       memoryRouter);
 app.use('/api',       agentsRouter);
+app.use('/api',       intelligenceRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
@@ -732,9 +734,11 @@ app.post('/api/cases/:caseId/insert-all', async (req, res) => {
     const secFile=path.join(cd,'section_statuses.json'), statuses=readJSON(secFile,{});
     const coreSections=CORE_SECTIONS[formType]||[];
     const inserted=[], skipped=[], errors=[];
-    const APPR_ST=['approved','inserted','verified'];
-    const hasApproved=coreSections.some(sec=>APPR_ST.includes(outputs[sec.id]?.sectionStatus));
-    if (!hasApproved) return res.status(400).json({ ok:false, error:'No approved sections to insert' });
+    // Only 'approved' counts as "ready to insert".
+    // Sections already 'inserted' or 'verified' are done — they do not satisfy the guard.
+    const hasApproved = coreSections.some(sec => outputs[sec.id]?.sectionStatus === 'approved');
+    if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
+    const APPR_ST = ['approved', 'inserted', 'verified'];
     for (const section of coreSections) {
       const sid=section.id, text=outputs[sid]?.text||'';
       if (!text) { skipped.push({ fieldId:sid, reason:'no output' }); continue; }

@@ -42,25 +42,32 @@ const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
  *   { role: 'system'|'user'|'assistant', content: string } objects.
  *
  * @param {object} options
- *   @param {string}  [options.model]    Override the default model.
- *   @param {number}  [options.timeout]  Request timeout in ms (default 120s).
+ *   @param {string}  [options.model]       Override the default model.
+ *   @param {number}  [options.timeout]     Request timeout in ms (default 120s).
+ *   @param {number}  [options.temperature] Sampling temperature (0–2, default model default).
+ *   @param {number}  [options.maxTokens]   Max output tokens (maps to max_output_tokens).
  *
  * @returns {Promise<string>} The generated text.
  */
 export async function callAI(inputMessages, options = {}) {
   if (!client) throw new Error('OpenAI client is not initialized. Set OPENAI_API_KEY in .env');
 
-  const model = options.model || MODEL;
+  const model   = options.model   || MODEL;
   const timeout = options.timeout || 120_000;
 
-  const ctrl = new AbortController();
+  // Build API call params — only include optional fields if explicitly provided
+  const apiParams = { model, input: inputMessages };
+  if (options.temperature != null) apiParams.temperature       = options.temperature;
+  if (options.maxTokens   != null) apiParams.max_output_tokens = options.maxTokens;
+
+  const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
 
   try {
-    const response = await client.responses.create({
-      model,
-      input: inputMessages,
-    }, { signal: ctrl.signal });
+    const response = await client.responses.create(
+      apiParams,
+      { signal: ctrl.signal }
+    );
 
     // Extract text from the Responses API output shape
     return response.output_text
