@@ -20,7 +20,7 @@
  */
 export function trimText(v, max) {
   const s = String(v || '').trim();
-  return max ? s.slice(0, max) : s;
+  return typeof max === 'number' ? s.slice(0, max) : s;
 }
 
 /**
