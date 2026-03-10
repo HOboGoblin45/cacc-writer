@@ -341,243 +341,263 @@ button.sm{padding:5px 9px;font-size:11px;}
 <!-- ===== TAB: CASE ===== -->
 <div class="page active" id="tab-case">
 
-  <!-- Left narrow col: case list + basic fields -->
-  <div class="col narrow">
-    <div class="card">
-      <div class="card-head"><h3>Cases</h3><button class="sm" onclick="loadCases()">Refresh</button></div>
-      <div class="card-body">
+  <!-- Cases Command Strip -->
+  <div class="case-strip">
+    <div class="case-strip-left">
+      <span class="case-strip-title">Cases</span>
+      <span class="case-strip-sep" aria-hidden="true"></span>
+      <span class="case-strip-meta" id="caseStripMeta"></span>
+    </div>
+    <div class="case-strip-actions">
+      <button onclick="createCase()">New Case</button>
+      <button class="sec" onclick="updateCase()">Update</button>
+      <button class="ghost sm" onclick="loadCases()">&#x21BB; Refresh</button>
+    </div>
+  </div>
+
+  <!-- Cases Workspace -->
+  <div class="case-layout">
+
+    <!-- Left: Case Queue Panel (~37%) -->
+    <div class="case-queue">
+
+      <!-- Filter bar -->
+      <div class="case-queue-filters">
+        <button class="filt-btn active" onclick="setCaseFilter('all',this)">All</button>
+        <button class="filt-btn" onclick="setCaseFilter('active',this)">Active</button>
+        <button class="filt-btn" onclick="setCaseFilter('submitted',this)">Submitted</button>
+        <button class="filt-btn" onclick="setCaseFilter('archived',this)">Archived</button>
+      </div>
+
+      <!-- Case list -->
+      <div class="case-list" id="caseList"><div class="hint" style="padding:12px 16px;">No cases yet. Create one below.</div></div>
+      <div id="caseStatus" class="status" style="padding:0 16px 8px;border-top:none;margin-top:0;"></div>
+
+      <!-- Create / Edit form -->
+      <div class="case-queue-form">
+        <div class="case-queue-form-head">New / Edit Case</div>
         <label>Address</label>
         <input id="newAddress" type="text" placeholder="123 Main St, Springfield IL"/>
-        <label>Borrower (optional)</label>
+        <label>Borrower <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
         <input id="newBorrower" type="text" placeholder="Smith"/>
         <label>Internal Notes</label>
         <textarea id="caseNotes" placeholder="Internal notes, lender contact, file number..." style="min-height:48px;"></textarea>
-        <div class="btnrow"><button onclick="createCase()">New Case</button><button class="sec" onclick="updateCase()">Update Case</button></div>
-        <div class="sep"></div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-          <button class="filt-btn active" onclick="setCaseFilter('all',this)">All</button>
-          <button class="filt-btn" onclick="setCaseFilter('active',this)">Active</button>
-          <button class="filt-btn" onclick="setCaseFilter('submitted',this)">Submitted</button>
-          <button class="filt-btn" onclick="setCaseFilter('archived',this)">Archived</button>
+        <div class="btnrow">
+          <button onclick="createCase()">New Case</button>
+          <button class="sec" onclick="updateCase()">Update Case</button>
         </div>
-        <div class="case-list" id="caseList"><div class="hint">No cases yet. Create one above.</div></div>
-        <div id="caseStatus" class="status"></div>
       </div>
-    </div>
-  </div>
 
-  <!-- Right wide col: 4 assignment cards + documents -->
-  <div class="col wide">
+    </div><!-- /.case-queue -->
 
-    <!-- Row 1: Basic Assignment Info + Assignment Details -->
-    <div class="card-row">
+    <!-- Right: Case Detail Panel (~63%) -->
+    <div class="case-detail">
 
-      <!-- Card 1: Basic Assignment Info -->
-      <div class="card">
-        <div class="card-head"><h3>Basic Assignment Info</h3></div>
-        <div class="card-body">
-          <div class="assign-grid">
-            <div class="full">
-              <label>Form Type</label>
-              <!-- Deferred form banner — shown when a deferred form type is active -->
-              <div id="deferredFormBanner" class="deferred-banner">
-                <div class="deferred-banner-head">⚠ Deferred Form Type</div>
-                <div class="deferred-banner-body" id="deferredFormBannerText">This form type is outside active production scope. Generation and insertion are not available.</div>
-              </div>
-              <!-- Two-section form picker: Active Production + Deferred/Future -->
-              <div class="form-picker" id="formPicker">
-                <!-- Active Production section -->
-                <div>
-                  <div class="form-picker-section-head active-head">Active Production</div>
-                  <div class="form-picker-options" id="activeFormOptions">
-                    <!-- Populated by initFormRegistry() -->
-                    <div class="form-picker-option selected" data-form-id="1004" onclick="selectFormFromPicker('1004',this)">
-                      <div class="form-picker-radio"></div>
-                      <span class="form-picker-label">1004 URAR — Single Family</span>
-                      <span class="form-picker-badge active-badge">Active</span>
+      <!-- Row 1: Basic Assignment Info + Assignment Details -->
+      <div class="card-row">
+
+        <!-- Card 1: Basic Assignment Info -->
+        <div class="card">
+          <div class="card-head"><h3>Basic Assignment Info</h3></div>
+          <div class="card-body">
+            <div class="assign-grid">
+              <div class="full">
+                <label>Form Type</label>
+                <!-- Deferred form banner -->
+                <div id="deferredFormBanner" class="deferred-banner">
+                  <div class="deferred-banner-head">&#x26A0; Deferred Form Type</div>
+                  <div class="deferred-banner-body" id="deferredFormBannerText">This form type is outside active production scope. Generation and insertion are not available.</div>
+                </div>
+                <!-- Two-section form picker -->
+                <div class="form-picker" id="formPicker">
+                  <div>
+                    <div class="form-picker-section-head active-head">Active Production</div>
+                    <div class="form-picker-options" id="activeFormOptions">
+                      <div class="form-picker-option selected" data-form-id="1004" onclick="selectFormFromPicker('1004',this)">
+                        <div class="form-picker-radio"></div>
+                        <span class="form-picker-label">1004 URAR — Single Family</span>
+                        <span class="form-picker-badge active-badge">Active</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <!-- Deferred / Future section (collapsed by default) -->
-                <div>
-                  <div class="form-picker-section-head">
-                    <span style="color:var(--muted);">Deferred / Future</span>
-                    <button class="deferred-section-toggle" id="deferredToggleBtn" onclick="toggleDeferredSection()">Show</button>
-                  </div>
-                  <div class="deferred-section-body" id="deferredFormOptions">
-                    <!-- Populated by initFormRegistry() -->
+                  <div>
+                    <div class="form-picker-section-head">
+                      <span style="color:var(--muted);">Deferred / Future</span>
+                      <button class="deferred-section-toggle" id="deferredToggleBtn" onclick="toggleDeferredSection()">Show</button>
+                    </div>
+                    <div class="deferred-section-body" id="deferredFormOptions"></div>
                   </div>
                 </div>
+                <!-- Hidden select for backward compat -->
+                <select id="newFormType" style="display:none;"><option value="1004">1004 URAR — Single Family</option></select>
               </div>
-              <!-- Hidden select kept for backward compat with createCase()/updateCase() -->
-              <select id="newFormType" style="display:none;"><option value="1004">1004 URAR — Single Family</option></select>
+              <div class="full">
+                <label>Property Type</label>
+                <select id="propertyType">
+                  <option value="">— Select —</option>
+                  <option value="Single Family">Single Family</option>
+                  <option value="2-4 Unit">2-4 Unit</option>
+                  <option value="Condo">Condo</option>
+                  <option value="PUD">PUD</option>
+                  <option value="Manufactured">Manufactured</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Mixed Use">Mixed Use</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Assignment Purpose</label>
+                <select id="assignmentPurpose">
+                  <option value="">— Select —</option>
+                  <option value="Sale">Sale</option>
+                  <option value="Refinance">Refinance</option>
+                  <option value="Construction">Construction</option>
+                  <option value="Purchase">Purchase</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Loan Program</label>
+                <select id="loanProgram">
+                  <option value="">— Select —</option>
+                  <option value="Conventional">Conventional</option>
+                  <option value="FHA">FHA</option>
+                  <option value="USDA">USDA</option>
+                  <option value="VA">VA</option>
+                  <option value="Construction">Construction</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
             </div>
-            <div class="full">
-              <label>Property Type</label>
-              <select id="propertyType">
-                <option value="">— Select —</option>
-                <option value="Single Family">Single Family</option>
-                <option value="2-4 Unit">2-4 Unit</option>
-                <option value="Condo">Condo</option>
-                <option value="PUD">PUD</option>
-                <option value="Manufactured">Manufactured</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Mixed Use">Mixed Use</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label>Assignment Purpose</label>
-              <select id="assignmentPurpose">
-                <option value="">— Select —</option>
-                <option value="Sale">Sale</option>
-                <option value="Refinance">Refinance</option>
-                <option value="Construction">Construction</option>
-                <option value="Purchase">Purchase</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label>Loan Program</label>
-              <select id="loanProgram">
-                <option value="">— Select —</option>
-                <option value="Conventional">Conventional</option>
-                <option value="FHA">FHA</option>
-                <option value="USDA">USDA</option>
-                <option value="VA">VA</option>
-                <option value="Construction">Construction</option>
-                <option value="Cash">Cash</option>
-                <option value="Other">Other</option>
-              </select>
+          </div>
+        </div>
+
+        <!-- Card 2: Assignment Details -->
+        <div class="card">
+          <div class="card-head"><h3>Assignment Details</h3></div>
+          <div class="card-body">
+            <div class="assign-grid">
+              <div>
+                <label>Occupancy</label>
+                <select id="occupancyType">
+                  <option value="">— Select —</option>
+                  <option value="Owner Occupied">Owner Occupied</option>
+                  <option value="Tenant Occupied">Tenant Occupied</option>
+                  <option value="Vacant">Vacant</option>
+                  <option value="Proposed">Proposed</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Subject Condition</label>
+                <select id="subjectCondition">
+                  <option value="">— Select —</option>
+                  <option value="C1">C1 — New</option>
+                  <option value="C2">C2 — Excellent</option>
+                  <option value="C3">C3 — Good</option>
+                  <option value="C4">C4 — Average</option>
+                  <option value="C5">C5 — Fair</option>
+                  <option value="C6">C6 — Poor</option>
+                </select>
+              </div>
+              <div class="full">
+                <label>Report Condition</label>
+                <select id="reportConditionMode">
+                  <option value="">— Select —</option>
+                  <option value="As Is">As Is</option>
+                  <option value="Subject To Completion">Subject To Completion</option>
+                  <option value="Subject To Repairs">Subject To Repairs</option>
+                  <option value="Subject As Complete per Plans/Specs">Subject As Complete per Plans/Specs</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Client Name</label>
+                <input id="clientName" type="text" placeholder="e.g. First National Bank"/>
+              </div>
+              <div>
+                <label>Lender Name</label>
+                <input id="lenderName" type="text" placeholder="e.g. ABC Mortgage"/>
+              </div>
+              <div class="full">
+                <label>AMC Name <span class="field-hint" style="display:inline;">(optional)</span></label>
+                <input id="amcName" type="text" placeholder="e.g. Nationwide AMC"/>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Card 2: Assignment Details -->
-      <div class="card">
-        <div class="card-head"><h3>Assignment Details</h3></div>
-        <div class="card-body">
-          <div class="assign-grid">
-            <div>
-              <label>Occupancy</label>
-              <select id="occupancyType">
-                <option value="">— Select —</option>
-                <option value="Owner Occupied">Owner Occupied</option>
-                <option value="Tenant Occupied">Tenant Occupied</option>
-                <option value="Vacant">Vacant</option>
-                <option value="Proposed">Proposed</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label>Subject Condition</label>
-              <select id="subjectCondition">
-                <option value="">— Select —</option>
-                <option value="C1">C1 — New</option>
-                <option value="C2">C2 — Excellent</option>
-                <option value="C3">C3 — Good</option>
-                <option value="C4">C4 — Average</option>
-                <option value="C5">C5 — Fair</option>
-                <option value="C6">C6 — Poor</option>
-              </select>
-            </div>
-            <div class="full">
-              <label>Report Condition</label>
-              <select id="reportConditionMode">
-                <option value="">— Select —</option>
-                <option value="As Is">As Is</option>
-                <option value="Subject To Completion">Subject To Completion</option>
-                <option value="Subject To Repairs">Subject To Repairs</option>
-                <option value="Subject As Complete per Plans/Specs">Subject As Complete per Plans/Specs</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label>Client Name</label>
-              <input id="clientName" type="text" placeholder="e.g. First National Bank"/>
-            </div>
-            <div>
-              <label>Lender Name</label>
-              <input id="lenderName" type="text" placeholder="e.g. ABC Mortgage"/>
-            </div>
-            <div class="full">
-              <label>AMC Name <span class="field-hint" style="display:inline;">(optional)</span></label>
-              <input id="amcName" type="text" placeholder="e.g. Nationwide AMC"/>
+      <!-- Row 2: Location & Market + Notes -->
+      <div class="card-row">
+
+        <!-- Card 3: Location & Market -->
+        <div class="card">
+          <div class="card-head"><h3>Location &amp; Market</h3></div>
+          <div class="card-body">
+            <div class="assign-grid">
+              <div>
+                <label>State</label>
+                <input id="metaState" type="text" placeholder="IL"/>
+              </div>
+              <div>
+                <label>County</label>
+                <input id="metaCounty" type="text" placeholder="e.g. McLean"/>
+              </div>
+              <div>
+                <label>City</label>
+                <input id="metaCity" type="text" placeholder="e.g. Bloomington"/>
+              </div>
+              <div>
+                <label>Market Area</label>
+                <input id="marketArea" type="text" placeholder="e.g. Bloomington-Normal"/>
+              </div>
+              <div>
+                <label>Neighborhood</label>
+                <input id="metaNeighborhood" type="text" placeholder="e.g. Veterans Pkwy Corridor"/>
+              </div>
+              <div>
+                <label>Market Type</label>
+                <select id="marketType">
+                  <option value="">— Select —</option>
+                  <option value="urban">Urban</option>
+                  <option value="suburban">Suburban</option>
+                  <option value="rural">Rural</option>
+                  <option value="agricultural">Agricultural</option>
+                  <option value="mixed">Mixed</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Row 2: Location & Market + Notes -->
-    <div class="card-row">
-
-      <!-- Card 3: Location & Market -->
-      <div class="card">
-        <div class="card-head"><h3>Location &amp; Market</h3></div>
-        <div class="card-body">
-          <div class="assign-grid">
-            <div>
-              <label>State</label>
-              <input id="metaState" type="text" placeholder="IL"/>
-            </div>
-            <div>
-              <label>County</label>
-              <input id="metaCounty" type="text" placeholder="e.g. McLean"/>
-            </div>
-            <div>
-              <label>City</label>
-              <input id="metaCity" type="text" placeholder="e.g. Bloomington"/>
-            </div>
-            <div>
-              <label>Market Area</label>
-              <input id="marketArea" type="text" placeholder="e.g. Bloomington-Normal"/>
-            </div>
-            <div>
-              <label>Neighborhood</label>
-              <input id="metaNeighborhood" type="text" placeholder="e.g. Veterans Pkwy Corridor"/>
-            </div>
-            <div>
-              <label>Market Type</label>
-              <select id="marketType">
-                <option value="">— Select —</option>
-                <option value="urban">Urban</option>
-                <option value="suburban">Suburban</option>
-                <option value="rural">Rural</option>
-                <option value="agricultural">Agricultural</option>
-                <option value="mixed">Mixed</option>
-              </select>
-            </div>
+        <!-- Card 4: Notes / Special Instructions -->
+        <div class="card">
+          <div class="card-head"><h3>Notes / Special Instructions</h3></div>
+          <div class="card-body">
+            <label>Assignment Notes</label>
+            <textarea id="assignmentNotes" placeholder="Special instructions, lender requirements, scope notes, extraordinary assumptions, hypothetical conditions..." style="min-height:130px;"></textarea>
+            <div class="field-hint">Injected into AI prompt context for all generated sections.</div>
+            <div id="metaChips" class="meta-chips" style="display:none;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Card 4: Notes / Special Instructions -->
+      <!-- Documents card -->
       <div class="card">
-        <div class="card-head"><h3>Notes / Special Instructions</h3></div>
+        <div class="card-head"><h3>Documents</h3><button class="sec sm" onclick="extractFacts()">Extract Facts from Docs</button></div>
         <div class="card-body">
-          <label>Assignment Notes</label>
-          <textarea id="assignmentNotes" placeholder="Special instructions, lender requirements, scope notes, extraordinary assumptions, hypothetical conditions..." style="min-height:130px;"></textarea>
-          <div class="field-hint">Injected into AI prompt context for all generated sections.</div>
-          <div id="metaChips" class="meta-chips" style="display:none;"></div>
+          <div class="hint" id="docHint">Select or create a case to upload documents.</div>
+          <div id="docSlots"></div>
+          <div id="docStatus" class="status"></div>
+          <div id="docErrBox" class="errbox"></div>
         </div>
       </div>
-    </div>
 
-    <!-- Documents card -->
-    <div class="card">
-      <div class="card-head"><h3>Documents</h3><button class="sec sm" onclick="extractFacts()">Extract Facts from Docs</button></div>
-      <div class="card-body">
-        <div class="hint" id="docHint">Select or create a case to upload documents.</div>
-        <div id="docSlots"></div>
-        <div id="docStatus" class="status"></div>
-        <div id="docErrBox" class="errbox"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
+    </div><!-- /.case-detail -->
+  </div><!-- /.case-layout -->
+</div><!-- /#tab-case -->
 
 <!-- ===== TAB: FACTS ===== -->
 <div class="page" id="tab-facts">
@@ -1897,6 +1917,552 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-generate .comp-out-meta { font-size:10px; color:var(--gen-fg-muted); margin-top:6px; padding-top:6px; border-top:1px solid var(--gen-border); display:none; font-family:var(--gen-font-mono); }
 #tab-generate .conc-result { font-family:var(--gen-font-body); font-size:13px; color:var(--gen-fg); background:var(--gen-muted); border:1px solid var(--gen-border); padding:12px 14px; border-radius:var(--gen-radius); line-height:1.7; }
 #tab-generate .chip { font-size:10px; font-weight:600; padding:3px 8px; border:1px solid var(--gen-border); color:var(--gen-fg-muted); background:var(--gen-muted); letter-spacing:.04em; text-transform:uppercase; display:inline-flex; align-items:center; gap:4px; border-radius:var(--gen-radius); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CACC Writer — Phase 2 Design System
+   Scope: Cases tab (#tab-case) only
+   Strategy: --gen-* tokens (additive) + #tab-case scoped overrides
+   All other tabs unaffected.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Cases Tab: Root Layout ────────────────────────────────────────────────── */
+#tab-case {
+  display: block !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  background: var(--gen-bg) !important;
+  color: var(--gen-fg) !important;
+  font-family: var(--gen-font-body) !important;
+  min-height: calc(100vh - 44px);
+}
+
+/* ── Cases Command Strip ───────────────────────────────────────────────────── */
+.case-strip {
+  height: var(--gen-strip-h);
+  border-bottom: 1px solid var(--gen-border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: var(--gen-bg);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  gap: 16px;
+}
+.case-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.case-strip-title {
+  font-family: var(--gen-font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gen-fg);
+  white-space: nowrap;
+}
+.case-strip-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--gen-border);
+  flex-shrink: 0;
+}
+.case-strip-meta {
+  font-family: var(--gen-font-body);
+  font-size: 13px;
+  color: var(--gen-fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.case-strip-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Cases Workspace Layout ────────────────────────────────────────────────── */
+.case-layout {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - var(--gen-strip-h) - 44px);
+}
+
+/* ── Left: Case Queue (~37%) ───────────────────────────────────────────────── */
+.case-queue {
+  width: 37%;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gen-border);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--gen-strip-h) - 44px);
+  background: var(--gen-bg);
+  position: sticky;
+  top: var(--gen-strip-h);
+  max-height: calc(100vh - var(--gen-strip-h) - 44px);
+  overflow-y: auto;
+}
+
+/* ── Right: Case Detail (~63%) ─────────────────────────────────────────────── */
+.case-detail {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--gen-bg);
+}
+
+/* ── Case Queue: Filter Bar ────────────────────────────────────────────────── */
+.case-queue-filters {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gen-border);
+  flex-wrap: wrap;
+  background: var(--gen-bg);
+  flex-shrink: 0;
+}
+
+/* ── Case Queue: Create/Edit Form ──────────────────────────────────────────── */
+.case-queue-sep { height: 1px; background: var(--gen-border); }
+.case-queue-form {
+  padding: 16px;
+  background: var(--gen-muted);
+  border-top: 1px solid var(--gen-border);
+  flex-shrink: 0;
+}
+.case-queue-form-head {
+  font-family: var(--gen-font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gen-fg-muted);
+  margin-bottom: 12px;
+}
+
+/* ── Cases Tab: Cards ──────────────────────────────────────────────────────── */
+#tab-case .card {
+  background: var(--gen-bg) !important;
+  border: 1px solid var(--gen-border) !important;
+  border-radius: var(--gen-radius) !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+#tab-case .card-head {
+  padding: 10px 16px !important;
+  border-bottom: 1px solid var(--gen-border) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--gen-muted) !important;
+}
+#tab-case .card-head h3 {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.09em !important;
+  color: var(--gen-fg-muted) !important;
+}
+#tab-case .card-body { padding: 16px !important; }
+
+/* ── Cases Tab: Typography ─────────────────────────────────────────────────── */
+#tab-case label {
+  display: block !important;
+  font-family: var(--gen-font-body) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--gen-fg-muted) !important;
+  margin: 10px 0 4px !important;
+}
+#tab-case .hint {
+  font-family: var(--gen-font-body) !important;
+  font-size: 13px !important;
+  color: var(--gen-fg-muted) !important;
+  line-height: 1.5 !important;
+}
+#tab-case .field-hint {
+  font-family: var(--gen-font-body) !important;
+  font-size: 11px !important;
+  color: var(--gen-fg-muted) !important;
+  margin-top: 3px !important;
+  line-height: 1.4 !important;
+}
+#tab-case .sep {
+  height: 1px !important;
+  background: var(--gen-border) !important;
+  margin: 12px 0 !important;
+}
+
+/* ── Cases Tab: Inputs ─────────────────────────────────────────────────────── */
+#tab-case input[type=text],
+#tab-case textarea,
+#tab-case select {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid var(--gen-fg) !important;
+  color: var(--gen-fg) !important;
+  border-radius: 0 !important;
+  padding: 6px 0 !important;
+  outline: none !important;
+  font-family: var(--gen-font-body) !important;
+  font-size: 14px !important;
+  transition: border-bottom-width 80ms !important;
+  box-shadow: none !important;
+}
+#tab-case input[type=text]:focus,
+#tab-case textarea:focus,
+#tab-case select:focus {
+  border-bottom: 3px solid var(--gen-fg) !important;
+  outline: none !important;
+}
+#tab-case input::placeholder,
+#tab-case textarea::placeholder { color: var(--gen-fg-muted) !important; opacity: 0.6 !important; }
+#tab-case select option { background: var(--gen-bg) !important; color: var(--gen-fg) !important; }
+#tab-case textarea { resize: vertical !important; min-height: 72px !important; line-height: 1.6 !important; }
+
+/* ── Cases Tab: Buttons ────────────────────────────────────────────────────── */
+#tab-case button,
+.case-strip button {
+  font-family: var(--gen-font-body) !important;
+  border-radius: var(--gen-radius) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  cursor: pointer !important;
+  transition: background 80ms, color 80ms, border-color 80ms !important;
+  border: 1px solid var(--gen-border-strong) !important;
+  background: var(--gen-bg) !important;
+  color: var(--gen-fg) !important;
+  padding: 7px 14px !important;
+  text-transform: uppercase !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+#tab-case button:hover,
+.case-strip button:hover {
+  background: var(--gen-fg) !important;
+  color: var(--gen-accent-fg) !important;
+  border-color: var(--gen-fg) !important;
+  transform: none !important;
+}
+#tab-case button.sec,
+.case-strip button.sec {
+  background: transparent !important;
+  color: var(--gen-fg) !important;
+  border: 1px solid var(--gen-border) !important;
+}
+#tab-case button.sec:hover,
+.case-strip button.sec:hover {
+  background: var(--gen-muted) !important;
+  border-color: var(--gen-border) !important;
+  color: var(--gen-fg) !important;
+}
+#tab-case button.ghost,
+.case-strip button.ghost {
+  background: transparent !important;
+  color: var(--gen-fg-muted) !important;
+  border: 1px solid transparent !important;
+}
+#tab-case button.ghost:hover,
+.case-strip button.ghost:hover {
+  background: var(--gen-muted) !important;
+  color: var(--gen-fg) !important;
+  border-color: var(--gen-border) !important;
+}
+#tab-case button.sm,
+.case-strip button.sm { padding: 4px 10px !important; font-size: 11px !important; }
+#tab-case button:focus-visible,
+.case-strip button:focus-visible { outline: 3px solid var(--gen-focus) !important; outline-offset: 3px !important; }
+#tab-case .btnrow {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-top: 12px !important;
+  align-items: center !important;
+}
+
+/* ── Cases Tab: Status + Error ─────────────────────────────────────────────── */
+#tab-case .status {
+  font-family: var(--gen-font-body) !important;
+  font-size: 12px !important;
+  color: var(--gen-fg-muted) !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  line-height: 1.5 !important;
+}
+#tab-case .status.ok   { color: var(--gen-ok) !important; }
+#tab-case .status.err  { color: var(--gen-danger) !important; }
+#tab-case .status.warn { color: var(--gen-warn) !important; }
+#tab-case .errbox {
+  margin-top: 8px !important;
+  border: 1px solid var(--gen-danger-border) !important;
+  background: var(--gen-danger-bg) !important;
+  border-radius: var(--gen-radius) !important;
+  padding: 10px 12px !important;
+  color: var(--gen-danger) !important;
+  font-size: 12px !important;
+  font-family: var(--gen-font-mono) !important;
+  white-space: pre-wrap !important;
+  display: none;
+}
+
+/* ── Cases Tab: Case List ──────────────────────────────────────────────────── */
+#tab-case .case-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 80px;
+}
+#tab-case .case-item {
+  padding: 9px 16px !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  border: none !important;
+  border-bottom: 1px solid var(--gen-border) !important;
+  margin-bottom: 0 !important;
+  background: var(--gen-bg) !important;
+  transition: background 80ms !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+#tab-case .case-item:last-child { border-bottom: none !important; }
+#tab-case .case-item:hover { background: var(--gen-muted) !important; }
+#tab-case .case-item.active {
+  background: var(--gen-muted) !important;
+  border-left: 3px solid var(--gen-fg) !important;
+  padding-left: 13px !important;
+}
+
+/* ── Cases Tab: Filter Buttons ─────────────────────────────────────────────── */
+#tab-case .filt-btn {
+  padding: 4px 12px !important;
+  font-size: 11px !important;
+  border-radius: var(--gen-radius) !important;
+  border: 1px solid var(--gen-border) !important;
+  background: transparent !important;
+  color: var(--gen-fg-muted) !important;
+  cursor: pointer !important;
+  transition: background 80ms, color 80ms, border-color 80ms !important;
+  font-family: var(--gen-font-body) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  transform: none !important;
+}
+#tab-case .filt-btn.active {
+  background: var(--gen-fg) !important;
+  color: var(--gen-accent-fg) !important;
+  border-color: var(--gen-fg) !important;
+  font-weight: 700 !important;
+}
+#tab-case .filt-btn:hover:not(.active) {
+  border-color: var(--gen-fg) !important;
+  color: var(--gen-fg) !important;
+  background: var(--gen-muted) !important;
+  transform: none !important;
+}
+
+/* ── Cases Tab: Form Badge ─────────────────────────────────────────────────── */
+#tab-case .form-badge {
+  font-family: var(--gen-font-mono) !important;
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+  border-radius: var(--gen-radius) !important;
+  border: 1px solid var(--gen-border) !important;
+  color: var(--gen-fg) !important;
+  background: var(--gen-muted) !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+#tab-case .form-badge.deferred {
+  border-color: var(--gen-warn-border) !important;
+  color: var(--gen-warn) !important;
+  background: var(--gen-warn-bg) !important;
+}
+
+/* ── Cases Tab: Case Status Badges ─────────────────────────────────────────── */
+#tab-case .case-status {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+  border-radius: var(--gen-radius) !important;
+  border: 1px solid var(--gen-border) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  margin-left: 4px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--gen-fg-muted) !important;
+  background: transparent !important;
+}
+#tab-case .cs-active  { color: var(--gen-ok) !important;     border-color: var(--gen-ok-border) !important;   background: var(--gen-ok-bg) !important; }
+#tab-case .cs-submitted { color: var(--gen-warn) !important; border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
+#tab-case .cs-archived { color: var(--gen-fg-muted) !important; border-color: var(--gen-border) !important; background: var(--gen-muted) !important; }
+
+/* ── Cases Tab: Workflow Badge ─────────────────────────────────────────────── */
+#tab-case .wf-badge {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  border-radius: var(--gen-radius) !important;
+  font-weight: 600 !important;
+  border: 1px solid var(--gen-border) !important;
+  white-space: nowrap !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+#tab-case .wf-ok   { color: var(--gen-ok) !important;     border-color: var(--gen-ok-border) !important;   background: var(--gen-ok-bg) !important; }
+#tab-case .wf-warn { color: var(--gen-warn) !important;   border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
+#tab-case .wf-err  { color: var(--gen-danger) !important; border-color: var(--gen-danger-border) !important; background: var(--gen-danger-bg) !important; }
+
+/* ── Cases Tab: Meta Chips ─────────────────────────────────────────────────── */
+#tab-case .meta-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid var(--gen-border) !important;
+}
+#tab-case .meta-chip {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  border-radius: var(--gen-radius) !important;
+  border: 1px solid var(--gen-border) !important;
+  color: var(--gen-fg-muted) !important;
+  background: var(--gen-muted) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+#tab-case .meta-chip.purpose  { color: var(--gen-fg) !important;     border-color: var(--gen-border-strong) !important; background: var(--gen-muted) !important; }
+#tab-case .meta-chip.loan     { color: var(--gen-fg) !important;     border-color: var(--gen-border) !important; }
+#tab-case .meta-chip.condition{ color: var(--gen-danger) !important; border-color: var(--gen-danger-border) !important; background: var(--gen-danger-bg) !important; }
+#tab-case .meta-chip.geo      { color: var(--gen-ok) !important;     border-color: var(--gen-ok-border) !important; background: var(--gen-ok-bg) !important; }
+#tab-case .meta-chip.cond-rating { color: var(--gen-warn) !important; border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
+
+/* ── Cases Tab: Form Picker ────────────────────────────────────────────────── */
+#tab-case .form-picker { display: flex !important; flex-direction: column !important; gap: 8px !important; margin-top: 6px !important; }
+#tab-case .form-picker-section-head {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--gen-fg-muted) !important;
+  margin-bottom: 4px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+#tab-case .form-picker-section-head.active-head { color: var(--gen-fg) !important; }
+#tab-case .form-picker-options { display: flex !important; flex-direction: column !important; gap: 4px !important; }
+#tab-case .form-picker-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px !important;
+  border-radius: var(--gen-radius) !important;
+  border: 1px solid var(--gen-border) !important;
+  cursor: pointer !important;
+  transition: border-color 80ms, background 80ms !important;
+  background: var(--gen-bg) !important;
+}
+#tab-case .form-picker-option:hover { background: var(--gen-muted) !important; border-color: var(--gen-border) !important; }
+#tab-case .form-picker-option.selected { border-color: var(--gen-fg) !important; background: var(--gen-muted) !important; }
+#tab-case .form-picker-option.deferred-option { opacity: 0.65 !important; }
+#tab-case .form-picker-option.deferred-option.selected { border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
+#tab-case .form-picker-radio {
+  width: 14px !important; height: 14px !important; border-radius: 50% !important;
+  border: 2px solid var(--gen-border) !important; flex-shrink: 0 !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  transition: border-color 80ms !important;
+}
+#tab-case .form-picker-option.selected .form-picker-radio { border-color: var(--gen-fg) !important; }
+#tab-case .form-picker-option.selected .form-picker-radio::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gen-fg); }
+#tab-case .form-picker-option.deferred-option.selected .form-picker-radio { border-color: var(--gen-warn) !important; }
+#tab-case .form-picker-option.deferred-option.selected .form-picker-radio::after { background: var(--gen-warn) !important; }
+#tab-case .form-picker-label { flex: 1 !important; font-family: var(--gen-font-body) !important; font-size: 13px !important; font-weight: 500 !important; color: var(--gen-fg) !important; }
+#tab-case .form-picker-badge {
+  font-family: var(--gen-font-body) !important;
+  font-size: 9px !important; padding: 1px 6px !important;
+  border-radius: var(--gen-radius) !important; font-weight: 700 !important;
+  text-transform: uppercase !important; letter-spacing: 0.06em !important;
+}
+#tab-case .form-picker-badge.active-badge { border: 1px solid var(--gen-ok-border) !important; color: var(--gen-ok) !important; background: var(--gen-ok-bg) !important; }
+#tab-case .form-picker-badge.deferred-badge { border: 1px solid var(--gen-warn-border) !important; color: var(--gen-warn) !important; background: var(--gen-warn-bg) !important; }
+#tab-case .deferred-section-toggle {
+  font-family: var(--gen-font-body) !important;
+  font-size: 10px !important; color: var(--gen-fg-muted) !important;
+  cursor: pointer !important; padding: 2px 8px !important;
+  border-radius: var(--gen-radius) !important; border: 1px solid var(--gen-border) !important;
+  background: transparent !important; transition: color 80ms !important;
+  text-transform: uppercase !important; letter-spacing: 0.05em !important;
+  font-weight: 600 !important;
+}
+#tab-case .deferred-section-toggle:hover { color: var(--gen-fg) !important; background: var(--gen-muted) !important; }
+
+/* ── Cases Tab: Deferred Banner ────────────────────────────────────────────── */
+#tab-case .deferred-banner {
+  border: 1px solid var(--gen-warn-border) !important;
+  background: var(--gen-warn-bg) !important;
+  border-radius: var(--gen-radius) !important;
+  padding: 10px 12px !important;
+  margin-bottom: 10px !important;
+  display: none;
+}
+#tab-case .deferred-banner.visible { display: block !important; }
+#tab-case .deferred-banner-head {
+  font-family: var(--gen-font-body) !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  color: var(--gen-warn) !important; text-transform: uppercase !important;
+  letter-spacing: 0.06em !important; margin-bottom: 4px !important;
+}
+#tab-case .deferred-banner-body {
+  font-family: var(--gen-font-body) !important;
+  font-size: 12px !important; color: var(--gen-fg-muted) !important; line-height: 1.5 !important;
+}
+
+/* ── Cases Tab: Doc Slots ──────────────────────────────────────────────────── */
+#tab-case .doc-slot {
+  display: flex !important; gap: 10px !important; align-items: center !important;
+  padding: 8px 0 !important; border-bottom: 1px solid var(--gen-border) !important;
+}
+#tab-case .doc-slot:last-child { border-bottom: none !important; }
+#tab-case .doc-slot .ds-label {
+  font-family: var(--gen-font-body) !important;
+  font-size: 13px !important; font-weight: 600 !important;
+  min-width: 150px !important; color: var(--gen-fg) !important;
+}
+#tab-case .doc-slot .ds-status {
+  font-family: var(--gen-font-body) !important;
+  font-size: 11px !important; color: var(--gen-fg-muted) !important;
+}
+#tab-case .doc-slot .ds-status.uploaded { color: var(--gen-ok) !important; }
+
+/* ── Cases Tab: Card Row ───────────────────────────────────────────────────── */
+#tab-case .card-row { display: flex !important; gap: 16px !important; flex-wrap: wrap !important; }
+#tab-case .card-row > .card { flex: 1 !important; min-width: 240px !important; }
+
+/* ── Cases Tab: Assign Grid ────────────────────────────────────────────────── */
+#tab-case .assign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px 16px !important; }
+#tab-case .assign-grid .full { grid-column: 1 / -1 !important; }
 
 </style>
 </body>

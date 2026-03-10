@@ -97,3 +97,8 @@ Open http://localhost:5178 in your browser.
 {"ts":"2026-03-10T06:33:44.180Z","level":"info","msg":"http","method":"POST","path":"/","status":200,"ms":6}
 {"ts":"2026-03-10T06:33:44.182Z","level":"info","msg":"http","method":"POST","path":"/api/cases/45ce002d/review-section","status":400,"ms":1}
 {"ts":"2026-03-10T06:33:44.184Z","level":"info","msg":"http","method":"DELETE","path":"/45ce002d","status":200,"ms":1}
+{"ts":"2026-03-10T06:41:06.302Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-10T06:41:06.309Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
+{"ts":"2026-03-10T06:41:06.316Z","level":"info","msg":"http","method":"POST","path":"/","status":200,"ms":4}
+{"ts":"2026-03-10T06:41:06.318Z","level":"info","msg":"http","method":"POST","path":"/api/cases/c5f78224/review-section","status":400,"ms":0}
+{"ts":"2026-03-10T06:41:06.321Z","level":"info","msg":"http","method":"DELETE","path":"/c5f78224","status":200,"ms":2}
