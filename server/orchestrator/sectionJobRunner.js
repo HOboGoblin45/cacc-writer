@@ -80,30 +80,164 @@ function buildAssignmentMetaFromContext(context) {
  * Splits into voiceExamples (approvedNarrative) and otherExamples.
  * Also extracts source IDs for traceability.
  *
+ * Phase 6 enhancement: If a Phase 6 retrieval pack is available,
+ * merge its richer examples (with scored ranking) into the arrays.
+ * Phase 3 pack remains the baseline; Phase 6 pack enriches it.
+ *
  * @param {string} sectionId
- * @param {object} retrievalPack
- * @returns {{ voiceExamples, otherExamples, sourceIds }}
+ * @param {object} retrievalPack — Phase 3 retrieval pack
+ * @param {object} [phase6Pack]  — Phase 6 retrieval pack bundle (optional)
+ * @returns {{ voiceExamples, otherExamples, sourceIds, voiceHints, disallowedPhrases, compCommentary }}
  */
-function buildExamplesFromPack(sectionId, retrievalPack) {
+function buildExamplesFromPack(sectionId, retrievalPack, phase6Pack) {
   const sectionMemory = retrievalPack?.sections?.[sectionId];
-  if (!sectionMemory) {
-    return { voiceExamples: [], otherExamples: [], sourceIds: [] };
-  }
 
-  const voiceExamples = (sectionMemory.examples || [])
+  // Start with Phase 3 examples
+  const voiceExamples = (sectionMemory?.examples || [])
     .filter(e => e.sourceType === 'approvedNarrative')
     .map(e => ({ text: e.text, fieldId: e.fieldId || sectionId, source: 'voice' }));
 
-  const otherExamples = (sectionMemory.examples || [])
+  const otherExamples = (sectionMemory?.examples || [])
     .filter(e => e.sourceType !== 'approvedNarrative')
     .map(e => ({ text: e.text, fieldId: e.fieldId || sectionId, source: e.sourceType || 'kb' }));
 
-  // Collect source IDs for retrieval traceability
-  const sourceIds = (sectionMemory.examples || [])
+  const sourceIds = (sectionMemory?.examples || [])
     .map(e => e.id)
     .filter(Boolean);
 
-  return { voiceExamples, otherExamples, sourceIds };
+  // Phase 6 enrichment
+  let voiceHints = null;
+  let disallowedPhrases = [];
+  let compCommentary = [];
+
+  const p6Section = phase6Pack?.packs?.[sectionId];
+  if (p6Section && !p6Section.error) {
+    // Merge Phase 6 narrative examples (higher quality, scored)
+    const existingTexts = new Set([
+      ...voiceExamples.map(e => e.text?.slice(0, 100)),
+      ...otherExamples.map(e => e.text?.slice(0, 100)),
+    ]);
+
+    for (const ex of (p6Section.narrativeExamples || [])) {
+      const prefix = ex.text?.slice(0, 100);
+      if (prefix && !existingTexts.has(prefix)) {
+        // Phase 6 approved memory examples go into voice examples
+        // (they are curated/approved material)
+        voiceExamples.push({
+          text: ex.text,
+          fieldId: sectionId,
+          source: 'approved_memory',
+          score: ex.score?.totalScore || 0,
+          rationale: ex.rationale || null,
+        });
+        if (ex.id) sourceIds.push(ex.id);
+        existingTexts.add(prefix);
+      }
+    }
+
+    // Merge Phase 6 voice exemplars
+    for (const ex of (p6Section.voiceExemplars || [])) {
+      const prefix = ex.text?.slice(0, 100);
+      if (prefix && !existingTexts.has(prefix)) {
+        voiceExamples.push({
+          text: ex.text,
+          fieldId: sectionId,
+          source: 'voice_exemplar',
+          score: ex.score || 0,
+        });
+        if (ex.id) sourceIds.push(ex.id);
+        existingTexts.add(prefix);
+      }
+    }
+
+    // Merge Phase 6 phrase bank items into other examples
+    for (const ph of (p6Section.phraseBankItems || [])) {
+      otherExamples.push({
+        text: ph.text,
+        fieldId: sectionId,
+        source: 'phrase_bank',
+        score: ph.score || 0,
+      });
+      if (ph.id) sourceIds.push(ph.id);
+    }
+
+    // Extract voice hints and disallowed phrases
+    voiceHints = p6Section.voiceHints || null;
+    disallowedPhrases = p6Section.disallowedPhrases || [];
+    compCommentary = p6Section.compCommentary || [];
+  }
+
+  return { voiceExamples, otherExamples, sourceIds, voiceHints, disallowedPhrases, compCommentary };
+}
+
+/**
+ * Build a voice/style context block for prompt injection from Phase 6 voice hints.
+ * Returns a structured text block that guides the AI on writing style.
+ *
+ * @param {object|null} voiceHints — resolved voice profile hints
+ * @param {string[]} disallowedPhrases — phrases to avoid
+ * @returns {string|null}
+ */
+function buildVoiceContextBlock(voiceHints, disallowedPhrases) {
+  if (!voiceHints && (!disallowedPhrases || disallowedPhrases.length === 0)) return null;
+
+  const lines = ['WRITING STYLE GUIDANCE (from appraiser voice profile):'];
+
+  if (voiceHints) {
+    if (voiceHints.tone) lines.push(`- Tone: ${voiceHints.tone}`);
+    if (voiceHints.sentenceLength) lines.push(`- Sentence length preference: ${voiceHints.sentenceLength}`);
+    if (voiceHints.hedgingDegree) lines.push(`- Hedging/certainty level: ${voiceHints.hedgingDegree}`);
+    if (voiceHints.terminologyPreference) lines.push(`- Terminology: ${voiceHints.terminologyPreference}`);
+    if (voiceHints.reconciliationStyle) lines.push(`- Reconciliation style: ${voiceHints.reconciliationStyle}`);
+
+    // Preferred phrasing patterns
+    if (voiceHints.preferredPatterns && voiceHints.preferredPatterns.length > 0) {
+      lines.push('- Preferred phrasing patterns:');
+      for (const p of voiceHints.preferredPatterns.slice(0, 5)) {
+        lines.push(`  • ${p}`);
+      }
+    }
+
+    // Section-specific openings/closings
+    if (voiceHints.preferredOpening) lines.push(`- Preferred section opening style: ${voiceHints.preferredOpening}`);
+    if (voiceHints.preferredClosing) lines.push(`- Preferred section closing style: ${voiceHints.preferredClosing}`);
+  }
+
+  if (disallowedPhrases && disallowedPhrases.length > 0) {
+    lines.push('- DO NOT use these generic/disfavored phrases:');
+    for (const phrase of disallowedPhrases.slice(0, 15)) {
+      lines.push(`  ✗ "${phrase}"`);
+    }
+  }
+
+  return lines.length > 1 ? lines.join('\n') : null;
+}
+
+/**
+ * Build a comparable commentary context block for prompt injection.
+ * Only relevant for sales comparison and reconciliation sections.
+ *
+ * @param {object[]} compCommentary — comparable commentary examples
+ * @param {string} sectionId
+ * @returns {string|null}
+ */
+function buildCompCommentaryBlock(compCommentary, sectionId) {
+  if (!compCommentary || compCommentary.length === 0) return null;
+
+  // Only inject comp commentary for relevant sections
+  const compSections = [
+    'sales_comparison_summary', 'reconciliation', 'comp_analysis',
+    'market_conditions', 'sales_comparison_approach',
+  ];
+  if (!compSections.includes(sectionId)) return null;
+
+  const lines = ['COMPARABLE COMMENTARY EXAMPLES (from approved prior work):'];
+  for (const cc of compCommentary.slice(0, 3)) {
+    lines.push(`\n--- Example (${cc.commentaryType || 'general'}) ---`);
+    if (cc.text) lines.push(cc.text.slice(0, 400) + (cc.text.length > 400 ? '...' : ''));
+  }
+
+  return lines.length > 1 ? lines.join('\n') : null;
 }
 
 /**
@@ -265,6 +399,7 @@ export async function runSectionJob({
   sectionDef,
   context,
   retrievalPack,
+  phase6Pack        = null,
   analysisArtifacts = {},
   priorResults      = {},
   existingJobId     = null,
@@ -290,9 +425,9 @@ export async function runSectionJob({
   // ── Resolve generator profile ──────────────────────────────────────────────
   const profile = getProfile(sectionDef.generatorProfile || 'retrieval-guided');
 
-  // ── Build examples from retrieval pack ────────────────────────────────────
-  const { voiceExamples, otherExamples, sourceIds } =
-    buildExamplesFromPack(sectionId, retrievalPack);
+  // ── Build examples from retrieval pack (Phase 3 + Phase 6 enrichment) ────
+  const { voiceExamples, otherExamples, sourceIds, voiceHints, disallowedPhrases, compCommentary } =
+    buildExamplesFromPack(sectionId, retrievalPack, phase6Pack);
 
   // ── Build analysis context ─────────────────────────────────────────────────
   const analysisContext = buildAnalysisContext(sectionId, analysisArtifacts);
@@ -307,6 +442,10 @@ export async function runSectionJob({
   // ── Build assignment meta ──────────────────────────────────────────────────
   const assignmentMeta = buildAssignmentMetaFromContext(context);
 
+  // ── Build Phase 6 voice/style context blocks ──────────────────────────────
+  const voiceContextBlock = buildVoiceContextBlock(voiceHints, disallowedPhrases);
+  const compCommentaryBlock = buildCompCommentaryBlock(compCommentary, sectionId);
+
   // ── Build prompt messages ──────────────────────────────────────────────────
   const promptMessages = buildPromptMessages({
     fieldId:        sectionId,
@@ -316,7 +455,8 @@ export async function runSectionJob({
     examples:       otherExamples,
     assignmentMeta,
     systemHint:     profile.systemHint,
-    extraContext:   [analysisContext, priorSectionsContext].filter(Boolean).join('\n\n') || null,
+    extraContext:   [analysisContext, priorSectionsContext, voiceContextBlock, compCommentaryBlock]
+                      .filter(Boolean).join('\n\n') || null,
   });
 
   const inputChars = JSON.stringify(promptMessages).length;

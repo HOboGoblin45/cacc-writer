@@ -30,6 +30,9 @@
 //   section_jobs.retrieval_source_ids_json — stores example IDs used per section
 //   section_jobs.estimated_cost_usd      — optional cost tracking
 
+import { initPhase6Schema } from '../migration/phase6Schema.js';
+import { initPhase7Schema } from '../migration/phase7Schema.js';
+
 function runMigrations(db) {
   const migrations = [
     // Phase 3 — draft package persistence
@@ -468,4 +471,19 @@ export function initSchema(db) {
 
   // Run column migrations for Phase 3 additions
   runMigrations(db);
+
+  // Run Phase 6 schema additions
+  // Imported at top level to keep initSchema synchronous (required by getDb())
+  try {
+    initPhase6Schema(db);
+  } catch (err) {
+    console.error('[schema] Phase 6 schema init failed (non-fatal):', err.message);
+  }
+
+  // Run Phase 7 schema additions (QC tables)
+  try {
+    initPhase7Schema(db);
+  } catch (err) {
+    console.error('[schema] Phase 7 schema init failed (non-fatal):', err.message);
+  }
 }

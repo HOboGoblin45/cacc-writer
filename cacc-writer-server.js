@@ -81,6 +81,8 @@ import agentsRouter       from './server/api/agentsRoutes.js';
 import healthRouter       from './server/api/healthRoutes.js';
 import intelligenceRouter from './server/api/intelligenceRoutes.js';
 import documentRouter    from './server/api/documentRoutes.js';
+import phase6MemoryRouter from './server/api/phase6Routes.js';
+import qcRouter           from './server/api/qcRoutes.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -118,7 +120,7 @@ if (!OPENAI_API_KEY) console.warn('OPENAI_API_KEY is missing. AI endpoints will 
 
 app.use((req, res, next) => {
   const start = Date.now();
-  const skip  = ['/favicon.ico','/app.js','/index.html','/'].includes(req.path);
+  const skip  = ['/favicon.ico','/app.js','/phase8.css','/index.html','/'].includes(req.path);
   res.on('finish', () => { if (!skip) log.request(req.method, req.path, res.statusCode, Date.now() - start); });
   next();
 });
@@ -126,6 +128,7 @@ app.use((req, res, next) => {
 app.get('/',           (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/app.js',     (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
+app.get('/phase8.css', (_q, r) => r.sendFile(path.join(__dirname, 'phase8.css')));
 app.get('/favicon.ico', (_q, r) => {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0b1020"/><text x="16" y="23" font-family="Arial" font-size="20" font-weight="bold" fill="#d7b35a" text-anchor="middle">C</text></svg>';
   r.setHeader('Content-Type','image/svg+xml'); r.setHeader('Cache-Control','public, max-age=86400'); r.send(svg);
@@ -137,13 +140,15 @@ app.param('caseId', (req, res, next, caseId) => {
   req.caseDir = cd; next();
 });
 
-app.use('/api',       healthRouter);
-app.use('/api/cases', casesRouter);
-app.use('/api',       generationRouter);
-app.use('/api',       memoryRouter);
-app.use('/api',       agentsRouter);
-app.use('/api',       intelligenceRouter);
-app.use('/api',       documentRouter);
+app.use('/api',        healthRouter);
+app.use('/api/cases',  casesRouter);
+app.use('/api',        generationRouter);
+app.use('/api',        memoryRouter);
+app.use('/api',        agentsRouter);
+app.use('/api',        intelligenceRouter);
+app.use('/api',        documentRouter);
+app.use('/api/memory', phase6MemoryRouter);
+app.use('/api',        qcRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend

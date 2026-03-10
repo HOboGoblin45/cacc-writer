@@ -40,6 +40,8 @@ function showTab(name) {
   if(name==='facts')loadNeighborhoodTemplates();
   if(name==='voice')loadVoiceExamples();
   if(name==='docs')loadDocsTab();
+  if(name==='memory')memLoadAll();
+  if(name==='qc')qcOnTabOpen();
 }
 
 // ====== FORM REGISTRY ======
@@ -804,6 +806,345 @@ function renderGrade(g) {
   html+=section('USPAP Issues',g.uspapIssues,x=>`<div class="grade-item critical"><span class="sev critical">USPAP</span><div>${esc(x.issue||'')}${x.citation?'<br/><span style="font-size:10px;color:var(--muted);">'+esc(x.citation)+'</span>':''}</div></div>`);
   html+=section('Strengths',g.strengths,s=>`<div class="grade-item strength">${esc(typeof s==='string'?s:((s&&(s.strength||s.text))||JSON.stringify(s)))}</div>`);
   wrap.innerHTML=html;
+}
+
+// ====== PHASE 7 — QC REVIEW AUTOMATION ======
+
+/** @type {{ currentRunId: string|null, findings: Array, summary: object|null, history: Array }} */
+const QC_STATE = { currentRunId: null, findings: [], summary: null, history: [] };
+
+/** Called when QC tab is opened */
+async function qcOnTabOpen() {
+  if (!STATE.caseId) return;
+  await qcLoadLatestRun();
+  qcLoadHistory();
+  qcLoadRegistryStats();
+}
+
+/** Run QC on the current case's latest draft package */
+async function qcRunQC() {
+  if (!STATE.caseId) { alert('Select a case first.'); return; }
+  setStatus('qcStatus', 'Running QC checks…', 'warn');
+  showErr('qcErrBox', '');
+  $('qcSummaryDisplay').innerHTML = '<div class="hint">Running QC…</div>';
+  $('qcFindingsDisplay').innerHTML = '<div class="hint">Running QC…</div>';
+
+  const d = await apiFetch('/api/qc/run', { method: 'POST', body: { caseId: STATE.caseId } });
+  if (!d.ok) {
+    setStatus('qcStatus', 'QC failed: ' + (d.error || 'unknown'), 'err');
+    showErr('qcErrBox', d.error || 'QC run failed');
+    $('qcSummaryDisplay').innerHTML = '<div class="hint">QC run failed.</div>';
+    $('qcFindingsDisplay').innerHTML = '';
+    return;
+  }
+
+  QC_STATE.currentRunId = d.qcRunId || (d.run && d.run.id);
+  setStatus('qcStatus', 'QC complete.', 'ok');
+
+  // Load the results
+  if (QC_STATE.currentRunId) {
+    await qcLoadSummary(QC_STATE.currentRunId);
+    await qcLoadFindings(QC_STATE.currentRunId);
+    qcLoadHistory();
+  }
+}
+
+/** Load the latest QC run for the current case */
+async function qcLoadLatestRun() {
+  if (!STATE.caseId) return;
+  const d = await apiFetch('/api/cases/' + STATE.caseId + '/qc-runs');
+  if (!d.ok || !d.runs || !d.runs.length) {
+    $('qcSummaryDisplay').innerHTML = '<div class="hint">No QC runs yet. Click Run QC to start.</div>';
+    $('qcFindingsDisplay').innerHTML = '<div class="hint">No findings to display.</div>';
+    return;
+  }
+  const latest = d.runs[0];
+  QC_STATE.currentRunId = latest.id;
+  await qcLoadSummary(latest.id);
+  await qcLoadFindings(latest.id);
+}
+
+/** Load and render QC summary for a given run */
+async function qcLoadSummary(qcRunId) {
+  const d = await apiFetch('/api/qc/runs/' + qcRunId + '/summary');
+  if (!d.ok) {
+    $('qcSummaryDisplay').innerHTML = '<div class="hint">Could not load summary.</div>';
+    return;
+  }
+  QC_STATE.summary = d.summary;
+  qcRenderSummary(d.summary);
+}
+
+/** Load and render QC findings for a given run */
+async function qcLoadFindings(qcRunId, filters) {
+  let url = '/api/qc/runs/' + qcRunId + '/findings';
+  const params = [];
+  if (filters) {
+    if (filters.severity) params.push('severity=' + encodeURIComponent(filters.severity));
+    if (filters.category) params.push('category=' + encodeURIComponent(filters.category));
+    if (filters.status) params.push('status=' + encodeURIComponent(filters.status));
+  }
+  if (params.length) url += '?' + params.join('&');
+
+  const d = await apiFetch(url);
+  if (!d.ok) {
+    $('qcFindingsDisplay').innerHTML = '<div class="hint">Could not load findings.</div>';
+    return;
+  }
+  QC_STATE.findings = d.findings || [];
+  qcRenderFindings(QC_STATE.findings);
+}
+
+/** Apply filter dropdowns and reload findings */
+function qcApplyFilters() {
+  if (!QC_STATE.currentRunId) return;
+  const severity = $('qcFilterSeverity').value;
+  const category = $('qcFilterCategory').value;
+  const status = $('qcFilterStatus').value;
+  qcLoadFindings(QC_STATE.currentRunId, { severity, category, status });
+}
+
+/** Load QC run history for the current case */
+async function qcLoadHistory() {
+  if (!STATE.caseId) return;
+  const d = await apiFetch('/api/cases/' + STATE.caseId + '/qc-runs');
+  if (!d.ok || !d.runs || !d.runs.length) {
+    $('qcRunHistory').innerHTML = '<div class="hint">No QC runs yet.</div>';
+    return;
+  }
+  QC_STATE.history = d.runs;
+  const wrap = $('qcRunHistory');
+  wrap.innerHTML = d.runs.map(r => {
+    const ts = r.created_at ? new Date(r.created_at).toLocaleString() : '—';
+    const isActive = r.id === QC_STATE.currentRunId ? ' active' : '';
+    const stats = r.summary_stats ? (typeof r.summary_stats === 'string' ? JSON.parse(r.summary_stats) : r.summary_stats) : null;
+    const total = stats ? (stats.totalFindings || 0) : '?';
+    const readiness = stats ? (stats.readinessLabel || stats.draftReadiness || '') : '';
+    return `<div class="qc-run-item${isActive}" onclick="qcSwitchRun('${esc(r.id)}')">
+      <div><b>${ts}</b> &mdash; ${total} findings</div>
+      <div class="qc-run-meta">${readiness ? '<span class="chip">' + esc(readiness) + '</span>' : ''} v${esc(r.rule_set_version || '?')}</div>
+    </div>`;
+  }).join('');
+}
+
+/** Switch to a different QC run from history */
+async function qcSwitchRun(qcRunId) {
+  QC_STATE.currentRunId = qcRunId;
+  await qcLoadSummary(qcRunId);
+  await qcLoadFindings(qcRunId);
+  // Update active state in history list
+  document.querySelectorAll('.qc-run-item').forEach(el => el.classList.remove('active'));
+  // Re-highlight
+  qcLoadHistory();
+}
+
+/** Load and render registry stats */
+async function qcLoadRegistryStats() {
+  const d = await apiFetch('/api/qc/registry/stats');
+  if (!d.ok) {
+    $('qcRegistryStats').innerHTML = '<div class="hint">Could not load registry stats.</div>';
+    return;
+  }
+  const s = d.stats;
+  let html = '<div style="font-size:12px;line-height:1.8;">';
+  html += '<b>Total Rules:</b> ' + (s.totalRules || 0) + '<br>';
+  html += '<b>Active:</b> ' + (s.activeRules || 0) + '<br>';
+  if (s.byCategory) {
+    html += '<b>By Category:</b><br>';
+    Object.entries(s.byCategory).forEach(([cat, count]) => {
+      html += '&nbsp;&nbsp;' + esc(cat) + ': ' + count + '<br>';
+    });
+  }
+  if (s.byType) {
+    html += '<b>By Type:</b><br>';
+    Object.entries(s.byType).forEach(([type, count]) => {
+      html += '&nbsp;&nbsp;' + esc(type) + ': ' + count + '<br>';
+    });
+  }
+  html += '</div>';
+  $('qcRegistryStats').innerHTML = html;
+}
+
+/** Render QC summary into the summary display area */
+function qcRenderSummary(summary) {
+  if (!summary) { $('qcSummaryDisplay').innerHTML = '<div class="hint">No summary available.</div>'; return; }
+  const s = summary;
+  const sev = s.severityCounts || {};
+  const total = s.totalFindings || 0;
+  const readiness = s.draftReadiness || 'not_ready';
+  const readinessLabel = s.readinessLabel || readiness;
+  const readinessDesc = s.readinessDescription || '';
+  const readinessColor = s.readinessColor || 'var(--muted)';
+
+  // Update readiness badge in card header
+  const badge = $('qcReadinessBadge');
+  if (badge) {
+    badge.textContent = readinessLabel;
+    badge.className = 'qc-readiness ' + readiness;
+    badge.style.display = 'inline-block';
+  }
+
+  // Update finding count chip
+  const countChip = $('qcFindingCount');
+  if (countChip) {
+    countChip.textContent = total + ' finding' + (total !== 1 ? 's' : '');
+    countChip.style.display = total > 0 ? 'inline-block' : 'none';
+  }
+
+  let html = '';
+
+  // Readiness ring
+  const ringColor = readiness === 'ready' ? 'var(--ok)' : readiness === 'review_recommended' ? 'var(--warn)' : readiness === 'needs_review' ? '#ff9800' : 'var(--danger)';
+  const ringScore = readiness === 'ready' ? 100 : readiness === 'review_recommended' ? 75 : readiness === 'needs_review' ? 50 : 25;
+  html += `<div style="display:flex;align-items:center;gap:18px;margin-bottom:14px;">
+    <div class="score-ring"><div class="score-num" style="color:${ringColor}">${ringScore}</div><div class="score-label">${esc(readinessLabel)}</div></div>
+    <div style="flex:1;font-size:12px;color:var(--muted);line-height:1.6;">${esc(readinessDesc)}</div>
+  </div>`;
+
+  // Severity grid
+  html += '<div class="qc-summary-grid">';
+  const sevOrder = ['blocker', 'high', 'medium', 'low', 'advisory'];
+  sevOrder.forEach(sv => {
+    const count = sev[sv] || 0;
+    html += `<div class="qc-summary-cell ${sv}"><div style="font-size:20px;font-weight:800;">${count}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;">${sv}</div></div>`;
+  });
+  html += '</div>';
+
+  // Top review risks
+  if (s.topReviewRisks && s.topReviewRisks.length) {
+    html += '<div class="grade-section"><h4>Top Review Risks</h4>';
+    s.topReviewRisks.forEach(r => {
+      html += `<div class="qc-risk-item"><span class="sev ${esc(r.severity || 'medium')}">${esc(r.severity || '?')}</span> ${esc(r.message || r.ruleId || '')}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Missing commentary families
+  if (s.missingCommentaryFamilies && s.missingCommentaryFamilies.length) {
+    html += '<div class="grade-section"><h4>Missing Commentary Families</h4>';
+    s.missingCommentaryFamilies.forEach(f => {
+      html += `<div class="qc-risk-item"><span class="sev high">missing</span> ${esc(f)}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Cross-section conflicts
+  if (s.crossSectionConflicts && s.crossSectionConflicts > 0) {
+    html += `<div class="grade-section"><h4>Cross-Section Conflicts</h4><div class="hint">${s.crossSectionConflicts} conflict(s) detected across sections.</div></div>`;
+  }
+
+  // Placeholder issues
+  if (s.placeholderIssues && s.placeholderIssues > 0) {
+    html += `<div class="grade-section"><h4>Placeholder Issues</h4><div class="hint">${s.placeholderIssues} unresolved placeholder(s) detected.</div></div>`;
+  }
+
+  // Fields needing attention
+  if (s.fieldsNeedingAttention && s.fieldsNeedingAttention.length) {
+    html += '<div class="grade-section"><h4>Fields Needing Attention</h4><div style="display:flex;flex-wrap:wrap;gap:4px;">';
+    s.fieldsNeedingAttention.forEach(f => {
+      html += `<span class="chip">${esc(f)}</span>`;
+    });
+    html += '</div></div>';
+  }
+
+  // Cleared sections
+  if (s.clearedSections && s.clearedSections.length) {
+    html += '<div class="grade-section"><h4>Cleared Sections</h4><div style="display:flex;flex-wrap:wrap;gap:4px;">';
+    s.clearedSections.forEach(sec => {
+      html += `<span class="chip" style="border-color:var(--ok);color:var(--ok);">✓ ${esc(sec)}</span>`;
+    });
+    html += '</div></div>';
+  }
+
+  $('qcSummaryDisplay').innerHTML = html;
+}
+
+/** Render QC findings list */
+function qcRenderFindings(findings) {
+  const wrap = $('qcFindingsDisplay');
+  if (!findings || !findings.length) {
+    wrap.innerHTML = '<div class="hint">No findings to display.</div>';
+    return;
+  }
+
+  wrap.innerHTML = findings.map(f => {
+    const sev = f.severity || 'medium';
+    const cat = f.category || '';
+    const status = f.status || 'open';
+    const statusClass = status === 'dismissed' ? ' dismissed' : status === 'resolved' ? ' resolved' : '';
+
+    let actionsHtml = '';
+    if (status === 'open') {
+      actionsHtml = `<button class="ghost sm" onclick="qcDismissFinding('${esc(f.id)}')">Dismiss</button>
+        <button class="ghost sm" onclick="qcResolveFinding('${esc(f.id)}')">Resolve</button>`;
+    } else if (status === 'dismissed' || status === 'resolved') {
+      actionsHtml = `<button class="ghost sm" onclick="qcReopenFinding('${esc(f.id)}')">Reopen</button>`;
+    }
+
+    const metaParts = [];
+    if (f.ruleId) metaParts.push(f.ruleId);
+    if (f.sectionId) metaParts.push('Section: ' + f.sectionId);
+    if (f.field) metaParts.push('Field: ' + f.field);
+
+    let detailHtml = '';
+    if (f.suggestion) {
+      detailHtml += `<div class="qc-finding-detail"><b>Suggestion:</b> ${esc(f.suggestion)}</div>`;
+    }
+    if (f.metadata && typeof f.metadata === 'object') {
+      const md = f.metadata;
+      if (md.detailedMessage) {
+        detailHtml += `<div class="qc-finding-detail">${esc(md.detailedMessage)}</div>`;
+      }
+      if (md.evidence) {
+        const ev = typeof md.evidence === 'string' ? md.evidence : JSON.stringify(md.evidence);
+        detailHtml += `<div class="qc-finding-detail" style="font-family:var(--mono);font-size:10px;opacity:.7;">${esc(ev).substring(0, 300)}</div>`;
+      }
+    }
+
+    return `<div class="qc-finding-row ${sev}${statusClass}">
+      <div class="qc-finding-body">
+        <div class="qc-finding-msg"><span class="sev ${sev}">${esc(sev)}</span> ${esc(f.message || '')}</div>
+        ${detailHtml}
+        <div class="qc-finding-meta">${metaParts.map(p => '<span class="chip">' + esc(p) + '</span>').join(' ')}
+          ${status !== 'open' ? '<span class="chip" style="border-color:var(--muted);">' + esc(status) + '</span>' : ''}
+        </div>
+      </div>
+      <div class="qc-finding-actions">${actionsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+/** Dismiss a finding */
+async function qcDismissFinding(findingId) {
+  const note = prompt('Dismissal note (optional):') || '';
+  const d = await apiFetch('/api/qc/findings/' + findingId + '/dismiss', {
+    method: 'POST', body: { note, dismissedBy: 'appraiser' }
+  });
+  if (d.ok && QC_STATE.currentRunId) {
+    qcApplyFilters();
+    qcLoadSummary(QC_STATE.currentRunId);
+  }
+}
+
+/** Resolve a finding */
+async function qcResolveFinding(findingId) {
+  const note = prompt('Resolution note (optional):') || '';
+  const d = await apiFetch('/api/qc/findings/' + findingId + '/resolve', {
+    method: 'POST', body: { note }
+  });
+  if (d.ok && QC_STATE.currentRunId) {
+    qcApplyFilters();
+    qcLoadSummary(QC_STATE.currentRunId);
+  }
+}
+
+/** Reopen a finding */
+async function qcReopenFinding(findingId) {
+  const d = await apiFetch('/api/qc/findings/' + findingId + '/reopen', { method: 'POST' });
+  if (d.ok && QC_STATE.currentRunId) {
+    qcApplyFilters();
+    qcLoadSummary(QC_STATE.currentRunId);
+  }
 }
 
 // ====== NEIGHBORHOOD TEMPLATES ======
@@ -2695,7 +3036,488 @@ function loadDocsTab() {
   loadExtractionSummary();
 }
 
-// ====== INIT ======
+// ====== PHASE 6 — MEMORY, VOICE & RETRIEVAL UI ==============================
+
+/** Load all Memory tab sub-panels */
+function memLoadAll() {
+  memLoadSummary();
+  memLoadApproved();
+  memLoadStaged();
+  memLoadCompCommentary();
+  memLoadVoiceProfile();
+}
+
+// ── Memory Summary ───────────────────────────────────────────────────────────
+
+async function memLoadSummary() {
+  const el = $('memSummaryDisplay');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading…</div>';
+  try {
+    const d = await apiFetch('/api/memory/summary');
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error || 'Failed') + '</div>'; return; }
+    const am = d.approvedMemory || {};
+    const sc = d.stagingCandidates || {};
+    const vp = d.voiceProfiles || 0;
+    const cc = d.compCommentary || {};
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:12px;">
+        <div><b style="color:var(--gold);">${am.total || 0}</b> approved memory items</div>
+        <div><b style="color:var(--warn);">${sc.pending || 0}</b> pending candidates</div>
+        <div><b>${am.byBucket?.narrative_section || 0}</b> narrative sections</div>
+        <div><b>${am.byBucket?.section_fragment || 0}</b> section fragments</div>
+        <div><b>${am.byBucket?.phrase_bank || 0}</b> phrase bank items</div>
+        <div><b>${am.byBucket?.voice_exemplar || 0}</b> voice exemplars</div>
+        <div><b>${cc.total || 0}</b> comp commentary items</div>
+        <div><b>${vp}</b> voice profile(s)</div>
+        <div><b>${sc.approved || 0}</b> approved candidates</div>
+        <div><b>${sc.rejected || 0}</b> rejected candidates</div>
+      </div>`;
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
+
+// ── Approved Memory ──────────────────────────────────────────────────────────
+
+async function memLoadApproved() {
+  const el = $('memApprovedList');
+  const statusEl = $('memApprovedStatus');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading…</div>';
+  const bucket = $('memApprovedFilter')?.value || '';
+  const qs = bucket ? '?bucket=' + encodeURIComponent(bucket) + '&limit=50' : '?limit=50';
+  try {
+    const d = await apiFetch('/api/memory/approved' + qs);
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error) + '</div>'; return; }
+    const items = d.items || [];
+    if (!items.length) { el.innerHTML = '<div class="hint">No approved memory items' + (bucket ? ' for this type' : '') + '.</div>'; return; }
+    el.innerHTML = items.map(item => _memApprovedCard(item)).join('');
+    if (statusEl) { statusEl.className = 'status ok'; statusEl.textContent = items.length + ' item(s) loaded' + (d.total > items.length ? ' of ' + d.total : ''); }
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
+
+function _memApprovedCard(item) {
+  const id = esc(item.id || '');
+  const bucket = esc(item.bucket || '');
+  const field = esc(item.canonicalFieldId || '');
+  const family = esc(item.reportFamily || '');
+  const quality = item.qualityScore != null ? item.qualityScore : '—';
+  const active = item.active !== false;
+  const preview = esc((item.text || '').slice(0, 200));
+  const tags = (item.styleTags || []).map(t => '<span class="chip" style="font-size:9px;padding:1px 5px;">' + esc(t) + '</span>').join(' ');
+  return `<div class="mem-item" style="padding:8px 0;border-bottom:1px solid var(--border);" data-mem-id="${id}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(215,179,90,.15);color:var(--gold);">${bucket}</span>
+          ${field ? '<span style="font-size:10px;color:var(--muted);">field: ' + field + '</span>' : ''}
+          ${family ? '<span style="font-size:10px;color:var(--muted);">family: ' + family + '</span>' : ''}
+          <span style="font-size:10px;color:var(--muted);">q: ${quality}</span>
+          ${!active ? '<span style="font-size:10px;color:var(--danger);">INACTIVE</span>' : ''}
+        </div>
+        <div style="font-size:11px;margin-top:4px;color:var(--text);line-height:1.4;font-family:var(--mono);opacity:.85;">${preview}${(item.text || '').length > 200 ? '…' : ''}</div>
+        ${tags ? '<div style="margin-top:3px;">' + tags + '</div>' : ''}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="ghost sm" onclick="memToggleActive('${id}',${active ? 0 : 1})" title="${active ? 'Deactivate' : 'Activate'}">${active ? '⏸' : '▶'}</button>
+        <button class="ghost sm" onclick="memEditApproved('${id}')" title="Edit">✎</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function memToggleActive(memId, newActive) {
+  try {
+    if (newActive) {
+      await apiFetch('/api/memory/approved/' + memId, { method: 'PATCH', body: { active: true } });
+    } else {
+      await apiFetch('/api/memory/approved/' + memId, { method: 'DELETE' });
+    }
+    memLoadApproved();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function memEditApproved(memId) {
+  try {
+    const d = await apiFetch('/api/memory/approved/' + memId);
+    if (!d.ok || !d.item) { alert('Failed to load item.'); return; }
+    const item = d.item;
+    const newText = prompt('Edit content text:', item.text || '');
+    if (newText === null) return;
+    const newTags = prompt('Style tags (comma-separated):', (item.styleTags || []).join(', '));
+    if (newTags === null) return;
+    const newField = prompt('Canonical field ID:', item.canonicalFieldId || '');
+    if (newField === null) return;
+    await apiFetch('/api/memory/approved/' + memId, {
+      method: 'PATCH',
+      body: { text: newText, styleTags: newTags.split(',').map(s => s.trim()).filter(Boolean), canonicalFieldId: newField }
+    });
+    memLoadApproved();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+// ── Staged Candidates ────────────────────────────────────────────────────────
+
+async function memLoadStaged() {
+  const el = $('memStagedList');
+  const statusEl = $('memStagedStatus');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading…</div>';
+  const filter = $('memStagedFilter')?.value || '';
+  const qs = filter ? '?reviewStatus=' + encodeURIComponent(filter) + '&limit=50' : '?limit=50';
+  try {
+    const d = await apiFetch('/api/memory/staging' + qs);
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error) + '</div>'; return; }
+    const items = d.items || [];
+    if (!items.length) { el.innerHTML = '<div class="hint">No staged candidates' + (filter ? ' with status "' + filter + '"' : '') + '.</div>'; return; }
+    el.innerHTML = items.map(item => _memStagedCard(item)).join('');
+    if (statusEl) { statusEl.className = 'status'; statusEl.textContent = items.length + ' candidate(s)' + (d.total > items.length ? ' of ' + d.total : ''); }
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
+
+function _memStagedCard(item) {
+  const id = esc(item.id || '');
+  const sourceType = esc(item.candidateSource || '');
+  const status = item.reviewStatus || 'pending';
+  const preview = esc((item.text || '').slice(0, 200));
+  const field = esc(item.canonicalFieldId || '');
+  const family = esc(item.reportFamily || '');
+  const quality = item.qualityScore != null ? item.qualityScore : '';
+  const statusColor = status === 'approved' ? 'var(--ok)' : status === 'rejected' ? 'var(--danger)' : 'var(--warn)';
+  const isPending = status === 'pending';
+  return `<div class="mem-staged-item" style="padding:8px 0;border-bottom:1px solid var(--border);" data-staged-id="${id}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span class="chip" style="font-size:9px;padding:1px 6px;">${sourceType}</span>
+          <span style="font-size:10px;color:${statusColor};font-weight:600;">${esc(status.toUpperCase())}</span>
+          ${field ? '<span style="font-size:10px;color:var(--muted);">field: ' + field + '</span>' : ''}
+          ${family ? '<span style="font-size:10px;color:var(--muted);">family: ' + family + '</span>' : ''}
+          ${quality ? '<span style="font-size:10px;color:var(--muted);">q: ' + quality + '</span>' : ''}
+        </div>
+        <div style="font-size:11px;margin-top:4px;color:var(--text);line-height:1.4;font-family:var(--mono);opacity:.85;">${preview}${(item.text || '').length > 200 ? '…' : ''}</div>
+      </div>
+      ${isPending ? `<div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="sm" style="font-size:10px;padding:2px 8px;color:var(--ok);border-color:rgba(85,209,143,.3);" onclick="memApproveCandidate('${id}')">Approve</button>
+        <button class="ghost sm" style="font-size:10px;padding:2px 8px;color:var(--danger);border-color:rgba(255,92,92,.2);" onclick="memRejectCandidate('${id}')">Reject</button>
+        <button class="ghost sm" style="font-size:10px;padding:2px 8px;" onclick="memEditBeforeApprove('${id}')" title="Edit then approve">✎</button>
+      </div>` : ''}
+    </div>
+  </div>`;
+}
+
+async function memApproveCandidate(candidateId) {
+  try {
+    const d = await apiFetch('/api/memory/staging/' + candidateId + '/approve', { method: 'POST', body: {} });
+    if (!d.ok) { alert('Approve failed: ' + (d.error || 'Unknown')); return; }
+    memLoadStaged();
+    memLoadApproved();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function memRejectCandidate(candidateId) {
+  const reason = prompt('Rejection reason (optional):');
+  if (reason === null) return;
+  try {
+    const d = await apiFetch('/api/memory/staging/' + candidateId + '/reject', { method: 'POST', body: { reason } });
+    if (!d.ok) { alert('Reject failed: ' + (d.error || 'Unknown')); return; }
+    memLoadStaged();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function memEditBeforeApprove(candidateId) {
+  try {
+    const d = await apiFetch('/api/memory/staging/' + candidateId);
+    if (!d.ok || !d.item) { alert('Failed to load candidate.'); return; }
+    const item = d.item;
+    const newText = prompt('Edit content before approving:', item.text || '');
+    if (newText === null) return;
+    const newField = prompt('Canonical field ID:', item.canonicalFieldId || '');
+    if (newField === null) return;
+    const newFamily = prompt('Report family:', item.reportFamily || '');
+    if (newFamily === null) return;
+    const newTags = prompt('Style tags (comma-separated):', (item.styleTags || []).join(', '));
+    if (newTags === null) return;
+    // Approve with overrides
+    const body = {
+      text: newText,
+      canonicalFieldId: newField,
+      reportFamily: newFamily,
+      styleTags: newTags.split(',').map(s => s.trim()).filter(Boolean),
+    };
+    const r = await apiFetch('/api/memory/staging/' + candidateId + '/approve', { method: 'POST', body });
+    if (!r.ok) { alert('Approve failed: ' + (r.error || 'Unknown')); return; }
+    memLoadStaged();
+    memLoadApproved();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+// ── Comparable Commentary Memory ─────────────────────────────────────────────
+
+async function memLoadCompCommentary() {
+  const el = $('memCompList');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading…</div>';
+  try {
+    const d = await apiFetch('/api/memory/comp-commentary?limit=30');
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error) + '</div>'; return; }
+    const items = d.items || [];
+    if (!items.length) { el.innerHTML = '<div class="hint">No comparable commentary memory items yet.</div>'; return; }
+    el.innerHTML = items.map(item => {
+      const id = esc(item.id || '');
+      const preview = esc((item.text || '').slice(0, 200));
+      const compType = esc(item.commentaryType || '');
+      const propType = esc(item.subjectPropertyType || '');
+      const quality = item.qualityScore != null ? item.qualityScore : '—';
+      const active = item.active !== false;
+      const tags = (item.issueTags || []).map(t => '<span class="chip" style="font-size:9px;padding:1px 5px;">' + esc(t) + '</span>').join(' ');
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(85,209,143,.12);color:var(--ok);">${compType || 'comp'}</span>
+          ${propType ? '<span style="font-size:10px;color:var(--muted);">' + propType + '</span>' : ''}
+          <span style="font-size:10px;color:var(--muted);">q: ${quality}</span>
+          ${!active ? '<span style="font-size:10px;color:var(--danger);">INACTIVE</span>' : ''}
+        </div>
+        <div style="font-size:11px;margin-top:4px;color:var(--text);line-height:1.4;font-family:var(--mono);opacity:.85;">${preview}${(item.text || '').length > 200 ? '…' : ''}</div>
+        ${tags ? '<div style="margin-top:3px;">' + tags + '</div>' : ''}
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
+
+// ── Voice Profile ────────────────────────────────────────────────────────────
+
+async function memLoadVoiceProfile() {
+  const el = $('memVoiceProfileList');
+  const statusEl = $('memVoiceProfileStatus');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading…</div>';
+  try {
+    const d = await apiFetch('/api/memory/voice/profiles');
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error) + '</div>'; return; }
+    const profiles = d.profiles || [];
+    if (!profiles.length) {
+      el.innerHTML = '<div class="hint">No voice profiles created yet. Use the form below to create one.</div>';
+      if (statusEl) { statusEl.className = 'status'; statusEl.textContent = '0 profiles'; }
+      return;
+    }
+    el.innerHTML = profiles.map(p => _memVoiceProfileCard(p)).join('');
+    if (statusEl) { statusEl.className = 'status ok'; statusEl.textContent = profiles.length + ' profile(s)'; }
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
+
+function _memVoiceProfileCard(p) {
+  const id = esc(p.id || '');
+  const name = esc(p.name || 'Unnamed');
+  const scope = esc(p.scope || 'global');
+  const family = esc(p.reportFamily || '');
+  const field = esc(p.canonicalFieldId || '');
+  // Build dimensions from flat fields
+  const dims = {};
+  if (p.tone) dims.tone = p.tone;
+  if (p.sentenceLength) dims['sentence length'] = p.sentenceLength;
+  if (p.hedgingDegree) dims.hedging = p.hedgingDegree;
+  if (p.terminologyPreference) dims.terminology = p.terminologyPreference;
+  if (p.reconciliationStyle) dims.reconciliation = p.reconciliationStyle;
+  if (p.sectionOpeningStyle) dims.opening = p.sectionOpeningStyle;
+  if (p.sectionClosingStyle) dims.closing = p.sectionClosingStyle;
+  const dimEntries = Object.entries(dims);
+  const disallowed = (p.forbiddenPhrases || []);
+  const preferred = (p.preferredPhrases || []);
+  return `<div style="padding:8px 0;border-bottom:1px solid var(--border);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <b style="font-size:12px;">${name}</b>
+        <span class="chip" style="font-size:9px;padding:1px 6px;margin-left:6px;">${scope}</span>
+        ${family ? '<span style="font-size:10px;color:var(--muted);margin-left:4px;">family: ' + family + '</span>' : ''}
+        ${field ? '<span style="font-size:10px;color:var(--muted);margin-left:4px;">field: ' + field + '</span>' : ''}
+      </div>
+      <button class="ghost sm" onclick="memDeleteVoiceProfile('${id}')" style="color:var(--danger);font-size:10px;">Delete</button>
+    </div>
+    ${dimEntries.length ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">' + dimEntries.map(([k, v]) => '<span style="font-size:10px;background:rgba(215,179,90,.1);padding:1px 6px;border-radius:3px;border:1px solid rgba(215,179,90,.15);">' + esc(k) + ': ' + esc(String(v)) + '</span>').join('') + '</div>' : ''}
+    ${preferred.length ? '<div style="margin-top:4px;font-size:10px;color:var(--ok);">Preferred: ' + preferred.slice(0, 5).map(ph => '"' + esc(ph) + '"').join(', ') + (preferred.length > 5 ? ' (+' + (preferred.length - 5) + ')' : '') + '</div>' : ''}
+    ${disallowed.length ? '<div style="margin-top:4px;font-size:10px;color:var(--danger);">Disallowed: ' + disallowed.slice(0, 5).map(ph => '"' + esc(ph) + '"').join(', ') + (disallowed.length > 5 ? ' (+' + (disallowed.length - 5) + ')' : '') + '</div>' : ''}
+  </div>`;
+}
+
+async function memSaveVoiceProfile() {
+  const name = $('memVpName')?.value.trim();
+  if (!name) { alert('Profile name is required.'); return; }
+  const scope = $('memVpScope')?.value || 'global';
+  const reportFamily = $('memVpReportFamily')?.value.trim() || null;
+  const canonicalFieldId = $('memVpCanonicalField')?.value.trim() || null;
+  const tone = $('memVpTone')?.value.trim() || null;
+  const sentenceLength = $('memVpSentLen')?.value || null;
+  const hedgingDegree = $('memVpHedging')?.value || null;
+  const terminologyPreference = $('memVpTerminology')?.value.trim() || null;
+  const reconciliationStyle = $('memVpReconStyle')?.value.trim() || null;
+  const sectionOpeningStyle = $('memVpOpening')?.value.trim() || null;
+  const sectionClosingStyle = $('memVpClosing')?.value.trim() || null;
+  const disallowedRaw = $('memVpDisallowed')?.value || '';
+  const forbiddenPhrases = disallowedRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  try {
+    const d = await apiFetch('/api/memory/voice/profiles', {
+      method: 'POST',
+      body: {
+        name, scope, reportFamily, canonicalFieldId,
+        tone, sentenceLength, hedgingDegree, terminologyPreference,
+        reconciliationStyle, sectionOpeningStyle, sectionClosingStyle,
+        forbiddenPhrases,
+      }
+    });
+    if (!d.ok) { alert('Save failed: ' + (d.error || 'Unknown')); return; }
+    // Clear form
+    if ($('memVpName')) $('memVpName').value = '';
+    if ($('memVpTone')) $('memVpTone').value = '';
+    if ($('memVpSentLen')) $('memVpSentLen').value = '';
+    if ($('memVpHedging')) $('memVpHedging').value = '';
+    if ($('memVpTerminology')) $('memVpTerminology').value = '';
+    if ($('memVpReconStyle')) $('memVpReconStyle').value = '';
+    if ($('memVpOpening')) $('memVpOpening').value = '';
+    if ($('memVpClosing')) $('memVpClosing').value = '';
+    if ($('memVpDisallowed')) $('memVpDisallowed').value = '';
+    memLoadVoiceProfile();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function memAddVoiceRule() {
+  const profileId = prompt('Voice profile ID to add rule to:');
+  if (!profileId) return;
+  const ruleType = prompt('Rule type (prefer / avoid / pattern / opening / closing / terminology):') || 'prefer';
+  const ruleValue = prompt('Rule value:');
+  if (!ruleValue) return;
+  const canonicalFieldId = prompt('Canonical field ID (leave blank for all fields):') || null;
+  const priority = parseInt(prompt('Priority (1-100, higher = more important):', '50')) || 50;
+  try {
+    const d = await apiFetch('/api/memory/voice/profiles/' + encodeURIComponent(profileId) + '/rules', {
+      method: 'POST',
+      body: { ruleType, ruleValue, canonicalFieldId, priority }
+    });
+    if (!d.ok) { alert('Failed: ' + (d.error || 'Unknown')); return; }
+    memLoadVoiceProfile();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function memDeleteVoiceProfile(profileId) {
+  if (!confirm('Delete this voice profile?')) return;
+  try {
+    await apiFetch('/api/memory/voice/profiles/' + encodeURIComponent(profileId), { method: 'DELETE' });
+    memLoadVoiceProfile();
+    memLoadSummary();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+// ── Retrieval Preview ────────────────────────────────────────────────────────
+
+async function memPreviewRetrieval() {
+  const el = $('memRetrievalPreview');
+  if (!el) return;
+  const canonicalFieldId = $('memRetSection')?.value.trim();
+  const reportFamily = $('memRetFamily')?.value.trim() || undefined;
+  const propertyType = $('memRetPropType')?.value.trim() || undefined;
+  if (!canonicalFieldId) { el.innerHTML = '<div class="hint" style="color:var(--danger);">Enter a section / canonical field ID.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading retrieval preview…</div>';
+  try {
+    const d = await apiFetch('/api/memory/retrieval/preview', {
+      method: 'POST',
+      body: {
+        canonicalFieldId,
+        reportFamily,
+        formType: STATE.formType || '1004',
+        assignmentContext: {
+          propertyType,
+          reportFamily,
+          formType: STATE.formType || '1004',
+        },
+      }
+    });
+    if (!d.ok) { el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(d.error) + '</div>'; return; }
+    const pack = d.pack || {};
+    let html = '<div style="font-size:11px;margin-bottom:8px;color:var(--muted);">Retrieval pack for <b>' + esc(canonicalFieldId) + '</b>';
+    if (pack.metadata) html += ' — scanned ' + (pack.metadata.totalScanned || 0) + ' items in ' + (pack.metadata.durationMs || 0) + 'ms';
+    html += '</div>';
+
+    // Voice hints
+    if (pack.voiceHints) {
+      html += '<details style="margin-bottom:6px;"><summary style="font-size:11px;cursor:pointer;color:var(--gold);">Voice Hints</summary>';
+      html += '<pre style="font-size:10px;white-space:pre-wrap;margin:4px 0;padding:6px;background:rgba(0,0,0,.2);border-radius:4px;max-height:150px;overflow:auto;">' + esc(JSON.stringify(pack.voiceHints, null, 2)) + '</pre></details>';
+    }
+
+    // Disallowed phrases
+    if (pack.disallowedPhrases && pack.disallowedPhrases.length) {
+      html += '<details style="margin-bottom:6px;"><summary style="font-size:11px;cursor:pointer;color:var(--danger);">' + pack.disallowedPhrases.length + ' disallowed phrase(s)</summary>';
+      html += '<div style="font-size:10px;padding:4px;color:var(--danger);">' + pack.disallowedPhrases.map(p => '"' + esc(p) + '"').join(', ') + '</div></details>';
+    }
+
+    // Narrative examples
+    const examples = pack.narrativeExamples || [];
+    html += '<div style="font-size:11px;margin:6px 0;"><b>' + examples.length + '</b> narrative example(s)</div>';
+    for (const ex of examples) {
+      const score = ex.score != null ? (typeof ex.score === 'object' ? ex.score.totalScore : ex.score) : '—';
+      const reasons = ex.score?.matchReasons || [];
+      html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="chip" style="font-size:9px;padding:1px 5px;">${esc(ex.bucket || ex.sourceType || '')}</span>
+          <span style="font-size:10px;color:var(--gold);">score: ${score}</span>
+          ${ex.rationale ? '<span style="font-size:9px;color:var(--muted);">' + esc(ex.rationale) + '</span>' : ''}
+        </div>
+        <div style="font-size:10px;margin-top:3px;font-family:var(--mono);opacity:.8;">${esc((ex.text || '').slice(0, 150))}${(ex.text || '').length > 150 ? '…' : ''}</div>
+        ${reasons.length ? '<details style="margin-top:3px;"><summary style="font-size:10px;cursor:pointer;color:var(--muted);">Score breakdown</summary><div style="font-size:10px;padding:4px;color:var(--muted);">' + reasons.map(r => esc(r)).join('<br>') + '</div></details>' : ''}
+      </div>`;
+    }
+
+    // Phrase bank
+    const phrases = pack.phraseBankItems || [];
+    if (phrases.length) {
+      html += '<div style="font-size:11px;margin:8px 0;"><b>' + phrases.length + '</b> phrase bank item(s)</div>';
+      for (const ph of phrases) {
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);opacity:.8;">' + esc((ph.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (ph.score || 0) + ')</span></div>';
+      }
+    }
+
+    // Voice exemplars
+    const exemplars = pack.voiceExemplars || [];
+    if (exemplars.length) {
+      html += '<div style="font-size:11px;margin:8px 0;"><b>' + exemplars.length + '</b> voice exemplar(s)</div>';
+      for (const ve of exemplars) {
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);opacity:.8;">' + esc((ve.text || '').slice(0, 120)) + ' <span style="color:var(--gold);">(score: ' + (ve.score || 0) + ')</span></div>';
+      }
+    }
+
+    // Comp commentary
+    const comps = pack.compCommentary || [];
+    if (comps.length) {
+      html += '<div style="font-size:11px;margin:8px 0;"><b>' + comps.length + '</b> comp commentary example(s)</div>';
+      for (const cc of comps) {
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span class="chip" style="font-size:9px;padding:1px 5px;background:rgba(85,209,143,.12);color:var(--ok);">' + esc(cc.commentaryType || 'general') + '</span> ' + esc((cc.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (cc.score || 0) + ')</span></div>';
+      }
+    }
+
+    // Metadata
+    if (pack.metadata) {
+      html += '<details style="margin-top:8px;"><summary style="font-size:10px;cursor:pointer;color:var(--muted);">Pack metadata</summary>';
+      html += '<pre style="font-size:9px;white-space:pre-wrap;margin:4px 0;padding:6px;background:rgba(0,0,0,.2);border-radius:4px;max-height:120px;overflow:auto;">' + esc(JSON.stringify(pack.metadata, null, 2)) + '</pre></details>';
+    }
+
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
+  }
+}
 (async()=>{
   await pingServer();
   await initFormRegistry();
