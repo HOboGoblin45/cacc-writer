@@ -38,6 +38,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { buildAssignmentContext } from '../context/assignmentContextBuilder.js';
 import { buildReportPlan } from '../context/reportPlanner.js';
 import { buildRetrievalPack, getRetrievalStats } from '../context/retrievalPackBuilder.js';
+import { buildRetrievalPackBundle as buildPhase6RetrievalBundle } from '../memory/retrievalPackBuilder.js';
 import { runSectionJob } from './sectionJobRunner.js';
 import { assembleDraftPackage } from './draftAssembler.js';
 import { buildIntelligenceForOrchestrator } from '../intelligence/index.js';
@@ -530,6 +531,27 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
     const t5            = Date.now();
     const retrievalPack = await buildRetrievalPack(context, plan);
+
+    // Phase 6: Build enhanced retrieval pack bundle with voice/memory
+    let phase6Pack = null;
+    try {
+      phase6Pack = buildPhase6RetrievalBundle({
+        assignmentContext: context,
+        reportPlan:        plan,
+        reportFamily:      intelligenceBundle?.reportFamily?.id || context.reportFamily || null,
+        formType:          context.formType,
+      });
+      log('info', 'phase6-retrieval-built', runId, {
+        sectionCount:  phase6Pack.sectionCount,
+        totalDurationMs: phase6Pack.totalDurationMs,
+      });
+    } catch (err) {
+      log('info', 'phase6-retrieval-skipped', runId, {
+        reason: err.message,
+      });
+      // Non-fatal: Phase 3 pack is the fallback
+    }
+
     phaseMs.retrievalMs = Date.now() - t5;
 
     const retrievalStats = getRetrievalStats(retrievalPack);
@@ -538,6 +560,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       fromCache:          retrievalStats.fromCache,
       totalMemoryScanned: retrievalStats.totalMemoryScanned,
       totalExamplesUsed:  retrievalStats.totalExamplesUsed,
+      phase6Available:    !!phase6Pack,
       durationMs:         phaseMs.retrievalMs,
     });
 
@@ -562,6 +585,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       caseId,
       context,
       retrievalPack,
+      phase6Pack,
       analysisArtifacts,
     };
 

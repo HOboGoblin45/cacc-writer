@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node -e \":*)",
-      "Bash(timeout 8 node cacc-writer-server.js)"
+      "Bash(timeout 8 node cacc-writer-server.js)",
+      "Bash(timeout 10 node cacc-writer-server.js)",
+      "Bash(cmd //c \"taskkill /F /IM node.exe\")"
     ]
   }
 }
