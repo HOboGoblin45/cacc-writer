@@ -1,0 +1,1 @@
+[openaiClient] callAI error: 429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 29561, Requested 4074. Please try again in 7.27s. Visit https://platform.openai.com/account/rate-limits to learn more.

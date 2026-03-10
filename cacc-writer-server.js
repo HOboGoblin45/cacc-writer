@@ -73,6 +73,14 @@ import { runLegacyKbImport, getMemoryItemStats } from './server/migration/legacy
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from './server/db/database.js';
 
 const require = createRequire(import.meta.url);
+
+// ── Modular route families (Phase 1 extraction) ───────────────────────────────
+import casesRouter      from './server/api/casesRoutes.js';
+import generationRouter from './server/api/generationRoutes.js';
+import memoryRouter     from './server/api/memoryRoutes.js';
+import agentsRouter     from './server/api/agentsRoutes.js';
+import healthRouter     from './server/api/healthRoutes.js';
+
 const pdfParse = require('pdf-parse');
 let napiCreateCanvas = null;
 try { ({ createCanvas: napiCreateCanvas } = require('@napi-rs/canvas')); }
@@ -309,6 +317,15 @@ app.param('caseId', (req, res, next, caseId) => {
   if (!cd) return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
   req.caseDir = cd; next();
 });
+
+// ── Mount modular route families ──────────────────────────────────────────────
+// These routers handle the extracted endpoints. Inline handlers below for the
+// same routes are shadowed and will be removed in the Phase 1 cleanup pass.
+app.use('/api', healthRouter);      // /health, /forms, /logs, /export, /templates, /destination-registry
+app.use('/api/cases', casesRouter); // /cases/* (CRUD, geocode, missing-facts, history, generation-runs)
+app.use('/api', generationRouter);  // /cases/:caseId/generate-full-draft, /generation/*, /db/*
+app.use('/api', memoryRouter);      // /kb/*, /voice/*
+app.use('/api', agentsRouter);      // /agents/*, /insert-aci, /insert-rq
 
 // GET /api/forms — returns all forms with scope metadata
 // activeForms: only 1004 + commercial (active production)

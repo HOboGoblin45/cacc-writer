@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-09T23:00:56.800Z",
+  "lastUpdated": "2026-03-10T05:32:28.683Z",
   "counts": {
-    "approved_edits": 67,
+    "approved_edits": 70,
     "curated_examples": 0,
     "imported_examples": 296,
-    "phrases": 12
+    "phrases": 18
   },
   "examples": [
     {
@@ -77,6 +77,20 @@
       "text": "The subject property is located in a stable, established residential neighborhood in Bloomington, Illinois. The area is characterized by a mix of single-family and multi-family dwellings with good access to employment centers and retail amenities.",
       "createdAt": "2026-03-08T00:50:13.445Z",
       "updatedAt": "2026-03-08T00:50:13.445Z"
+    },
+    {
+      "id": "14433b52193a",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "",
+      "sourceType": "approved_edit",
+      "qualityScore": 90,
+      "tags": [],
+      "text": "Edited and improved text here for smoke test.",
+      "createdAt": "2026-03-10T05:22:31.928Z",
+      "updatedAt": "2026-03-10T05:22:31.928Z"
     },
     {
       "id": "148f39adb64d",
@@ -175,6 +189,20 @@
       "text": "The subject neighborhood is a suburban residential area in Sangamon County, Illinois. The area reportedly consists primarily of single-family housing and exhibits characteristics commonly associated with suburban markets in the region. Based on available information, overall market conditions appear to be stable, with supply and demand generally in balance. No significant evidence of oversupply or undersupply was noted; this is considered typical for the market area. [INSERT additional area-specific details if available.]",
       "createdAt": "2026-03-09T22:54:46.619Z",
       "updatedAt": "2026-03-09T22:54:46.619Z"
+    },
+    {
+      "id": "2c595fb3bb97",
+      "formType": "1004",
+      "fieldId": "concessions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "",
+      "sourceType": "approved_edit",
+      "qualityScore": 90,
+      "tags": [],
+      "text": "No seller concessions or financial assistance are reported for the subject transaction. If any concessions are present, they should be detailed here. Based on the available file information, [INSERT concessions]. This aspect has minimal impact on marketability in this segment of the Bloomington suburban residential market. Concessions remain typical for the area.",
+      "createdAt": "2026-03-10T05:23:51.970Z",
+      "updatedAt": "2026-03-10T05:23:51.970Z"
     },
     {
       "id": "2dec238a545f",
@@ -301,6 +329,20 @@
       "text": "The subject neighborhood is a well-established residential area in Bloomington, IL. The neighborhood is characterized by single-family homes built primarily between 1985 and 2005. Market conditions are stable with typical marketing times of 30-60 days.",
       "createdAt": "2026-03-07T22:13:25.654Z",
       "updatedAt": "2026-03-07T22:13:25.654Z"
+    },
+    {
+      "id": "48f3fdbd3e98",
+      "formType": "1004",
+      "fieldId": "market_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "",
+      "sourceType": "approved_edit",
+      "qualityScore": 90,
+      "tags": [],
+      "text": "Market conditions are stable with moderate demand.",
+      "createdAt": "2026-03-09T23:00:56.800Z",
+      "updatedAt": "2026-03-09T23:00:56.800Z"
     },
     {
       "id": "4db397f6b9f1",
@@ -819,6 +861,20 @@
       "text": "The subject market demonstrates stable absorption rates with balanced supply and demand conditions as of the effective date.",
       "createdAt": "2026-03-09T06:12:56.332Z",
       "updatedAt": "2026-03-09T06:12:56.332Z"
+    },
+    {
+      "id": "d1cd5c12cb41",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "",
+      "sourceType": "approved_edit",
+      "qualityScore": 90,
+      "tags": [],
+      "text": "Edited and improved text here for smoke test.",
+      "createdAt": "2026-03-10T05:32:28.646Z",
+      "updatedAt": "2026-03-10T05:32:28.646Z"
     },
     {
       "id": "d3c56fef8a4b",
@@ -5075,20 +5131,6 @@
       "text": "The Sales Comparison Approach was developed by identifying, researching, and analyzing recent sales of comparable small-scale neighborhood retail properties in the Bloomington market. Selected sales reflect arm’s-length transactions and were adjusted for differences in factors such as access, age, size, condition, construction quality, and location. The adjusted sale prices provided a range of indications of value for the subject property. After reconciliation, this approach yielded a credible value indicator aligned with what buyers are currently paying for similar retail assets within the local market.",
       "createdAt": "2026-03-07T21:05:39.442Z",
       "updatedAt": "2026-03-07T21:05:39.442Z"
-    },
-    {
-      "id": "48f3fdbd3e98",
-      "formType": "1004",
-      "fieldId": "market_conditions",
-      "propertyType": "residential",
-      "marketType": "suburban",
-      "marketArea": "",
-      "sourceType": "approved_edit",
-      "qualityScore": 90,
-      "tags": [],
-      "text": "Market conditions are stable with moderate demand.",
-      "createdAt": "2026-03-09T23:00:56.800Z",
-      "updatedAt": "2026-03-09T23:00:56.800Z"
     }
   ]
 }

@@ -11,3 +11,12 @@
 - [x] Step 7: Verify all existing element IDs are intact and functional — 29/29 checks passed
 
 ## Status: COMPLETE ✓
+
+## Backend Refactor Phase 1 (completed alongside UI work)
+
+- [x] Extract `server/utils/caseUtils.js`, `fileUtils.js`, `textUtils.js`, `middleware.js`
+- [x] Extract `server/ingestion/pdfExtractor.js`
+- [x] Extract `server/api/casesRoutes.js` — mount fixed to `/api/cases`
+- [x] Extract `server/api/generationRoutes.js`, `memoryRoutes.js`, `agentsRoutes.js`, `healthRoutes.js`
+- [x] Mount all routers in `cacc-writer-server.js` (thin composition layer)
+- [x] Verified 19/19 endpoints return 200 after server restart
