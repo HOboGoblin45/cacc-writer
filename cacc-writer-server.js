@@ -84,6 +84,9 @@ import documentRouter    from './server/api/documentRoutes.js';
 import phase6MemoryRouter from './server/api/phase6Routes.js';
 import qcRouter           from './server/api/qcRoutes.js';
 import insertionRouter    from './server/api/insertionRoutes.js';
+import operationsRouter   from './server/api/operationsRoutes.js';
+import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
+import { runTransientCleanup } from './server/operations/retentionManager.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -151,6 +154,7 @@ app.use('/api',        documentRouter);
 app.use('/api/memory', phase6MemoryRouter);
 app.use('/api',        qcRouter);
 app.use('/api',        insertionRouter);
+app.use('/api',        operationsRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
@@ -849,6 +853,15 @@ const server=app.listen(PORT, () => {
   console.log('Active forms: '+ACTIVE_FORMS.join(', '));
   if (DEFERRED_FORMS.length) console.log('Deferred forms: '+DEFERRED_FORMS.join(', '));
   try { initFileLogger(); setFileLogWriter(writeLogEntry); } catch (e) { console.warn('File logger init failed:',e.message); }
+
+  // Phase 10: Initialize audit logger with DB accessor
+  try { initAuditLogger(getDb); } catch (e) { console.warn('Audit logger init failed:',e.message); }
+
+  // Phase 10: Emit system startup event
+  try { emitSystemEvent('system.startup', 'CACC Writer server started', { port: PORT, model: MODEL, activeForms: ACTIVE_FORMS }); } catch { /* non-fatal */ }
+
+  // Phase 10: Run transient cleanup on startup (expired cache, etc.)
+  try { runTransientCleanup(); } catch (e) { console.warn('Startup cleanup failed:',e.message); }
 });
 
 server.on('error', (err) => {

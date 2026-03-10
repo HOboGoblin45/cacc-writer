@@ -174,6 +174,14 @@ export function getTableCounts() {
     'document_extractions',
     'extracted_facts',
     'extracted_sections',
+    'qc_runs',
+    'qc_findings',
+    'insertion_runs',
+    'insertion_run_items',
+    'destination_profiles',
+    'audit_events',
+    'case_timeline_events',
+    'operational_metrics',
   ];
 
   const counts = {};
