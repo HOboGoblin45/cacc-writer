@@ -336,6 +336,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('generate')">Generate</div>
   <div class="tab" onclick="showTab('qc')">QC Grade</div>
   <div class="tab" onclick="showTab('voice')">Voice</div>
+  <div class="tab" onclick="showTab('intel')">Intel</div>
 </div>
 
 <!-- ===== TAB: CASE ===== -->
@@ -1016,6 +1017,58 @@ button.sm{padding:5px 9px;font-size:11px;}
       <div class="card-head"><h3>Imported Reports</h3><button class="sm sec" onclick="loadVoiceExamples()">Refresh</button></div>
       <div class="card-body">
         <div id="voiceExamplesList"><div class="hint">No reports imported yet.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: INTEL (Phase 4 — Assignment Intelligence Inspector) ===== -->
+<div class="page" id="tab-intel">
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>Assignment Intelligence</h3></div>
+      <div class="card-body">
+        <div class="hint">Inspect the assignment intelligence bundle for the active case. This shows derived flags, compliance profile, report family, and section plan.</div>
+        <div class="btnrow">
+          <button onclick="buildIntelligence()">Build Intelligence</button>
+          <button class="sec" onclick="loadIntelligence()">Load Cached</button>
+        </div>
+        <div id="intelStatus" class="status"></div>
+        <div class="sep"></div>
+        <div id="intelSummary" style="font-size:12px;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Derived Flags</h3></div>
+      <div class="card-body">
+        <div id="intelFlags" style="font-size:12px;font-family:var(--ds-mono,monospace);"><div class="hint">No bundle loaded.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Compliance Profile</h3></div>
+      <div class="card-body">
+        <div id="intelCompliance" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head"><h3>Report Family &amp; Section Plan</h3></div>
+      <div class="card-body">
+        <div id="intelReportFamily" style="font-size:12px;margin-bottom:12px;"><div class="hint">No bundle loaded.</div></div>
+        <div id="intelSectionPlan"><div class="hint">Build intelligence to see the section plan.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Canonical Fields</h3></div>
+      <div class="card-body">
+        <div id="intelCanonicalFields" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Normalized Context (v2)</h3></div>
+      <div class="card-body">
+        <div id="intelContext" style="font-size:11px;font-family:var(--ds-mono,monospace);max-height:400px;overflow:auto;"><div class="hint">No bundle loaded.</div></div>
       </div>
     </div>
   </div>

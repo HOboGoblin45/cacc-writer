@@ -15,7 +15,35 @@
  *   analysis_artifacts   — structured analysis outputs (comp, market, HBU)
  *   ingest_jobs          — PDF ingestion job tracking
  *   staged_memory_reviews — items awaiting human review before promotion
+ *   assignment_intelligence — Phase 4 intelligence bundles per case
  */
+
+// ── Column migrations ─────────────────────────────────────────────────────────
+// SQLite does not support ALTER TABLE ... ADD COLUMN IF NOT EXISTS.
+// We use try/catch per statement — safe to run on every startup.
+// New columns added in Phase 3:
+//   generation_runs.draft_package_json   — persists assembled draft package
+//   section_jobs.retrieval_source_ids_json — stores example IDs used per section
+//   section_jobs.estimated_cost_usd      — optional cost tracking
+
+function runMigrations(db) {
+  const migrations = [
+    // Phase 3 — draft package persistence
+    `ALTER TABLE generation_runs ADD COLUMN draft_package_json TEXT`,
+    // Phase 3 — retrieval source IDs per section job
+    `ALTER TABLE section_jobs ADD COLUMN retrieval_source_ids_json TEXT DEFAULT '[]'`,
+    // Phase 3 — optional cost tracking per section job
+    `ALTER TABLE section_jobs ADD COLUMN estimated_cost_usd REAL`,
+  ];
+
+  for (const sql of migrations) {
+    try {
+      db.exec(sql);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  }
+}
 
 export function initSchema(db) {
   db.exec(`
@@ -270,5 +298,23 @@ export function initSchema(db) {
       ON staged_memory_reviews(review_status);
     CREATE INDEX IF NOT EXISTS idx_staged_reviews_form
       ON staged_memory_reviews(form_type, section_type);
+
+    -- ── assignment_intelligence (Phase 4) ───────────────────────────────────
+    -- Persisted assignment intelligence bundles.
+    -- Contains the full Phase 4 output: normalized context v2, derived flags,
+    -- compliance profile, report family, canonical fields, and section plan v2.
+    CREATE TABLE IF NOT EXISTS assignment_intelligence (
+      id          TEXT PRIMARY KEY,
+      case_id     TEXT NOT NULL UNIQUE,
+      form_type   TEXT NOT NULL,
+      bundle_json TEXT NOT NULL,
+      created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_assignment_intelligence_case_id
+      ON assignment_intelligence(case_id);
   `);
+
+  // Run column migrations for Phase 3 additions
+  runMigrations(db);
 }

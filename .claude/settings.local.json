@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \":*)",
+      "Bash(timeout 8 node cacc-writer-server.js)"
+    ]
+  }
+}

@@ -3,20 +3,31 @@
  * -----------------------------------------------
  * Full-draft generation orchestrator for CACC Writer.
  *
- * Implements the core principle:
- *   Build context once → Retrieve memory once → Analyze once →
- *   Draft sections in parallel → Validate once → Insert cleanly
+ * Phase 3 — Workflow Authority
  *
- * This is the NEW path. The legacy section-by-section path
- * (POST /api/generate-batch) remains fully operational alongside this.
+ * Core principle:
+ *   Build context once → Retrieve memory once → Analyze once →
+ *   Draft sections in parallel → Validate once → Assemble → Persist
+ *
+ * Run lifecycle (canonical):
+ *   queued → preparing → retrieving → analyzing → drafting →
+ *   validating → assembling → complete | partial_complete | failed
+ *
+ * Section job lifecycle (canonical):
+ *   queued (independent) | blocked (dependent) →
+ *   running → retrying → complete | failed | skipped
+ *
+ * Concurrency: max 3 parallel section jobs
+ * Retry policy: 1 retry per section
  *
  * Performance targets (1004 typical assignment):
  *   P50: < 12 seconds
  *   P90: < 20 seconds
  *   Warning: > 30 seconds
  *
- * Concurrency: max 3 parallel section jobs
- * Retry policy: 1 retry per section
+ * Legacy path:
+ *   POST /api/generate-batch remains fully operational alongside this.
+ *   Do not remove the legacy path during Phase 3 transition.
  *
  * Usage:
  *   import { runFullDraftOrchestrator, getRunStatus, getRunResult } from './orchestrator/generationOrchestrator.js';
@@ -24,12 +35,30 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { getDb } from '../db/database.js';
 import { buildAssignmentContext } from '../context/assignmentContextBuilder.js';
 import { buildReportPlan } from '../context/reportPlanner.js';
 import { buildRetrievalPack, getRetrievalStats } from '../context/retrievalPackBuilder.js';
-import { runSectionJob, getSectionJobsForRun } from './sectionJobRunner.js';
+import { runSectionJob } from './sectionJobRunner.js';
 import { assembleDraftPackage } from './draftAssembler.js';
+import { buildIntelligenceForOrchestrator } from '../intelligence/index.js';
+import {
+  RUN_STATUS,
+  JOB_STATUS,
+  createRun,
+  updateRunStatus,
+  updateRunAssignment,
+  updateRunPhaseMetrics,
+  persistDraftPackage,
+  completeRun,
+  failRun,
+  getRunById,
+  getRunsForCase,
+  createSectionJob,
+  markJobSkipped,
+  getSectionJobsForRun,
+  saveAnalysisArtifact,
+  getGeneratedSectionsForRun,
+} from '../db/repositories/generationRepo.js';
 
 const MAX_PARALLEL = 3; // max concurrent section jobs
 
@@ -51,90 +80,46 @@ function log(level, phase, runId, data = {}) {
   }
 }
 
-// ── SQLite run record helpers ─────────────────────────────────────────────────
+// ── Pre-create section job records ────────────────────────────────────────────
 
-function createRunRecord(runId, caseId, formType, assignmentId) {
-  getDb().prepare(`
-    INSERT INTO generation_runs
-      (id, case_id, assignment_id, form_type, status, created_at)
-    VALUES (?, ?, ?, ?, 'pending', datetime('now'))
-  `).run(runId, caseId, assignmentId || null, formType);
-}
+/**
+ * Pre-create section job records for all planned sections at run start.
+ *
+ * This gives the UI and logs immediate full visibility into the planned run:
+ *   - Independent sections → JOB_STATUS.QUEUED
+ *   - Dependent sections   → JOB_STATUS.BLOCKED
+ *
+ * Returns a Map<sectionId, jobId> for use throughout the run.
+ *
+ * @param {object} plan   — ReportPlan from buildReportPlan()
+ * @param {string} runId
+ * @returns {Map<string, string>} sectionId → jobId
+ */
+function preCreateSectionJobs(plan, runId) {
+  const jobMap = new Map();
 
-function markRunRunning(runId) {
-  getDb().prepare(`
-    UPDATE generation_runs
-       SET status = 'running', started_at = datetime('now')
-     WHERE id = ?
-  `).run(runId);
-}
+  for (const sectionDef of plan.sections) {
+    const isDependent = sectionDef.dependsOn && sectionDef.dependsOn.length > 0;
+    const initialStatus = isDependent ? JOB_STATUS.BLOCKED : JOB_STATUS.QUEUED;
 
-function updateRunPhaseMetrics(runId, metrics) {
-  getDb().prepare(`
-    UPDATE generation_runs SET
-      context_build_ms  = ?,
-      report_plan_ms    = ?,
-      retrieval_ms      = ?,
-      analysis_ms       = ?,
-      parallel_draft_ms = ?,
-      validation_ms     = ?,
-      assembly_ms       = ?,
-      section_count     = ?,
-      success_count     = ?,
-      error_count       = ?,
-      retry_count       = ?,
-      retrieval_cache_hit  = ?,
-      memory_items_scanned = ?,
-      memory_items_used    = ?,
-      warnings_json     = ?,
-      metrics_json      = ?
-    WHERE id = ?
-  `).run(
-    metrics.contextBuildMs   || 0,
-    metrics.reportPlanMs     || 0,
-    metrics.retrievalMs      || 0,
-    metrics.analysisMs       || 0,
-    metrics.parallelDraftMs  || 0,
-    metrics.validationMs     || 0,
-    metrics.assemblyMs       || 0,
-    metrics.sectionCount     || 0,
-    metrics.successCount     || 0,
-    metrics.errorCount       || 0,
-    metrics.retryCount       || 0,
-    metrics.retrievalCacheHit ? 1 : 0,
-    metrics.memoryItemsScanned || 0,
-    metrics.memoryItemsUsed    || 0,
-    JSON.stringify(metrics.warnings || []),
-    JSON.stringify(metrics.summary  || {}),
-    runId
-  );
-}
+    const jobId = createSectionJob({
+      runId,
+      sectionId:  sectionDef.id,
+      status:     initialStatus,
+      profileId:  sectionDef.generatorProfile || 'retrieval-guided',
+      dependsOn:  sectionDef.dependsOn || [],
+    });
 
-function completeRunRecord(runId, totalMs, status, draftPackage) {
-  getDb().prepare(`
-    UPDATE generation_runs SET
-      status       = ?,
-      completed_at = datetime('now'),
-      duration_ms  = ?,
-      partial_complete = ?
-    WHERE id = ?
-  `).run(
-    status,
-    totalMs,
-    status === 'partial' ? 1 : 0,
-    runId
-  );
-}
+    jobMap.set(sectionDef.id, jobId);
+  }
 
-function failRunRecord(runId, errorText, totalMs) {
-  getDb().prepare(`
-    UPDATE generation_runs SET
-      status       = 'failed',
-      completed_at = datetime('now'),
-      duration_ms  = ?,
-      error_text   = ?
-    WHERE id = ?
-  `).run(totalMs || 0, String(errorText || 'unknown'), runId);
+  log('info', 'jobs-precreated', runId, {
+    total:     plan.sections.length,
+    queued:    plan.sections.filter(s => !s.dependsOn?.length).length,
+    blocked:   plan.sections.filter(s => s.dependsOn?.length > 0).length,
+  });
+
+  return jobMap;
 }
 
 // ── Analysis jobs ─────────────────────────────────────────────────────────────
@@ -143,8 +128,9 @@ function failRunRecord(runId, errorText, totalMs) {
  * Run all required analysis jobs for the report plan.
  * Returns a map of { [artifactType]: artifactData }.
  *
- * Analysis jobs produce structured data that is injected into section prompts.
+ * Analysis jobs produce structured data injected into section prompts.
  * They run before parallel section drafting.
+ * Results are persisted to analysis_artifacts via generationRepo.
  */
 async function runAnalysisJobs(context, plan, runId) {
   const t0        = Date.now();
@@ -171,13 +157,13 @@ async function runAnalysisJobs(context, plan, runId) {
 
       artifacts[artifactType] = data;
 
-      // Persist to SQLite
-      const db = getDb();
-      db.prepare(`
-        INSERT INTO analysis_artifacts
-          (id, run_id, artifact_type, data_json, duration_ms, created_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now'))
-      `).run(uuidv4(), runId, artifactType, JSON.stringify(data), Date.now() - tArt);
+      // Persist to SQLite via generationRepo
+      saveAnalysisArtifact({
+        runId,
+        artifactType,
+        data,
+        durationMs: Date.now() - tArt,
+      });
 
       log('info', 'analysis', runId, {
         artifactType,
@@ -188,7 +174,7 @@ async function runAnalysisJobs(context, plan, runId) {
     } catch (err) {
       log('error', 'analysis', runId, {
         artifactType,
-        error: err.message,
+        error:     err.message,
         durationMs: Date.now() - tArt,
       });
       artifacts[artifactType] = { error: err.message };
@@ -239,7 +225,7 @@ function buildCompAnalysisArtifact(context) {
 }
 
 function buildMarketAnalysisArtifact(context) {
-  const market = context.market || {};
+  const market  = context.market  || {};
   const subject = context.subject || {};
 
   const lines = [];
@@ -266,7 +252,6 @@ function buildMarketAnalysisArtifact(context) {
 function buildHbuLogicArtifact(context) {
   const site    = context.site    || {};
   const subject = context.subject || {};
-  const flags   = context.flags   || {};
 
   const zoning = site.zoning || subject.zoning || 'residential';
 
@@ -284,10 +269,12 @@ function buildHbuLogicArtifact(context) {
 // ── Parallel execution ────────────────────────────────────────────────────────
 
 /**
- * Run section jobs in parallel batches of MAX_PARALLEL.
+ * Run independent section jobs in parallel batches of MAX_PARALLEL.
+ * Each section receives its pre-created jobId.
+ *
  * Returns { results: { [sectionId]: SectionJobResult }, durationMs }
  */
-async function runParallelSections(sectionDefs, jobParams, runId) {
+async function runParallelSections(sectionDefs, jobParams, jobMap, runId) {
   const t0      = Date.now();
   const results = {};
 
@@ -302,7 +289,11 @@ async function runParallelSections(sectionDefs, jobParams, runId) {
 
     const batchResults = await Promise.allSettled(
       batch.map(sectionDef =>
-        runSectionJob({ ...jobParams, sectionDef })
+        runSectionJob({
+          ...jobParams,
+          sectionDef,
+          existingJobId: jobMap.get(sectionDef.id),
+        })
       )
     );
 
@@ -339,13 +330,41 @@ async function runParallelSections(sectionDefs, jobParams, runId) {
 
 /**
  * Run dependent (synthesis) sections sequentially.
- * Each section receives the prior results as context.
+ * Each section receives its pre-created jobId and prior results as context.
+ *
+ * If a section's prerequisites all failed, the section is skipped.
  */
-async function runDependentSections(sectionDefs, jobParams, priorResults, runId) {
+async function runDependentSections(sectionDefs, jobParams, priorResults, jobMap, runId) {
   const t0      = Date.now();
   const results = { ...priorResults };
 
   for (const sectionDef of sectionDefs) {
+    const jobId = jobMap.get(sectionDef.id);
+
+    // Check if all prerequisites completed successfully
+    const prereqsFailed = sectionDef.dependsOn.every(
+      depId => !results[depId]?.ok
+    );
+
+    if (prereqsFailed && sectionDef.dependsOn.length > 0) {
+      // Skip this section — all prerequisites failed
+      if (jobId) {
+        markJobSkipped(jobId, `All prerequisites failed: ${sectionDef.dependsOn.join(', ')}`);
+      }
+      results[sectionDef.id] = {
+        ok:        false,
+        sectionId: sectionDef.id,
+        text:      '',
+        error:     'skipped — all prerequisites failed',
+        metrics:   { durationMs: 0, attemptCount: 0 },
+      };
+      log('info', 'section-skipped', runId, {
+        sectionId: sectionDef.id,
+        reason:    'all prerequisites failed',
+      });
+      continue;
+    }
+
     log('info', 'synthesis-start', runId, { sectionId: sectionDef.id });
 
     try {
@@ -353,6 +372,7 @@ async function runDependentSections(sectionDefs, jobParams, priorResults, runId)
         ...jobParams,
         sectionDef,
         priorResults: results,
+        existingJobId: jobId,
       });
 
       results[sectionDef.id] = result;
@@ -416,62 +436,114 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
   log('info', 'start', runId, { caseId, formType });
 
-  // ── 1. Create generation run record ────────────────────────────────────────
-  createRunRecord(runId, caseId, formType || 'unknown', null);
-  markRunRunning(runId);
+  // ── 1. Create generation run record (status: queued) ───────────────────────
+  createRun({ runId, caseId, formType: formType || 'unknown', assignmentId: null });
 
   try {
-    // ── 2. Build assignment context ──────────────────────────────────────────
-    const t2 = Date.now();
-    const context = await buildAssignmentContext(caseId);
-    phaseMs.contextBuildMs = Date.now() - t2;
+    // ── 2. Transition to preparing — build assignment context ────────────────
+    updateRunStatus(runId, RUN_STATUS.PREPARING);
 
-    // Use context form type if not overridden
-    const resolvedFormType = formType || context.formType || '1004';
-    context.formType = resolvedFormType;
+    let context, plan, intelligenceBundle = null;
+    const useIntelligence = options.useIntelligence !== false; // default: true
+
+    const t2 = Date.now();
+
+    if (useIntelligence) {
+      try {
+        // Phase 4 path: build intelligence bundle → get v2 context + smart plan
+        const intel = await buildIntelligenceForOrchestrator(caseId);
+        context = intel.context;
+        plan = intel.orchestratorPlan;
+        intelligenceBundle = intel.bundle;
+
+        // Apply form type override if provided
+        const resolvedFormType = formType || context.formType || '1004';
+        context.formType = resolvedFormType;
+
+        phaseMs.contextBuildMs = Date.now() - t2;
+
+        log('info', 'intelligence-built', runId, {
+          formType:     resolvedFormType,
+          caseId,
+          flags:        intelligenceBundle.flagSummary.count,
+          sections:     plan.totalSections,
+          reportFamily: intelligenceBundle.reportFamily.id,
+          durationMs:   phaseMs.contextBuildMs,
+          assignmentId: context.id,
+        });
+
+        // Report plan timing is included in the intelligence build
+        phaseMs.reportPlanMs = intelligenceBundle.sectionPlan._buildMs || 0;
+
+      } catch (err) {
+        // Fall back to Phase 3 path
+        log('info', 'intelligence-fallback', runId, {
+          reason: err.message,
+          caseId,
+        });
+        context = null;
+        plan = null;
+      }
+    }
+
+    // Phase 3 fallback path (or if intelligence is disabled)
+    if (!context) {
+      context = await buildAssignmentContext(caseId);
+      phaseMs.contextBuildMs = Date.now() - t2;
+
+      const resolvedFormType = formType || context.formType || '1004';
+      context.formType = resolvedFormType;
+
+      const t3 = Date.now();
+      plan = buildReportPlan(context);
+      phaseMs.reportPlanMs = Date.now() - t3;
+    }
 
     log('info', 'context-built', runId, {
-      formType:   resolvedFormType,
+      formType:     context.formType,
       caseId,
-      durationMs: phaseMs.contextBuildMs,
+      durationMs:   phaseMs.contextBuildMs,
       assignmentId: context.id,
+      intelligence: !!intelligenceBundle,
     });
 
-    // Update run with assignment ID
-    getDb().prepare(`
-      UPDATE generation_runs SET assignment_id = ?, form_type = ? WHERE id = ?
-    `).run(context.id, resolvedFormType, runId);
-
-    // ── 3. Build report plan ─────────────────────────────────────────────────
-    const t3 = Date.now();
-    const plan = buildReportPlan(context);
-    phaseMs.reportPlanMs = Date.now() - t3;
+    // Update run with resolved assignment ID and form type
+    updateRunAssignment(runId, context.id, context.formType);
 
     log('info', 'plan-built', runId, {
-      totalSections:    plan.totalSections,
-      parallelCount:    plan.parallelCount,
-      dependentCount:   plan.dependentCount,
-      analysisJobs:     plan.analysisJobs,
-      estimatedMs:      plan.estimatedDurationMs,
-      durationMs:       phaseMs.reportPlanMs,
+      totalSections:  plan.totalSections,
+      parallelCount:  plan.parallelCount,
+      dependentCount: plan.dependentCount,
+      analysisJobs:   plan.analysisJobs,
+      estimatedMs:    plan.estimatedDurationMs,
+      durationMs:     phaseMs.reportPlanMs,
+      version:        intelligenceBundle ? '2.0' : '1.0',
     });
 
-    // ── 4. Build retrieval pack ──────────────────────────────────────────────
-    const t4 = Date.now();
+    // ── 4. Pre-create all section job records ────────────────────────────────
+    // Independent sections → queued, Dependent sections → blocked
+    // This gives the UI immediate full visibility into the planned run.
+    const jobMap = preCreateSectionJobs(plan, runId);
+
+    // ── 5. Transition to retrieving — build retrieval pack ───────────────────
+    updateRunStatus(runId, RUN_STATUS.RETRIEVING);
+
+    const t5            = Date.now();
     const retrievalPack = await buildRetrievalPack(context, plan);
-    phaseMs.retrievalMs = Date.now() - t4;
+    phaseMs.retrievalMs = Date.now() - t5;
 
     const retrievalStats = getRetrievalStats(retrievalPack);
 
     log('info', 'retrieval-built', runId, {
-      fromCache:           retrievalStats.fromCache,
-      totalMemoryScanned:  retrievalStats.totalMemoryScanned,
-      totalExamplesUsed:   retrievalStats.totalExamplesUsed,
-      durationMs:          phaseMs.retrievalMs,
+      fromCache:          retrievalStats.fromCache,
+      totalMemoryScanned: retrievalStats.totalMemoryScanned,
+      totalExamplesUsed:  retrievalStats.totalExamplesUsed,
+      durationMs:         phaseMs.retrievalMs,
     });
 
-    // ── 5. Run analysis jobs ─────────────────────────────────────────────────
-    const t5 = Date.now();
+    // ── 6. Transition to analyzing — run analysis jobs ───────────────────────
+    updateRunStatus(runId, RUN_STATUS.ANALYZING);
+
     const { artifacts: analysisArtifacts, durationMs: analysisDurationMs } =
       await runAnalysisJobs(context, plan, runId);
     phaseMs.analysisMs = analysisDurationMs;
@@ -481,7 +553,9 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs:    phaseMs.analysisMs,
     });
 
-    // ── 6. Execute parallel section jobs ────────────────────────────────────
+    // ── 7. Transition to drafting — execute section jobs ─────────────────────
+    updateRunStatus(runId, RUN_STATUS.DRAFTING);
+
     const parallelDefs = plan.sections.filter(s => s.dependsOn.length === 0);
     const jobParams    = {
       runId,
@@ -491,9 +565,8 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       analysisArtifacts,
     };
 
-    const t6 = Date.now();
     const { results: parallelResults, durationMs: parallelDraftMs } =
-      await runParallelSections(parallelDefs, jobParams, runId);
+      await runParallelSections(parallelDefs, jobParams, jobMap, runId);
     phaseMs.parallelDraftMs = parallelDraftMs;
 
     log('info', 'parallel-complete', runId, {
@@ -503,18 +576,18 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs: phaseMs.parallelDraftMs,
     });
 
-    // ── 7. Execute dependent synthesis sections ──────────────────────────────
+    // ── 8. Execute dependent synthesis sections ──────────────────────────────
     const dependentDefs = plan.sections.filter(s => s.dependsOn.length > 0);
     let allResults = { ...parallelResults };
 
     if (dependentDefs.length > 0) {
       const { results: dependentResults } =
-        await runDependentSections(dependentDefs, jobParams, parallelResults, runId);
+        await runDependentSections(dependentDefs, jobParams, parallelResults, jobMap, runId);
       allResults = { ...parallelResults, ...dependentResults };
     }
 
-    // ── 8. Validate + assemble draft package ─────────────────────────────────
-    const t8 = Date.now();
+    // ── 9. Transition to validating ──────────────────────────────────────────
+    updateRunStatus(runId, RUN_STATUS.VALIDATING);
 
     const successCount = Object.values(allResults).filter(r => r?.ok).length;
     const errorCount   = Object.values(allResults).filter(r => !r?.ok).length;
@@ -533,6 +606,9 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       validationMs:    0, // filled after assembly
       assemblyMs:      0, // filled after assembly
     };
+
+    // ── 10. Transition to assembling — assemble draft package ────────────────
+    updateRunStatus(runId, RUN_STATUS.ASSEMBLING);
 
     const { draftPackage, validation, warnings } = assembleDraftPackage({
       runId,
@@ -556,13 +632,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       grade:        draftPackage.metrics?.performanceGrade,
     });
 
-    // ── 9. Update run record with final metrics ──────────────────────────────
-    const finalStatus = errorCount === 0
-      ? 'completed'
-      : errorCount < plan.totalSections
-        ? 'partial'
-        : 'failed';
-
+    // ── 11. Persist phase metrics ────────────────────────────────────────────
     updateRunPhaseMetrics(runId, {
       ...phaseMs,
       sectionCount:        plan.totalSections,
@@ -579,11 +649,22 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       },
     });
 
-    completeRunRecord(runId, totalDurationMs, finalStatus, draftPackage);
+    // ── 12. Persist draft package to SQLite ──────────────────────────────────
+    // Enables result retrieval after server restart without re-querying all sections.
+    persistDraftPackage(runId, draftPackage);
+
+    // ── 13. Finalize run status ──────────────────────────────────────────────
+    const finalStatus = errorCount === 0
+      ? RUN_STATUS.COMPLETE
+      : errorCount < plan.totalSections
+        ? RUN_STATUS.PARTIAL_COMPLETE
+        : RUN_STATUS.FAILED;
+
+    completeRun(runId, finalStatus, Date.now() - tTotal);
 
     log('info', 'run-complete', runId, {
       status:       finalStatus,
-      totalMs:      totalDurationMs,
+      totalMs:      Date.now() - tTotal,
       successCount,
       errorCount,
       grade:        draftPackage.metrics?.performanceGrade,
@@ -600,7 +681,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
   } catch (err) {
     const totalMs = Date.now() - tTotal;
-    failRunRecord(runId, err.message, totalMs);
+    failRun(runId, err.message, totalMs);
 
     log('error', 'run-failed', runId, {
       error:   err.message,
@@ -608,11 +689,11 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
     });
 
     return {
-      ok:    false,
+      ok:           false,
       runId,
-      error: err.message,
+      error:        err.message,
       draftPackage: null,
-      metrics: { totalDurationMs: totalMs },
+      metrics:      { totalDurationMs: totalMs },
     };
   }
 }
@@ -623,22 +704,14 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
  * Get the current status of a generation run.
  * Used by GET /api/generation/runs/:runId/status
  *
+ * Returns the canonical run status model.
+ * Includes a thin backward-compat 'legacyStatus' field for older consumers.
+ *
  * @param {string} runId
  * @returns {object|null}
  */
 export function getRunStatus(runId) {
-  const db  = getDb();
-  const run = db.prepare(`
-    SELECT id, case_id, form_type, status,
-           started_at, completed_at, duration_ms,
-           section_count, success_count, error_count, retry_count,
-           context_build_ms, report_plan_ms, retrieval_ms,
-           analysis_ms, parallel_draft_ms, validation_ms, assembly_ms,
-           retrieval_cache_hit, memory_items_scanned, memory_items_used,
-           warnings_json, error_text, created_at
-      FROM generation_runs WHERE id = ?
-  `).get(runId);
-
+  const run = getRunById(runId);
   if (!run) return null;
 
   // Get section job statuses
@@ -648,29 +721,55 @@ export function getRunStatus(runId) {
     ? Date.now() - new Date(run.started_at).getTime()
     : 0;
 
-  // Normalize 'completed' → 'complete' so the polling contract is consistent
-  // (SQLite stores 'completed'; the API contract uses 'complete')
-  const normalizedStatus = run.status === 'completed' ? 'complete' : run.status;
+  // Thin backward-compat mapping for legacy consumers
+  // The canonical status is always the new model.
+  const legacyStatusMap = {
+    [RUN_STATUS.QUEUED]:          'pending',
+    [RUN_STATUS.PREPARING]:       'running',
+    [RUN_STATUS.RETRIEVING]:      'running',
+    [RUN_STATUS.ANALYZING]:       'running',
+    [RUN_STATUS.DRAFTING]:        'running',
+    [RUN_STATUS.VALIDATING]:      'running',
+    [RUN_STATUS.ASSEMBLING]:      'running',
+    [RUN_STATUS.COMPLETE]:        'complete',
+    [RUN_STATUS.PARTIAL_COMPLETE]: 'partial_complete',
+    [RUN_STATUS.FAILED]:          'failed',
+  };
+
+  const canonicalStatus = run.status;
+  const legacyStatus    = legacyStatusMap[canonicalStatus] || canonicalStatus;
 
   return {
-    runId:            run.id,
-    caseId:           run.case_id,
-    formType:         run.form_type,
-    status:           normalizedStatus,
-    startedAt:        run.started_at,
-    completedAt:      run.completed_at,
-    durationMs:       run.duration_ms,
-    elapsedMs:        run.status === 'running' ? elapsedMs : run.duration_ms,
-    sectionsTotal:    run.section_count,
-    sectionsCompleted: jobs.filter(j => j.status === 'completed').length,
-    sectionsFailed:   jobs.filter(j => j.status === 'failed').length,
-    sectionsPending:  jobs.filter(j => j.status === 'pending' || j.status === 'running').length,
-    sectionStatuses:  jobs.map(j => ({
+    runId:             run.id,
+    caseId:            run.case_id,
+    formType:          run.form_type,
+    status:            canonicalStatus,   // canonical — use this
+    legacyStatus,                         // backward-compat only — do not build new logic on this
+    startedAt:         run.started_at,
+    completedAt:       run.completed_at,
+    durationMs:        run.duration_ms,
+    elapsedMs:         run.status === RUN_STATUS.DRAFTING ||
+                       run.status === RUN_STATUS.RETRIEVING ||
+                       run.status === RUN_STATUS.ANALYZING ||
+                       run.status === RUN_STATUS.PREPARING ||
+                       run.status === RUN_STATUS.VALIDATING ||
+                       run.status === RUN_STATUS.ASSEMBLING
+                         ? elapsedMs
+                         : run.duration_ms,
+    sectionsTotal:     run.section_count,
+    sectionsCompleted: jobs.filter(j => j.status === JOB_STATUS.COMPLETE).length,
+    sectionsFailed:    jobs.filter(j => j.status === JOB_STATUS.FAILED).length,
+    sectionsBlocked:   jobs.filter(j => j.status === JOB_STATUS.BLOCKED).length,
+    sectionsQueued:    jobs.filter(j => j.status === JOB_STATUS.QUEUED).length,
+    sectionsRunning:   jobs.filter(j => j.status === JOB_STATUS.RUNNING || j.status === JOB_STATUS.RETRYING).length,
+    sectionsSkipped:   jobs.filter(j => j.status === JOB_STATUS.SKIPPED).length,
+    sectionStatuses:   jobs.map(j => ({
       sectionId:    j.section_id,
       status:       j.status,
       durationMs:   j.duration_ms,
       attemptCount: j.attempt_count,
       profile:      j.generator_profile,
+      errorText:    j.error_text || null,
     })),
     phaseTimings: {
       contextBuildMs:  run.context_build_ms,
@@ -682,12 +781,66 @@ export function getRunStatus(runId) {
       assemblyMs:      run.assembly_ms,
     },
     retrieval: {
-      cacheHit:      !!run.retrieval_cache_hit,
-      itemsScanned:  run.memory_items_scanned,
-      itemsUsed:     run.memory_items_used,
+      cacheHit:     !!run.retrieval_cache_hit,
+      itemsScanned: run.memory_items_scanned,
+      itemsUsed:    run.memory_items_used,
     },
     warnings:  JSON.parse(run.warnings_json || '[]'),
     errorText: run.error_text || null,
+  };
+}
+
+/**
+ * Get the full result of a completed generation run.
+ * Attempts to reconstruct from persisted draft_package_json first.
+ * Falls back to section-by-section reconstruction from generated_sections.
+ *
+ * @param {string} runId
+ * @returns {object|null}
+ */
+export function getRunResult(runId) {
+  const run = getRunById(runId);
+  if (!run) return null;
+
+  // Fast path: draft package was persisted to SQLite
+  if (run.draft_package_json) {
+    try {
+      const draftPackage = JSON.parse(run.draft_package_json);
+      return {
+        runId,
+        status:       run.status,
+        draftPackage,
+        sections:     draftPackage.sections || {},
+        metrics:      draftPackage.metrics  || {},
+        warnings:     draftPackage.warnings || [],
+        fromCache:    true,
+      };
+    } catch {
+      // Fall through to section reconstruction
+    }
+  }
+
+  // Fallback: reconstruct from generated_sections rows
+  const sectionRows = getGeneratedSectionsForRun(runId);
+  const sectionsMap = {};
+  for (const s of sectionRows) {
+    sectionsMap[s.section_id] = {
+      sectionId:    s.section_id,
+      text:         s.final_text || s.draft_text || '',
+      approved:     !!s.approved,
+      approvedAt:   s.approved_at,
+      insertedAt:   s.inserted_at,
+      examplesUsed: s.examples_used,
+    };
+  }
+
+  return {
+    runId,
+    status:    run.status,
+    sections:  sectionsMap,
+    metrics:   JSON.parse(run.metrics_json || '{}'),
+    warnings:  JSON.parse(run.warnings_json || '[]'),
+    fromCache: false,
   };
 }
 
@@ -698,18 +851,7 @@ export function getRunStatus(runId) {
  * @param {string} caseId
  * @returns {object[]}
  */
-export function getRunsForCase(caseId) {
-  return getDb().prepare(`
-    SELECT id, case_id, form_type, status,
-           started_at, completed_at, duration_ms,
-           section_count, success_count, error_count,
-           created_at
-      FROM generation_runs
-     WHERE case_id = ?
-     ORDER BY created_at DESC
-     LIMIT 20
-  `).all(caseId);
-}
+export { getRunsForCase };
 
 /**
  * Get the generated sections for a run (for the result endpoint).
@@ -717,12 +859,4 @@ export function getRunsForCase(caseId) {
  * @param {string} runId
  * @returns {object[]}
  */
-export function getGeneratedSectionsForRun(runId) {
-  return getDb().prepare(`
-    SELECT section_id, final_text, draft_text, approved, approved_at, inserted_at,
-           examples_used, created_at
-      FROM generated_sections
-     WHERE run_id = ?
-     ORDER BY created_at ASC
-  `).all(runId);
-}
+export { getGeneratedSectionsForRun };

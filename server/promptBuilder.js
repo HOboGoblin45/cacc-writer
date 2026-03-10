@@ -359,6 +359,8 @@ function buildAssignmentContextBlock(assignmentMeta) {
  *                                             Also accepts flat array from getRelevantExamples() (backward compat)
  *   @param {string}   [params.locationContext] Pre-formatted location context string
  *   @param {object}   [params.assignmentMeta]  Assignment context object
+ *   @param {string}   [params.systemHint]      Additional system instruction from generator profile
+ *   @param {string}   [params.extraContext]    Pre-computed analysis context (artifacts + prior sections)
  *
  * @returns {Array<{role: string, content: string}>}
  */
@@ -373,6 +375,8 @@ export function buildPromptMessages({
   examples = [],           // Block 3b: other examples (approved_edits, curated, imported)
   locationContext = null,  // string from formatLocationContextBlock() — injected for neighborhood fields
   assignmentMeta = null,   // object from buildAssignmentMetaBlock() — assignment context
+  systemHint    = null,    // string from generator profile — additional system instruction
+  extraContext  = null,    // string — pre-computed analysis artifacts + prior section context
 }) {
   const messages = [];
 
@@ -436,6 +440,20 @@ export function buildPromptMessages({
     if (block) {
       messages.push({ role: 'system', content: block });
     }
+  }
+
+  // ── Block 5.8: Generator profile system hint ──────────────────────────────
+  // Additional system-level instruction from the generator profile.
+  // Injected after assignment context so it takes precedence over generic guidance.
+  if (systemHint) {
+    messages.push({ role: 'system', content: `GENERATION PROFILE GUIDANCE:\n${systemHint}` });
+  }
+
+  // ── Block 5.9: Extra context (analysis artifacts + prior sections) ────────
+  // Pre-computed analysis results and prior section text for synthesis sections.
+  // Injected just before form-specific instructions so it's close to the user request.
+  if (extraContext) {
+    messages.push({ role: 'system', content: `ANALYSIS CONTEXT (pre-computed for this section):\n${extraContext}` });
   }
 
   // ── Block 3.5: Form-specific field instructions (from form config tpl) ────
