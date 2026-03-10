@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-10T05:32:28.683Z",
+  "lastUpdated": "2026-03-10T06:31:13.300Z",
   "counts": {
-    "approved_edits": 70,
+    "approved_edits": 71,
     "curated_examples": 0,
     "imported_examples": 296,
     "phrases": 18
@@ -679,6 +679,20 @@
       "text": "Edited and improved text here for smoke test.",
       "createdAt": "2026-03-07T21:22:54.550Z",
       "updatedAt": "2026-03-07T21:22:54.550Z"
+    },
+    {
+      "id": "a90e65358d72",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "",
+      "sourceType": "approved_edit",
+      "qualityScore": 90,
+      "tags": [],
+      "text": "Edited and improved text here for smoke test.",
+      "createdAt": "2026-03-10T06:31:13.255Z",
+      "updatedAt": "2026-03-10T06:31:13.255Z"
     },
     {
       "id": "a996b5fdfcfb",

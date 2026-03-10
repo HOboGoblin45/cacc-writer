@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Personal Appraiser Voice Engine — Approved Narrative Index",
-  "count": 31,
+  "count": 32,
   "entries": [
     {
       "id": "25b495aa89c4",
@@ -721,7 +721,30 @@
       "updatedAt": "2026-03-10T05:32:28.652Z",
       "approvedBy": "cresci",
       "hasText": true
+    },
+    {
+      "id": "71423e284c89",
+      "sectionType": "neighborhood_description",
+      "formType": "1004",
+      "propertyType": "residential",
+      "assignmentPurpose": "",
+      "loanProgram": "",
+      "subjectCondition": "",
+      "state": "IL",
+      "county": "",
+      "city": "",
+      "marketType": "suburban",
+      "approvalTimestamp": "2026-03-10T06:31:13.260Z",
+      "sourceType": "approvedNarrative",
+      "sourceReportId": "48e2caf7",
+      "qualityScore": 90,
+      "tags": [],
+      "customMetadata": {},
+      "createdAt": "2026-03-10T06:31:13.260Z",
+      "updatedAt": "2026-03-10T06:31:13.260Z",
+      "approvedBy": "cresci",
+      "hasText": true
     }
   ],
-  "lastUpdated": "2026-03-10T05:32:28.652Z"
+  "lastUpdated": "2026-03-10T06:31:13.260Z"
 }
