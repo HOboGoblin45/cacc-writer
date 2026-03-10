@@ -1,91 +1,283 @@
-[dotenv@17.3.1] injecting env (16) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
-[dotenv@17.3.1] injecting env (16) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
-Prompts loaded: system_cacc_writer.txt + style_guide_cresci.txt (7819 chars)
+[dotenv@17.3.1] injecting env (16) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+[dotenv@17.3.1] injecting env (16) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
 CACC Writer starting... Model: gpt-4.1
-{"ts":"2026-03-10T03:32:28.776Z","level":"info","msg":"file-logger:wired","logFile":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\logs"}
-
-CACC Writer running at http://localhost:5178
+CACC Writer server running on port 5178
 Model: gpt-4.1
-Open http://localhost:5178 in your browser.
-
-{"ts":"2026-03-10T03:34:38.879Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":11}
-{"ts":"2026-03-10T05:22:31.647Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":8}
-{"ts":"2026-03-10T05:22:31.670Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":5}
-{"ts":"2026-03-10T05:22:31.677Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:31.685Z","level":"info","msg":"http","method":"GET","path":"/api/forms/9999","status":404,"ms":1}
-{"ts":"2026-03-10T05:22:31.781Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":24}
-{"ts":"2026-03-10T05:22:31.878Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":92}
-{"ts":"2026-03-10T05:22:31.884Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3a6cd9c6","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:31.893Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3a6cd9c6","status":200,"ms":5}
-{"ts":"2026-03-10T05:22:31.896Z","level":"info","msg":"http","method":"GET","path":"/api/cases/notavalidid","status":400,"ms":1}
-{"ts":"2026-03-10T05:22:31.903Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3a6cd9c6/pipeline","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:31.907Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3a6cd9c6/pipeline","status":400,"ms":1}
-{"ts":"2026-03-10T05:22:31.914Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/3a6cd9c6/status","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:31.921Z","level":"info","msg":"http","method":"PUT","path":"/api/cases/3a6cd9c6/facts","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:31.962Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3a6cd9c6/feedback","status":200,"ms":37}
-{"ts":"2026-03-10T05:22:31.966Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3a6cd9c6/feedback","status":400,"ms":1}
-{"ts":"2026-03-10T05:22:31.976Z","level":"info","msg":"http","method":"GET","path":"/api/kb/status","status":200,"ms":7}
-{"ts":"2026-03-10T05:22:32.403Z","level":"info","msg":"http","method":"POST","path":"/api/kb/reindex","status":200,"ms":423}
-{"ts":"2026-03-10T05:22:32.407Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3a6cd9c6/history","status":200,"ms":2}
-{"ts":"2026-03-10T05:22:32.411Z","level":"info","msg":"http","method":"GET","path":"/api/templates/neighborhood","status":200,"ms":2}
-{"ts":"2026-03-10T05:22:32.520Z","level":"info","msg":"http","method":"GET","path":"/api/agents/status","status":200,"ms":107}
-{"ts":"2026-03-10T05:22:32.527Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":2}
-{"ts":"2026-03-10T05:22:32.534Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":400,"ms":2}
-{"ts":"2026-03-10T05:22:32.538Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3a6cd9c6/review-section","status":400,"ms":1}
-{"ts":"2026-03-10T05:22:32.543Z","level":"info","msg":"http","method":"POST","path":"/api/cases/3a6cd9c6/insert-all","status":400,"ms":3}
-{"ts":"2026-03-10T05:22:32.547Z","level":"info","msg":"http","method":"GET","path":"/api/voice/examples","status":200,"ms":2}
-{"ts":"2026-03-10T05:22:32.555Z","level":"info","msg":"http","method":"GET","path":"/api/voice/folder-status","status":200,"ms":4}
-{"ts":"2026-03-10T05:22:32.565Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/3a6cd9c6","status":200,"ms":8}
-{"ts":"2026-03-10T05:22:32.569Z","level":"info","msg":"http","method":"GET","path":"/api/cases/3a6cd9c6","status":404,"ms":2}
-{"ts":"2026-03-10T05:23:06.916Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":17}
-{"ts":"2026-03-10T05:23:06.943Z","level":"info","msg":"http","method":"GET","path":"/api/health/detailed","status":200,"ms":13}
-/upload OCR method: pdfjs-text chars: 787 docType: appraisal_report
-{"ts":"2026-03-10T05:23:07.306Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/upload","status":200,"ms":356}
-{"ts":"2026-03-10T05:23:24.353Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/extract-facts","status":200,"ms":17044}
-{"ts":"2026-03-10T05:23:24.393Z","level":"info","msg":"http","method":"PUT","path":"/api/cases/689dab51/facts","status":200,"ms":18}
-{"ts":"2026-03-10T05:23:38.201Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/questionnaire","status":200,"ms":13798}
-{"ts":"2026-03-10T05:23:49.943Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/generate-all","status":200,"ms":11733}
-{"ts":"2026-03-10T05:23:51.963Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/grade","status":500,"ms":2017}
-{"ts":"2026-03-10T05:23:51.981Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/outputs/concessions","status":200,"ms":15}
-{"ts":"2026-03-10T05:23:51.987Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/pipeline","status":200,"ms":3}
-{"ts":"2026-03-10T05:23:51.991Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/pipeline","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:51.995Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/pipeline","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:51.999Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/pipeline","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:52.002Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/pipeline","status":400,"ms":1}
-{"ts":"2026-03-10T05:23:52.003Z","level":"info","msg":"http","method":"GET","path":"/api/cases/689dab51/history","status":200,"ms":0}
-{"ts":"2026-03-10T05:23:52.007Z","level":"info","msg":"http","method":"GET","path":"/api/kb/status","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:52.049Z","level":"info","msg":"http","method":"POST","path":"/api/kb/reindex","status":200,"ms":41}
-{"ts":"2026-03-10T05:23:52.053Z","level":"info","msg":"http","method":"POST","path":"/api/kb/migrate-voice","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.067Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":13}
-{"ts":"2026-03-10T05:23:52.071Z","level":"info","msg":"http","method":"GET","path":"/api/cases/689dab51","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:52.075Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/status","status":200,"ms":3}
-{"ts":"2026-03-10T05:23:52.079Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/status","status":200,"ms":3}
-{"ts":"2026-03-10T05:23:52.082Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/status","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:52.085Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/689dab51/status","status":400,"ms":1}
-{"ts":"2026-03-10T05:23:52.089Z","level":"info","msg":"http","method":"POST","path":"/api/templates/neighborhood","status":200,"ms":3}
-{"ts":"2026-03-10T05:23:52.091Z","level":"info","msg":"http","method":"GET","path":"/api/templates/neighborhood","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.094Z","level":"info","msg":"http","method":"DELETE","path":"/api/templates/neighborhood/c346350f","status":200,"ms":2}
-{"ts":"2026-03-10T05:23:52.096Z","level":"info","msg":"http","method":"GET","path":"/api/voice/examples","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.098Z","level":"info","msg":"http","method":"GET","path":"/api/voice/folder-status","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.100Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":0}
-{"ts":"2026-03-10T05:23:52.102Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1004","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.103Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1025","status":200,"ms":0}
-{"ts":"2026-03-10T05:23:52.106Z","level":"info","msg":"http","method":"GET","path":"/api/forms/1073","status":200,"ms":1}
-{"ts":"2026-03-10T05:23:52.107Z","level":"info","msg":"http","method":"GET","path":"/api/forms/commercial","status":200,"ms":0}
-{"ts":"2026-03-10T05:23:52.113Z","level":"info","msg":"http","method":"GET","path":"/api/agents/status","status":200,"ms":5}
-{"ts":"2026-03-10T05:23:52.115Z","level":"info","msg":"http","method":"GET","path":"/api/cases/not-valid-id","status":400,"ms":0}
-{"ts":"2026-03-10T05:23:52.117Z","level":"info","msg":"http","method":"GET","path":"/api/cases/00000000","status":404,"ms":0}
-{"ts":"2026-03-10T05:23:52.119Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":0}
-{"ts":"2026-03-10T05:23:52.121Z","level":"info","msg":"http","method":"POST","path":"/api/cases/689dab51/feedback","status":400,"ms":1}
-{"ts":"2026-03-10T05:23:52.123Z","level":"info","msg":"http","method":"GET","path":"/api/forms/unknown_form_type","status":404,"ms":1}
-{"ts":"2026-03-10T05:23:52.128Z","level":"info","msg":"http","method":"DELETE","path":"/api/cases/689dab51","status":200,"ms":4}
-{"ts":"2026-03-10T05:24:06.471Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":1}
-{"ts":"2026-03-10T05:24:06.483Z","level":"info","msg":"http","method":"GET","path":"/api/forms","status":200,"ms":1}
-{"ts":"2026-03-10T05:24:06.498Z","level":"info","msg":"http","method":"GET","path":"/api/cases","status":200,"ms":13}
-{"ts":"2026-03-10T05:24:06.503Z","level":"info","msg":"http","method":"GET","path":"/api/destination-registry","status":200,"ms":2}
-{"ts":"2026-03-10T05:24:06.511Z","level":"info","msg":"http","method":"GET","path":"/api/health/detailed","status":200,"ms":7}
-{"ts":"2026-03-10T05:24:22.860Z","level":"info","msg":"http","method":"POST","path":"/api/cases","status":404,"ms":1}
-{"ts":"2026-03-10T05:25:17.126Z","level":"info","msg":"http","method":"POST","path":"/api/cases","status":404,"ms":2}
-{"ts":"2026-03-10T05:26:08.775Z","level":"info","msg":"http","method":"POST","path":"/api/cases","status":404,"ms":0}
-{"ts":"2026-03-10T05:26:18.291Z","level":"info","msg":"http","method":"GET","path":"/api/health","status":200,"ms":0}
-{"ts":"2026-03-10T05:26:18.305Z","level":"info","msg":"http","method":"POST","path":"/api/cases","status":404,"ms":0}
+Cases dir: C:\Users\ccres\OneDrive\Desktop\cacc-writer\cases
+Active forms: 1004, commercial
+Deferred forms: 1025, 1073, 1004c
+{"ts":"2026-03-10T09:29:23.060Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":8}
+{"ts":"2026-03-10T09:29:23.117Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":17}
+{"ts":"2026-03-10T09:29:23.134Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":11}
+{"ts":"2026-03-10T09:29:23.151Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/destination-registry","status":200,"ms":5}
+{"ts":"2026-03-10T09:29:23.160Z","level":"info","msg":"http","method":"GET","path":"/api/cases/d6b37525/destination-registry","status":200,"ms":4}
+{"ts":"2026-03-10T09:29:23.166Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/destination-registry","status":400,"ms":2}
+{"ts":"2026-03-10T09:29:23.177Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/sections/neighborhood_description/insert","status":200,"ms":6}
+{"ts":"2026-03-10T09:29:23.183Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/sections/nonexistent_field/insert","status":400,"ms":3}
+{"ts":"2026-03-10T09:29:23.191Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/sections/neighborhood_description/insert","status":400,"ms":2}
+{"ts":"2026-03-10T09:29:23.198Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/sections/status","status":200,"ms":4}
+{"ts":"2026-03-10T09:29:23.204Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/exceptions","status":200,"ms":3}
+{"ts":"2026-03-10T09:29:23.210Z","level":"info","msg":"http","method":"GET","path":"/api/cases/d6b37525/exceptions","status":200,"ms":2}
+{"ts":"2026-03-10T09:29:23.212Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID00a/exceptions","status":400,"ms":1}
+{"ts":"2026-03-10T09:29:23.224Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6e82530a/sections/market_conditions/status","status":200,"ms":8}
+{"ts":"2026-03-10T09:29:23.229Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/sections/status","status":200,"ms":3}
+{"ts":"2026-03-10T09:29:23.237Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6e82530a/sections/site_description/status","status":200,"ms":5}
+{"ts":"2026-03-10T09:29:23.246Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6e82530a/sections/reconciliation/status","status":200,"ms":7}
+{"ts":"2026-03-10T09:29:23.253Z","level":"info","msg":"http","method":"POST","path":"/api/cases/d6b37525/generate-comp-commentary","status":400,"ms":2}
+{"ts":"2026-03-10T09:29:23.260Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/generate-comp-commentary","status":400,"ms":3}
+{"ts":"2026-03-10T09:29:32.143Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/generate-comp-commentary","status":200,"ms":8880}
+{"ts":"2026-03-10T09:29:42.233Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/generate-comp-commentary","status":200,"ms":10078}
+{"ts":"2026-03-10T09:29:42.242Z","level":"info","msg":"http","method":"POST","path":"/api/cases/BADID00a/generate-comp-commentary","status":400,"ms":2}
+{"ts":"2026-03-10T09:29:42.261Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/insert-all","status":200,"ms":12}
+{"ts":"2026-03-10T09:29:42.282Z","level":"info","msg":"http","method":"POST","path":"/api/cases/6e82530a/insert-all","status":500,"ms":6}
+{"ts":"2026-03-10T09:29:42.293Z","level":"info","msg":"http","method":"GET","path":"/api/cases/d6b37525/destination-registry","status":200,"ms":2}
+{"ts":"2026-03-10T09:29:42.307Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/exceptions","status":200,"ms":3}
+{"ts":"2026-03-10T09:29:42.319Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/6e82530a/sections/site_description/status","status":200,"ms":8}
+{"ts":"2026-03-10T09:29:42.323Z","level":"info","msg":"http","method":"GET","path":"/api/cases/6e82530a/exceptions","status":200,"ms":2}
+{"ts":"2026-03-10T09:29:42.339Z","level":"info","msg":"http","method":"DELETE","path":"/6e82530a","status":200,"ms":8}
+{"ts":"2026-03-10T09:29:42.347Z","level":"info","msg":"http","method":"DELETE","path":"/d6b37525","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:49.041Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:49.064Z","level":"info","msg":"http","method":"GET","path":"/forms","status":200,"ms":2}
+{"ts":"2026-03-10T09:30:49.070Z","level":"info","msg":"http","method":"GET","path":"/forms/1004","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:49.076Z","level":"info","msg":"http","method":"GET","path":"/forms/9999","status":404,"ms":1}
+{"ts":"2026-03-10T09:30:49.106Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":16}
+{"ts":"2026-03-10T09:30:49.179Z","level":"info","msg":"http","method":"GET","path":"/","status":200,"ms":65}
+{"ts":"2026-03-10T09:30:49.190Z","level":"info","msg":"http","method":"GET","path":"/2c54fd5e","status":200,"ms":3}
+{"ts":"2026-03-10T09:30:49.201Z","level":"info","msg":"http","method":"PATCH","path":"/2c54fd5e","status":200,"ms":5}
+{"ts":"2026-03-10T09:30:49.208Z","level":"info","msg":"http","method":"GET","path":"/notavalidid","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:49.222Z","level":"info","msg":"http","method":"PATCH","path":"/2c54fd5e/pipeline","status":200,"ms":5}
+{"ts":"2026-03-10T09:30:49.230Z","level":"info","msg":"http","method":"PATCH","path":"/2c54fd5e/pipeline","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:49.239Z","level":"info","msg":"http","method":"PATCH","path":"/2c54fd5e/status","status":200,"ms":4}
+{"ts":"2026-03-10T09:30:49.255Z","level":"info","msg":"http","method":"PUT","path":"/2c54fd5e/facts","status":200,"ms":5}
+{"ts":"2026-03-10T09:30:49.279Z","level":"info","msg":"http","method":"POST","path":"/api/cases/2c54fd5e/feedback","status":200,"ms":16}
+{"ts":"2026-03-10T09:30:49.285Z","level":"info","msg":"http","method":"POST","path":"/api/cases/2c54fd5e/feedback","status":400,"ms":2}
+{"ts":"2026-03-10T09:30:49.294Z","level":"info","msg":"http","method":"GET","path":"/kb/status","status":200,"ms":5}
+{"ts":"2026-03-10T09:30:49.462Z","level":"info","msg":"http","method":"POST","path":"/kb/reindex","status":200,"ms":164}
+{"ts":"2026-03-10T09:30:49.467Z","level":"info","msg":"http","method":"GET","path":"/2c54fd5e/history","status":200,"ms":2}
+{"ts":"2026-03-10T09:30:49.471Z","level":"info","msg":"http","method":"GET","path":"/templates/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:49.552Z","level":"info","msg":"http","method":"GET","path":"/agents/status","status":200,"ms":78}
+{"ts":"2026-03-10T09:30:49.558Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:49.563Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:49.569Z","level":"info","msg":"http","method":"POST","path":"/api/cases/2c54fd5e/review-section","status":400,"ms":2}
+{"ts":"2026-03-10T09:30:49.573Z","level":"info","msg":"http","method":"POST","path":"/api/cases/2c54fd5e/insert-all","status":400,"ms":2}
+{"ts":"2026-03-10T09:30:49.577Z","level":"info","msg":"http","method":"GET","path":"/voice/examples","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:49.584Z","level":"info","msg":"http","method":"GET","path":"/voice/folder-status","status":200,"ms":3}
+{"ts":"2026-03-10T09:30:49.593Z","level":"info","msg":"http","method":"DELETE","path":"/2c54fd5e","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:49.596Z","level":"info","msg":"http","method":"GET","path":"/2c54fd5e","status":404,"ms":1}
+{"ts":"2026-03-10T09:30:49.814Z","level":"info","msg":"http","method":"GET","path":"/forms","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:49.841Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":5}
+{"ts":"2026-03-10T09:30:49.848Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":2}
+{"ts":"2026-03-10T09:30:49.856Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:49.876Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":15}
+{"ts":"2026-03-10T09:30:49.894Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":14}
+{"ts":"2026-03-10T09:30:49.900Z","level":"info","msg":"http","method":"GET","path":"/c4c9d852","status":200,"ms":2}
+{"ts":"2026-03-10T09:30:49.908Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:49.916Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:49.924Z","level":"info","msg":"http","method":"POST","path":"/api/generate","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:52.342Z","level":"info","msg":"http","method":"POST","path":"/api/generate-batch","status":200,"ms":2413}
+{"ts":"2026-03-10T09:30:52.348Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:52.353Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":2}
+{"ts":"2026-03-10T09:30:52.359Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:52.365Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":4}
+{"ts":"2026-03-10T09:30:52.370Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:52.376Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run-batch","status":400,"ms":3}
+{"ts":"2026-03-10T09:30:52.380Z","level":"info","msg":"http","method":"POST","path":"/api/workflow/run","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:52.384Z","level":"info","msg":"http","method":"GET","path":"/forms/1004","status":200,"ms":2}
+{"ts":"2026-03-10T09:30:52.387Z","level":"info","msg":"http","method":"GET","path":"/forms/commercial","status":200,"ms":1}
+{"ts":"2026-03-10T09:30:52.391Z","level":"info","msg":"http","method":"GET","path":"/forms/1025","status":200,"ms":2}
+{"ts":"2026-03-10T09:30:52.592Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":16}
+{"ts":"2026-03-10T09:30:52.620Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":15}
+{"ts":"2026-03-10T09:30:52.630Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/neighborhood_description/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.643Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/market_conditions/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.654Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/reconciliation/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.660Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/neighborhood_description/status","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:52.665Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/BADID/sections/neighborhood_description/status","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:52.675Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.687Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.698Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":5}
+{"ts":"2026-03-10T09:30:52.708Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.717Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.726Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":7}
+{"ts":"2026-03-10T09:30:52.734Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/91bbf012/sections/sca_summary/status","status":200,"ms":6}
+{"ts":"2026-03-10T09:30:52.740Z","level":"info","msg":"http","method":"GET","path":"/api/cases/91bbf012/sections/status","status":200,"ms":3}
+{"ts":"2026-03-10T09:30:52.745Z","level":"info","msg":"http","method":"GET","path":"/api/cases/BADID/sections/status","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:52.750Z","level":"info","msg":"http","method":"POST","path":"/api/cases/FAKEID/generate-core","status":400,"ms":1}
+{"ts":"2026-03-10T09:30:52.757Z","level":"info","msg":"http","method":"POST","path":"/api/cases/def1025a/generate-core","status":400,"ms":3}
+{"ts":"2026-03-10T09:31:00.802Z","level":"info","msg":"http","method":"POST","path":"/api/cases/91bbf012/generate-core","status":200,"ms":8039}
+{"ts":"2026-03-10T09:31:07.685Z","level":"info","msg":"http","method":"POST","path":"/api/cases/53d0bdec/generate-core","status":200,"ms":6874}
+{"ts":"2026-03-10T09:31:07.697Z","level":"info","msg":"http","method":"DELETE","path":"/91bbf012","status":200,"ms":6}
+{"ts":"2026-03-10T09:31:07.705Z","level":"info","msg":"http","method":"DELETE","path":"/53d0bdec","status":200,"ms":6}
+{"ts":"2026-03-10T09:31:07.882Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":14}
+{"ts":"2026-03-10T09:31:07.906Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":11}
+{"ts":"2026-03-10T09:31:07.921Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":12}
+{"ts":"2026-03-10T09:31:07.935Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":11}
+{"ts":"2026-03-10T09:31:07.948Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":10}
+{"ts":"2026-03-10T09:31:07.954Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.959Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.962Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.966Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.971Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.975Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.979Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":2}
+{"ts":"2026-03-10T09:31:07.982Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.986Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/commercial/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:07.989Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/9999/nonexistent_section","status":404,"ms":0}
+{"ts":"2026-03-10T09:31:07.993Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1025/neighborhood_description","status":404,"ms":1}
+{"ts":"2026-03-10T09:31:07.998Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:31:08.002Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:31:08.009Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":3}
+{"ts":"2026-03-10T09:31:08.012Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:08.022Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":6}
+{"ts":"2026-03-10T09:31:08.027Z","level":"info","msg":"http","method":"GET","path":"/logs/not-a-date","status":400,"ms":1}
+{"ts":"2026-03-10T09:31:08.030Z","level":"info","msg":"http","method":"GET","path":"/logs/03-15-2025","status":400,"ms":1}
+{"ts":"2026-03-10T09:31:08.033Z","level":"info","msg":"http","method":"GET","path":"/logs/2000-01-01","status":200,"ms":1}
+{"ts":"2026-03-10T09:31:08.041Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":5}
+{"ts":"2026-03-10T09:31:08.061Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":17}
+{"ts":"2026-03-10T09:31:08.079Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":16}
+{"ts":"2026-03-10T09:31:08.097Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":16}
+{"ts":"2026-03-10T09:31:08.117Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":19}
+{"ts":"2026-03-10T09:31:08.139Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":20}
+{"ts":"2026-03-10T09:31:08.145Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:31:38.451Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0431.zip","isZip":true}
+{"ts":"2026-03-10T09:31:38.455Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":30310}
+{"ts":"2026-03-10T09:31:38.463Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:32:09.109Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0431.zip","isZip":true}
+{"ts":"2026-03-10T09:32:09.114Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":30651}
+{"ts":"2026-03-10T09:32:09.120Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:32:40.780Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0432","isZip":false}
+{"ts":"2026-03-10T09:32:40.783Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":31663}
+{"ts":"2026-03-10T09:32:40.790Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:32:42.362Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0432","isZip":false}
+{"ts":"2026-03-10T09:32:42.366Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":1576}
+{"ts":"2026-03-10T09:32:42.393Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":18}
+{"ts":"2026-03-10T09:32:42.418Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":19}
+{"ts":"2026-03-10T09:32:42.439Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":17}
+{"ts":"2026-03-10T09:32:42.465Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":13}
+{"ts":"2026-03-10T09:32:42.474Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":3}
+{"ts":"2026-03-10T09:32:42.480Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":1}
+{"ts":"2026-03-10T09:32:42.514Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":25}
+{"ts":"2026-03-10T09:32:42.521Z","level":"info","msg":"http","method":"POST","path":"/api/cases/00000000/sections/neighborhood_description/copy","status":404,"ms":2}
+{"ts":"2026-03-10T09:32:42.530Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/nonexistent_field/copy","status":400,"ms":5}
+{"ts":"2026-03-10T09:32:42.541Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:32:42.552Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/neighborhood_description/copy","status":200,"ms":4}
+{"ts":"2026-03-10T09:32:42.561Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:32:42.570Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:32:42.580Z","level":"info","msg":"http","method":"POST","path":"/api/cases/f82e1e40/sections/neighborhood_description/copy","status":200,"ms":6}
+{"ts":"2026-03-10T09:32:42.594Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f82e1e40/sections/neighborhood_description/status","status":200,"ms":10}
+{"ts":"2026-03-10T09:32:42.605Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/f82e1e40/sections/neighborhood_description/status","status":200,"ms":8}
+{"ts":"2026-03-10T09:35:02.816Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":11}
+{"ts":"2026-03-10T09:35:02.837Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":10}
+{"ts":"2026-03-10T09:35:02.848Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":9}
+{"ts":"2026-03-10T09:35:02.859Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":9}
+{"ts":"2026-03-10T09:35:02.870Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":9}
+{"ts":"2026-03-10T09:35:02.874Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.878Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.881Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.884Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.888Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.891Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.894Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.896Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":0}
+{"ts":"2026-03-10T09:35:02.900Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/commercial/neighborhood","status":200,"ms":1}
+{"ts":"2026-03-10T09:35:02.902Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/9999/nonexistent_section","status":404,"ms":0}
+{"ts":"2026-03-10T09:35:02.905Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1025/neighborhood_description","status":404,"ms":1}
+{"ts":"2026-03-10T09:35:02.910Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":3}
+{"ts":"2026-03-10T09:35:02.914Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:35:02.918Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:35:02.922Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:35:02.931Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":6}
+{"ts":"2026-03-10T09:35:02.935Z","level":"info","msg":"http","method":"GET","path":"/logs/not-a-date","status":400,"ms":1}
+{"ts":"2026-03-10T09:35:02.937Z","level":"info","msg":"http","method":"GET","path":"/logs/03-15-2025","status":400,"ms":1}
+{"ts":"2026-03-10T09:35:02.941Z","level":"info","msg":"http","method":"GET","path":"/logs/2000-01-01","status":200,"ms":2}
+{"ts":"2026-03-10T09:35:02.947Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":4}
+{"ts":"2026-03-10T09:35:02.968Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":18}
+{"ts":"2026-03-10T09:35:02.990Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":20}
+{"ts":"2026-03-10T09:35:03.014Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":22}
+{"ts":"2026-03-10T09:35:03.037Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":21}
+{"ts":"2026-03-10T09:35:03.059Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":21}
+{"ts":"2026-03-10T09:35:03.064Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:35:28.944Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0435.zip","isZip":true}
+{"ts":"2026-03-10T09:35:28.949Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":25885}
+{"ts":"2026-03-10T09:35:28.956Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:35:53.378Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0435.zip","isZip":true}
+{"ts":"2026-03-10T09:35:53.383Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":24427}
+{"ts":"2026-03-10T09:35:53.391Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:36:19.555Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0435.zip","isZip":true}
+{"ts":"2026-03-10T09:36:19.559Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":26168}
+{"ts":"2026-03-10T09:36:19.562Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":26177}
+{"ts":"2026-03-10T09:36:19.573Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:36:20.773Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0436","isZip":false}
+{"ts":"2026-03-10T09:36:20.779Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":1206}
+{"ts":"2026-03-10T09:36:20.797Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":12}
+{"ts":"2026-03-10T09:36:20.820Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":19}
+{"ts":"2026-03-10T09:36:20.824Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":1258}
+{"ts":"2026-03-10T09:36:20.838Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":12}
+{"ts":"2026-03-10T09:36:20.856Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":15}
+{"ts":"2026-03-10T09:36:20.865Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.869Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.888Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":15}
+{"ts":"2026-03-10T09:36:20.891Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":32}
+{"ts":"2026-03-10T09:36:20.895Z","level":"info","msg":"http","method":"POST","path":"/api/cases/00000000/sections/neighborhood_description/copy","status":404,"ms":2}
+{"ts":"2026-03-10T09:36:20.904Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/nonexistent_field/copy","status":400,"ms":1}
+{"ts":"2026-03-10T09:36:20.913Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:36:20.915Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":18}
+{"ts":"2026-03-10T09:36:20.922Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:36:20.931Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/neighborhood_description/copy","status":200,"ms":3}
+{"ts":"2026-03-10T09:36:20.940Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/neighborhood_description/copy","status":200,"ms":5}
+{"ts":"2026-03-10T09:36:20.948Z","level":"info","msg":"http","method":"POST","path":"/api/cases/8a0364eb/sections/neighborhood_description/copy","status":200,"ms":4}
+{"ts":"2026-03-10T09:36:20.952Z","level":"info","msg":"http","method":"GET","path":"/health/services","status":200,"ms":28}
+{"ts":"2026-03-10T09:36:20.963Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/8a0364eb/sections/neighborhood_description/status","status":200,"ms":9}
+{"ts":"2026-03-10T09:36:20.965Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.975Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/8a0364eb/sections/neighborhood_description/status","status":200,"ms":8}
+{"ts":"2026-03-10T09:36:20.979Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.984Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":2}
+{"ts":"2026-03-10T09:36:20.989Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.993Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:20.999Z","level":"info","msg":"http","method":"GET","path":"/destination-registry","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:21.004Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:21.007Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1004/neighborhood_description","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:21.010Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/commercial/neighborhood","status":200,"ms":0}
+{"ts":"2026-03-10T09:36:21.014Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/9999/nonexistent_section","status":404,"ms":1}
+{"ts":"2026-03-10T09:36:21.016Z","level":"info","msg":"http","method":"GET","path":"/destination-registry/1025/neighborhood_description","status":404,"ms":0}
+{"ts":"2026-03-10T09:36:21.021Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:36:21.025Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:36:21.029Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":2}
+{"ts":"2026-03-10T09:36:21.034Z","level":"info","msg":"http","method":"GET","path":"/logs","status":200,"ms":3}
+{"ts":"2026-03-10T09:36:21.043Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":5}
+{"ts":"2026-03-10T09:36:21.048Z","level":"info","msg":"http","method":"GET","path":"/logs/not-a-date","status":400,"ms":1}
+{"ts":"2026-03-10T09:36:21.051Z","level":"info","msg":"http","method":"GET","path":"/logs/03-15-2025","status":400,"ms":1}
+{"ts":"2026-03-10T09:36:21.054Z","level":"info","msg":"http","method":"GET","path":"/logs/2000-01-01","status":200,"ms":1}
+{"ts":"2026-03-10T09:36:21.061Z","level":"info","msg":"http","method":"GET","path":"/logs/2026-03-10","status":200,"ms":5}
+{"ts":"2026-03-10T09:36:21.083Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":20}
+{"ts":"2026-03-10T09:36:21.099Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":14}
+{"ts":"2026-03-10T09:36:21.119Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":18}
+{"ts":"2026-03-10T09:36:21.140Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":19}
+{"ts":"2026-03-10T09:36:21.157Z","level":"info","msg":"http","method":"GET","path":"/export/stats","status":200,"ms":15}
+{"ts":"2026-03-10T09:36:21.164Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:36:48.780Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0436.zip","isZip":true}
+{"ts":"2026-03-10T09:36:48.785Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":27621}
+{"ts":"2026-03-10T09:36:48.792Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:37:18.325Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0436.zip","isZip":true}
+{"ts":"2026-03-10T09:37:18.330Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":29538}
+{"ts":"2026-03-10T09:37:18.334Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:37:44.511Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0437.zip","isZip":true}
+{"ts":"2026-03-10T09:37:44.515Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":26181}
+{"ts":"2026-03-10T09:37:44.520Z","level":"info","msg":"[export] Creating support bundle..."}
+{"ts":"2026-03-10T09:37:45.588Z","level":"info","msg":"[export] Support bundle created","path":"C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\exports\\cacc-writer-support-bundle-2026-03-10-0437","isZip":false}
+{"ts":"2026-03-10T09:37:45.594Z","level":"info","msg":"http","method":"POST","path":"/export/bundle","status":200,"ms":1074}
+{"ts":"2026-03-10T09:37:45.607Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":11}
+{"ts":"2026-03-10T09:37:45.619Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":10}
+{"ts":"2026-03-10T09:37:45.633Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":11}
+{"ts":"2026-03-10T09:37:45.646Z","level":"info","msg":"http","method":"GET","path":"/export/list","status":200,"ms":11}
+{"ts":"2026-03-10T09:37:45.648Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":0}
+{"ts":"2026-03-10T09:37:45.650Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":0}
+{"ts":"2026-03-10T09:37:45.664Z","level":"info","msg":"http","method":"POST","path":"/api/cases/create","status":200,"ms":11}
+{"ts":"2026-03-10T09:37:45.668Z","level":"info","msg":"http","method":"POST","path":"/api/cases/00000000/sections/neighborhood_description/copy","status":404,"ms":1}
+{"ts":"2026-03-10T09:37:45.672Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/nonexistent_field/copy","status":400,"ms":2}
+{"ts":"2026-03-10T09:37:45.678Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/neighborhood_description/copy","status":200,"ms":3}
+{"ts":"2026-03-10T09:37:45.684Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/neighborhood_description/copy","status":200,"ms":3}
+{"ts":"2026-03-10T09:37:45.690Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/neighborhood_description/copy","status":200,"ms":4}
+{"ts":"2026-03-10T09:37:45.695Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/neighborhood_description/copy","status":200,"ms":3}
+{"ts":"2026-03-10T09:37:45.699Z","level":"info","msg":"http","method":"POST","path":"/api/cases/4d75eded/sections/neighborhood_description/copy","status":200,"ms":2}
+{"ts":"2026-03-10T09:37:45.709Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/4d75eded/sections/neighborhood_description/status","status":200,"ms":7}
+{"ts":"2026-03-10T09:37:45.717Z","level":"info","msg":"http","method":"PATCH","path":"/api/cases/4d75eded/sections/neighborhood_description/status","status":200,"ms":5}

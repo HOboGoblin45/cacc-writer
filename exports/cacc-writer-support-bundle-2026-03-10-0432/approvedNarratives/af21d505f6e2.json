@@ -1,0 +1,22 @@
+{
+  "id": "af21d505f6e2",
+  "text": "Edited and improved text here for smoke test.",
+  "sectionType": "neighborhood_description",
+  "formType": "1004",
+  "propertyType": "residential",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "",
+  "county": "",
+  "city": "",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-10T09:30:49.269Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "",
+  "qualityScore": 95,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-10T09:30:49.269Z",
+  "updatedAt": "2026-03-10T09:30:49.269Z"
+}

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Personal Appraiser Voice Engine — Approved Narrative Index",
-  "count": 32,
+  "count": 34,
   "entries": [
     {
       "id": "25b495aa89c4",
@@ -744,7 +744,51 @@
       "updatedAt": "2026-03-10T06:31:13.260Z",
       "approvedBy": "cresci",
       "hasText": true
+    },
+    {
+      "id": "3df4eed21d99",
+      "sectionType": "neighborhood_description",
+      "formType": "1004",
+      "propertyType": "residential",
+      "assignmentPurpose": "",
+      "loanProgram": "",
+      "subjectCondition": "",
+      "state": "",
+      "county": "",
+      "city": "",
+      "marketType": "suburban",
+      "approvalTimestamp": "2026-03-10T09:06:25.753Z",
+      "sourceType": "approvedNarrative",
+      "sourceReportId": "",
+      "qualityScore": 95,
+      "tags": [],
+      "customMetadata": {},
+      "createdAt": "2026-03-10T09:06:25.753Z",
+      "updatedAt": "2026-03-10T09:06:25.753Z",
+      "hasText": true
+    },
+    {
+      "id": "af21d505f6e2",
+      "sectionType": "neighborhood_description",
+      "formType": "1004",
+      "propertyType": "residential",
+      "assignmentPurpose": "",
+      "loanProgram": "",
+      "subjectCondition": "",
+      "state": "",
+      "county": "",
+      "city": "",
+      "marketType": "suburban",
+      "approvalTimestamp": "2026-03-10T09:30:49.269Z",
+      "sourceType": "approvedNarrative",
+      "sourceReportId": "",
+      "qualityScore": 95,
+      "tags": [],
+      "customMetadata": {},
+      "createdAt": "2026-03-10T09:30:49.269Z",
+      "updatedAt": "2026-03-10T09:30:49.269Z",
+      "hasText": true
     }
   ],
-  "lastUpdated": "2026-03-10T06:31:13.260Z"
+  "lastUpdated": "2026-03-10T09:30:49.269Z"
 }

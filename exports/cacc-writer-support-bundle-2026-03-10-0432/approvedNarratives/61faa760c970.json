@@ -1,0 +1,23 @@
+{
+  "id": "61faa760c970",
+  "text": "No seller concessions or financial assistance are reported for the subject transaction. If any concessions are present, they should be detailed here. Based on the available file information, [INSERT concessions]. This aspect has minimal impact on marketability in this segment of the Bloomington suburban residential market. Concessions remain typical for the area.",
+  "sectionType": "concessions",
+  "formType": "1004",
+  "propertyType": "residential",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "IL",
+  "county": "",
+  "city": "",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-10T05:23:51.978Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "689dab51",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-10T05:23:51.978Z",
+  "updatedAt": "2026-03-10T05:23:51.978Z",
+  "approvedBy": "cresci"
+}

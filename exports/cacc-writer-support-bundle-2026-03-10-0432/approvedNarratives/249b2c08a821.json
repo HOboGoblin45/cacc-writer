@@ -1,0 +1,23 @@
+{
+  "id": "249b2c08a821",
+  "text": "Market conditions are stable with moderate demand.",
+  "sectionType": "market_conditions",
+  "formType": "1004",
+  "propertyType": "residential",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "IL",
+  "county": "",
+  "city": "",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-09T11:11:17.530Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "62e11dd7",
+  "qualityScore": 90,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-09T11:11:17.530Z",
+  "updatedAt": "2026-03-09T11:11:17.530Z",
+  "approvedBy": "cresci"
+}
