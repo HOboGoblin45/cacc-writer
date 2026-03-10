@@ -653,6 +653,31 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
       </div>
 
+      <!-- Row: Case Timeline (Phase 10) -->
+      <div class="card" id="caseTimelineCard" style="display:none;">
+        <div class="card-head">
+          <span>Case Timeline</span>
+          <button class="sec sm" onclick="loadCaseTimeline()">Refresh</button>
+        </div>
+        <div class="card-body">
+          <div id="caseTimelineBody">
+            <div class="hint">Select a case to view its timeline.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row: Case Operations (Phase 10) -->
+      <div class="card" id="caseOpsCard" style="display:none;">
+        <div class="card-head">
+          <span>Case Operations</span>
+        </div>
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="sec sm" onclick="archiveCurrentCase()">Archive Case</button>
+          <button class="sec sm" onclick="exportCurrentCase()">Export Case</button>
+          <button class="sec sm" onclick="loadCaseTimeline()">View Timeline</button>
+        </div>
+      </div>
+
     </div><!-- /.case-detail -->
   </div><!-- /.case-layout -->
 </div><!-- /#tab-case -->

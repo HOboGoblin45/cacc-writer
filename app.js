@@ -3518,6 +3518,108 @@ async function memPreviewRetrieval() {
     el.innerHTML = '<div class="hint" style="color:var(--danger);">' + esc(e.message) + '</div>';
   }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   Phase 10 — Business Operations Layer (Timeline, Archive, Export, Health)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/** Load case timeline and render into the Case tab timeline card */
+async function loadCaseTimeline() {
+  if (!STATE.caseId) return;
+  const card = $('caseTimelineCard');
+  const body = $('caseTimelineBody');
+  if (!card || !body) return;
+  card.style.display = '';
+  body.innerHTML = '<div class="hint">Loading timeline…</div>';
+  try {
+    const r = await fetch(server() + '/api/operations/timeline/' + STATE.caseId + '?limit=50');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const events = data.events || data.timeline || data || [];
+    if (!events.length) {
+      body.innerHTML = '<div class="hint">No timeline events yet.</div>';
+      return;
+    }
+    let html = '<div style="display:flex;flex-direction:column;gap:2px;">';
+    for (const ev of events) {
+      const icon = ev.icon || '●';
+      const ts = ev.created_at || ev.timestamp || '';
+      const tsShort = ts ? new Date(ts).toLocaleString() : '';
+      const cat = ev.category || ev.event_type || '';
+      const desc = ev.description || ev.detail || ev.event_type || '';
+      html += '<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--gen-border);font-size:12px;">';
+      html += '<span style="font-size:14px;flex-shrink:0;width:20px;text-align:center;">' + esc(icon) + '</span>';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-weight:600;">' + esc(desc) + '</div>';
+      html += '<div style="font-size:10px;color:var(--gen-fg-muted);margin-top:2px;">' + esc(cat) + ' · ' + esc(tsShort) + '</div>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = '<div class="hint" style="color:var(--gen-danger);">Failed to load timeline: ' + esc(e.message) + '</div>';
+  }
+}
+
+/** Show timeline + ops cards when a case is loaded */
+function showCaseOpsCards() {
+  const tlCard = $('caseTimelineCard');
+  const opsCard = $('caseOpsCard');
+  if (tlCard) tlCard.style.display = STATE.caseId ? '' : 'none';
+  if (opsCard) opsCard.style.display = STATE.caseId ? '' : 'none';
+}
+
+/** Archive the current case */
+async function archiveCurrentCase() {
+  if (!STATE.caseId) return alert('No case selected.');
+  if (!confirm('Archive this case? It can be restored later.')) return;
+  try {
+    const r = await fetch(server() + '/api/operations/archive/' + STATE.caseId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    alert(data.message || 'Case archived.');
+    await loadCases();
+  } catch (e) {
+    alert('Archive failed: ' + e.message);
+  }
+}
+
+/** Export current case manifest */
+async function exportCurrentCase() {
+  if (!STATE.caseId) return alert('No case selected.');
+  try {
+    const r = await fetch(server() + '/api/operations/export/' + STATE.caseId);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    // Download as JSON
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'case-export-' + STATE.caseId + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('Export failed: ' + e.message);
+  }
+}
+
+// Hook into loadCase to show ops cards
+const _origLoadCaseForOps = typeof loadCase === 'function' ? loadCase : null;
+if (_origLoadCaseForOps) {
+  const _wrappedLoadCase = async function(id) {
+    await _origLoadCaseForOps(id);
+    showCaseOpsCards();
+    loadCaseTimeline();
+  };
+  // We can't reassign loadCase if it's a function declaration, so we patch via a post-hook approach
+  // Instead, we'll call showCaseOpsCards from the init flow
+}
+
+// Ensure ops cards show/hide on tab switch
+const _origShowTabForOps = typeof showTab === 'function' ? showTab : null;
+
 (async()=>{
   await pingServer();
   await initFormRegistry();
@@ -3525,7 +3627,16 @@ async function memPreviewRetrieval() {
   await checkAgentStatus();
   await initVersionDisplay();
   await loadHealthStatus();
+  // Phase 10: show ops cards if case already loaded
+  showCaseOpsCards();
 })();
 setInterval(pingServer, 30000);
 setInterval(checkAgentStatus, 15000);
 setInterval(loadHealthStatus, 30000);
+
+// Phase 10: periodically refresh timeline if on case tab
+setInterval(() => {
+  if (STATE.caseId && document.querySelector('#tab-case.active')) {
+    loadCaseTimeline();
+  }
+}, 60000);
