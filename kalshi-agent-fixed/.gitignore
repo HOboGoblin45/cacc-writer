@@ -1,0 +1,21 @@
+# Secrets and config with real values
+kalshi-agent/kalshi-config.json
+.env
+.env.*
+!.env.example
+
+# Key files
+*.key
+*.key.txt
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
