@@ -115,6 +115,52 @@ export function evaluateHardComplianceRules({
     }));
   }
 
+  if (flags.income_approach_likely) {
+    const expectedSectionIds = ['income_approach', 'market_rent_analysis', 'rental_analysis'];
+    const passed = hasAnyActiveSection(sectionRequirements, expectedSectionIds);
+    checks.push(buildCheck({
+      ruleId: 'rule.income_approach.section',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'income_section_present' : 'income_section_missing',
+      message: passed
+        ? 'Income approach section is present.'
+        : 'Income approach is likely required but no income section is active.',
+      evidence: { expectedSectionIds },
+    }));
+  } else {
+    checks.push(buildCheck({
+      ruleId: 'rule.income_approach.section',
+      severity: 'info',
+      passed: true,
+      reasonCode: 'income_not_required',
+      message: 'Income approach is not required for this assignment.',
+    }));
+  }
+
+  if (flags.cost_approach_likely) {
+    const expectedSectionIds = ['cost_approach'];
+    const passed = hasAnyActiveSection(sectionRequirements, expectedSectionIds);
+    checks.push(buildCheck({
+      ruleId: 'rule.cost_approach.section',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'cost_section_present' : 'cost_section_missing',
+      message: passed
+        ? 'Cost approach section is present.'
+        : 'Cost approach is likely required but no cost approach section is active.',
+      evidence: { expectedSectionIds },
+    }));
+  } else {
+    checks.push(buildCheck({
+      ruleId: 'rule.cost_approach.section',
+      severity: 'info',
+      passed: true,
+      reasonCode: 'cost_not_required',
+      message: 'Cost approach is not required for this assignment.',
+    }));
+  }
+
   if (flags.subject_to_repairs || flags.repair_commentary_required) {
     const passed = hasAnyActiveSection(sectionRequirements, ['subject_to_repairs_comment', 'fha_repair_comment']);
     checks.push(buildCheck({
@@ -168,6 +214,32 @@ export function evaluateHardComplianceRules({
         ? 'Hypothetical condition disclosure section is present.'
         : 'Hypothetical conditions were detected but HC disclosure commentary is missing.',
       evidence: { expectedSectionId: 'hc_comment' },
+    }));
+  }
+
+  if (flags.additional_certification_risk) {
+    const expectedSectionIds = [];
+    if (flags.extraordinary_assumption_present) expectedSectionIds.push('ea_comment');
+    if (flags.hypothetical_condition_present) expectedSectionIds.push('hc_comment');
+    if (
+      flags.subject_to_any ||
+      flags.retrospective_value ||
+      flags.prospective_value
+    ) {
+      expectedSectionIds.push('certification_addendum_comment');
+    }
+    if (expectedSectionIds.length === 0) expectedSectionIds.push('certification_addendum_comment');
+
+    const passed = hasAnyActiveSection(sectionRequirements, expectedSectionIds);
+    checks.push(buildCheck({
+      ruleId: 'rule.certification.disclosure',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'certification_comment_present' : 'certification_comment_missing',
+      message: passed
+        ? 'Certification risk disclosure section is present.'
+        : 'Certification-risk conditions were detected but no certification disclosure section is active.',
+      evidence: { expectedSectionIds },
     }));
   }
 

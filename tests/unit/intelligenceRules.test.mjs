@@ -148,6 +148,83 @@ await test('hard compliance rules block FHA assignment without fha_repair_commen
   assert.ok(blocker, 'expected FHA repair blocker when section is excluded');
 });
 
+await test('hard compliance rules block when income approach is likely but income sections are excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: 'commercial',
+      propertyType: 'commercial',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  for (const sectionId of ['income_approach', 'market_rent_analysis', 'rental_analysis']) {
+    const section = matrix.sections.find(s => s.sectionId === sectionId);
+    if (!section) continue;
+    section.status = 'excluded';
+    section.required = false;
+  }
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.income_approach.section');
+  assert.ok(blocker, 'expected income approach blocker when income sections are excluded');
+});
+
+await test('hard compliance rules block when cost approach is likely but cost section is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      costApplicable: true,
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const cost = matrix.sections.find(s => s.sectionId === 'cost_approach');
+  assert.ok(cost, 'expected cost_approach section in matrix');
+  cost.status = 'excluded';
+  cost.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.cost_approach.section');
+  assert.ok(blocker, 'expected cost approach blocker when cost section is excluded');
+});
+
+await test('hard compliance rules warn when certification-risk disclosures are excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      extraordinaryAssumptions: ['Assume no hidden structural defects.'],
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const ea = matrix.sections.find(s => s.sectionId === 'ea_comment');
+  assert.ok(ea, 'expected ea_comment section in matrix');
+  ea.status = 'excluded';
+  ea.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const warning = checks.warnings.find(b => b.ruleId === 'rule.certification.disclosure');
+  assert.ok(warning, 'expected certification disclosure warning when EA commentary is excluded');
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`intelligenceRules: ${passed} passed, ${failed} failed`);
 if (failures.length) {
