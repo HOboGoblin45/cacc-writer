@@ -225,6 +225,61 @@ await test('hard compliance rules warn when certification-risk disclosures are e
   assert.ok(warning, 'expected certification disclosure warning when EA commentary is excluded');
 });
 
+await test('hard compliance rules block USDA assignment when site eligibility section is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      loanProgram: 'usda',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const usda = matrix.sections.find(s => s.sectionId === 'usda_site_eligibility_comment');
+  assert.ok(usda, 'expected usda_site_eligibility_comment section in matrix');
+  usda.status = 'excluded';
+  usda.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.usda.site_eligibility');
+  assert.ok(blocker, 'expected USDA site eligibility blocker when section is excluded');
+});
+
+await test('hard compliance rules block government loan in high-risk flood zone when flood comment is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      loanProgram: 'fha',
+    },
+    facts: {
+      site: {
+        floodZone: 'AE',
+      },
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const flood = matrix.sections.find(s => s.sectionId === 'flood_comment');
+  assert.ok(flood, 'expected flood_comment section in matrix');
+  flood.status = 'excluded';
+  flood.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.flood.high_risk_government_loan');
+  assert.ok(blocker, 'expected high-risk flood blocker for government-backed loan when flood section is excluded');
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`intelligenceRules: ${passed} passed, ${failed} failed`);
 if (failures.length) {
