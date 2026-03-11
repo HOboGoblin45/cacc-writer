@@ -35,6 +35,9 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Smoke tests
+        run: npm run test:smoke
+
   build:
     runs-on: ubuntu-latest
     needs: test
