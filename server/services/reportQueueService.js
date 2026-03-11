@@ -1,20 +1,25 @@
 /**
  * server/services/reportQueueService.js
  * ----------------------------------------
- * In-memory report queue for processing multiple cases back-to-back.
+ * File-backed report queue for processing multiple cases back-to-back.
  *
  * Accepts an array of caseIds, processes them sequentially (one full
  * orchestrator run per case), and tracks per-case status. Failed sections
  * within a report are auto-retried before moving to the next case.
  *
  * Design decisions:
- *   - In-memory queue (no Redis/Bull dependency) — fits single-server deployment
+ *   - In-memory queue with file-backed persistence — survives server restarts
+ *   - No Redis/Bull dependency — fits single-server desktop deployment
  *   - One report at a time to avoid overwhelming the OpenAI API
  *   - Auto-retry: if a run returns partial_complete, retry failed sections once
  *   - Queue is bounded to 50 pending jobs to prevent abuse
- *   - Queue state survives across requests but not server restarts
+ *   - State is persisted to data/queue_state.json on every mutation
+ *   - On startup, previously-running jobs are marked 'failed' (crash recovery)
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import log from '../logger.js';
 import {
@@ -27,6 +32,62 @@ import { RUN_STATUS } from '../db/repositories/generationRepo.js';
 
 const MAX_QUEUE_SIZE   = 50;
 const MAX_SECTION_RETRY = 1;  // retry failed sections once per report
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const QUEUE_STATE_FILE = path.join(__dirname, '..', '..', 'data', 'queue_state.json');
+
+// ── Persistence helpers ──────────────────────────────────────────────────────
+
+function persistState() {
+  try {
+    const state = {
+      queue: _queue,
+      batches: Object.fromEntries(_batches),
+    };
+    const dir = path.dirname(QUEUE_STATE_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(QUEUE_STATE_FILE + '.tmp', JSON.stringify(state, null, 2));
+    fs.renameSync(QUEUE_STATE_FILE + '.tmp', QUEUE_STATE_FILE);
+  } catch (e) {
+    log.warn('queue:persist-failed', { error: e.message });
+  }
+}
+
+function loadState() {
+  try {
+    if (!fs.existsSync(QUEUE_STATE_FILE)) return;
+    const raw = fs.readFileSync(QUEUE_STATE_FILE, 'utf8');
+    const state = JSON.parse(raw);
+    if (!state?.queue || !Array.isArray(state.queue)) return;
+
+    // Restore queue
+    for (const job of state.queue) {
+      // Crash recovery: any job that was 'running' when server died → mark 'failed'
+      if (job.status === 'running') {
+        job.status = 'failed';
+        job.error = 'Server restarted while job was running';
+        job.completedAt = new Date().toISOString();
+      }
+      _queue.push(job);
+      _jobIndex.set(job.jobId, job);
+    }
+
+    // Restore batches
+    if (state.batches && typeof state.batches === 'object') {
+      for (const [batchId, jobIdsJson] of Object.entries(state.batches)) {
+        _batches.set(batchId, jobIdsJson);
+      }
+    }
+
+    const recovered = _queue.filter(j => j.status === 'queued').length;
+    const crashed = state.queue.filter(j => j.status === 'running').length;
+    if (_queue.length > 0) {
+      log.info('queue:restored', { total: _queue.length, queued: recovered, crashRecovered: crashed });
+    }
+  } catch (e) {
+    log.warn('queue:restore-failed', { error: e.message });
+  }
+}
 
 // ── Queue state ───────────────────────────────────────────────────────────────
 
@@ -57,6 +118,14 @@ const _jobIndex = new Map();
 const _batches = new Map();
 
 let _processing = false;
+
+// ── Load persisted state on startup ──────────────────────────────────────────
+loadState();
+
+// Resume processing any queued jobs from prior session
+if (_queue.some(j => j.status === 'queued') && !_processing) {
+  processQueue();
+}
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -114,6 +183,8 @@ export function enqueueReports({ cases }) {
     caseIds:    jobs.map(j => j.caseId),
     queueDepth: _queue.filter(j => j.status === 'queued').length,
   });
+
+  persistState();
 
   // Kick off processing if not already running
   if (!_processing) {
@@ -199,6 +270,7 @@ export function cancelQueued() {
       cancelled++;
     }
   }
+  persistState();
   log.info('queue:cancelled', { count: cancelled });
   return cancelled;
 }
@@ -219,6 +291,7 @@ export function clearCompleted() {
     if (idx >= 0) _queue.splice(idx, 1);
     _jobIndex.delete(job.jobId);
   }
+  persistState();
   return before - _queue.length;
 }
 
@@ -246,6 +319,7 @@ async function processJob(job) {
   job.status    = 'running';
   job.startedAt = new Date().toISOString();
 
+  persistState();
   log.info('queue:job-start', { jobId: job.jobId, caseId: job.caseId, formType: job.formType });
 
   try {
@@ -301,6 +375,7 @@ async function processJob(job) {
   job.durationMs   = Date.now() - t0;
   job.completedAt  = new Date().toISOString();
 
+  persistState();
   log.info('queue:job-done', {
     jobId:      job.jobId,
     caseId:     job.caseId,

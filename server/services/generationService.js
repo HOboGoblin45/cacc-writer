@@ -40,7 +40,7 @@ export function parseReviewResponse(raw) {
   try {
     return JSON.parse(cleaned);
   } catch (err) {
-    log.warn('[generationService] parseReviewResponse failed:', err.message);
+    log.warn('generation:parse-review-failed', { error: err.message });
     return {};
   }
 }
@@ -80,7 +80,7 @@ export async function loadCaseContext(caseId) {
         boundaryFeatures: bf,
       });
     } catch (e) {
-      log.warn('[generationService] location context unavailable:', e.message);
+      log.warn('generation:location-context-unavailable', { error: e.message });
     }
   }
 
@@ -170,7 +170,7 @@ export async function generateSection({
       const rv = parseReviewResponse(rr);
       if (rv?.revisedText) text = rv.revisedText;
     } catch (e) {
-      log.warn('[generationService] two-pass review parse failed for', fieldId, ':', e.message);
+      log.warn('generation:two-pass-review-failed', { fieldId, error: e.message });
     }
   }
 
