@@ -240,6 +240,30 @@ await test('PUT /api/cases/:caseId/fact-sources saves source links', async () =>
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────
 console.log('\n5. Feedback & KB');
 
+await test('GET /api/cases/:caseId/fact-conflicts returns conflict summary', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/fact-conflicts`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/fact-conflicts');
+  assert(typeof body.summary === 'object', 'summary should be an object');
+  assert(Array.isArray(body.conflicts), 'conflicts should be an array');
+});
+
+await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/pre-draft-check`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/pre-draft-check');
+  assert(typeof body.gate === 'object', 'gate should be an object');
+  assert(typeof body.gate.ok === 'boolean', 'gate.ok should be boolean');
+  assert(Array.isArray(body.gate.blockers), 'gate.blockers should be an array');
+});
+
+await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {});
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+  assert(body.code === 'PRE_DRAFT_GATE_BLOCKED', 'should return pre-draft gate code');
+});
+
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/feedback`, {
     fieldId: 'neighborhood_description',
