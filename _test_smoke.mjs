@@ -20,19 +20,24 @@
  */
 
 import { ensureServerRunning } from './tests/helpers/serverHarness.mjs';
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
 
 const smokeRunId = crypto.randomUUID().slice(0, 8);
+const smokeTmpRoot = path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}`);
+const smokeDbPath = path.join(smokeTmpRoot, 'cacc-smoke.db');
 process.env.CACC_QUEUE_STATE_FILE = process.env.CACC_QUEUE_STATE_FILE
-  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-queue_state.json`);
+  || path.join(smokeTmpRoot, 'queue_state.json');
 process.env.CACC_LOGS_DIR = process.env.CACC_LOGS_DIR
-  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-logs`);
+  || path.join(smokeTmpRoot, 'logs');
+process.env.CACC_DB_PATH = process.env.CACC_DB_PATH || smokeDbPath;
 process.env.CACC_DISABLE_FILE_LOGGER = process.env.CACC_DISABLE_FILE_LOGGER || '1';
 process.env.CACC_DISABLE_KB_WRITES = process.env.CACC_DISABLE_KB_WRITES || '1';
 
-const REQUESTED_BASE = process.env.TEST_BASE_URL || 'http://localhost:5178';
+const defaultSmokePort = 5600 + Math.floor(Math.random() * 2000);
+const REQUESTED_BASE = process.env.TEST_BASE_URL || `http://127.0.0.1:${defaultSmokePort}`;
 const AUTO_START = process.env.SMOKE_AUTO_START !== '0';
 const serverHarness = await ensureServerRunning({
   baseUrl: REQUESTED_BASE,
@@ -41,6 +46,39 @@ const serverHarness = await ensureServerRunning({
 });
 const BASE = serverHarness.baseUrl;
 const TIMEOUT_MS = 8000;
+
+function cleanupSmokeArtifacts() {
+  const targets = [
+    process.env.CACC_QUEUE_STATE_FILE,
+    process.env.CACC_DB_PATH,
+    process.env.CACC_DB_PATH ? `${process.env.CACC_DB_PATH}-wal` : null,
+    process.env.CACC_DB_PATH ? `${process.env.CACC_DB_PATH}-shm` : null,
+  ];
+
+  for (const target of targets) {
+    if (!target) continue;
+    try {
+      if (fs.existsSync(target)) fs.rmSync(target, { force: true });
+    } catch {
+      // best effort cleanup
+    }
+  }
+
+  const logsDir = process.env.CACC_LOGS_DIR;
+  if (logsDir) {
+    try {
+      if (fs.existsSync(logsDir)) fs.rmSync(logsDir, { recursive: true, force: true });
+    } catch {
+      // best effort cleanup
+    }
+  }
+
+  try {
+    if (fs.existsSync(smokeTmpRoot)) fs.rmSync(smokeTmpRoot, { recursive: true, force: true });
+  } catch {
+    // best effort cleanup
+  }
+}
 
 // ── Test runner ───────────────────────────────────────────────────────────────
 
@@ -697,6 +735,7 @@ if (failures.length) {
 console.log('══════════════════════════════════════════\n');
 
 await serverHarness.stop();
+cleanupSmokeArtifacts();
 process.exit(failed > 0 ? 1 : 0);
 
 
