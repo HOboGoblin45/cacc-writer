@@ -3,3 +3,4 @@ node_modules/
 cases/
 voice_pdfs/**/*.pdf
 voice_pdfs/**/*.PDF
+benchmarks/phase-c/latest-results.json
