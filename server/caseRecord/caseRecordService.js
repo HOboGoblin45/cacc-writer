@@ -48,6 +48,7 @@ function normalizeRawCase(raw) {
     caseId: raw.caseId,
     meta: safeMeta,
     facts: raw.facts || {},
+    provenance: raw.provenance || {},
     outputs: raw.outputs || {},
     history: raw.history || {},
     docText: safeDocText,
@@ -60,6 +61,10 @@ function readDocText(caseId) {
   return readJSON(path.join(casePath(caseId), 'doc_text.json'), {});
 }
 
+function readFactSources(caseId) {
+  return readJSON(path.join(casePath(caseId), 'fact_sources.json'), {});
+}
+
 function loadRawCaseFromDb(caseId) {
   const agg = getCaseAggregate(caseId);
   if (!agg) return null;
@@ -68,6 +73,7 @@ function loadRawCaseFromDb(caseId) {
     caseId: agg.caseId,
     meta: agg.meta,
     facts: agg.facts,
+    provenance: agg.provenance,
     outputs: agg.outputs,
     history: agg.history,
     docText: readDocText(caseId),
@@ -85,11 +91,12 @@ function loadRawCaseFromFilesystem(caseId) {
   meta.formType = normalizeFormType(meta.formType);
 
   const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+  const provenance = readJSON(path.join(caseDir, 'fact_sources.json'), {});
   const docText = readJSON(path.join(caseDir, 'doc_text.json'), {});
   const outputs = readJSON(path.join(caseDir, 'outputs.json'), {});
   const history = readJSON(path.join(caseDir, 'history.json'), {});
 
-  return normalizeRawCase({ caseId, meta, facts, outputs, history, docText });
+  return normalizeRawCase({ caseId, meta, facts, provenance, outputs, history, docText });
 }
 
 function writeCompatibilityFiles(raw) {
@@ -98,6 +105,7 @@ function writeCompatibilityFiles(raw) {
 
   writeJSON(path.join(caseDir, 'meta.json'), raw.meta || {});
   writeJSON(path.join(caseDir, 'facts.json'), raw.facts || {});
+  writeJSON(path.join(caseDir, 'fact_sources.json'), raw.provenance || {});
   writeJSON(path.join(caseDir, 'outputs.json'), raw.outputs || {});
   writeJSON(path.join(caseDir, 'history.json'), raw.history || {});
 
@@ -119,6 +127,7 @@ function persistRawCase(raw, { writeLegacyFiles = false } = {}) {
     caseId: normalized.caseId,
     meta: normalized.meta,
     facts: normalized.facts,
+    provenance: normalized.provenance,
     outputs: normalized.outputs,
     history: normalized.history,
   });
@@ -137,14 +146,23 @@ function toProjection(raw) {
       caseId: raw.caseId,
       meta: raw.meta,
       facts: raw.facts,
+      provenance: raw.provenance,
       outputs: raw.outputs,
       docSummary: raw.docSummary,
     }),
   };
 }
 
-export function saveCaseProjection({ caseId, meta, facts = {}, outputs = {}, history = {}, docText = {} }, options = {}) {
-  const normalized = persistRawCase({ caseId, meta, facts, outputs, history, docText }, options);
+export function saveCaseProjection({
+  caseId,
+  meta,
+  facts = {},
+  provenance = {},
+  outputs = {},
+  history = {},
+  docText = {},
+}, options = {}) {
+  const normalized = persistRawCase({ caseId, meta, facts, provenance, outputs, history, docText }, options);
   return toProjection(normalized);
 }
 
@@ -173,6 +191,7 @@ export function listCaseProjections() {
       caseId: agg.caseId,
       meta: agg.meta,
       facts: agg.facts,
+      provenance: agg.provenance,
       outputs: agg.outputs,
       history: agg.history,
       docText: readDocText(agg.caseId),
@@ -199,4 +218,34 @@ export function listCaseProjections() {
 
 export function deleteCanonicalCaseRecord(caseId) {
   deleteCaseAggregate(caseId);
+}
+
+export function updateCaseFactProvenance(caseId, incoming = {}, { replace = false } = {}) {
+  const projection = getCaseProjection(caseId);
+  if (!projection) return null;
+
+  const nextProvenance = replace
+    ? { ...(incoming || {}) }
+    : { ...(projection.provenance || {}), ...(incoming || {}) };
+
+  const nextMeta = {
+    ...(projection.meta || {}),
+    updatedAt: new Date().toISOString(),
+  };
+
+  return saveCaseProjection({
+    caseId,
+    meta: nextMeta,
+    facts: projection.facts || {},
+    provenance: nextProvenance,
+    outputs: projection.outputs || {},
+    history: projection.history || {},
+    docText: projection.docText || readDocText(caseId),
+  }, { writeLegacyFiles: true });
+}
+
+export function getCaseFactProvenance(caseId) {
+  const projection = getCaseProjection(caseId);
+  if (!projection) return null;
+  return projection.provenance || readFactSources(caseId) || {};
 }
