@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
 
-import { resolveCaseDir, getCaseFormConfig } from '../utils/caseUtils.js';
+import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import {
   trimText,
@@ -27,6 +27,7 @@ import {
 } from '../utils/textUtils.js';
 import { upload, ensureAI } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
+import { getFormConfig } from '../../forms/index.js';
 
 import { CORE_SECTIONS } from '../config/coreSections.js';
 import { ACTIVE_FORMS, isDeferredForm, logDeferredAccess } from '../config/productionScope.js';
@@ -39,7 +40,7 @@ import {
   getFallbackStrategy,
 } from '../destinationRegistry.js';
 import { buildReviewMessages } from '../promptBuilder.js';
-import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
+import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 const require = createRequire(import.meta.url);
@@ -100,13 +101,43 @@ function ensureCaseDir(req, res) {
   return cd;
 }
 
-function syncCanonicalCaseRecord(caseId) {
-  try {
-    syncCaseRecordFromFilesystem(caseId);
-  } catch (err) {
-    // Keep legacy route responses stable during canonical write-through migration.
-    log.warn('case-record:sync-failed', { caseId, error: err.message });
+function ensureCaseProjection(req, res) {
+  const projection = getCaseProjection(req.params.caseId);
+  if (!projection) {
+    res.status(404).json({ ok: false, error: 'Case not found' });
+    return null;
   }
+  return projection;
+}
+
+function getCaseRuntime(req, res) {
+  const projection = ensureCaseProjection(req, res);
+  if (!projection) return null;
+  const formType = normalizeFormType(projection.meta?.formType);
+  return {
+    projection,
+    formType,
+    formConfig: getFormConfig(formType),
+    meta: projection.meta || {},
+    facts: projection.facts || {},
+    outputs: projection.outputs || {},
+    history: projection.history || {},
+    docText: projection.docText || {},
+    provenance: projection.provenance || {},
+  };
+}
+
+function saveCaseRuntime(caseId, runtime, overrides = {}) {
+  const projection = runtime?.projection || {};
+  return saveCaseProjection({
+    caseId,
+    meta: overrides.meta ?? runtime.meta ?? projection.meta ?? {},
+    facts: overrides.facts ?? runtime.facts ?? projection.facts ?? {},
+    provenance: overrides.provenance ?? runtime.provenance ?? projection.provenance ?? {},
+    outputs: overrides.outputs ?? runtime.outputs ?? projection.outputs ?? {},
+    history: overrides.history ?? runtime.history ?? projection.history ?? {},
+    docText: overrides.docText ?? runtime.docText ?? projection.docText ?? {},
+  });
 }
 
 function parseReviewResult(raw) {
@@ -175,13 +206,13 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
       .replace(/[ \t]{3,}/g, '  ')
       .trim();
 
-    const docTextPath = path.join(cd, 'doc_text.json');
-    const docText = readJSON(docTextPath, {});
-    docText[docType] = extractedText;
-    writeJSON(docTextPath, docText);
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
+    const docText = { ...(runtime.docText || {}) };
+    docText[docType] = extractedText;
+
+    const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = new Date().toISOString();
     if (!meta.docs) meta.docs = {};
     meta.docs[docType] = {
@@ -189,8 +220,7 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
       pages: pageCount,
       bytes: req.file.size,
     };
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    saveCaseRuntime(req.params.caseId, runtime, { meta, docText });
 
     res.json({
       ok: true,
@@ -206,13 +236,13 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 
 router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
-    const docText = readJSON(path.join(cd, 'doc_text.json'), {});
-    const existingFacts = readJSON(path.join(cd, 'facts.json'), {});
+    const docText = runtime.docText || {};
+    const existingFacts = runtime.facts || {};
     const answers = req.body?.answers || {};
-    const { formType, formConfig } = getCaseFormConfig(cd);
+    const { formType, formConfig } = runtime;
 
     if (!Object.keys(docText).length && !Object.keys(answers).length) {
       return res.status(400).json({ ok: false, error: 'No documents or answers. Upload PDFs first.' });
@@ -237,8 +267,8 @@ router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
     const r = await client.responses.create({ model: MODEL, input: prompt });
     const facts = parseJSONObject(aiText(r)) || {};
     const merged = { ...existingFacts, ...facts, extractedAt: new Date().toISOString() };
-    writeJSON(path.join(cd, 'facts.json'), merged);
-    syncCanonicalCaseRecord(req.params.caseId);
+    const meta = { ...(runtime.meta || {}), updatedAt: new Date().toISOString() };
+    saveCaseRuntime(req.params.caseId, runtime, { meta, facts: merged });
 
     res.json({ ok: true, facts: merged });
   } catch (err) {
@@ -248,11 +278,11 @@ router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
 
 router.post('/:caseId/questionnaire', ensureAI, async (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
-    const facts = readJSON(path.join(cd, 'facts.json'), {});
-    const { formType, formConfig } = getCaseFormConfig(cd);
+    const facts = runtime.facts || {};
+    const { formType, formConfig } = runtime;
     const priorities = asArray(formConfig.questionnairePriorities)
       .map((p, i) => (i + 1) + '. ' + p)
       .join('\n');
@@ -276,11 +306,11 @@ router.post('/:caseId/grade', ensureAI, async (req, res) => {
   if (!body) return;
 
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
-    const { formType } = getCaseFormConfig(cd);
+    const outputs = runtime.outputs || {};
+    const { formType } = runtime;
 
     const fieldId = trimText(body.fieldId, 80);
     const text = trimText(body.text, 8000) || outputs[fieldId]?.text || '';
@@ -307,6 +337,8 @@ router.post('/:caseId/feedback', async (req, res) => {
   try {
     const cd = ensureCaseDir(req, res);
     if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const sid = trimText(body.fieldId, 80);
     const safeText = trimText(body.editedText || body.text, 8000);
@@ -333,11 +365,10 @@ router.post('/:caseId/feedback', async (req, res) => {
     let savedToKB = false;
     if (isApproved && safeText.length > 30) {
       try {
-        const { formType } = getCaseFormConfig(cd);
         await addApprovedNarrative({
           fieldId: sid,
           text: safeText,
-          formType,
+          formType: runtime.formType,
           source: 'user-approved',
         });
         savedToKB = true;
@@ -346,11 +377,9 @@ router.post('/:caseId/feedback', async (req, res) => {
       }
     }
 
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
+    const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = new Date().toISOString();
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    saveCaseRuntime(req.params.caseId, runtime, { meta });
 
     res.json({ ok: true, saved: true, count: feedbackItems.length, savedToKB });
   } catch (err) {
@@ -363,14 +392,14 @@ router.post('/:caseId/review-section', ensureAI, async (req, res) => {
   if (!body) return;
 
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const fieldId = trimText(body.fieldId, 80);
     const draftText = trimText(body.text, 8000);
 
-    const facts = readJSON(path.join(cd, 'facts.json'), {});
-    const { formType } = getCaseFormConfig(cd);
+    const facts = runtime.facts || {};
+    const { formType } = runtime;
 
     const reviewMessages = buildReviewMessages({ draftText, facts, fieldId, formType });
     const reviewRaw = await callAI(reviewMessages);
@@ -387,37 +416,29 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const newStatus = body.status;
-
-    const sectionStatusFile = path.join(cd, 'section_statuses.json');
-    const statuses = readJSON(sectionStatusFile, {});
-    statuses[fieldId] = {
-      ...(statuses[fieldId] || {}),
-      status: newStatus,
-      updatedAt: new Date().toISOString(),
-    };
-    if (body.notes) statuses[fieldId].notes = trimText(body.notes, 500);
-    writeJSON(sectionStatusFile, statuses);
-
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(metaPath, meta);
-
-    const outputsFile = path.join(cd, 'outputs.json');
-    const outputs = readJSON(outputsFile, {});
+    const now = new Date().toISOString();
+    const outputs = { ...(runtime.outputs || {}) };
     const hasText = Boolean(outputs[fieldId]?.text);
     const isApprovedStatus = ['approved', 'inserted', 'verified'].includes(newStatus);
-    if (outputs[fieldId]) {
-      outputs[fieldId].sectionStatus = newStatus;
-      outputs[fieldId].approved = isApprovedStatus && hasText;
-      writeJSON(outputsFile, outputs);
+    if (!outputs[fieldId]) {
+      outputs[fieldId] = {
+        title: fieldId,
+        text: '',
+      };
     }
-    syncCanonicalCaseRecord(req.params.caseId);
+    outputs[fieldId].sectionStatus = newStatus;
+    outputs[fieldId].status = newStatus;
+    outputs[fieldId].updatedAt = now;
+    outputs[fieldId].approved = isApprovedStatus && hasText;
+    if (body.notes) outputs[fieldId].statusNote = trimText(body.notes, 500);
+
+    const meta = { ...(runtime.meta || {}), updatedAt: now };
+    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
@@ -425,7 +446,7 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
       status: newStatus,
       sectionStatus: newStatus,
       approved: isApprovedStatus && hasText,
-      updatedAt: statuses[fieldId].updatedAt,
+      updatedAt: now,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -434,28 +455,25 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
 
 router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
+    const outputs = { ...(runtime.outputs || {}) };
     const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to copy for field: ' + fieldId });
 
-    const sectionStatusFile = path.join(cd, 'section_statuses.json');
-    const statuses = readJSON(sectionStatusFile, {});
-    statuses[fieldId] = {
-      ...(statuses[fieldId] || {}),
+    const now = new Date().toISOString();
+    outputs[fieldId] = {
+      ...(outputs[fieldId] || { title: fieldId }),
+      text,
       status: 'copied',
-      copiedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      sectionStatus: 'copied',
+      copiedAt: now,
+      updatedAt: now,
     };
-    writeJSON(sectionStatusFile, statuses);
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    const meta = { ...(runtime.meta || {}), updatedAt: now };
+    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
 
     res.json({ ok: true, fieldId, text, charCount: text.length, status: 'copied', message: 'Text ready for manual paste' });
   } catch (err) {
@@ -465,16 +483,14 @@ router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
 
 router.get('/:caseId/sections/status', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
-
-    const { formType } = getCaseFormConfig(cd);
-    const statuses = readJSON(path.join(cd, 'section_statuses.json'), {});
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
+    const { formType } = runtime;
+    const outputs = runtime.outputs || {};
 
     const coreSections = CORE_SECTIONS[formType] || [];
     const sectionsArr = coreSections.map((sec) => {
-      const st = statuses[sec.id]?.status || 'not_started';
+      const st = outputs[sec.id]?.sectionStatus || outputs[sec.id]?.status || 'not_started';
       return {
         id: sec.id,
         title: sec.title,
@@ -482,7 +498,7 @@ router.get('/:caseId/sections/status', (req, res) => {
         sectionStatus: st,
         approved: ['approved', 'inserted', 'verified'].includes(st),
         hasOutput: Boolean(outputs[sec.id]?.text),
-        updatedAt: statuses[sec.id]?.updatedAt || null,
+        updatedAt: outputs[sec.id]?.updatedAt || null,
       };
     });
 
@@ -502,17 +518,15 @@ router.get('/:caseId/sections/status', (req, res) => {
 
 router.get('/:caseId/destination-registry', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
-
-    const { formType } = getCaseFormConfig(cd);
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
+    const { formType } = runtime;
     const destinations = listAllDestinations(formType);
 
-    const statuses = readJSON(path.join(cd, 'section_statuses.json'), {});
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
+    const outputs = runtime.outputs || {};
 
     const fields = Object.fromEntries(destinations.map((d) => {
-      const st = statuses[d.fieldId]?.status || 'not_started';
+      const st = outputs[d.fieldId]?.sectionStatus || outputs[d.fieldId]?.status || 'not_started';
       return [d.fieldId, {
         ...d,
         sectionStatus: st,
@@ -542,33 +556,22 @@ router.get('/:caseId/destination-registry', (req, res) => {
 
 router.get('/:caseId/exceptions', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
+    const outputs = runtime.outputs || {};
 
-    const statuses = readJSON(path.join(cd, 'section_statuses.json'), {});
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
-
-    const coreSections = CORE_SECTIONS[getCaseFormConfig(cd).formType] || [];
+    const coreSections = CORE_SECTIONS[runtime.formType] || [];
     const titleMap = Object.fromEntries(coreSections.map(s => [s.id, s.title]));
 
     const exceptionMap = {};
-    Object.entries(statuses).forEach(([id, value]) => {
-      if (value?.status === 'error' || value?.status === 'copied') {
-        exceptionMap[id] = {
-          status: value.status,
-          notes: value.notes || null,
-          updatedAt: value.updatedAt,
-        };
-      }
-    });
-
     Object.entries(outputs).forEach(([id, value]) => {
       if (id === 'updatedAt' || typeof value !== 'object' || !value) return;
-      if (value.sectionStatus === 'error' || value.sectionStatus === 'copied') {
+      const sectionStatus = value.sectionStatus || value.status;
+      if (sectionStatus === 'error' || sectionStatus === 'copied') {
         if (!exceptionMap[id]) {
           exceptionMap[id] = {
-            status: value.sectionStatus,
-            notes: value.statusNote || null,
+            status: sectionStatus,
+            notes: value.statusNote || value.notes || null,
             updatedAt: value.updatedAt || null,
           };
         }
@@ -594,31 +597,28 @@ router.get('/:caseId/exceptions', (req, res) => {
 
 router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
+    const outputs = { ...(runtime.outputs || {}) };
     const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to insert for field: ' + fieldId });
 
-    const { formType } = getCaseFormConfig(cd);
+    const { formType } = runtime;
     const destination = getDestination(formType, fieldId);
-
-    const sectionStatusFile = path.join(cd, 'section_statuses.json');
-    const statuses = readJSON(sectionStatusFile, {});
-    statuses[fieldId] = {
-      ...(statuses[fieldId] || {}),
+    const now = new Date().toISOString();
+    outputs[fieldId] = {
+      ...(outputs[fieldId] || { title: fieldId }),
+      text,
       status: 'inserted',
-      insertedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      sectionStatus: 'inserted',
+      insertedAt: now,
+      updatedAt: now,
+      approved: false,
     };
-    writeJSON(sectionStatusFile, statuses);
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    const meta = { ...(runtime.meta || {}), updatedAt: now };
+    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
@@ -639,10 +639,9 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
 
 router.post('/:caseId/insert-all', (req, res) => {
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
-
-    const { formType } = getCaseFormConfig(cd);
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
+    const { formType } = runtime;
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType, 'POST /api/cases/:caseId/insert-all', log);
       return res.status(400).json({
@@ -654,9 +653,7 @@ router.post('/:caseId/insert-all', (req, res) => {
       });
     }
 
-    const outputs = readJSON(path.join(cd, 'outputs.json'), {});
-    const sectionStatusFile = path.join(cd, 'section_statuses.json');
-    const statuses = readJSON(sectionStatusFile, {});
+    const outputs = { ...(runtime.outputs || {}) };
     const coreSections = CORE_SECTIONS[formType] || [];
 
     const inserted = [];
@@ -674,38 +671,31 @@ router.post('/:caseId/insert-all', (req, res) => {
         continue;
       }
 
-      const currentStatus = statuses[sid]?.status || 'not_started';
+      const currentStatus = outputs[sid]?.sectionStatus || outputs[sid]?.status || 'not_started';
       if (['inserted', 'verified'].includes(currentStatus)) {
         skipped.push({ fieldId: sid, reason: 'already inserted' });
         continue;
       }
 
       try {
-        statuses[sid] = {
-          ...(statuses[sid] || {}),
+        outputs[sid] = {
+          ...(outputs[sid] || {}),
           status: 'inserted',
+          sectionStatus: 'inserted',
           insertedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          approved: false,
         };
-        if (outputs[sid]) {
-          outputs[sid].sectionStatus = 'inserted';
-          outputs[sid].approved = false;
-        }
         inserted.push({ fieldId: sid, title: section.title, charCount: text.length });
       } catch (e) {
         errors.push({ fieldId: sid, error: e.message });
       }
     }
 
-    writeJSON(sectionStatusFile, statuses);
-    writeJSON(path.join(cd, 'outputs.json'), outputs);
-
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
+    const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = new Date().toISOString();
     if (inserted.length === coreSections.length) meta.pipelineStage = 'inserting';
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
@@ -726,40 +716,32 @@ router.patch('/:caseId/outputs/:fieldId', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = ensureCaseDir(req, res);
-    if (!cd) return;
+    const runtime = getCaseRuntime(req, res);
+    if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const text = trimText(body.text, 16000);
 
-    const outputsFile = path.join(cd, 'outputs.json');
-    const outputs = readJSON(outputsFile, {});
-
-    const historyFile = path.join(cd, 'history.json');
-    const history = readJSON(historyFile, {});
+    const outputs = { ...(runtime.outputs || {}) };
+    const history = { ...(runtime.history || {}) };
+    const now = new Date().toISOString();
     if (outputs[fieldId]?.text) {
       if (!history[fieldId]) history[fieldId] = [];
       history[fieldId].unshift({
         text: outputs[fieldId].text,
         title: outputs[fieldId].title,
-        savedAt: new Date().toISOString(),
+        savedAt: now,
       });
       history[fieldId] = history[fieldId].slice(0, 3);
-      writeJSON(historyFile, history);
     }
 
     outputs[fieldId] = {
       ...(outputs[fieldId] || {}),
       text,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     };
-    writeJSON(outputsFile, outputs);
-
-    const metaPath = path.join(cd, 'meta.json');
-    const meta = readJSON(metaPath, {});
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(metaPath, meta);
-    syncCanonicalCaseRecord(req.params.caseId);
+    const meta = { ...(runtime.meta || {}), updatedAt: now };
+    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs, history });
 
     res.json({ ok: true, fieldId, charCount: text.length });
   } catch (err) {
