@@ -20,6 +20,17 @@
  */
 
 import { ensureServerRunning } from './tests/helpers/serverHarness.mjs';
+import os from 'os';
+import path from 'path';
+import crypto from 'crypto';
+
+const smokeRunId = crypto.randomUUID().slice(0, 8);
+process.env.CACC_QUEUE_STATE_FILE = process.env.CACC_QUEUE_STATE_FILE
+  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-queue_state.json`);
+process.env.CACC_LOGS_DIR = process.env.CACC_LOGS_DIR
+  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-logs`);
+process.env.CACC_DISABLE_FILE_LOGGER = process.env.CACC_DISABLE_FILE_LOGGER || '1';
+process.env.CACC_DISABLE_KB_WRITES = process.env.CACC_DISABLE_KB_WRITES || '1';
 
 const REQUESTED_BASE = process.env.TEST_BASE_URL || 'http://localhost:5178';
 const AUTO_START = process.env.SMOKE_AUTO_START !== '0';

@@ -181,6 +181,10 @@ export function saveApprovedNarrative(data) {
     sourceReportId:      data.sourceReportId      || meta.caseId              || '',
   };
 
+  if (process.env.CACC_DISABLE_KB_WRITES === '1') {
+    return buildEntry(merged);
+  }
+
   const entry = buildEntry(merged);
 
   // ── Save individual entry file (includes text) ────────────────────────────
