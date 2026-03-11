@@ -24,6 +24,7 @@
  */
 
 import { Router } from 'express';
+import log from '../logger.js';
 import {
   getInsertionRun, listInsertionRuns, getInsertionRunItems,
   updateInsertionRun, updateInsertionRunItem, bulkUpdateItemStatus,
@@ -62,7 +63,7 @@ router.post('/insertion/prepare', (req, res) => {
       totalFields: result.items.length,
     });
   } catch (err) {
-    console.error('[insertion] prepare error:', err);
+    log.error('insertion:prepare', { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -90,7 +91,7 @@ router.post('/insertion/execute/:runId', async (req, res) => {
 
     // Execute in background
     executeInsertionRun(runId).catch(err => {
-      console.error(`[insertion] run ${runId} failed:`, err);
+      log.error('insertion:run-failed', { runId, error: err.message });
       updateInsertionRun(runId, {
         status: 'failed',
         completedAt: new Date().toISOString(),
@@ -98,7 +99,7 @@ router.post('/insertion/execute/:runId', async (req, res) => {
       });
     });
   } catch (err) {
-    console.error('[insertion] execute error:', err);
+    log.error('insertion:execute', { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -140,7 +141,7 @@ router.post('/insertion/run', async (req, res) => {
     });
 
     executeInsertionRun(prepared.run.id).catch(err => {
-      console.error(`[insertion] run ${prepared.run.id} failed:`, err);
+      log.error('insertion:run-failed', { runId: prepared.run.id, error: err.message });
       updateInsertionRun(prepared.run.id, {
         status: 'failed',
         completedAt: new Date().toISOString(),
@@ -148,7 +149,7 @@ router.post('/insertion/run', async (req, res) => {
       });
     });
   } catch (err) {
-    console.error('[insertion] run error:', err);
+    log.error('insertion:run', { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });

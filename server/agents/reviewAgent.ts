@@ -18,6 +18,7 @@
  */
 
 import 'dotenv/config';
+import log from '../logger.js';
 import { wrapWithTrace } from '../observability/langsmith.js';
 import { logWorkflowRun } from '../observability/langfuse.js';
 import type { WorkflowState, ReviewOutput, ReviewIssue } from '../workflow/types.js';
@@ -77,8 +78,9 @@ async function _reviewSection(state: WorkflowState): Promise<ReviewOutput> {
   // ── Build review prompt using existing pipeline ───────────────────────────
   const { buildReviewMessages } = await import('../promptBuilder.js');
 
+  // Allow up to 30k chars for review (covers even the longest narrative sections)
   const reviewMessages = buildReviewMessages({
-    draftText: draftText!.slice(0, 12000),
+    draftText: draftText!.slice(0, 30000),
     facts:     facts || {},
     fieldId,
     formType,
@@ -127,7 +129,7 @@ function parseReviewResponse(raw: string, originalDraft: string): ReviewOutput {
 
   } catch (err: any) {
     // JSON parse failure is non-fatal — return original draft with a warning
-    console.warn('[reviewAgent] Failed to parse review response (non-fatal):', err.message);
+    log.warn('reviewAgent:parse-failed', { error: err.message });
     return {
       revisedText:  originalDraft,
       issues:       [{
