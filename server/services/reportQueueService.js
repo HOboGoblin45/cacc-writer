@@ -34,7 +34,9 @@ const MAX_QUEUE_SIZE   = 50;
 const MAX_SECTION_RETRY = 1;  // retry failed sections once per report
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const QUEUE_STATE_FILE = path.join(__dirname, '..', '..', 'data', 'queue_state.json');
+const QUEUE_STATE_FILE = process.env.CACC_QUEUE_STATE_FILE
+  ? path.resolve(process.env.CACC_QUEUE_STATE_FILE)
+  : path.join(__dirname, '..', '..', 'data', 'queue_state.json');
 
 // ── Persistence helpers ──────────────────────────────────────────────────────
 
