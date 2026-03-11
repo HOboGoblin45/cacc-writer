@@ -117,6 +117,57 @@ function addExtractedFact(caseId, { factPath, value, confidence = 'high', review
   );
 }
 
+function addExtractedSection(caseId, {
+  sectionType = 'neighborhood_description',
+  sectionLabel = 'Neighborhood Description',
+  text = 'Example extracted narrative section.',
+  confidence = 'medium',
+  reviewStatus = 'pending',
+  docType = 'prior_appraisal',
+}) {
+  const db = dbModule.getDb();
+  const docId = crypto.randomUUID();
+  const extractionId = crypto.randomUUID();
+  const sectionId = crypto.randomUUID();
+  const textHash = crypto.createHash('sha256').update(text).digest('hex');
+
+  db.prepare(`
+    INSERT INTO case_documents (
+      id, case_id, original_filename, stored_filename, doc_type
+    ) VALUES (?, ?, ?, ?, ?)
+  `).run(
+    docId,
+    caseId,
+    `${docType}.pdf`,
+    `${docType}-${Date.now()}.pdf`,
+    docType,
+  );
+
+  db.prepare(`
+    INSERT INTO document_extractions (
+      id, document_id, case_id, doc_type, status
+    ) VALUES (?, ?, ?, ?, 'completed')
+  `).run(extractionId, docId, caseId, docType);
+
+  db.prepare(`
+    INSERT INTO extracted_sections (
+      id, extraction_id, document_id, case_id, section_type, section_label,
+      text, text_hash, confidence, review_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    sectionId,
+    extractionId,
+    docId,
+    caseId,
+    sectionType,
+    sectionLabel,
+    text,
+    textHash,
+    confidence,
+    reviewStatus,
+  );
+}
+
 async function cleanup() {
   try {
     dbModule.closeDb();
@@ -241,6 +292,35 @@ await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance
   assert.equal(gate.ok, true, 'alias should satisfy required section facts');
   assert.ok(gate.summary.provenanceCoveragePct < 100, 'expected provenance gap warning');
   assert.ok(gate.warnings.some(w => w.type === 'provenance_gaps'));
+});
+
+await test('evaluatePreDraftGate reports pending extracted sections as warnings only', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '120 Section Ave', confidence: 'high' },
+        siteSize: { value: '10200', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedSection(caseId, {
+    sectionType: 'market_conditions',
+    text: 'Pending extracted market conditions narrative.',
+    reviewStatus: 'pending',
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'pending sections should not block pre-draft gate by themselves');
+  assert.equal(gate.summary.pendingFactReviews, 0);
+  assert.equal(gate.summary.pendingSectionReviews, 1);
+  assert.ok(gate.warnings.some(w => w.type === 'pending_section_reviews'));
 });
 
 await cleanup();
