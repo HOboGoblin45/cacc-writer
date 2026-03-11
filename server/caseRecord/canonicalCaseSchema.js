@@ -7,7 +7,7 @@
  * that downstream layers should use while filesystem -> DB migration proceeds.
  */
 
-export const CANONICAL_CASE_SCHEMA_VERSION = 1;
+export const CANONICAL_CASE_SCHEMA_VERSION = 2;
 
 function normalizeOutputs(outputs = {}) {
   const sectionIds = Object.keys(outputs).filter(k => k !== 'updatedAt');
@@ -22,6 +22,7 @@ export function buildCanonicalCaseRecord({
   caseId,
   meta,
   facts,
+  provenance,
   outputs,
   docSummary,
 }) {
@@ -42,6 +43,7 @@ export function buildCanonicalCaseRecord({
     evidence: {
       documentSummary: docSummary || {},
       facts: facts || {},
+      factProvenance: provenance || {},
     },
     drafting: {
       outputs: outputs || {},

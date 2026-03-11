@@ -205,6 +205,38 @@ await test('PUT /api/cases/:caseId/facts saves facts', async () => {
   assert(body.facts?.subject?.address?.value === '123 Test St', 'fact should be saved');
 });
 
+await test('GET /api/cases/:caseId/record returns canonical case record', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/record`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/record');
+  assert(body.record?.caseId === testCaseId, 'record.caseId should match');
+  assert(typeof body.record?.evidence?.facts === 'object', 'record.evidence.facts should be object');
+  assert(typeof body.record?.evidence?.factProvenance === 'object', 'record.evidence.factProvenance should be object');
+});
+
+await test('GET /api/cases/:caseId/fact-sources returns source map', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/fact-sources`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/fact-sources');
+  assert(typeof body.sources === 'object', 'sources should be an object');
+});
+
+await test('PUT /api/cases/:caseId/fact-sources saves source links', async () => {
+  const { status, body } = await api('PUT', `/api/cases/${testCaseId}/fact-sources`, {
+    sources: {
+      'subject.address': {
+        sourceType: 'document',
+        sourceId: 'order_sheet.pdf',
+        page: '1',
+        confidence: 'high',
+      },
+    },
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'PUT /api/cases/:caseId/fact-sources');
+  assert(body.sources?.['subject.address']?.sourceId === 'order_sheet.pdf', 'source link should be saved');
+});
+
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────
 console.log('\n5. Feedback & KB');
 

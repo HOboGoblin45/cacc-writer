@@ -637,6 +637,9 @@ button.sm{padding:5px 9px;font-size:11px;}
             <label>Assignment Notes</label>
             <textarea id="assignmentNotes" placeholder="Special instructions, lender requirements, scope notes, extraordinary assumptions, hypothetical conditions..." style="min-height:130px;"></textarea>
             <div class="field-hint">Injected into AI prompt context for all generated sections.</div>
+            <label style="margin-top:10px;">Unresolved Issues (one per line)</label>
+            <textarea id="unresolvedIssues" placeholder="Missing lease roll&#10;Pending zoning letter&#10;Comp 2 verification needed" style="min-height:90px;"></textarea>
+            <div class="field-hint">Tracked in the canonical case record and shown in Phase B health metrics.</div>
             <div id="metaChips" class="meta-chips" style="display:none;"></div>
           </div>
         </div>
@@ -717,6 +720,17 @@ button.sm{padding:5px 9px;font-size:11px;}
       <div class="card-body">
         <div id="factsCompleteness" style="display:none;"></div>
         <div id="factsDisplay"><div class="hint">No facts extracted yet. Upload documents, then click Extract Facts.</div></div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+          <div class="card-head" style="padding:0;border:none;margin-bottom:8px;">
+            <h3 style="margin:0;">Fact Source Links (Phase B)</h3>
+            <div style="display:flex;gap:8px;">
+              <button class="sm" onclick="saveFactSources()">Save Sources</button>
+              <button class="sec sm" onclick="reloadFactSources()">Reload</button>
+            </div>
+          </div>
+          <textarea id="factSourceJson" spellcheck="false" style="min-height:160px;font-family:Consolas,Menlo,monospace;font-size:12px;" placeholder="{&#10;  &quot;subject.address&quot;: {&#10;    &quot;sourceType&quot;: &quot;document&quot;,&#10;    &quot;sourceId&quot;: &quot;order_sheet.pdf&quot;,&#10;    &quot;page&quot;: &quot;1&quot;,&#10;    &quot;confidence&quot;: &quot;high&quot;&#10;  }&#10;}"></textarea>
+          <div id="factSourceStatus" class="status"></div>
+        </div>
       </div>
     </div>
   </div>
