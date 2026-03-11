@@ -53,6 +53,7 @@ import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImpo
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -98,13 +99,17 @@ function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) 
   }
 
   if (gate.ok) return true;
+  const queue = buildFactDecisionQueue(caseId);
+  const factReviewQueuePath = `/api/cases/${caseId}/fact-review-queue`;
 
   res.status(409).json({
     ok: false,
     code: 'PRE_DRAFT_GATE_BLOCKED',
     error: 'Pre-draft integrity gate blocked generation',
     gate,
-    hint: 'Resolve blocker items from GET /api/cases/:caseId/pre-draft-check, or pass forceGateBypass=true.',
+    factReviewQueuePath,
+    factReviewQueueSummary: queue?.summary || null,
+    hint: `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check), or pass forceGateBypass=true.`,
   });
   return false;
 }

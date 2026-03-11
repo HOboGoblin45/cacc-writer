@@ -418,6 +418,8 @@ await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async 
   assert(typeof body.gate === 'object', 'gate should be an object');
   assert(typeof body.gate.ok === 'boolean', 'gate.ok should be boolean');
   assert(Array.isArray(body.gate.blockers), 'gate.blockers should be an array');
+  assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be a string');
+  assert(typeof body.decisionQueueSummary === 'object', 'decisionQueueSummary should be an object');
 });
 
 await test('GET /api/cases/:caseId/intelligence/requirements returns deterministic section matrix', async () => {
@@ -464,6 +466,8 @@ await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate
   assert(status === 409, `Expected 409, got ${status}`);
   assert(body.ok === false, 'ok should be false');
   assert(body.code === 'PRE_DRAFT_GATE_BLOCKED', 'should return pre-draft gate code');
+  assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be returned when gate blocks');
+  assert(typeof body.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned when gate blocks');
 });
 
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {

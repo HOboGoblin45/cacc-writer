@@ -39,6 +39,7 @@ import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
 import { getCaseProjection, saveCaseProjection, listCaseProjections } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 import {
   getNeighborhoodBoundaryFeatures,
   formatLocationContextBlock,
@@ -66,6 +67,19 @@ function shouldBypassPreDraftGate(req) {
 
 function evaluateGateForCase(caseId, formType, sectionIds) {
   return evaluatePreDraftGate({ caseId, formType, sectionIds });
+}
+
+function buildGateBlockedResponse(caseId, gate, scopeMessage) {
+  const queue = buildFactDecisionQueue(caseId);
+  const factReviewQueuePath = `/api/cases/${caseId}/fact-review-queue`;
+  return {
+    ok: false,
+    code: 'PRE_DRAFT_GATE_BLOCKED',
+    error: scopeMessage,
+    gate,
+    factReviewQueuePath,
+    factReviewQueueSummary: queue?.summary || null,
+  };
 }
 
 function loadCaseRuntime(caseId) {
@@ -149,12 +163,11 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
       const gate = evaluateGateForCase(caseId, formType, toSectionIds(targetFields));
       if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
       if (!gate.ok) {
-        return res.status(409).json({
-          ok: false,
-          code: 'PRE_DRAFT_GATE_BLOCKED',
-          error: 'Pre-draft integrity gate blocked workflow run',
+        return res.status(409).json(buildGateBlockedResponse(
+          caseId,
           gate,
-        });
+          'Pre-draft integrity gate blocked workflow run',
+        ));
       }
     }
 
@@ -257,9 +270,11 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
           if (!gate.ok) {
             batchErrors.push({
               caseId,
-              error: 'Pre-draft integrity gate blocked workflow run',
-              code: 'PRE_DRAFT_GATE_BLOCKED',
-              gate,
+              ...buildGateBlockedResponse(
+                caseId,
+                gate,
+                'Pre-draft integrity gate blocked workflow run',
+              ),
             });
             continue;
           }
