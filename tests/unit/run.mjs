@@ -14,6 +14,7 @@ const suites = [
   'textUtils.test.mjs',
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',
+  'workflowStateMachine.test.mjs',
   'caseRecordService.test.mjs',
   'factIntegrity.test.mjs',
   'documentIntake.test.mjs',

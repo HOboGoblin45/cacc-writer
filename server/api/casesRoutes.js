@@ -56,12 +56,12 @@ import {
   runCanonicalBackfill,
   getCanonicalBackfillStatus,
 } from '../caseRecord/caseRecordService.js';
+import { PIPELINE_STAGES, evaluatePipelineTransition } from '../caseRecord/workflowStateMachine.js';
 import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
-const PIPELINE_STAGES = ['intake', 'extracting', 'generating', 'review', 'approved', 'inserting', 'complete'];
 const CASE_STATUSES = ['active', 'submitted', 'archived'];
 
 const createCaseSchema = z.object({
@@ -544,6 +544,22 @@ router.patch('/:caseId/pipeline', (req, res) => {
 
     const mf   = path.join(cd, 'meta.json');
     const meta = readJSON(mf);
+    const transition = evaluatePipelineTransition({
+      currentStage: meta.pipelineStage || 'intake',
+      nextStage: stage,
+      caseStatus: meta.status || 'active',
+    });
+    if (!transition.ok) {
+      return res.status(409).json({
+        ok: false,
+        code: transition.code,
+        error: transition.message,
+        fromStage: transition.fromStage,
+        toStage: transition.toStage,
+        allowedNextStages: transition.allowedNextStages,
+      });
+    }
+
     meta.pipelineStage = stage;
     meta.updatedAt     = new Date().toISOString();
     if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
@@ -841,3 +857,4 @@ router.post('/:caseId/missing-facts', (req, res) => {
 });
 
 export default router;
+
