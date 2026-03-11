@@ -22,9 +22,9 @@
     "test:all": "node tests/unit/run.mjs && node _test_smoke.mjs"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.0",
-    "@langchain/langgraph": "^0.2.0",
-    "@langchain/openai": "^0.3.0",
+    "@langchain/core": "^1.1.31",
+    "@langchain/langgraph": "^1.2.2",
+    "@langchain/openai": "^1.2.12",
     "@napi-rs/canvas": "^0.1.96",
     "@pinecone-database/pinecone": "^3.0.0",
     "better-sqlite3": "^12.6.2",
@@ -32,7 +32,7 @@
     "dotenv": "^17.3.1",
     "express": "^4.19.2",
     "langfuse": "^3.0.0",
-    "langsmith": "^0.1.0",
+    "langsmith": "^0.5.9",
     "multer": "^2.1.1",
     "openai": "^4.52.0",
     "pdf-parse": "^2.4.5",
