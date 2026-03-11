@@ -13,6 +13,7 @@
  */
 
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
+import { getDb } from '../db/database.js';
 import { getSectionDefs } from '../context/reportPlanner.js';
 import { getSectionDependencies } from '../sectionDependencies.js';
 import { detectFactConflicts } from './factConflictEngine.js';
@@ -210,6 +211,46 @@ function collectProvenanceWarnings(facts, provenance = {}, requiredPaths = []) {
   };
 }
 
+function collectPendingReviewQueue(caseId) {
+  const db = getDb();
+
+  const pendingFactRows = db.prepare(`
+    SELECT id, fact_path, fact_value, confidence, document_id
+      FROM extracted_facts
+     WHERE case_id = ? AND review_status = 'pending'
+     ORDER BY created_at ASC
+     LIMIT 25
+  `).all(caseId);
+
+  const pendingSectionRows = db.prepare(`
+    SELECT id, section_type, section_label, confidence, document_id
+      FROM extracted_sections
+     WHERE case_id = ? AND review_status = 'pending'
+     ORDER BY created_at ASC
+     LIMIT 25
+  `).all(caseId);
+
+  const pendingFactsCount = db.prepare(`
+    SELECT COUNT(*) AS count
+      FROM extracted_facts
+     WHERE case_id = ? AND review_status = 'pending'
+  `).get(caseId)?.count || 0;
+
+  const pendingSectionsCount = db.prepare(`
+    SELECT COUNT(*) AS count
+      FROM extracted_sections
+     WHERE case_id = ? AND review_status = 'pending'
+  `).get(caseId)?.count || 0;
+
+  return {
+    pendingFactsCount,
+    pendingSectionsCount,
+    pendingFacts: pendingFactRows,
+    pendingSections: pendingSectionRows,
+    truncated: pendingFactsCount > pendingFactRows.length || pendingSectionsCount > pendingSectionRows.length,
+  };
+}
+
 /**
  * Evaluate pre-draft data integrity gate for a case.
  *
@@ -251,6 +292,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
     projection.provenance || {},
     missing.requiredPaths,
   );
+  const pendingReview = collectPendingReviewQueue(caseId);
 
   const unresolvedIssues = Array.isArray(projection.meta?.unresolvedIssues)
     ? projection.meta.unresolvedIssues.filter(Boolean)
@@ -279,6 +321,15 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       message: 'Deterministic compliance hard-rule blockers were detected.',
       count: intelligence.complianceChecks.blockers.length,
       findings: intelligence.complianceChecks.blockers,
+    });
+  }
+  if (pendingReview.pendingFactsCount > 0) {
+    blockers.push({
+      type: 'pending_fact_reviews',
+      message: 'One or more extracted facts are still pending review.',
+      count: pendingReview.pendingFactsCount,
+      pendingFacts: pendingReview.pendingFacts,
+      truncated: pendingReview.truncated,
     });
   }
 
@@ -315,6 +366,15 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       findings: intelligence.complianceChecks.warnings,
     });
   }
+  if (pendingReview.pendingSectionsCount > 0) {
+    warnings.push({
+      type: 'pending_section_reviews',
+      message: 'Extracted narrative sections are pending review.',
+      count: pendingReview.pendingSectionsCount,
+      pendingSections: pendingReview.pendingSections,
+      truncated: pendingReview.truncated,
+    });
+  }
 
   return {
     caseId,
@@ -327,6 +387,8 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       missingRequiredFacts: missing.missingCount,
       blockerConflicts: blockerConflicts.length,
       complianceBlockers: intelligence.complianceChecks?.summary?.blockerCount || 0,
+      pendingFactReviews: pendingReview.pendingFactsCount,
+      pendingSectionReviews: pendingReview.pendingSectionsCount,
       totalConflicts: conflictReport.summary.totalConflicts || 0,
       unresolvedIssues: unresolvedIssues.length,
       provenanceCoveragePct: provenance.coveragePct,
@@ -343,6 +405,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
         missingPaths: provenance.gaps,
         coveragePct: provenance.coveragePct,
       },
+      pendingReview,
       intelligence: {
         reportFamilyId: intelligence.compliance?.report_family || null,
         activeFlags: Object.keys(intelligence.flags || {}).filter(flag => intelligence.flags[flag] === true),

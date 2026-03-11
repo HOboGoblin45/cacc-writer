@@ -12,7 +12,9 @@
 import fs from 'fs';
 import path from 'path';
 
-import { resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
+import { getFormConfig } from '../../forms/index.js';
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
+import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
 import { callAI, estimateTokens, getContextWindowLimit } from '../openaiClient.js';
@@ -58,18 +60,26 @@ export function parseReviewResponse(raw) {
  */
 export async function loadCaseContext(caseId) {
   const caseDir = resolveCaseDir(caseId);
-  if (!caseDir || !fs.existsSync(caseDir)) {
+  if (!caseDir) {
     return null;
   }
 
-  const facts = readJSON(path.join(caseDir, 'facts.json'), {});
-  const rawMeta = readJSON(path.join(caseDir, 'meta.json'), {});
-  const { formType, formConfig } = getCaseFormConfig(caseDir);
+  const projection = getCaseProjection(caseId);
+  if (!projection) {
+    return null;
+  }
+
+  const facts = projection.facts || {};
+  const rawMeta = projection.meta || {};
+  const formType = normalizeFormType(rawMeta.formType);
+  const formConfig = getFormConfig(formType);
   const assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(rawMeta));
 
   // Load location context from geocode data
   let locationContext = null;
-  const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+  const geo = fs.existsSync(caseDir)
+    ? readJSON(path.join(caseDir, 'geocode.json'), null)
+    : null;
   if (geo?.subject?.result?.lat) {
     try {
       const { lat, lng } = geo.subject.result;

@@ -27,6 +27,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { CASES_DIR, CASE_ID_RE, normalizeFormType } from '../utils/caseUtils.js';
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import { readJSON } from '../utils/fileUtils.js';
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url));
@@ -211,8 +212,8 @@ export function collectExamples(fieldId, limit, formType) {
 
       for (const id of dirs) {
         const fb   = readJSON(path.join(CASES_DIR, id, 'feedback.json'), []);
-        const meta = readJSON(path.join(CASES_DIR, id, 'meta.json'), {});
-        const cft  = normalizeFormType(meta.formType);
+        const projection = getCaseProjection(id);
+        const cft = normalizeFormType(projection?.meta?.formType);
         all.push(
           ...fb.filter(f =>
             (!fieldId  || f.fieldId === fieldId) &&

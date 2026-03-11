@@ -18,17 +18,16 @@
  */
 
 import { Router } from 'express';
-import fs from 'fs';
 import path from 'path';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
-import { resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
-import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
+import { readJSON } from '../utils/fileUtils.js';
 import { trimText, asArray, aiText } from '../utils/textUtils.js';
 import { ensureAI } from '../utils/middleware.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
-import { DEFAULT_FORM_TYPE } from '../../forms/index.js';
+import { DEFAULT_FORM_TYPE, getFormConfig } from '../../forms/index.js';
 import { ACTIVE_FORMS, isDeferredForm, logDeferredAccess } from '../config/productionScope.js';
 import { CORE_SECTIONS } from '../config/coreSections.js';
 import { callAI, client, MODEL } from '../openaiClient.js';
@@ -52,7 +51,7 @@ import { buildReportPlan, getSectionDef } from '../context/reportPlanner.js';
 import { buildRetrievalPack } from '../context/retrievalPackBuilder.js';
 import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImport.js';
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
-import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
+import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import log from '../logger.js';
 
@@ -72,15 +71,6 @@ function _setRunResult(runId, result) {
     _runResults.delete(oldestKey);
   }
   _runResults.set(runId, result);
-}
-
-function safeSyncCaseRecord(caseId) {
-  try {
-    syncCaseRecordFromFilesystem(caseId);
-  } catch (err) {
-    // Keep generation endpoints stable if canonical sync has an issue.
-    log.warn('case-record:sync-failed', { caseId, error: err.message });
-  }
 }
 
 function toSectionIds(fields) {
@@ -119,6 +109,73 @@ function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) 
   return false;
 }
 
+function loadCaseRuntime(caseId) {
+  const projection = getCaseProjection(caseId);
+  if (!projection) return null;
+
+  const formType = normalizeFormType(projection.meta?.formType);
+  const caseDir = resolveCaseDir(caseId);
+
+  return {
+    projection,
+    caseId,
+    caseDir,
+    formType,
+    formConfig: getFormConfig(formType),
+    facts: projection.facts || {},
+    assignmentMeta: buildAssignmentMetaBlock(applyMetaDefaults(projection.meta || {})),
+  };
+}
+
+function persistGeneratedOutputs({
+  caseId,
+  projection,
+  results = {},
+  statuses = null,
+  trackHistory = false,
+}) {
+  if (!projection || !Object.keys(results || {}).length) return projection;
+
+  const now = new Date().toISOString();
+  const nextOutputs = { ...(projection.outputs || {}) };
+  const nextHistory = { ...(projection.history || {}) };
+
+  for (const [sectionId, value] of Object.entries(results || {})) {
+    const previous = nextOutputs[sectionId];
+    if (trackHistory && previous?.text) {
+      const prior = Array.isArray(nextHistory[sectionId]) ? [...nextHistory[sectionId]] : [];
+      prior.unshift({
+        text: previous.text,
+        title: previous.title || sectionId,
+        savedAt: now,
+      });
+      nextHistory[sectionId] = prior.slice(0, 3);
+    }
+
+    const sectionStatus = statuses?.[sectionId];
+    nextOutputs[sectionId] = sectionStatus
+      ? { ...(value || {}), sectionStatus }
+      : { ...(value || {}) };
+  }
+  nextOutputs.updatedAt = now;
+
+  const nextMeta = {
+    ...(projection.meta || {}),
+    updatedAt: now,
+    pipelineStage: 'generating',
+  };
+
+  return saveCaseProjection({
+    caseId,
+    meta: nextMeta,
+    facts: projection.facts || {},
+    provenance: projection.provenance || {},
+    outputs: nextOutputs,
+    history: nextHistory,
+    docText: projection.docText || {},
+  });
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
 
@@ -152,36 +209,32 @@ router.post('/generate', ensureAI, async (req, res) => {
     if (fieldId) {
       let caseFacts = bodyFacts || {};
       let locationContext = null;
+      let assignmentMeta = null;
+      let runtime = null;
       if (caseId && !bodyFacts) {
-        const cd = resolveCaseDir(caseId);
-        if (cd && fs.existsSync(cd)) {
-          caseFacts = readJSON(path.join(cd, 'facts.json'), {});
-          if (LOCATION_CONTEXT_FIELDS.has(fieldId)) {
-            const geo = readJSON(path.join(cd, 'geocode.json'), null);
-            if (geo?.subject?.result?.lat) {
-              try {
-                const { lat, lng } = geo.subject.result;
-                const bf = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
-                locationContext = formatLocationContextBlock({
-                  subject: geo.subject,
-                  comps: geo.comps || [],
-                  boundaryFeatures: bf,
-                });
-              } catch (e) {
-                log.warn('[generate] location context unavailable:', e.message);
-              }
+        runtime = loadCaseRuntime(caseId);
+        if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
+        caseFacts = runtime.facts;
+        assignmentMeta = runtime.assignmentMeta;
+        if (LOCATION_CONTEXT_FIELDS.has(fieldId) && runtime.caseDir) {
+          const geo = readJSON(path.join(runtime.caseDir, 'geocode.json'), null);
+          if (geo?.subject?.result?.lat) {
+            try {
+              const { lat, lng } = geo.subject.result;
+              const bf = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+              locationContext = formatLocationContextBlock({
+                subject: geo.subject,
+                comps: geo.comps || [],
+                boundaryFeatures: bf,
+              });
+            } catch (e) {
+              log.warn('[generate] location context unavailable:', e.message);
             }
           }
         }
       }
       const ft = normalizeFormType(formType);
-      let assignmentMeta = null;
-      if (caseId) {
-        const cd = resolveCaseDir(caseId);
-        if (cd && fs.existsSync(cd)) {
-          assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd, 'meta.json'), {})));
-        }
-      }
+      if (!assignmentMeta && runtime?.assignmentMeta) assignmentMeta = runtime.assignmentMeta;
       if (caseId && !enforcePreDraftGate(req, res, {
         caseId,
         formType: ft,
@@ -228,19 +281,17 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
     const requestedSectionIds = toSectionIds(fields);
 
     let caseFacts = {};
-    let caseDir = null;
+    let caseRuntime = null;
     let caseFormType = DEFAULT_FORM_TYPE;
     let batchLocationContext = null;
     let batchAssignmentMeta = null;
 
     if (caseId) {
-      caseDir = resolveCaseDir(caseId);
-      if (!caseDir) return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
-      if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
-      caseFacts = readJSON(path.join(caseDir, 'facts.json'), {});
-      const { formType: bFt, meta: bMeta } = getCaseFormConfig(caseDir);
-      caseFormType = bFt;
-      batchAssignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(bMeta || {}));
+      caseRuntime = loadCaseRuntime(caseId);
+      if (!caseRuntime) return res.status(404).json({ ok: false, error: 'Case not found' });
+      caseFacts = caseRuntime.facts;
+      caseFormType = caseRuntime.formType;
+      batchAssignmentMeta = caseRuntime.assignmentMeta;
       if (isDeferredForm(caseFormType)) {
         logDeferredAccess(caseFormType, 'POST /api/generate-batch', log);
         return res.status(400).json({
@@ -257,7 +308,7 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
         sectionIds: requestedSectionIds.length ? requestedSectionIds : null,
       })) return;
       if (fields.some(f => LOCATION_CONTEXT_FIELDS.has(f?.id))) {
-        const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+        const geo = caseRuntime.caseDir ? readJSON(path.join(caseRuntime.caseDir, 'geocode.json'), null) : null;
         if (geo?.subject?.result?.lat) {
           try {
             const { lat, lng } = geo.subject.result;
@@ -316,28 +367,13 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
     }
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, fields.length) }, processField));
 
-    if (caseDir) {
-      const outFile = path.join(caseDir, 'outputs.json');
-      const existing = readJSON(outFile, {});
-      const histFile = path.join(caseDir, 'history.json');
-      const history = readJSON(histFile, {});
-      for (const fid of Object.keys(results)) {
-        if (existing[fid]?.text) {
-          if (!history[fid]) history[fid] = [];
-          history[fid].unshift({
-            text: existing[fid].text,
-            title: existing[fid].title,
-            savedAt: new Date().toISOString(),
-          });
-          history[fid] = history[fid].slice(0, 3);
-        }
-      }
-      writeJSON(histFile, history);
-      writeJSON(outFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
-      const meta = readJSON(path.join(caseDir, 'meta.json'));
-      meta.updatedAt = new Date().toISOString();
-      writeJSON(path.join(caseDir, 'meta.json'), meta);
-      safeSyncCaseRecord(caseId);
+    if (caseRuntime) {
+      persistGeneratedOutputs({
+        caseId,
+        projection: caseRuntime.projection,
+        results,
+        trackHistory: true,
+      });
     }
     res.json({ ok: true, results, errors });
   } catch (err) {
@@ -362,19 +398,14 @@ router.post('/similar-examples', (req, res) => {
 
 router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
   try {
-    const caseDir = req.caseDir;
-    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
-    const { formType, formConfig } = getCaseFormConfig(caseDir);
+    const runtime = loadCaseRuntime(req.params.caseId);
+    if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const { projection, caseDir, formType, formConfig, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-core', log);
       return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
     }
 
-    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
-    const assignmentMeta = buildAssignmentMetaBlock(
-      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
-    );
     const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
     let locationContext = null;
     if (geo?.subject?.result?.lat) {
@@ -441,27 +472,13 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
     }
 
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, targetFields.length) }, runSection));
-
-    const outputsFile = path.join(caseDir, 'outputs.json');
-    const existing = readJSON(outputsFile, {});
-    writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
-
-    const sectionStatusFile = path.join(caseDir, 'section_statuses.json');
-    const sectionStatuses = readJSON(sectionStatusFile, {});
-    for (const [sid, st] of Object.entries(statuses)) {
-      sectionStatuses[sid] = {
-        status: st,
-        updatedAt: new Date().toISOString(),
-        title: results[sid]?.title || sid,
-      };
-    }
-    writeJSON(sectionStatusFile, sectionStatuses);
-
-    const meta = readJSON(path.join(caseDir, 'meta.json'));
-    meta.updatedAt = new Date().toISOString();
-    meta.pipelineStage = 'generating';
-    writeJSON(path.join(caseDir, 'meta.json'), meta);
-    safeSyncCaseRecord(req.params.caseId);
+    persistGeneratedOutputs({
+      caseId: req.params.caseId,
+      projection,
+      results,
+      statuses,
+      trackHistory: false,
+    });
 
     const genResults = {};
     for (const [sid, value] of Object.entries(results)) {
@@ -487,10 +504,9 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
 
 router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
   try {
-    const caseDir = req.caseDir;
-    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
-    const { formType } = getCaseFormConfig(caseDir);
+    const runtime = loadCaseRuntime(req.params.caseId);
+    if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const { projection, formType, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-comp-commentary', log);
       return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
@@ -503,15 +519,11 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       });
     }
 
-    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
     if (!enforcePreDraftGate(req, res, {
       caseId: req.params.caseId,
       formType,
       sectionIds: ['sca_summary'],
     })) return;
-    const assignmentMeta = buildAssignmentMetaBlock(
-      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
-    );
     const comps = asArray(req.body?.comps || facts?.comps || []);
     if (!comps.length) return res.status(400).json({ ok: false, error: 'No comparables provided' });
 
@@ -547,26 +559,22 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       }
     }
 
-    if (results.length) {
-      const outputsFile = path.join(caseDir, 'outputs.json');
-      const existing = readJSON(outputsFile, {});
-      existing.comp_commentary = { comps: results, generatedAt: new Date().toISOString() };
-      writeJSON(outputsFile, existing);
-    }
-
     const compFocus = trimText(req.body?.compFocus, 40) || 'all';
     const combinedText = results.map(result => result.compLabel + ': ' + result.text).join('\n\n');
     if (results.length) {
-      const outputsFile = path.join(caseDir, 'outputs.json');
-      const existing = readJSON(outputsFile, {});
-      existing.sca_summary = { text: combinedText, comps: results, generatedAt: new Date().toISOString() };
-      writeJSON(outputsFile, existing);
-
-      const meta = readJSON(path.join(caseDir, 'meta.json'));
-      meta.updatedAt = new Date().toISOString();
-      meta.pipelineStage = 'generating';
-      writeJSON(path.join(caseDir, 'meta.json'), meta);
-      safeSyncCaseRecord(req.params.caseId);
+      const generatedAt = new Date().toISOString();
+      persistGeneratedOutputs({
+        caseId: req.params.caseId,
+        projection,
+        results: {
+          comp_commentary: { comps: results, generatedAt },
+          sca_summary: { text: combinedText, comps: results, generatedAt },
+        },
+        statuses: {
+          sca_summary: 'drafted',
+        },
+        trackHistory: false,
+      });
     }
 
     const totalExamples = results.reduce((acc, result) => acc + (result.examplesUsed || 0), 0);
@@ -589,19 +597,14 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
 
 router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
   try {
-    const caseDir = req.caseDir;
-    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
-    const { formType, formConfig } = getCaseFormConfig(caseDir);
+    const runtime = loadCaseRuntime(req.params.caseId);
+    if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const { projection, caseDir, formType, formConfig, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-all', log);
       return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
     }
 
-    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
-    const assignmentMeta = buildAssignmentMetaBlock(
-      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
-    );
     const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
     let locationContext = null;
     if (geo?.subject?.result?.lat) {
@@ -664,27 +667,13 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     }
 
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, allFields.length) }, runAll));
-
-    const outputsFile = path.join(caseDir, 'outputs.json');
-    const existing = readJSON(outputsFile, {});
-    writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
-
-    const sectionStatusFile = path.join(caseDir, 'section_statuses.json');
-    const sectionStatuses = readJSON(sectionStatusFile, {});
-    for (const [sid, st] of Object.entries(statuses)) {
-      sectionStatuses[sid] = {
-        ...(sectionStatuses[sid] || {}),
-        status: st,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    writeJSON(sectionStatusFile, sectionStatuses);
-
-    const meta = readJSON(path.join(caseDir, 'meta.json'));
-    meta.updatedAt = new Date().toISOString();
-    meta.pipelineStage = 'generating';
-    writeJSON(path.join(caseDir, 'meta.json'), meta);
-    safeSyncCaseRecord(req.params.caseId);
+    persistGeneratedOutputs({
+      caseId: req.params.caseId,
+      projection,
+      results,
+      statuses,
+      trackHistory: false,
+    });
 
     res.json({ ok: true, results, errors, statuses, formType, fieldsAttempted: allFields.length });
   } catch (err) {
@@ -717,8 +706,7 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
   }
 
   // Verify case exists
-  const caseDir = req.caseDir;
-  if (!fs.existsSync(caseDir)) {
+  if (!getCaseProjection(caseId)) {
     return res.status(404).json({ ok: false, error: `Case not found: ${caseId}` });
   }
   if (!enforcePreDraftGate(req, res, {
@@ -811,7 +799,7 @@ router.post('/generation/full-draft', async (req, res) => {
   if (!caseDir) {
     return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
   }
-  if (!fs.existsSync(caseDir)) {
+  if (!getCaseProjection(caseId)) {
     return res.status(404).json({ ok: false, error: `Case not found: ${caseId}` });
   }
   req.caseDir = caseDir;

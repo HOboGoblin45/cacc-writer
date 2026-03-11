@@ -21,11 +21,9 @@
  *   const bundle = await buildIntelligenceBundle(caseId);
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from '../db/database.js';
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import { normalizeAssignmentContextV2 } from './normalizer.js';
 import { deriveAssignmentFlags, summarizeFlags } from './derivedFlags.js';
 import { buildComplianceProfile } from './complianceProfile.js';
@@ -35,38 +33,16 @@ import { buildSectionPlanV2, toOrchestratorPlan } from './sectionPlanner.js';
 import { buildSectionRequirementMatrix } from './sectionRequirementMatrix.js';
 import { evaluateHardComplianceRules } from './hardComplianceRules.js';
 
-const __dirname  = path.dirname(fileURLToPath(import.meta.url));
-const CASES_DIR  = path.join(__dirname, '..', '..', 'cases');
-
-// ── File I/O helpers ────────────────────────────────────────────────────────
-
-function readJSON(filePath, fallback = {}) {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
-    return fallback;
-  }
-}
-
-// ── Public API ──────────────────────────────────────────────────────────────
-
-/**
- * Build the complete AssignmentIntelligenceBundle for a case.
- * Persists to SQLite `assignment_intelligence` table.
- *
- * @param {string} caseId
- * @returns {Promise<import('./assignmentSchema.js').AssignmentIntelligenceBundle>}
- */
 export async function buildIntelligenceBundle(caseId) {
   const t0 = Date.now();
-  const caseDir = path.join(CASES_DIR, caseId);
+  const projection = getCaseProjection(caseId);
 
-  if (!fs.existsSync(caseDir)) {
-    throw new Error(`Case directory not found: ${caseId}`);
+  if (!projection) {
+    throw new Error(`Case not found: ${caseId}`);
   }
 
-  const meta  = readJSON(path.join(caseDir, 'meta.json'),  {});
-  const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+  const meta = projection.meta || {};
+  const facts = projection.facts || {};
 
   // 1. Normalize
   const context = normalizeAssignmentContextV2(caseId, meta, facts);
@@ -243,3 +219,4 @@ export { buildSectionPlanV2, toOrchestratorPlan } from './sectionPlanner.js';
 export { buildSectionRequirementMatrix } from './sectionRequirementMatrix.js';
 export { evaluateHardComplianceRules } from './hardComplianceRules.js';
 export { normalizeAssignmentContextV2 } from './normalizer.js';
+

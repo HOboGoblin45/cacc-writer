@@ -20,7 +20,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.join(__dirname, '..', 'logs');
+const LOGS_DIR = process.env.CACC_LOGS_DIR
+  ? path.resolve(process.env.CACC_LOGS_DIR)
+  : path.join(__dirname, '..', 'logs');
 
 let _initialized = false;
 let _currentLogPath = null;
@@ -59,6 +61,7 @@ function rotateDateIfNeeded() {
  */
 export function initFileLogger() {
   if (_initialized) return;
+  if (process.env.CACC_DISABLE_FILE_LOGGER === '1') return;
   try {
     ensureLogsDir();
     rotateDateIfNeeded();

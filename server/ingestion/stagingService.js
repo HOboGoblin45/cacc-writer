@@ -16,19 +16,14 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { getDb } from '../db/database.js';
+import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { classifyDocument, mapLegacyDocType } from './documentClassifier.js';
 import { extractStructuredFacts, getExtractorTypes } from './documentExtractors.js';
 import { extractNarrativeSections } from './narrativeExtractor.js';
 import { buildMergePlan, applyMergePlan, getAutoAcceptPaths } from './contextMapper.js';
 import { scoreDocumentQuality, summarizeDocumentQuality } from './documentQuality.js';
-import { readJSON, writeJSON } from '../utils/fileUtils.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CASES_DIR = path.join(__dirname, '..', '..', 'cases');
 
 // ── Document registration ────────────────────────────────────────────────────
 
@@ -245,10 +240,9 @@ export async function runDocumentExtraction(documentId, extractedText, options =
 
     // 2. Narrative section extraction (for prior appraisals)
     if (isNarrativeSource) {
-      // Determine form type from case meta
-      const metaPath = path.join(CASES_DIR, doc.case_id, 'meta.json');
-      const meta = readJSON(metaPath, {});
-      const formType = meta.formType || '1004';
+      // Determine form type from canonical case projection.
+      const projection = getCaseProjection(doc.case_id);
+      const formType = projection?.meta?.formType || '1004';
 
       const sections = await extractNarrativeSections(extractedText, formType);
 
@@ -337,8 +331,10 @@ export function reviewFact(factId, action) {
  */
 export function acceptAndMergeFacts(caseId, factIds) {
   const db = getDb();
-  const factsPath = path.join(CASES_DIR, caseId, 'facts.json');
-  const facts = readJSON(factsPath, {});
+  const projection = getCaseProjection(caseId);
+  if (!projection) return { merged: 0 };
+
+  const facts = { ...(projection.facts || {}) };
 
   let merged = 0;
   for (const factId of factIds) {
@@ -363,7 +359,15 @@ export function acceptAndMergeFacts(caseId, factIds) {
   }
 
   if (merged > 0) {
-    writeJSON(factsPath, facts);
+    saveCaseProjection({
+      caseId,
+      meta: projection.meta || {},
+      facts,
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    }, { writeLegacyFiles: true });
   }
 
   return { merged };

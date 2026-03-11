@@ -5,15 +5,22 @@
  */
 
 import { spawnSync } from 'child_process';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const runId = `${Date.now()}-${process.pid}`;
+const queueStatePath = process.env.CACC_QUEUE_STATE_FILE
+  || path.join(os.tmpdir(), `cacc-unit-${runId}-queue_state.json`);
+const logsDir = process.env.CACC_LOGS_DIR
+  || path.join(os.tmpdir(), `cacc-unit-${runId}-logs`);
 
 const suites = [
   'textUtils.test.mjs',
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',
+  'workflowStateMachine.test.mjs',
   'caseRecordService.test.mjs',
   'factIntegrity.test.mjs',
   'documentIntake.test.mjs',
@@ -43,6 +50,13 @@ for (const suite of suites) {
   const result = spawnSync(process.execPath, [suitePath], {
     stdio: 'pipe',
     encoding: 'utf8',
+    env: {
+      ...process.env,
+      CACC_QUEUE_STATE_FILE: queueStatePath,
+      CACC_LOGS_DIR: logsDir,
+      CACC_DISABLE_FILE_LOGGER: process.env.CACC_DISABLE_FILE_LOGGER || '1',
+      CACC_DISABLE_KB_WRITES: process.env.CACC_DISABLE_KB_WRITES || '1',
+    },
   });
 
   const output = result.stdout + result.stderr;

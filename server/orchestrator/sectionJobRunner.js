@@ -38,24 +38,12 @@ import {
   getSectionJobsForRun,
   saveGeneratedSection,
 } from '../db/repositories/generationRepo.js';
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import log  from '../logger.js';
-import fs   from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname  = path.dirname(fileURLToPath(import.meta.url));
-const CASES_DIR  = path.join(__dirname, '..', '..', 'cases');
 const MAX_RETRIES = 1; // 1 retry per section as specified
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function readJSON(filePath, fallback = {}) {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
-    return fallback;
-  }
-}
 
 /**
  * Build an assignmentMeta object from AssignmentContext for prompt injection.
@@ -437,8 +425,8 @@ export async function runSectionJob({
   const priorSectionsContext = buildPriorSectionsContext(sectionId, priorResults);
 
   // ── Load case facts ────────────────────────────────────────────────────────
-  const caseDir = path.join(CASES_DIR, caseId);
-  const facts   = readJSON(path.join(caseDir, 'facts.json'), {});
+  const projection = getCaseProjection(caseId);
+  const facts = projection?.facts || {};
 
   // ── Build assignment meta ──────────────────────────────────────────────────
   const assignmentMeta = buildAssignmentMetaFromContext(context);
@@ -606,3 +594,5 @@ export function getGeneratedSectionText(runId, sectionId) {
   `).get(runId, sectionId);
   return row?.final_text || null;
 }
+
+
