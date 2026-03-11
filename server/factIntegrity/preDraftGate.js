@@ -13,9 +13,16 @@
  */
 
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
-import { getSectionDef, getSectionDefs } from '../context/reportPlanner.js';
+import { getSectionDefs } from '../context/reportPlanner.js';
 import { getSectionDependencies } from '../sectionDependencies.js';
 import { detectFactConflicts } from './factConflictEngine.js';
+import { normalizeAssignmentContextV2 } from '../intelligence/normalizer.js';
+import { deriveAssignmentFlags } from '../intelligence/derivedFlags.js';
+import { buildComplianceProfile } from '../intelligence/complianceProfile.js';
+import { resolveReportFamily, getManifestForFormType } from '../intelligence/reportFamilyManifest.js';
+import { getApplicableFields } from '../intelligence/canonicalFields.js';
+import { buildSectionRequirementMatrix } from '../intelligence/sectionRequirementMatrix.js';
+import { evaluateHardComplianceRules } from '../intelligence/hardComplianceRules.js';
 
 const FACT_ALIASES = {
   'subject.siteSize': ['subject.lotSize', 'site.areaSqFt', 'site.siteSize'],
@@ -94,7 +101,7 @@ function hasProvenanceEntry(provenance, path) {
   return false;
 }
 
-function resolveSectionIds(formType, requestedSectionIds = null) {
+function resolveSectionIds(formType, requestedSectionIds = null, sectionRequirements = null) {
   if (Array.isArray(requestedSectionIds) && requestedSectionIds.length) {
     return unique(
       requestedSectionIds
@@ -103,7 +110,48 @@ function resolveSectionIds(formType, requestedSectionIds = null) {
     );
   }
 
+  const requiredFromMatrix = Array.isArray(sectionRequirements?.requiredSectionIds)
+    ? sectionRequirements.requiredSectionIds.filter(Boolean)
+    : [];
+  if (requiredFromMatrix.length) return unique(requiredFromMatrix);
+
   return getSectionDefs(formType).map(section => section.id);
+}
+
+function buildIntelligenceDiagnostics(caseId, projection, resolvedFormType) {
+  const context = normalizeAssignmentContextV2(
+    caseId,
+    {
+      ...(projection.meta || {}),
+      formType: resolvedFormType || projection?.meta?.formType || '1004',
+    },
+    projection.facts || {},
+  );
+
+  const flags = deriveAssignmentFlags(context);
+  const compliance = buildComplianceProfile(context, flags);
+  const reportFamilyId = resolveReportFamily(context.formType, flags);
+  const manifest = getManifestForFormType(context.formType, flags);
+  const applicableFields = getApplicableFields(flags, reportFamilyId);
+  const sectionRequirements = buildSectionRequirementMatrix({
+    manifest,
+    flags,
+    applicableFields,
+  });
+  const complianceChecks = evaluateHardComplianceRules({
+    context,
+    flags,
+    compliance,
+    sectionRequirements,
+  });
+
+  return {
+    context,
+    flags,
+    compliance,
+    sectionRequirements,
+    complianceChecks,
+  };
 }
 
 function collectMissingRequiredFacts(facts, sectionIds) {
@@ -176,10 +224,21 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
   if (!projection) return null;
 
   const resolvedFormType = normalizeText(formType) || normalizeText(projection?.meta?.formType) || '1004';
-  const resolvedSectionIds = resolveSectionIds(resolvedFormType, sectionIds);
-  const validSectionIds = resolvedSectionIds.filter(sectionId => Boolean(getSectionDef(resolvedFormType, sectionId)));
+  const intelligence = buildIntelligenceDiagnostics(caseId, projection, resolvedFormType);
 
-  const missing = collectMissingRequiredFacts(projection.facts || {}, validSectionIds);
+  const resolvedSectionIds = resolveSectionIds(
+    intelligence.context.formType || resolvedFormType,
+    sectionIds,
+    intelligence.sectionRequirements,
+  );
+  const knownSectionIds = new Set([
+    ...getSectionDefs(intelligence.context.formType || resolvedFormType).map(section => section.id),
+    ...((intelligence.sectionRequirements?.sections || []).map(section => section.sectionId)),
+  ]);
+  const validSectionIds = resolvedSectionIds.filter(sectionId => knownSectionIds.has(sectionId));
+  const sectionsToCheck = validSectionIds.length ? validSectionIds : resolvedSectionIds;
+
+  const missing = collectMissingRequiredFacts(projection.facts || {}, sectionsToCheck);
   const conflictReport = detectFactConflicts(caseId) || {
     summary: { blockerCount: 0, totalConflicts: 0 },
     conflicts: [],
@@ -214,6 +273,14 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       conflicts: blockerConflicts,
     });
   }
+  if ((intelligence.complianceChecks?.blockers || []).length) {
+    blockers.push({
+      type: 'compliance_hard_rules',
+      message: 'Deterministic compliance hard-rule blockers were detected.',
+      count: intelligence.complianceChecks.blockers.length,
+      findings: intelligence.complianceChecks.blockers,
+    });
+  }
 
   const warnings = [];
   if (highConflicts.length) {
@@ -240,17 +307,26 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       issues: unresolvedIssues,
     });
   }
+  if ((intelligence.complianceChecks?.warnings || []).length) {
+    warnings.push({
+      type: 'compliance_warnings',
+      message: 'Deterministic compliance warnings were detected.',
+      count: intelligence.complianceChecks.warnings.length,
+      findings: intelligence.complianceChecks.warnings,
+    });
+  }
 
   return {
     caseId,
-    formType: resolvedFormType,
-    sectionIds: validSectionIds,
+    formType: intelligence.context.formType || resolvedFormType,
+    sectionIds: sectionsToCheck,
     checkedAt: new Date().toISOString(),
     ok: blockers.length === 0,
     summary: {
-      sectionsChecked: validSectionIds.length,
+      sectionsChecked: sectionsToCheck.length,
       missingRequiredFacts: missing.missingCount,
       blockerConflicts: blockerConflicts.length,
+      complianceBlockers: intelligence.complianceChecks?.summary?.blockerCount || 0,
       totalConflicts: conflictReport.summary.totalConflicts || 0,
       unresolvedIssues: unresolvedIssues.length,
       provenanceCoveragePct: provenance.coveragePct,
@@ -267,7 +343,12 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
         missingPaths: provenance.gaps,
         coveragePct: provenance.coveragePct,
       },
+      intelligence: {
+        reportFamilyId: intelligence.compliance?.report_family || null,
+        activeFlags: Object.keys(intelligence.flags || {}).filter(flag => intelligence.flags[flag] === true),
+        sectionRequirementsSummary: intelligence.sectionRequirements?.summary || null,
+      },
+      complianceChecks: intelligence.complianceChecks,
     },
   };
 }
-
