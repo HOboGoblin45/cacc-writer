@@ -22,10 +22,8 @@
  *   GET    /:caseId/missing-facts/:fieldId — single-field missing facts check
  *   POST   /:caseId/missing-facts         — batch missing facts check
  *
- * Kept inline in cacc-writer-server.js (temporarily):
- *   upload, extract-facts, questionnaire, grade, feedback, review-section,
- *   generate-all, generate-core, generate-comp-commentary,
- *   sections/*, outputs/:fieldId, exceptions, destination-registry, insert-all
+ * Legacy compatibility routes now live in:
+ *   server/api/caseCompatRoutes.js
  */
 
 import { Router } from 'express';
