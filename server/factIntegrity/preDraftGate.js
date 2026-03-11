@@ -47,6 +47,7 @@ const CRITICAL_PROVENANCE_PATHS = [
   'contract.contractPrice',
   'contract.contractDate',
 ];
+const CRITICAL_PENDING_REVIEW_PATHS = new Set(CRITICAL_PROVENANCE_PATHS);
 
 function unique(values = []) {
   return [...new Set(values)];
@@ -222,6 +223,14 @@ function collectPendingReviewQueue(caseId) {
      LIMIT 25
   `).all(caseId);
 
+  const pendingFactPathRows = db.prepare(`
+    SELECT fact_path, COUNT(*) AS count
+      FROM extracted_facts
+     WHERE case_id = ? AND review_status = 'pending'
+     GROUP BY fact_path
+     ORDER BY count DESC, fact_path ASC
+  `).all(caseId);
+
   const pendingSectionRows = db.prepare(`
     SELECT id, section_type, section_label, confidence, document_id
       FROM extracted_sections
@@ -246,9 +255,47 @@ function collectPendingReviewQueue(caseId) {
     pendingFactsCount,
     pendingSectionsCount,
     pendingFacts: pendingFactRows,
+    pendingFactPaths: pendingFactPathRows
+      .map(row => ({
+        factPath: normalizeText(row.fact_path),
+        count: Number(row.count || 0),
+      }))
+      .filter(row => row.factPath),
     pendingSections: pendingSectionRows,
     truncated: pendingFactsCount > pendingFactRows.length || pendingSectionsCount > pendingSectionRows.length,
   };
+}
+
+function arePathsEquivalent(pathA, pathB) {
+  const a = normalizeText(pathA);
+  const b = normalizeText(pathB);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const aCandidates = new Set(candidatePaths(a));
+  const bCandidates = candidatePaths(b);
+  return bCandidates.some(candidate => aCandidates.has(candidate));
+}
+
+function collectBlockingPendingFactPaths(pendingFactPaths = [], requiredPaths = []) {
+  const blocking = [];
+  for (const row of pendingFactPaths) {
+    const factPath = normalizeText(row?.factPath);
+    if (!factPath) continue;
+
+    const isCritical = CRITICAL_PENDING_REVIEW_PATHS.has(factPath)
+      || [...CRITICAL_PENDING_REVIEW_PATHS].some(criticalPath => arePathsEquivalent(criticalPath, factPath));
+    const isRequiredForPlannedSections = requiredPaths.some(requiredPath => arePathsEquivalent(requiredPath, factPath));
+
+    if (isCritical || isRequiredForPlannedSections) {
+      blocking.push({
+        factPath,
+        count: Number(row.count || 0),
+        critical: isCritical,
+        requiredForPlannedSections: isRequiredForPlannedSections,
+      });
+    }
+  }
+  return blocking;
 }
 
 /**
@@ -293,6 +340,10 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
     missing.requiredPaths,
   );
   const pendingReview = collectPendingReviewQueue(caseId);
+  const blockerPendingFactPaths = collectBlockingPendingFactPaths(
+    pendingReview.pendingFactPaths,
+    missing.requiredPaths,
+  );
 
   const unresolvedIssues = Array.isArray(projection.meta?.unresolvedIssues)
     ? projection.meta.unresolvedIssues.filter(Boolean)
@@ -323,11 +374,13 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       findings: intelligence.complianceChecks.blockers,
     });
   }
-  if (pendingReview.pendingFactsCount > 0) {
+  if (blockerPendingFactPaths.length > 0) {
     blockers.push({
       type: 'pending_fact_reviews',
-      message: 'One or more extracted facts are still pending review.',
-      count: pendingReview.pendingFactsCount,
+      message: 'Pending fact reviews exist on critical or required fact paths.',
+      count: blockerPendingFactPaths.reduce((sum, row) => sum + row.count, 0),
+      blockerPaths: blockerPendingFactPaths,
+      pendingFactPathCount: pendingReview.pendingFactPaths.length,
       pendingFacts: pendingReview.pendingFacts,
       truncated: pendingReview.truncated,
     });
@@ -375,6 +428,16 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       truncated: pendingReview.truncated,
     });
   }
+  if (pendingReview.pendingFactsCount > 0 && blockerPendingFactPaths.length === 0) {
+    warnings.push({
+      type: 'pending_fact_reviews_non_blocking',
+      message: 'Pending fact reviews exist on non-critical paths; review before finalization.',
+      count: pendingReview.pendingFactsCount,
+      pendingFactPathCount: pendingReview.pendingFactPaths.length,
+      pendingFacts: pendingReview.pendingFacts,
+      truncated: pendingReview.truncated,
+    });
+  }
 
   return {
     caseId,
@@ -388,6 +451,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       blockerConflicts: blockerConflicts.length,
       complianceBlockers: intelligence.complianceChecks?.summary?.blockerCount || 0,
       pendingFactReviews: pendingReview.pendingFactsCount,
+      blockerPendingFactPathCount: blockerPendingFactPaths.length,
       pendingSectionReviews: pendingReview.pendingSectionsCount,
       totalConflicts: conflictReport.summary.totalConflicts || 0,
       unresolvedIssues: unresolvedIssues.length,
@@ -406,6 +470,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
         coveragePct: provenance.coveragePct,
       },
       pendingReview,
+      blockerPendingFactPaths,
       intelligence: {
         reportFamilyId: intelligence.compliance?.report_family || null,
         activeFlags: Object.keys(intelligence.flags || {}).filter(flag => intelligence.flags[flag] === true),
