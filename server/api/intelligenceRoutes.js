@@ -31,6 +31,10 @@ import {
   readPhaseCBenchmarkResults,
   writePhaseCBenchmarkResults,
 } from '../factIntegrity/benchmarkRunner.js';
+import {
+  evaluatePhaseCBenchmarkThresholds,
+  DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+} from '../factIntegrity/benchmarkThresholds.js';
 import log from '../logger.js';
 
 const router = Router();
@@ -193,19 +197,29 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
   try {
     const cached = readPhaseCBenchmarkResults();
     if (cached) {
+      const qualityGate = evaluatePhaseCBenchmarkThresholds(
+        cached,
+        DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      );
       return res.json({
         ok: true,
         cached: true,
         results: cached,
+        qualityGate,
       });
     }
 
     const run = await runPhaseCBenchmarksFromFile();
+    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+      run.results,
+      DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+    );
 
     res.json({
       ok: true,
       cached: false,
       results: run.results,
+      qualityGate,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -221,12 +235,17 @@ router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
   try {
     const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
     const run = await runPhaseCBenchmarksFromFile();
+    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+      run.results,
+      DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+    );
     if (persist) writePhaseCBenchmarkResults(run.results);
 
     res.json({
       ok: true,
       persisted: persist,
       results: run.results,
+      qualityGate,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
