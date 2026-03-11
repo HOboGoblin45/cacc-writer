@@ -105,6 +105,7 @@ async function apiForm(path, formData) {
 
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
+let latestIngestJobId = null;
 
 // ── Test suites ───────────────────────────────────────────────────────────────
 
@@ -302,6 +303,9 @@ await test('POST /api/cases/:caseId/documents/upload accepts PDF upload', async 
   assert(body?.ok === true, 'ok should be true');
   assert(typeof body?.documentId === 'string', 'documentId should be string');
   assert(body?.duplicateDetected === false, 'first upload should not be duplicate');
+  assert(typeof body?.ingestJob?.id === 'string', 'ingestJob.id should be present');
+  assert(typeof body?.ingestJob?.status === 'string', 'ingestJob.status should be present');
+  latestIngestJobId = body.ingestJob.id;
 });
 
 await test('POST /api/cases/:caseId/documents/upload flags duplicate PDF by hash', async () => {
@@ -342,6 +346,31 @@ await test('GET /api/cases/:caseId/extraction-summary includes quality metrics',
 });
 
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────
+await test('GET /api/cases/:caseId/ingest-jobs lists ingestion job history', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/ingest-jobs`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(Array.isArray(body?.jobs), 'jobs should be array');
+  assert(body.jobs.length >= 1, 'at least one ingest job should exist');
+  assert(typeof body.jobs[0]?.status === 'string', 'job status should be string');
+});
+
+await test('GET /api/cases/:caseId/ingest-jobs/:jobId returns ingest job details', async () => {
+  assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(body?.job?.id === latestIngestJobId, 'job id should match');
+  assert(typeof body?.job?.steps === 'object', 'job.steps should be object');
+});
+
+await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects non-failed step retry', async () => {
+  assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
+  const { status } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
+    step: 'extract',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+});
 console.log('\n5. Feedback & KB');
 
 await test('GET /api/cases/:caseId/fact-conflicts returns conflict summary', async () => {
@@ -596,4 +625,5 @@ console.log('══════════════════════�
 
 await serverHarness.stop();
 process.exit(failed > 0 ? 1 : 0);
+
 

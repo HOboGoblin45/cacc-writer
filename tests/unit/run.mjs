@@ -26,6 +26,7 @@ const suites = [
   'benchmarkRunner.test.mjs',
   'factIntegrity.test.mjs',
   'documentIntake.test.mjs',
+  'ingestJobService.test.mjs',
   'documentClassifier.test.mjs',
   'documentExtractors.test.mjs',
   'documentQuality.test.mjs',
