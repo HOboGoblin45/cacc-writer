@@ -605,6 +605,19 @@ await test('POST /api/insertion/prepare validates required params', async () => 
   const { status, body } = await api('POST', '/api/insertion/prepare', {});
   assert(status === 400, `Expected 400, got ${status}`);
   assert(typeof body?.error === 'string', 'error should be a string');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/insertion/prepare rejects invalid config shape', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {
+    caseId: testCaseId,
+    formType: '1004',
+    config: { maxRetries: 'not-a-number' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(Array.isArray(body?.issues), 'issues should be an array');
 });
 
 await test('POST /api/insertion/prepare blocks generation insertion when fresh QC is missing', async () => {
