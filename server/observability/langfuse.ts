@@ -20,6 +20,7 @@
  */
 
 import 'dotenv/config';
+import logger from '../logger.js';
 
 // ── Environment ───────────────────────────────────────────────────────────────
 
@@ -92,10 +93,10 @@ async function getLangfuseClient(): Promise<any | null> {
       secretKey: LANGFUSE_SECRET_KEY,
       baseUrl:   LANGFUSE_HOST,
     });
-    console.log('[langfuse] Observability ENABLED →', LANGFUSE_HOST);
+    logger.info('langfuse:init', { detail: 'Observability ENABLED', host: LANGFUSE_HOST });
     return _langfuseClient;
   } catch (err: any) {
-    console.warn('[langfuse] Failed to initialize (non-fatal):', err.message);
+    logger.warn('langfuse:init', { error: err.message, detail: 'Failed to initialize (non-fatal)' });
     return null;
   }
 }
@@ -109,11 +110,9 @@ async function getLangfuseClient(): Promise<any | null> {
 export async function logWorkflowRun(log: WorkflowRunLog): Promise<void> {
   const ts = new Date().toISOString();
 
-  // Always log to console (structured)
+  // Always log structured output
   const status = log.success ? '✓' : '✗';
-  const errStr = log.error ? ` | error: ${log.error}` : '';
-  const durStr = log.durationMs ? ` | ${log.durationMs}ms` : '';
-  console.log(`[workflow] ${status} ${log.stage} | case=${log.caseId} field=${log.fieldId}${durStr}${errStr}`);
+  logger.info('workflow:run', { status, stage: log.stage, caseId: log.caseId, fieldId: log.fieldId, durationMs: log.durationMs, error: log.error });
 
   const lf = await getLangfuseClient();
   if (!lf) return;
@@ -141,7 +140,7 @@ export async function logWorkflowRun(log: WorkflowRunLog): Promise<void> {
 
     await lf.flushAsync();
   } catch (err: any) {
-    console.warn('[langfuse] logWorkflowRun failed (non-fatal):', err.message);
+    logger.warn('langfuse:logWorkflowRun', { error: err.message, detail: 'non-fatal' });
   }
 }
 
@@ -175,7 +174,7 @@ export async function logPrompt(params: PromptLog): Promise<void> {
 
     await lf.flushAsync();
   } catch (err: any) {
-    console.warn('[langfuse] logPrompt failed (non-fatal):', err.message);
+    logger.warn('langfuse:logPrompt', { error: err.message, detail: 'non-fatal' });
   }
 }
 
@@ -203,7 +202,7 @@ export async function logRetrieval(params: RetrievalLog): Promise<void> {
 
     await lf.flushAsync();
   } catch (err: any) {
-    console.warn('[langfuse] logRetrieval failed (non-fatal):', err.message);
+    logger.warn('langfuse:logRetrieval', { error: err.message, detail: 'non-fatal' });
   }
 }
 
@@ -214,7 +213,7 @@ export async function logRetrieval(params: RetrievalLog): Promise<void> {
  */
 export async function logAutomation(params: AutomationLog): Promise<void> {
   const status = params.success ? '✓' : '✗';
-  console.log(`[automation] ${status} ${params.software}/${params.fieldId} attempt=${params.attempt} method=${params.method || 'unknown'} verified=${params.verified}`);
+  logger.info('automation:attempt', { status, software: params.software, fieldId: params.fieldId, attempt: params.attempt, method: params.method || 'unknown', verified: params.verified });
 
   const lf = await getLangfuseClient();
   if (!lf) return;
@@ -234,7 +233,7 @@ export async function logAutomation(params: AutomationLog): Promise<void> {
 
     await lf.flushAsync();
   } catch (err: any) {
-    console.warn('[langfuse] logAutomation failed (non-fatal):', err.message);
+    logger.warn('langfuse:logAutomation', { error: err.message, detail: 'non-fatal' });
   }
 }
 

@@ -12,6 +12,8 @@
  *   - Max 1 request/second
  */
 
+import log from './logger.js';
+
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 const USER_AGENT = 'CACC-Writer/2.0 (appraisal-drafting-tool; single-user-internal)';
 
@@ -51,7 +53,7 @@ export async function geocodeAddress(address) {
     });
 
     if (!res.ok) {
-      console.warn('[geocoder] Nominatim returned', res.status, 'for:', address);
+      log.warn('geocoder:nominatim-error', { status: res.status, address });
       return null;
     }
 
@@ -75,7 +77,7 @@ export async function geocodeAddress(address) {
       osmId:        r.osm_id   || null,
     };
   } catch (err) {
-    console.warn('[geocoder] geocodeAddress failed for "' + address + '":', err.message);
+    log.warn('geocoder:geocode-failed', { address, error: err.message });
     return null;
   }
 }

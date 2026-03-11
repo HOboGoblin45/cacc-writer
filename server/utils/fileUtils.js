@@ -57,7 +57,40 @@ export function writeJSON(p, data) {
 let _voiceLock = Promise.resolve();
 
 export function withVoiceLock(fn) {
-  const next = _voiceLock.then(() => fn()).catch(() => fn());
+  const next = _voiceLock.catch(() => {}).then(fn);
   _voiceLock = next.catch(() => {});
+  return next;
+}
+
+// ── Per-case mutex ────────────────────────────────────────────────────────────
+
+/**
+ * withCaseLock(caseId, fn)
+ * Per-case async mutex to prevent concurrent read-modify-write races on
+ * case files (meta.json, facts.json, outputs.json, etc.).
+ * Each caseId gets its own serialized promise chain.
+ *
+ * Usage:
+ *   await withCaseLock(caseId, () => {
+ *     const meta = readJSON(metaPath);
+ *     meta.status = 'active';
+ *     writeJSON(metaPath, meta);
+ *   });
+ *
+ * @param {string} caseId — case identifier (used as lock key)
+ * @param {() => any} fn  — synchronous or async function to run exclusively
+ * @returns {Promise<any>}
+ */
+const _caseLocks = new Map();
+
+export function withCaseLock(caseId, fn) {
+  const prev = _caseLocks.get(caseId) || Promise.resolve();
+  const next = prev.catch(() => {}).then(fn);
+  const settled = next.catch(() => {});
+  _caseLocks.set(caseId, settled);
+  // Clean up lock entry when chain settles to avoid unbounded growth
+  settled.then(() => {
+    if (_caseLocks.get(caseId) === settled) _caseLocks.delete(caseId);
+  });
   return next;
 }

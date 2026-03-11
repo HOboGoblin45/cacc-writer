@@ -35,6 +35,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import serverLog from '../logger.js';
 import { buildAssignmentContext } from '../context/assignmentContextBuilder.js';
 import { buildReportPlan } from '../context/reportPlanner.js';
 import { buildRetrievalPack, getRetrievalStats } from '../context/retrievalPackBuilder.js';
@@ -61,23 +62,17 @@ import {
   getGeneratedSectionsForRun,
 } from '../db/repositories/generationRepo.js';
 
-const MAX_PARALLEL = 3; // max concurrent section jobs
+const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
 
 // ── Structured logger ─────────────────────────────────────────────────────────
 
 function log(level, phase, runId, data = {}) {
-  const entry = {
-    ts:    new Date().toISOString(),
-    level,
-    phase,
-    runId: runId || 'none',
-    ...data,
-  };
-  const prefix = `[orchestrator:${phase}]`;
+  const tag = `orchestrator:${phase}`;
+  const entry = { runId: runId || 'none', ...data };
   if (level === 'error') {
-    console.error(prefix, JSON.stringify(entry));
+    serverLog.error(tag, entry);
   } else {
-    console.log(prefix, JSON.stringify(entry));
+    serverLog.info(tag, entry);
   }
 }
 

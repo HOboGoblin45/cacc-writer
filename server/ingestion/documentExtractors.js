@@ -25,6 +25,7 @@
  */
 
 import { callAI } from '../openaiClient.js';
+import log from '../logger.js';
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ export async function extractStructuredFacts(docType, text, options = {}) {
 
     return deterministicFacts;
   } catch (err) {
-    console.error(`[documentExtractors] ${docType} extraction failed:`, err.message);
+    log.error('documentExtractors:extraction', { docType, error: err.message });
     return [];
   }
 }

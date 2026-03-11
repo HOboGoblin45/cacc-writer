@@ -19,6 +19,7 @@
  * server/context/retrievalPackBuilder.js by providing richer inputs.
  */
 
+import log from '../logger.js';
 import { rankApprovedMemory, rankCompCommentary } from './retrievalRankingEngine.js';
 import { resolveVoiceProfile, listApprovedMemory } from '../db/repositories/memoryRepo.js';
 
@@ -203,7 +204,7 @@ export function buildRetrievalPackBundle(params) {
         options,
       });
     } catch (err) {
-      console.error(`[retrievalPackBuilder] Error building pack for ${fieldId}:`, err.message);
+      log.error('retrievalPackBuilder:pack-error', { fieldId, error: err.message });
       packs[fieldId] = {
         canonicalFieldId: fieldId,
         error: err.message,

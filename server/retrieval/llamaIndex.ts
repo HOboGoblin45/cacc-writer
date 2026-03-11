@@ -23,6 +23,7 @@ import { pathToFileURL } from 'url';
 import { getPineconeIndex, PINECONE_ENABLED, ensurePineconeIndex } from '../config/pinecone.js';
 import { embeddings } from '../config/openai.js';
 import { logRetrieval } from '../observability/langfuse.js';
+import log from '../logger.js';
 
 // Resolve the server/ directory at runtime regardless of whether we're running
 // from server/ (dev via tsx) or dist/ (prod via tsc).  The project root is
@@ -146,11 +147,11 @@ export async function retrieveExamples(params: RetrievalParams): Promise<Retriev
         durationMs:   Date.now() - start,
       });
 
-      console.log(`[retrieval] Pinecone: ${examples.length} examples for ${formType}/${fieldId}`);
+      log.info('retrieval:pinecone', { count: examples.length, formType, fieldId });
       return examples;
 
     } catch (err: any) {
-      console.warn('[retrieval] Pinecone query failed, falling back to local KB:', err.message);
+      log.warn('retrieval:pinecone-fallback', { error: err.message });
     }
   }
 
@@ -201,10 +202,10 @@ async function retrieveFromLocalKB(
       durationMs:   Date.now() - start,
     });
 
-    console.log(`[retrieval] Local KB: ${examples.length} examples for ${params.formType}/${params.fieldId}`);
+    log.info('retrieval:local-kb', { count: examples.length, formType: params.formType, fieldId: params.fieldId });
     return examples;
   } catch (err: any) {
-    console.warn('[retrieval] Local KB fallback failed:', err.message);
+    log.warn('retrieval:local-kb-failed', { error: err.message });
     return [];
   }
 }
@@ -230,7 +231,7 @@ export async function storeExample(params: StoreExampleParams): Promise<boolean>
       text:         params.text,
     });
   } catch (err: any) {
-    console.warn('[retrieval] Local KB save failed (non-fatal):', err.message);
+    log.warn('retrieval:local-kb-save', { error: err.message, nonFatal: true });
   }
 
   // Store in Pinecone if configured
@@ -242,7 +243,7 @@ export async function storeExample(params: StoreExampleParams): Promise<boolean>
 
     const vector = await embeddings.embedDocuments([params.text]);
 
-    await pineconeIndex.upsert([{
+    await pineconeIndex.upsert({ records: [{
       id:     params.id,
       values: vector[0],
       metadata: {
@@ -258,12 +259,12 @@ export async function storeExample(params: StoreExampleParams): Promise<boolean>
         storedAt:     new Date().toISOString(),
         ...params.metadata,
       },
-    }]);
+    }] });
 
-    console.log(`[retrieval] Stored example ${params.id} in Pinecone (${params.fieldId}/${params.formType})`);
+    log.info('retrieval:pinecone-store', { id: params.id, fieldId: params.fieldId, formType: params.formType });
     return true;
   } catch (err: any) {
-    console.error('[retrieval] Pinecone store failed:', err.message);
+    log.error('retrieval:pinecone-store', { error: err.message });
     return false;
   }
 }
@@ -288,7 +289,7 @@ export async function ingestLocalKBToPinecone(): Promise<{
   // Ensure the Pinecone index exists before attempting to upsert
   const indexReady = await ensurePineconeIndex();
   if (!indexReady) {
-    console.error('[retrieval] Pinecone index not ready — aborting ingest');
+    log.error('retrieval:ingest', { error: 'Pinecone index not ready — aborting ingest' });
     return { total: 0, ingested: 0, skipped: 0, errors: 0 };
   }
 
@@ -325,11 +326,11 @@ export async function ingestLocalKBToPinecone(): Promise<{
 
       const pineconeIndex = getPineconeIndex();
       if (pineconeIndex) {
-        await pineconeIndex.upsert(records);
+        await pineconeIndex.upsert({ records });
         ingested += records.length;
       }
     } catch (err: any) {
-      console.error(`[retrieval] Batch ingest failed (batch ${i}):`, err.message);
+      log.error('retrieval:ingest-batch', { batch: i, error: err.message });
       errors += validBatch.length;
     }
 
@@ -339,7 +340,7 @@ export async function ingestLocalKBToPinecone(): Promise<{
     }
   }
 
-  console.log(`[retrieval] Ingest complete: ${ingested} ingested, ${skipped} skipped, ${errors} errors`);
+  log.info('retrieval:ingest-complete', { ingested, skipped, errors, total: examples.length });
   return { total: examples.length, ingested, skipped, errors };
 }
 

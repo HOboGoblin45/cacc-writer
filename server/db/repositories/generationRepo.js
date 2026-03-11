@@ -29,6 +29,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from '../database.js';
+import log from '../../logger.js';
 
 // ── Canonical status constants ────────────────────────────────────────────────
 
@@ -220,7 +221,7 @@ export function persistDraftPackage(runId, draftPackage) {
     `).run(JSON.stringify(draftPackage), runId);
   } catch (err) {
     // Non-fatal — draft package persistence failure should not block completion
-    console.error('[generationRepo] persistDraftPackage failed:', err.message);
+    log.error('generationRepo:persistDraftPackage', { error: err.message });
   }
 }
 
