@@ -8,6 +8,8 @@
  * Endpoints:
  *   POST /cases/:caseId/intelligence/build   — build intelligence bundle
  *   GET  /cases/:caseId/intelligence         — get persisted intelligence bundle
+ *   GET  /cases/:caseId/intelligence/requirements — get deterministic section requirement matrix
+ *   GET  /cases/:caseId/intelligence/compliance-check — get deterministic compliance check results
  *   GET  /intelligence/report-families       — list all report family manifests
  *   GET  /intelligence/canonical-fields      — canonical field registry stats
  *   GET  /intelligence/manifest-summaries    — all manifest summaries
@@ -26,6 +28,13 @@ import {
 import log from '../logger.js';
 
 const router = Router();
+
+async function loadOrBuildBundle(caseId) {
+  let bundle = getIntelligenceBundle(caseId);
+  if (bundle) return { bundle, rebuilt: false };
+  bundle = await buildIntelligenceBundle(caseId);
+  return { bundle, rebuilt: true };
+}
 
 // ── param: caseId validation ────────────────────────────────────────────────
 
@@ -82,6 +91,44 @@ router.get('/cases/:caseId/intelligence', (req, res) => {
     res.json({ ok: true, bundle });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// —— GET /cases/:caseId/intelligence/requirements ————————————————
+/**
+ * Get deterministic required/optional section matrix for a case.
+ * Auto-builds intelligence if bundle does not exist yet.
+ */
+router.get('/cases/:caseId/intelligence/requirements', async (req, res) => {
+  try {
+    const { bundle, rebuilt } = await loadOrBuildBundle(req.params.caseId);
+    res.json({
+      ok: true,
+      rebuilt,
+      sectionRequirements: bundle.sectionRequirements || null,
+    });
+  } catch (err) {
+    const code = String(err?.message || '').includes('Case directory not found') ? 404 : 500;
+    res.status(code).json({ error: err.message });
+  }
+});
+
+// —— GET /cases/:caseId/intelligence/compliance-check ————————————
+/**
+ * Get deterministic hard-rule compliance findings for a case.
+ * Auto-builds intelligence if bundle does not exist yet.
+ */
+router.get('/cases/:caseId/intelligence/compliance-check', async (req, res) => {
+  try {
+    const { bundle, rebuilt } = await loadOrBuildBundle(req.params.caseId);
+    res.json({
+      ok: true,
+      rebuilt,
+      complianceChecks: bundle.complianceChecks || null,
+    });
+  } catch (err) {
+    const code = String(err?.message || '').includes('Case directory not found') ? 404 : 500;
+    res.status(code).json({ error: err.message });
   }
 });
 
