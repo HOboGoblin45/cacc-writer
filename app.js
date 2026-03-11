@@ -4,7 +4,9 @@ const FORM_CONFIGS_CACHE = {};
 const STATE = {
   caseId: null,
   facts: {},
+  provenance: {},
   outputs: {},
+  caseRecord: null,
   factsObj: null,
   questionnaire: [],
   formType: '1004',
@@ -238,6 +240,60 @@ function setCaseFilter(filter,btn) {
   if(btn)btn.classList.add('active');
   renderCaseList(window._allCases||[]);
 }
+
+function collectUnresolvedIssues() {
+  const raw=$('unresolvedIssues')?.value||'';
+  const lines=raw
+    .split('\n')
+    .map(s=>s.trim())
+    .filter(Boolean);
+  const unique=[];
+  const seen=new Set();
+  for(const line of lines){
+    const key=line.toLowerCase();
+    if(seen.has(key)) continue;
+    seen.add(key);
+    unique.push(line);
+    if(unique.length>=100) break;
+  }
+  return unique;
+}
+
+function countFactLeaves(node) {
+  if(!node || typeof node!=='object') return 0;
+  if(Array.isArray(node)) {
+    return node.reduce((acc,item)=>acc+countFactLeaves(item),0);
+  }
+  let total=0;
+  for(const [k,v] of Object.entries(node)) {
+    if(k==='updatedAt'||k==='extractedAt') continue;
+    if(v && typeof v==='object') {
+      if(Object.prototype.hasOwnProperty.call(v,'value')) total++;
+      else total+=countFactLeaves(v);
+    } else if(v!=='' && v!==null && v!==undefined) {
+      total++;
+    }
+  }
+  return total;
+}
+
+function renderCaseStripMeta(detail={}) {
+  const el=$('caseStripMeta');
+  if(!el) return;
+  if(!STATE.caseId){
+    el.textContent='No case selected';
+    return;
+  }
+  const docs=Object.keys(detail.docSummary||{}).length;
+  const facts=countFactLeaves(detail.facts||{});
+  const sources=Object.keys(detail.provenance||{}).length;
+  const issues=Array.isArray(detail.meta?.unresolvedIssues)?detail.meta.unresolvedIssues.length:0;
+  const wf=detail.meta?.workflowStatus||'facts_incomplete';
+  const wfLabel=WF_LABELS[wf]||wf;
+  const ft=(detail.meta?.formType||STATE.formType||'').toUpperCase();
+  const parts=[ft,`Docs ${docs}`,`Facts ${facts}`,`Sources ${sources}`,`Issues ${issues}`,wfLabel].filter(Boolean);
+  el.textContent=parts.join(' • ');
+}
 function renderCaseList(cases) {
   window._allCases=cases;
   const filtered=_caseFilter==='all'?cases:cases.filter(cs=>(cs.status||'active')===_caseFilter);
@@ -254,7 +310,9 @@ function renderCaseList(cases) {
     const loanChip=cs.loanProgram?`<span class="meta-chip loan">${esc(cs.loanProgram)}</span>`:'';
     const condChip=cs.subjectCondition?`<span class="meta-chip cond-rating">${esc(cs.subjectCondition)}</span>`:'';
     const geoChip=(cs.city||cs.county)?`<span class="meta-chip geo">${esc([cs.city,cs.county].filter(Boolean).join(', '))}</span>`:'';
-    const chips=[purposeChip,loanChip,condChip,geoChip].filter(Boolean).join('');
+    const issuesChip=Array.isArray(cs.unresolvedIssues)&&cs.unresolvedIssues.length
+      ?`<span class="meta-chip status">Issues: ${cs.unresolvedIssues.length}</span>`:'';
+    const chips=[purposeChip,loanChip,condChip,geoChip,issuesChip].filter(Boolean).join('');
     return '<div class="case-item'+active+'" onclick="loadCase('+cid+')">'
       +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
       +'<span style="flex:1;font-size:12px;font-weight:600;">'+esc(cs.address||cs.caseId)+'</span>'
@@ -299,6 +357,7 @@ async function createCase() {
     neighborhood:        $('metaNeighborhood')?.value.trim()||'',
     marketType:          $('marketType')?.value||null,
     assignmentNotes:     $('assignmentNotes')?.value.trim()||'',
+    unresolvedIssues:    collectUnresolvedIssues(),
   }});
   if(!d.ok){setStatus('caseStatus','Error: '+d.error,'err');return;}
   await loadCase(d.caseId);
@@ -311,7 +370,9 @@ async function loadCase(caseId) {
   if(!d.ok){setStatus('caseStatus','Failed: '+d.error,'err');return;}
   STATE.caseId=caseId;
   STATE.facts=d.facts||{};
+  STATE.provenance=d.provenance||{};
   STATE.outputs=d.outputs||{};
+  STATE.caseRecord=d.caseRecord||null;
   STATE.meta=d.meta||{};
   STATE._lastDocSummary=d.docSummary||{};
   $('caseBadge').style.display='flex';
@@ -326,6 +387,7 @@ async function loadCase(caseId) {
   // ── Render metadata chips + workflow badge ────────────────────────────────
   renderCaseMetadata(d.meta);
   updateWorkflowBadge(d.meta.workflowStatus||'facts_incomplete');
+  renderCaseStripMeta(d);
   // Set form config for this case (also handles scope banner + generate enable/disable)
   await setActiveFormConfig(d.meta.formType||'1004');
   // ── Deferred-form legacy case: show scope warning from server ─────────────
@@ -342,6 +404,7 @@ async function loadCase(caseId) {
   }
   renderDocSlots(d.docSummary||{});
   renderFacts(d.facts||{});
+  renderFactSourcesEditor(STATE.provenance);
   renderOutputsFromState();
   autoFillGenerateInputs(d.facts||{},d.meta);
   setStatus('genStatus','Ready.','');
@@ -379,6 +442,7 @@ async function updateCase() {
     neighborhood:        $('metaNeighborhood')?.value.trim()||'',
     marketType:          $('marketType')?.value||null,
     assignmentNotes:     $('assignmentNotes')?.value.trim()||'',
+    unresolvedIssues:    collectUnresolvedIssues(),
   }});
   if(!d.ok){setStatus('caseStatus','Error: '+d.error,'err');return;}
   await loadCase(STATE.caseId);
@@ -391,10 +455,13 @@ async function deleteCase(caseId,btn) {
   const d=await apiFetch('/api/cases/'+caseId,{method:'DELETE'});
   if(!d.ok){alert('Error: '+d.error);if(btn)btn.disabled=false;return;}
   if(STATE.caseId===caseId){
-    STATE.caseId=null;STATE.facts={};STATE.outputs={};STATE.factsObj=null;
+    STATE.caseId=null;STATE.facts={};STATE.provenance={};STATE.outputs={};STATE.caseRecord=null;STATE.factsObj=null;
     $('caseBadge').style.display='none';$('caseFormBadge').style.display='none';
     $('docSlots').innerHTML='';$('docHint').style.display='';
     $('factsDisplay').innerHTML='<div class="hint">No facts extracted yet. Upload documents then click Extract Facts from Docs.</div>';
+    const fsj=$('factSourceJson'); if(fsj) fsj.value='';
+    setStatus('factSourceStatus','');
+    renderCaseStripMeta({});
     $('output').innerHTML='';setStatus('genStatus','Ready.','');
   }
   await loadCases();
@@ -606,8 +673,74 @@ async function saveFacts() {
     }
   });
   const d=await apiFetch('/api/cases/'+STATE.caseId+'/facts',{method:'PUT',body:facts});
-  if(d.ok){STATE.factsObj=d.facts;setStatus('questionnaireStatus','Facts saved.','ok');setTimeout(()=>setStatus('questionnaireStatus','',''),3000);}
+  if(d.ok){
+    STATE.factsObj=d.facts;
+    STATE.facts=d.facts;
+    renderFacts(d.facts||{});
+    renderCaseStripMeta({
+      meta: STATE.meta||{},
+      facts: STATE.facts||{},
+      provenance: STATE.provenance||{},
+      docSummary: STATE._lastDocSummary||{},
+    });
+    setStatus('questionnaireStatus','Facts saved.','ok');
+    setTimeout(()=>setStatus('questionnaireStatus','',''),3000);
+  }
   else setStatus('questionnaireStatus','Save failed: '+d.error,'err');
+}
+
+function renderFactSourcesEditor(sources={}) {
+  const ta=$('factSourceJson');
+  if(!ta) return;
+  const safe=(sources&&typeof sources==='object'&&!Array.isArray(sources))?sources:{};
+  ta.value=JSON.stringify(safe,null,2);
+}
+
+async function reloadFactSources() {
+  if(!STATE.caseId){setStatus('factSourceStatus','Select a case first.','err');return;}
+  const d=await apiFetch('/api/cases/'+STATE.caseId+'/fact-sources');
+  if(!d.ok){
+    setStatus('factSourceStatus','Load failed: '+(d.error||'Unknown error'),'err');
+    return;
+  }
+  STATE.provenance=d.sources||{};
+  renderFactSourcesEditor(STATE.provenance);
+  renderCaseStripMeta({
+    meta: STATE.meta||{},
+    facts: STATE.facts||{},
+    provenance: STATE.provenance||{},
+    docSummary: STATE._lastDocSummary||{},
+  });
+  setStatus('factSourceStatus','Loaded '+(d.count||0)+' source link(s).','ok');
+}
+
+async function saveFactSources() {
+  if(!STATE.caseId){setStatus('factSourceStatus','Select a case first.','err');return;}
+  const raw=$('factSourceJson')?.value||'{}';
+  let parsed;
+  try {
+    parsed=JSON.parse(raw);
+  } catch(e) {
+    setStatus('factSourceStatus','Invalid JSON: '+e.message,'err');
+    return;
+  }
+  const d=await apiFetch('/api/cases/'+STATE.caseId+'/fact-sources',{
+    method:'PUT',
+    body:{sources:parsed,replace:true},
+  });
+  if(!d.ok){
+    setStatus('factSourceStatus','Save failed: '+(d.error||'Unknown error'),'err');
+    return;
+  }
+  STATE.provenance=d.sources||{};
+  renderFactSourcesEditor(STATE.provenance);
+  renderCaseStripMeta({
+    meta: STATE.meta||{},
+    facts: STATE.facts||{},
+    provenance: STATE.provenance||{},
+    docSummary: STATE._lastDocSummary||{},
+  });
+  setStatus('factSourceStatus','Saved '+(d.count||0)+' source link(s).','ok');
 }
 
 // ====== GENERATE ======
@@ -1647,6 +1780,7 @@ function populateAssignmentFields(meta) {
   setSelect('marketType',         meta.marketType);
   // Card 4: Notes
   set('assignmentNotes',          meta.assignmentNotes);
+  set('unresolvedIssues',         Array.isArray(meta.unresolvedIssues)?meta.unresolvedIssues.join('\n'):'');
 }
 
 /**
@@ -1665,6 +1799,9 @@ function renderCaseMetadata(meta) {
   const geo=[meta.city,meta.county,meta.state].filter(Boolean).join(', ');
   if(geo) chips.push(`<span class="meta-chip geo">${esc(geo)}</span>`);
   if(meta.marketType) chips.push(`<span class="meta-chip">${esc(meta.marketType)}</span>`);
+  if(Array.isArray(meta.unresolvedIssues)&&meta.unresolvedIssues.length){
+    chips.push(`<span class="meta-chip status">Issues: ${meta.unresolvedIssues.length}</span>`);
+  }
   if(!chips.length){ wrap.style.display='none'; return; }
   wrap.style.display='flex';
   wrap.innerHTML=chips.join('');
@@ -3624,6 +3761,8 @@ const _origShowTabForOps = typeof showTab === 'function' ? showTab : null;
   await pingServer();
   await initFormRegistry();
   await loadCases();
+  renderCaseStripMeta({});
+  renderFactSourcesEditor({});
   await checkAgentStatus();
   await initVersionDisplay();
   await loadHealthStatus();
