@@ -35,13 +35,8 @@ import path from 'path';
 import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
-<<<<<<< HEAD
-import { CASES_DIR, CASE_ID_RE, casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
-import { readJSON, writeJSON, withCaseLock } from '../utils/fileUtils.js';
-=======
 import { casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 import { trimText } from '../utils/textUtils.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
@@ -253,32 +248,17 @@ router.get('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId — Update case metadata ─────────────────────────────────────
-<<<<<<< HEAD
-router.patch('/:caseId', async (req, res) => {
-=======
 router.patch('/:caseId', (req, res) => {
   const body = parsePayload(updateCaseSchema, req.body || {}, res);
   if (!body) return;
 
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const result = await withCaseLock(req.params.caseId, () => {
-      const mf = path.join(cd, 'meta.json');
-      let meta = readJSON(mf);
+    const mf = path.join(cd, 'meta.json');
+    let meta = readJSON(mf);
 
-<<<<<<< HEAD
-      meta.address  = trimText(req.body?.address  ?? meta.address,  240);
-      meta.borrower = trimText(req.body?.borrower ?? meta.borrower, 180);
-      if (req.body?.notes    !== undefined) meta.notes    = trimText(req.body.notes, 1000);
-      if (req.body?.formType !== undefined) meta.formType = normalizeFormType(req.body.formType);
-
-      const assignmentFields = extractMetaFields(req.body, trimText);
-      meta = { ...meta, ...assignmentFields };
-      meta.updatedAt = new Date().toISOString();
-=======
     meta.address  = trimText(body.address  ?? meta.address,  240);
     meta.borrower = trimText(body.borrower ?? meta.borrower, 180);
     if (body.notes    !== undefined) meta.notes    = trimText(body.notes, 1000);
@@ -287,12 +267,9 @@ router.patch('/:caseId', (req, res) => {
     const assignmentFields = extractMetaFields(body, trimText);
     meta = { ...meta, ...assignmentFields };
     meta.updatedAt = new Date().toISOString();
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 
-      writeJSON(mf, meta);
-      return meta;
-    });
-    res.json({ ok: true, meta: applyMetaDefaults(result) });
+    writeJSON(mf, meta);
+    res.json({ ok: true, meta: applyMetaDefaults(meta) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -311,28 +288,21 @@ router.delete('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId/status — Set case status ───────────────────────────────────
-<<<<<<< HEAD
-router.patch('/:caseId/status', async (req, res) => {
-=======
 router.patch('/:caseId/status', (req, res) => {
   const body = parsePayload(statusSchema, req.body || {}, res);
   if (!body) return;
 
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const nextStatus = trimText(body.status, 20).toLowerCase() || 'active';
 
-    const meta = await withCaseLock(req.params.caseId, () => {
-      const mf   = path.join(cd, 'meta.json');
-      const m = readJSON(mf);
-      m.status    = nextStatus;
-      m.updatedAt = new Date().toISOString();
-      writeJSON(mf, m);
-      return m;
-    });
+    const mf   = path.join(cd, 'meta.json');
+    const meta = readJSON(mf);
+    meta.status    = nextStatus;
+    meta.updatedAt = new Date().toISOString();
+    writeJSON(mf, meta);
     res.json({ ok: true, meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -340,32 +310,16 @@ router.patch('/:caseId/status', (req, res) => {
 });
 
 // ── PATCH /:caseId/pipeline — Advance pipeline stage ─────────────────────────
-<<<<<<< HEAD
-router.patch('/:caseId/pipeline', async (req, res) => {
-=======
 router.patch('/:caseId/pipeline', (req, res) => {
   const body = parsePayload(pipelineSchema, req.body || {}, res);
   if (!body) return;
 
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const stage = trimText(body.stage, 20).toLowerCase();
 
-<<<<<<< HEAD
-    const meta = await withCaseLock(req.params.caseId, () => {
-      const mf   = path.join(cd, 'meta.json');
-      const m = readJSON(mf);
-      m.pipelineStage = stage;
-      m.updatedAt     = new Date().toISOString();
-      if (!m.pipelineHistory) m.pipelineHistory = [];
-      m.pipelineHistory.push({ stage, at: m.updatedAt });
-      writeJSON(mf, m);
-      return m;
-    });
-=======
     const mf   = path.join(cd, 'meta.json');
     const meta = readJSON(mf);
     meta.pipelineStage = stage;
@@ -373,7 +327,6 @@ router.patch('/:caseId/pipeline', (req, res) => {
     if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
     meta.pipelineHistory.push({ stage, at: meta.updatedAt });
     writeJSON(mf, meta);
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
     res.json({ ok: true, pipelineStage: stage, meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -381,14 +334,10 @@ router.patch('/:caseId/pipeline', (req, res) => {
 });
 
 // ── PATCH /:caseId/workflow-status — Set workflowStatus ──────────────────────
-<<<<<<< HEAD
-router.patch('/:caseId/workflow-status', async (req, res) => {
-=======
 router.patch('/:caseId/workflow-status', (req, res) => {
   const body = parsePayload(workflowStatusSchema, req.body || {}, res);
   if (!body) return;
 
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -405,14 +354,11 @@ router.patch('/:caseId/workflow-status', (req, res) => {
       });
     }
 
-    const meta = await withCaseLock(req.params.caseId, () => {
-      const mf   = path.join(cd, 'meta.json');
-      const m = readJSON(mf);
-      m.workflowStatus = status;
-      m.updatedAt      = new Date().toISOString();
-      writeJSON(mf, m);
-      return m;
-    });
+    const mf   = path.join(cd, 'meta.json');
+    const meta = readJSON(mf);
+    meta.workflowStatus = status;
+    meta.updatedAt      = new Date().toISOString();
+    writeJSON(mf, meta);
     res.json({ ok: true, workflowStatus: status, meta: applyMetaDefaults(meta) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -420,9 +366,6 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 });
 
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
-<<<<<<< HEAD
-router.put('/:caseId/facts', async (req, res) => {
-=======
 router.put('/:caseId/facts', (req, res) => {
   const body = parsePayload(factsSchema, req.body || {}, res);
   if (!body || Array.isArray(body)) {
@@ -432,29 +375,19 @@ router.put('/:caseId/facts', (req, res) => {
     return;
   }
 
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-<<<<<<< HEAD
-    const result = await withCaseLock(req.params.caseId, () => {
-      const factsFile = path.join(cd, 'facts.json');
-      const updated   = { ...readJSON(factsFile, {}), ...req.body, updatedAt: new Date().toISOString() };
-      writeJSON(factsFile, updated);
-=======
     const factsFile = path.join(cd, 'facts.json');
     const updated   = { ...readJSON(factsFile, {}), ...body, updatedAt: new Date().toISOString() };
     writeJSON(factsFile, updated);
->>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 
-      const meta = readJSON(path.join(cd, 'meta.json'));
-      meta.updatedAt = new Date().toISOString();
-      writeJSON(path.join(cd, 'meta.json'), meta);
+    const meta = readJSON(path.join(cd, 'meta.json'));
+    meta.updatedAt = new Date().toISOString();
+    writeJSON(path.join(cd, 'meta.json'), meta);
 
-      return updated;
-    });
-    res.json({ ok: true, facts: result });
+    res.json({ ok: true, facts: updated });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
