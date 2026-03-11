@@ -53,6 +53,7 @@ import { buildRetrievalPack } from '../context/retrievalPackBuilder.js';
 import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImport.js';
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
 import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
+import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -80,6 +81,42 @@ function safeSyncCaseRecord(caseId) {
     // Keep generation endpoints stable if canonical sync has an issue.
     log.warn('case-record:sync-failed', { caseId, error: err.message });
   }
+}
+
+function toSectionIds(fields) {
+  if (!Array.isArray(fields)) return [];
+  const ids = [];
+  for (const field of fields) {
+    const id = trimText(field?.id || field, 80);
+    if (!id) continue;
+    if (!ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+function shouldBypassPreDraftGate(req) {
+  return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
+}
+
+function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) {
+  if (shouldBypassPreDraftGate(req)) return true;
+
+  const gate = evaluatePreDraftGate({ caseId, formType, sectionIds });
+  if (!gate) {
+    res.status(404).json({ ok: false, error: 'Case not found' });
+    return false;
+  }
+
+  if (gate.ok) return true;
+
+  res.status(409).json({
+    ok: false,
+    code: 'PRE_DRAFT_GATE_BLOCKED',
+    error: 'Pre-draft integrity gate blocked generation',
+    gate,
+    hint: 'Resolve blocker items from GET /api/cases/:caseId/pre-draft-check, or pass forceGateBypass=true.',
+  });
+  return false;
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -145,6 +182,11 @@ router.post('/generate', ensureAI, async (req, res) => {
           assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd, 'meta.json'), {})));
         }
       }
+      if (caseId && !enforcePreDraftGate(req, res, {
+        caseId,
+        formType: ft,
+        sectionIds: [fieldId],
+      })) return;
       const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType: ft, fieldId });
       const messages = buildPromptMessages({
         formType: ft,
@@ -183,6 +225,7 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
     if (fields.length > MAX_BATCH_FIELDS) {
       return res.status(400).json({ ok: false, error: 'fields must be <= ' + MAX_BATCH_FIELDS });
     }
+    const requestedSectionIds = toSectionIds(fields);
 
     let caseFacts = {};
     let caseDir = null;
@@ -208,6 +251,11 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
           message: `Batch generation is not available for form type "${caseFormType}". Active forms: ${ACTIVE_FORMS.join(', ')}.`,
         });
       }
+      if (!enforcePreDraftGate(req, res, {
+        caseId,
+        formType: caseFormType,
+        sectionIds: requestedSectionIds.length ? requestedSectionIds : null,
+      })) return;
       if (fields.some(f => LOCATION_CONTEXT_FIELDS.has(f?.id))) {
         const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
         if (geo?.subject?.result?.lat) {
@@ -351,6 +399,11 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
     if (!targetFields.length) {
       return res.status(400).json({ ok: false, error: 'No core sections defined for form type: ' + formType });
     }
+    if (!enforcePreDraftGate(req, res, {
+      caseId: req.params.caseId,
+      formType,
+      sectionIds: targetFields.map(section => section.id),
+    })) return;
 
     const results = {};
     const errors = {};
@@ -451,6 +504,11 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
     }
 
     const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    if (!enforcePreDraftGate(req, res, {
+      caseId: req.params.caseId,
+      formType,
+      sectionIds: ['sca_summary'],
+    })) return;
     const assignmentMeta = buildAssignmentMetaBlock(
       applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
     );
@@ -564,6 +622,11 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     if (!allFields.length) {
       return res.status(400).json({ ok: false, error: 'No fields configured for form type: ' + formType });
     }
+    if (!enforcePreDraftGate(req, res, {
+      caseId: req.params.caseId,
+      formType,
+      sectionIds: toSectionIds(allFields),
+    })) return;
 
     const results = {};
     const errors = {};
@@ -658,6 +721,10 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
   if (!fs.existsSync(caseDir)) {
     return res.status(404).json({ ok: false, error: `Case not found: ${caseId}` });
   }
+  if (!enforcePreDraftGate(req, res, {
+    caseId,
+    formType: resolvedFormType === 'unknown' ? null : resolvedFormType,
+  })) return;
 
   let runId = null;
 
@@ -760,6 +827,10 @@ router.post('/generation/full-draft', async (req, res) => {
       error:     `Form type "${resolvedFormType}" is deferred and not supported in the current production scope.`,
     });
   }
+  if (!enforcePreDraftGate(req, res, {
+    caseId,
+    formType: resolvedFormType === 'unknown' ? null : resolvedFormType,
+  })) return;
 
   let runId = null;
 

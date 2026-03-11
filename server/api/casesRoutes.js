@@ -54,6 +54,8 @@ import {
   updateCaseFactProvenance,
   getCaseFactProvenance,
 } from '../caseRecord/caseRecordService.js';
+import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
+import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -367,6 +369,36 @@ router.put('/:caseId/fact-sources', (req, res) => {
 });
 
 // ── GET /:caseId — Load case ──────────────────────────────────────────────────
+router.get('/:caseId/fact-conflicts', (req, res) => {
+  try {
+    const report = detectFactConflicts(req.params.caseId);
+    if (!report) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({ ok: true, ...report });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/pre-draft-check', (req, res) => {
+  try {
+    const formType = trimText(req.query.formType, 40) || null;
+    const sectionIds = trimText(req.query.sections, 4000)
+      .split(',')
+      .map(v => trimText(v, 80))
+      .filter(Boolean);
+
+    const gate = evaluatePreDraftGate({
+      caseId: req.params.caseId,
+      formType,
+      sectionIds: sectionIds.length ? sectionIds : null,
+    });
+    if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({ ok: true, gate });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/:caseId', (req, res) => {
   try {
     const projection = getCaseProjection(req.params.caseId);
