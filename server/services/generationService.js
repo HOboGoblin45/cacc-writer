@@ -20,6 +20,7 @@ import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock, LOCATION_CONTEXT_FIELDS } from '../neighborhoodContext.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
+import { getSectionDef } from '../context/reportPlanner.js';
 import log from '../logger.js';
 
 // ── Review response parsing ──────────────────────────────────────────────────
@@ -100,6 +101,7 @@ export async function loadCaseContext(caseId) {
  * @param {string|null} options.assignmentMeta — assignment metadata block
  * @param {string|null} options.locationContext — location context block (only injected for location-sensitive fields)
  * @param {boolean} [options.twoPass=false] — whether to run two-pass review
+ * @param {string|null} [options.extraContext=null] — prior section outputs for synthesis sections
  * @returns {{ text: string, examplesUsed: number }}
  */
 export async function generateSection({
@@ -109,6 +111,7 @@ export async function generateSection({
   assignmentMeta = null,
   locationContext = null,
   twoPass = false,
+  extraContext = null,
 }) {
   const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({
     formType,
@@ -123,13 +126,16 @@ export async function generateSection({
     examples: otherExamples,
     locationContext: LOCATION_CONTEXT_FIELDS.has(fieldId) ? locationContext : null,
     assignmentMeta,
+    extraContext,
   });
 
   let text = await callAI(messages);
 
   if (twoPass && text) {
     try {
-      const rm = buildReviewMessages({ draftText: text, facts, fieldId, formType });
+      const rm = buildReviewMessages({
+        draftText: text, facts, fieldId, formType, assignmentMeta, locationContext,
+      });
       const rr = await callAI(rm);
       const rv = parseReviewResponse(rr);
       if (rv?.revisedText) text = rv.revisedText;
@@ -172,26 +178,31 @@ export async function generateSections({
 }) {
   const results = {};
   const errors = {};
-  let qi = 0;
 
-  async function processField() {
-    while (qi < fields.length) {
-      const f = fields[qi++];
-      const sid = trimText(f?.id || f, 80) || ('field_' + Math.random().toString(36).slice(2, 8));
+  // Separate parallel (no dependencies) from dependent sections
+  const parallel = [];
+  const dependent = [];
+
+  for (const f of fields) {
+    const fid = trimText(f?.id || f, 80) || ('field_' + Math.random().toString(36).slice(2, 8));
+    const def = getSectionDef(formType, fid);
+    if (def?.dependsOn?.length > 0) {
+      dependent.push({ field: f, id: fid, dependsOn: def.dependsOn });
+    } else {
+      parallel.push({ field: f, id: fid });
+    }
+  }
+
+  // Phase 1: Generate parallel sections concurrently
+  let qi = 0;
+  async function processParallel() {
+    while (qi < parallel.length) {
+      const { field: f, id: sid } = parallel[qi++];
       try {
         const { text, examplesUsed } = await generateSection({
-          formType,
-          fieldId: sid,
-          facts,
-          assignmentMeta,
-          locationContext,
-          twoPass,
+          formType, fieldId: sid, facts, assignmentMeta, locationContext, twoPass,
         });
-        results[sid] = {
-          title: trimText(f?.title, 160) || sid,
-          text,
-          examplesUsed,
-        };
+        results[sid] = { title: trimText(f?.title, 160) || sid, text, examplesUsed };
       } catch (e) {
         errors[sid] = e?.message || 'Unknown error';
       }
@@ -199,8 +210,38 @@ export async function generateSections({
   }
 
   await Promise.all(
-    Array.from({ length: Math.min(concurrency, fields.length) }, processField)
+    Array.from({ length: Math.min(concurrency, parallel.length) }, processParallel)
   );
+
+  // Phase 2: Generate dependent sections with prior section context
+  for (const { field: f, id: sid, dependsOn } of dependent) {
+    try {
+      // Build extraContext from completed dependency outputs
+      const priorSections = dependsOn
+        .filter(depId => results[depId]?.text)
+        .map(depId => `[${results[depId].title || depId}]\n${results[depId].text}`)
+        .join('\n\n');
+
+      const extraContext = priorSections
+        ? `PRIOR SECTION OUTPUTS (reference these for consistency — do not contradict):\n\n${priorSections}`
+        : null;
+
+      if (extraContext) {
+        log.info('generation:cross-section-context', {
+          fieldId: sid,
+          dependsOn,
+          priorSectionsAvailable: dependsOn.filter(d => results[d]?.text).length,
+        });
+      }
+
+      const { text, examplesUsed } = await generateSection({
+        formType, fieldId: sid, facts, assignmentMeta, locationContext, twoPass, extraContext,
+      });
+      results[sid] = { title: trimText(f?.title, 160) || sid, text, examplesUsed };
+    } catch (e) {
+      errors[sid] = e?.message || 'Unknown error';
+    }
+  }
 
   return { results, errors };
 }

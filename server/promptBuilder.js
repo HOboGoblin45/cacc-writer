@@ -433,14 +433,16 @@ export function buildPromptMessages({
  * missing placeholders, and USPAP compliance.
  *
  * @param {object} params
- *   @param {string} params.draftText   The draft narrative to review
- *   @param {object} [params.facts]     Case facts (so reviewer knows what's supported)
- *   @param {string} [params.fieldId]   Field being reviewed
- *   @param {string} [params.formType]  Form type
+ *   @param {string} params.draftText       The draft narrative to review
+ *   @param {object} [params.facts]         Case facts (so reviewer knows what's supported)
+ *   @param {string} [params.fieldId]       Field being reviewed
+ *   @param {string} [params.formType]      Form type
+ *   @param {object} [params.assignmentMeta] Assignment context (loan program, condition mode)
+ *   @param {string} [params.locationContext] Location context string
  *
  * @returns {Array<{role: string, content: string}>}
  */
-export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formType = '1004' }) {
+export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formType = '1004', assignmentMeta = null, locationContext = null }) {
   const messages = [];
 
   // Block 1: Review system prompt
@@ -499,6 +501,19 @@ Return JSON only:
       role: 'system',
       content: 'SUPPORTED FACTS (only these facts are confirmed in this report — anything else is unsupported):\n\n' + supportedFacts.join('\n'),
     });
+  }
+
+  // Block 2.5: Assignment context (so reviewer can check compliance language)
+  if (assignmentMeta && typeof assignmentMeta === 'object') {
+    const block = buildAssignmentContextBlock(assignmentMeta);
+    if (block) {
+      messages.push({ role: 'system', content: block });
+    }
+  }
+
+  // Block 2.7: Location context (so reviewer can verify geographic claims)
+  if (locationContext && LOCATION_CONTEXT_FIELDS.has(fieldId)) {
+    messages.push({ role: 'system', content: locationContext });
   }
 
   // Block 3: The draft to review
