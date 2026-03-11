@@ -20,12 +20,13 @@ import {
   CASES_DIR,
   CASE_ID_RE,
   resolveCaseDir,
-  getCaseFormConfig,
+  normalizeFormType,
 } from '../utils/caseUtils.js';
-import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { readJSON } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
 import { upload, ensureAI } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
+import { getFormConfig } from '../../forms/index.js';
 
 import {
   ACTIVE_FORMS,
@@ -38,7 +39,7 @@ import { callAI, client, MODEL } from '../openaiClient.js';
 import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
-import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
+import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import {
   getNeighborhoodBoundaryFeatures,
@@ -49,15 +50,6 @@ import log from '../logger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const router = Router();
-
-function safeSyncCaseRecord(caseId) {
-  try {
-    syncCaseRecordFromFilesystem(caseId);
-  } catch (err) {
-    // Keep legacy workflow endpoints stable if canonical sync has an issue.
-    log.warn('case-record:sync-failed', { caseId, error: err.message });
-  }
-}
 
 function toSectionIds(fields) {
   if (!Array.isArray(fields)) return [];
@@ -78,6 +70,43 @@ function evaluateGateForCase(caseId, formType, sectionIds) {
   return evaluatePreDraftGate({ caseId, formType, sectionIds });
 }
 
+function loadCaseRuntime(caseId) {
+  const projection = getCaseProjection(caseId);
+  if (!projection) return null;
+  const formType = normalizeFormType(projection.meta?.formType);
+  return {
+    projection,
+    formType,
+    formConfig: getFormConfig(formType),
+    facts: projection.facts || {},
+    assignmentMeta: buildAssignmentMetaBlock(applyMetaDefaults(projection.meta || {})),
+  };
+}
+
+function persistWorkflowOutputs(caseId, projection, results = {}) {
+  if (!projection) return null;
+  const now = new Date().toISOString();
+  const nextMeta = {
+    ...(projection.meta || {}),
+    updatedAt: now,
+    pipelineStage: 'generating',
+  };
+  const nextOutputs = {
+    ...(projection.outputs || {}),
+    ...(results || {}),
+    updatedAt: now,
+  };
+  return saveCaseProjection({
+    caseId,
+    meta: nextMeta,
+    facts: projection.facts || {},
+    provenance: projection.provenance || {},
+    outputs: nextOutputs,
+    history: projection.history || {},
+    docText: projection.docText || {},
+  });
+}
+
 router.post('/workflow/run', ensureAI, async (req, res) => {
   try {
     const { caseId, fields, twoPass = false, saveOutputs = true } = req.body;
@@ -88,20 +117,17 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
     }
     if (!caseId) return res.status(400).json({ ok: false, error: 'caseId is required' });
 
-    const caseDir = resolveCaseDir(caseId);
-    if (!caseDir || !fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const runtime = loadCaseRuntime(caseId);
+    if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const { projection, formType, formConfig, facts, assignmentMeta } = runtime;
 
-    const { formType, formConfig } = getCaseFormConfig(caseDir);
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType, 'POST /api/workflow/run', log);
       return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
     }
 
-    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
-    const rawMeta = readJSON(path.join(caseDir, 'meta.json'), {});
-    const assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(rawMeta));
-
-    const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+    const caseDir = resolveCaseDir(caseId);
+    const geo = caseDir ? readJSON(path.join(caseDir, 'geocode.json'), null) : null;
     let locationContext = null;
     if (geo?.subject?.result?.lat) {
       try {
@@ -185,15 +211,7 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, targetFields.length) }, runField));
 
     if (saveOutputs && Object.keys(results).length) {
-      const outputsFile = path.join(caseDir, 'outputs.json');
-      const existing = readJSON(outputsFile, {});
-      writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
-
-      const meta = readJSON(path.join(caseDir, 'meta.json'));
-      meta.updatedAt = new Date().toISOString();
-      meta.pipelineStage = 'generating';
-      writeJSON(path.join(caseDir, 'meta.json'), meta);
-      safeSyncCaseRecord(caseId);
+      persistWorkflowOutputs(caseId, projection, results);
     }
 
     res.json({ ok: true, results, errors, formType, fieldsAttempted: targetFields.length });
@@ -218,21 +236,17 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
     const batchResults = [];
     const batchErrors = [];
     for (const caseId of cases) {
-      const caseDir = resolveCaseDir(caseId);
-      if (!caseDir || !fs.existsSync(caseDir)) {
+      const runtime = loadCaseRuntime(caseId);
+      if (!runtime) {
         batchErrors.push({ caseId, error: 'Case not found' });
         continue;
       }
-      const { formType, formConfig } = getCaseFormConfig(caseDir);
+      const { projection, formType, formConfig, facts, assignmentMeta } = runtime;
       if (isDeferredForm(formType)) {
         batchErrors.push({ caseId, error: 'Deferred form type: ' + formType });
         continue;
       }
       try {
-        const facts = readJSON(path.join(caseDir, 'facts.json'), {});
-        const assignmentMeta = buildAssignmentMetaBlock(
-          applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
-        );
         const targetFields = Array.isArray(fields) && fields.length
           ? fields
           : (formConfig.workflowFields || CORE_SECTIONS[formType] || []);
@@ -289,16 +303,7 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
             errors[sid] = e?.message || 'Unknown error';
           }
         }
-        const outputsFile = path.join(caseDir, 'outputs.json');
-        const existing = readJSON(outputsFile, {});
-        writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
-
-        const metaPath = path.join(caseDir, 'meta.json');
-        const meta = readJSON(metaPath, {});
-        meta.updatedAt = new Date().toISOString();
-        meta.pipelineStage = 'generating';
-        writeJSON(metaPath, meta);
-        safeSyncCaseRecord(caseId);
+        persistWorkflowOutputs(caseId, projection, results);
         batchResults.push({ caseId, results, errors });
       } catch (e) {
         batchErrors.push({ caseId, error: e.message });

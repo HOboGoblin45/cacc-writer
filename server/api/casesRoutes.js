@@ -47,9 +47,9 @@ import { geocodeAddress, distanceMiles, cardinalDirection, buildAddressString } 
 import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock } from '../neighborhoodContext.js';
 import { getRunsForCase } from '../orchestrator/generationOrchestrator.js';
 import {
+  saveCaseProjection,
   getCaseProjection,
   listCaseProjections,
-  syncCaseRecordFromFilesystem,
   deleteCanonicalCaseRecord,
   updateCaseFactProvenance,
   getCaseFactProvenance,
@@ -136,16 +136,6 @@ function parsePayload(schema, payload, res) {
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
-function safeSyncCaseRecord(caseId) {
-  try {
-    return syncCaseRecordFromFilesystem(caseId);
-  } catch (err) {
-    // Keep core file-based workflows usable if canonical write-through fails.
-    log.warn('case-record:sync-failed', { caseId, error: err.message });
-    return null;
-  }
-}
-
 function safeDeleteCaseRecord(caseId) {
   try {
     deleteCanonicalCaseRecord(caseId);
@@ -272,14 +262,16 @@ function createCaseHandler(req, res) {
     const meta = applyMetaDefaults({ ...baseMeta, ...assignmentFields });
 
     fs.mkdirSync(path.join(caseDir, 'documents'), { recursive: true });
-    ['meta.json', 'facts.json', 'fact_sources.json', 'doc_text.json', 'outputs.json'].forEach(f =>
-      writeJSON(path.join(caseDir, f), {}),
-    );
-    writeJSON(path.join(caseDir, 'feedback.json'), []);
-    writeJSON(path.join(caseDir, 'meta.json'), meta);
-
-    const projection = safeSyncCaseRecord(caseId);
-    res.json({ ok: true, caseId, meta: projection?.meta || meta });
+    const projection = saveCaseProjection({
+      caseId,
+      meta,
+      facts: {},
+      provenance: {},
+      outputs: {},
+      history: {},
+      docText: {},
+    });
+    res.json({ ok: true, caseId, meta: projection.meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -469,11 +461,10 @@ router.patch('/:caseId', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const mf = path.join(cd, 'meta.json');
-    let meta = readJSON(mf);
+    let meta = { ...(projection.meta || {}) };
 
     meta.address  = trimText(body.address  ?? meta.address,  240);
     meta.borrower = trimText(body.borrower ?? meta.borrower, 180);
@@ -487,9 +478,16 @@ router.patch('/:caseId', (req, res) => {
     }
     meta.updatedAt = new Date().toISOString();
 
-    writeJSON(mf, meta);
-    const projection = safeSyncCaseRecord(req.params.caseId);
-    res.json({ ok: true, meta: projection?.meta || applyMetaDefaults(meta) });
+    const updated = saveCaseProjection({
+      caseId: req.params.caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    });
+    res.json({ ok: true, meta: updated.meta || applyMetaDefaults(meta) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -514,18 +512,22 @@ router.patch('/:caseId/status', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
     const nextStatus = trimText(body.status, 20).toLowerCase() || 'active';
-
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const meta = { ...(projection.meta || {}) };
     meta.status    = nextStatus;
     meta.updatedAt = new Date().toISOString();
-    writeJSON(mf, meta);
-    const projection = safeSyncCaseRecord(req.params.caseId);
-    res.json({ ok: true, meta: projection?.meta || meta });
+    const updated = saveCaseProjection({
+      caseId: req.params.caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    });
+    res.json({ ok: true, meta: updated.meta || meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -537,13 +539,10 @@ router.patch('/:caseId/pipeline', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
     const stage = trimText(body.stage, 20).toLowerCase();
-
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const meta = { ...(projection.meta || {}) };
     const transition = evaluatePipelineTransition({
       currentStage: meta.pipelineStage || 'intake',
       nextStage: stage,
@@ -564,12 +563,19 @@ router.patch('/:caseId/pipeline', (req, res) => {
     meta.updatedAt     = new Date().toISOString();
     if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
     meta.pipelineHistory.push({ stage, at: meta.updatedAt });
-    writeJSON(mf, meta);
-    const projection = safeSyncCaseRecord(req.params.caseId);
+    const updated = saveCaseProjection({
+      caseId: req.params.caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    });
     res.json({
       ok: true,
       pipelineStage: stage,
-      meta: projection?.meta || meta,
+      meta: updated?.meta || meta,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -582,9 +588,6 @@ router.patch('/:caseId/workflow-status', (req, res) => {
   if (!body) return;
 
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
     const status = trimText(body.workflowStatus, 40);
     if (!isValidWorkflowStatus(status)) {
       return res.status(400).json({
@@ -597,16 +600,24 @@ router.patch('/:caseId/workflow-status', (req, res) => {
       });
     }
 
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const meta = { ...(projection.meta || {}) };
     meta.workflowStatus = status;
     meta.updatedAt      = new Date().toISOString();
-    writeJSON(mf, meta);
-    const projection = safeSyncCaseRecord(req.params.caseId);
+    const updated = saveCaseProjection({
+      caseId: req.params.caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    });
     res.json({
       ok: true,
       workflowStatus: status,
-      meta: projection?.meta || applyMetaDefaults(meta),
+      meta: updated?.meta || applyMetaDefaults(meta),
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -624,18 +635,22 @@ router.put('/:caseId/facts', (req, res) => {
   }
 
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const factsFile = path.join(cd, 'facts.json');
-    const updated   = { ...readJSON(factsFile, {}), ...body, updatedAt: new Date().toISOString() };
-    writeJSON(factsFile, updated);
-
-    const meta = readJSON(path.join(cd, 'meta.json'));
+    const updated = { ...(projection.facts || {}), ...body, updatedAt: new Date().toISOString() };
+    const meta = { ...(projection.meta || {}) };
     meta.updatedAt = new Date().toISOString();
-    writeJSON(path.join(cd, 'meta.json'), meta);
 
-    safeSyncCaseRecord(req.params.caseId);
+    saveCaseProjection({
+      caseId: req.params.caseId,
+      meta,
+      facts: updated,
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    });
     res.json({ ok: true, facts: updated });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -645,9 +660,9 @@ router.put('/:caseId/facts', (req, res) => {
 // ── GET /:caseId/history — Section version history ────────────────────────────
 router.get('/:caseId/history', (req, res) => {
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-    res.json({ ok: true, history: readJSON(path.join(cd, 'history.json'), {}) });
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({ ok: true, history: projection.history || {} });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -667,9 +682,10 @@ router.get('/:caseId/generation-runs', (req, res) => {
 router.post('/:caseId/geocode', async (req, res) => {
   try {
     const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const facts = readJSON(path.join(cd, 'facts.json'), {});
+    const facts = projection.facts || {};
     const fv    = (key) => { const f = facts[key]; return f ? String(f?.value ?? f ?? '').trim() : ''; };
 
     const subjectAddress =
@@ -808,13 +824,12 @@ router.get('/:caseId/location-context', async (req, res) => {
 // ── GET /:caseId/missing-facts/:fieldId — Single-field missing facts ───────────
 router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
     const fieldId = trimText(req.params.fieldId, 80);
     if (!fieldId) return res.status(400).json({ ok: false, error: 'fieldId required' });
 
-    const facts     = readJSON(path.join(cd, 'facts.json'), {});
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const facts     = projection.facts || {};
     const missing   = getMissingFacts(fieldId, facts);
     const formatted = formatMissingFactsForUI(missing);
     res.json({ ok: true, fieldId, ...formatted });
@@ -826,13 +841,12 @@ router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
 // ── POST /:caseId/missing-facts — Batch missing facts check ───────────────────
 router.post('/:caseId/missing-facts', (req, res) => {
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
     const fieldIds = Array.isArray(req.body?.fieldIds) ? req.body.fieldIds : [];
     if (!fieldIds.length) return res.json({ ok: true, warnings: [] });
 
-    const facts       = readJSON(path.join(cd, 'facts.json'), {});
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const facts       = projection.facts || {};
     const allWarnings = [];
 
     for (const rawFieldId of fieldIds) {
