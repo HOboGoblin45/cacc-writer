@@ -24,6 +24,7 @@ import { classifyDocument, mapLegacyDocType } from './documentClassifier.js';
 import { extractStructuredFacts, getExtractorTypes } from './documentExtractors.js';
 import { extractNarrativeSections } from './narrativeExtractor.js';
 import { buildMergePlan, applyMergePlan, getAutoAcceptPaths } from './contextMapper.js';
+import { scoreDocumentQuality, summarizeDocumentQuality } from './documentQuality.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -48,6 +49,9 @@ export function registerDocument({
   caseId, originalFilename, storedFilename,
   legacyDocType = null, fileSizeBytes = 0, pageCount = 0,
   extractedText = '',
+  fileHash = null,
+  extractionStatus = null,
+  ingestionWarning = null,
 }) {
   const db = getDb();
   const documentId = uuidv4();
@@ -55,9 +59,30 @@ export function registerDocument({
   // Classify the document
   const classification = classifyDocument(originalFilename, extractedText, legacyDocType);
 
-  // Compute file hash if we have text
-  const fileHash = extractedText
-    ? crypto.createHash('sha256').update(extractedText).digest('hex').slice(0, 16)
+  // Compute file hash if caller did not pass a deterministic content hash.
+  const resolvedFileHash = fileHash ||
+    (extractedText ? crypto.createHash('sha256').update(extractedText).digest('hex') : null);
+
+  const duplicate = resolvedFileHash
+    ? findDuplicateDocumentByHash(caseId, resolvedFileHash)
+    : null;
+
+  const effectiveClassification = duplicate
+    ? {
+      docType: duplicate.doc_type,
+      confidence: 1.0,
+      method: 'duplicate',
+      label: classification.label,
+    }
+    : classification;
+
+  const effectiveExtractionStatus = extractionStatus ||
+    (duplicate
+      ? 'skipped'
+      : (extractedText ? 'extracted' : 'pending'));
+
+  const duplicateNote = duplicate
+    ? `Duplicate of document ${duplicate.id}`
     : null;
 
   db.prepare(`
@@ -65,19 +90,56 @@ export function registerDocument({
       id, case_id, original_filename, stored_filename, doc_type,
       file_type, file_size_bytes, page_count, file_hash,
       classification_method, classification_confidence,
-      extraction_status, text_length, uploaded_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      extraction_status, text_length, notes, duplicate_of_document_id, ingestion_warning,
+      uploaded_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
   `).run(
     documentId, caseId, originalFilename, storedFilename,
-    classification.docType,
+    effectiveClassification.docType,
     path.extname(originalFilename).replace('.', '') || 'pdf',
-    fileSizeBytes, pageCount, fileHash,
-    classification.method, classification.confidence,
-    extractedText ? 'extracted' : 'pending',
+    fileSizeBytes, pageCount, resolvedFileHash,
+    effectiveClassification.method, effectiveClassification.confidence,
+    effectiveExtractionStatus,
     extractedText ? extractedText.length : 0,
+    duplicateNote,
+    duplicate?.id || null,
+    ingestionWarning || null,
   );
 
-  return { documentId, docType: classification.docType, classification };
+  return {
+    documentId,
+    docType: effectiveClassification.docType,
+    classification: effectiveClassification,
+    duplicateDetected: Boolean(duplicate),
+    duplicateOfDocumentId: duplicate?.id || null,
+    quality: scoreDocumentQuality({
+      extraction_status: effectiveExtractionStatus,
+      text_length: extractedText ? extractedText.length : 0,
+      classification_confidence: effectiveClassification.confidence,
+      duplicate_of_document_id: duplicate?.id || null,
+      ingestion_warning: ingestionWarning || null,
+      page_count: pageCount,
+    }),
+  };
+}
+
+/**
+ * Find an existing document in the same case by content hash.
+ *
+ * @param {string} caseId
+ * @param {string} fileHash
+ * @returns {object|null}
+ */
+export function findDuplicateDocumentByHash(caseId, fileHash) {
+  if (!caseId || !fileHash) return null;
+  const db = getDb();
+  return db.prepare(`
+    SELECT id, doc_type, stored_filename, uploaded_at
+      FROM case_documents
+     WHERE case_id = ? AND file_hash = ?
+     ORDER BY uploaded_at DESC
+     LIMIT 1
+  `).get(caseId, fileHash) || null;
 }
 
 /**
@@ -420,6 +482,17 @@ export function getCaseExtractionSummary(caseId) {
     "SELECT COUNT(*) as count FROM extracted_sections WHERE case_id = ? AND review_status = 'approved'"
   ).get(caseId);
 
+  const qualityRows = db.prepare(`
+    SELECT
+      id, original_filename, doc_type, extraction_status,
+      text_length, classification_confidence, page_count,
+      duplicate_of_document_id, ingestion_warning
+    FROM case_documents
+    WHERE case_id = ?
+  `).all(caseId);
+
+  const quality = summarizeDocumentQuality(qualityRows);
+
   return {
     totalDocuments:   documents.count,
     documentsByType:  Object.fromEntries(byType.map(r => [r.doc_type, r.count])),
@@ -427,6 +500,7 @@ export function getCaseExtractionSummary(caseId) {
     pendingSections:  pendingSections.count,
     mergedFacts:      mergedFacts.count,
     approvedSections: approvedSections.count,
+    quality,
   };
 }
 
