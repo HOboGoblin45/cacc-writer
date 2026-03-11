@@ -218,6 +218,87 @@ await test('detectFactConflicts flags blocker conflict for critical fact path', 
   assert.ok(glaConflict.valueCount >= 2, 'expected two distinct values');
 });
 
+await test('detectFactConflicts normalizes date, currency, and address variants', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '123 Main St., Springfield', confidence: 'high' },
+      },
+      contract: {
+        contractDate: { value: '2026-01-01', confidence: 'high' },
+        contractPrice: { value: '500000', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.address',
+    value: '123 Main St Springfield',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+  addExtractedFact(caseId, {
+    factPath: 'contract.contractDate',
+    value: '01/01/2026',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+  addExtractedFact(caseId, {
+    factPath: 'contract.contractPrice',
+    value: '$500,000.00',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  assert.equal(report.summary.totalConflicts, 0, 'normalized variants should not produce conflicts');
+});
+
+await test('detectFactConflicts marks non-critical disagreement as high severity', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        style: { value: 'Ranch', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.style',
+    value: 'Colonial',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  const styleConflict = report.conflicts.find(c => c.factPath === 'subject.style');
+  assert.ok(styleConflict, 'expected subject.style conflict');
+  assert.equal(styleConflict.severity, 'high');
+});
+
+await test('detectFactConflicts ignores rejected extracted facts', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        gla: { value: '1800', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.gla',
+    value: '2500',
+    confidence: 'high',
+    reviewStatus: 'rejected',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  assert.equal(report.summary.totalConflicts, 0, 'rejected candidates should not create conflicts');
+});
+
 await test('evaluatePreDraftGate blocks when required section facts are missing', () => {
   const { caseId } = createFilesystemCase({
     facts: {

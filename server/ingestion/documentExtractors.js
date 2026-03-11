@@ -561,10 +561,10 @@ function extractZoningDeterministic(text) {
 
   // Check for conformity clues
   const lower = text.toLowerCase();
-  if (lower.includes('nonconforming') || lower.includes('non-conforming')) {
-    facts.push(fact('site.zoningConformity', 'nonconforming', 'medium', 'nonconforming reference found'));
-  } else if (lower.includes('legal nonconforming') || lower.includes('grandfathered')) {
+  if (lower.includes('legal nonconforming') || lower.includes('grandfathered')) {
     facts.push(fact('site.zoningConformity', 'legal_nonconforming', 'medium', 'legal nonconforming reference found'));
+  } else if (lower.includes('nonconforming') || lower.includes('non-conforming')) {
+    facts.push(fact('site.zoningConformity', 'nonconforming', 'medium', 'nonconforming reference found'));
   }
 
   return facts.filter(Boolean);
