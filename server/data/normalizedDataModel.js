@@ -75,6 +75,8 @@
  * @property {object}      customFields    OPTIONAL — source-specific fields not in core schema
  */
 
+import log from '../logger.js';
+
 // ── Normalizer functions ──────────────────────────────────────────────────────
 
 /**
@@ -354,7 +356,7 @@ export const NORMALIZERS = {
 export function normalizeExternalFact(sourceType, raw, sourceId = '') {
   const normalizer = NORMALIZERS[sourceType];
   if (!normalizer) {
-    console.warn(`[normalizedDataModel] Unknown sourceType: "${sourceType}". Skipping normalization.`);
+    log.warn('normalizedDataModel:unknown-source', { sourceType });
     return null;
   }
   return normalizer(raw, sourceId);

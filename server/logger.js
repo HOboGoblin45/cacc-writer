@@ -51,7 +51,7 @@ function emit(level, message, meta = {}) {
 
   // Fan-out to disk logger if wired
   if (_fileLoggerWrite) {
-    try { _fileLoggerWrite(entry); } catch { /* non-fatal */ }
+    try { _fileLoggerWrite(entry); } catch (e) { /* file logger failure must not crash logging itself */ }
   }
 }
 

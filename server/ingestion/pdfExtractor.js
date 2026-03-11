@@ -19,6 +19,7 @@
 import { createRequire } from 'module';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import log from '../logger.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const require    = createRequire(import.meta.url);
@@ -31,7 +32,7 @@ let napiCreateCanvas = null;
 try {
   ({ createCanvas: napiCreateCanvas } = require('@napi-rs/canvas'));
 } catch (e) {
-  console.warn('[pdfExtractor] OCR stage 3 unavailable (@napi-rs/canvas not loaded):', e.message);
+  log.warn('pdfExtractor:canvas', { error: e.message, detail: 'OCR stage 3 unavailable (@napi-rs/canvas not loaded)' });
 }
 
 // ── pdfjs-dist worker path ────────────────────────────────────────────────────
@@ -186,7 +187,7 @@ export async function extractPdfText(buffer, aiClient, model) {
 
         ocrText += (r.output_text || '') + '\n\n';
       } catch (pageErr) {
-        console.warn('[pdfExtractor] OCR page', i, 'error:', pageErr.message);
+        log.warn('pdfExtractor:ocr', { page: i, error: pageErr.message });
       }
     }
 

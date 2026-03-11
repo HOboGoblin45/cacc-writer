@@ -19,6 +19,8 @@
  *   import { getRegistry, getApplicableRules } from './qcRuleRegistry.js';
  */
 
+import log from '../logger.js';
+
 /** @type {Map<string, import('./types.js').QCRuleDefinition>} */
 const registry = new Map();
 
@@ -34,7 +36,7 @@ export const RULE_SET_VERSION = '7.0.1';
 export function registerRule(rule) {
   if (!rule.ruleId) throw new Error('QC rule must have a ruleId');
   if (registry.has(rule.ruleId)) {
-    console.warn(`[qc-registry] Duplicate rule ID: ${rule.ruleId} — overwriting`);
+    log.warn('qc-registry:duplicate-rule', { ruleId: rule.ruleId });
   }
   registry.set(rule.ruleId, rule);
 }
