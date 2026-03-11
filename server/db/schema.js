@@ -414,6 +414,30 @@ export function initSchema(db) {
       ON case_documents(case_id);
     CREATE INDEX IF NOT EXISTS idx_case_documents_doc_type
       ON case_documents(doc_type);
+    -- Document ingestion job orchestration (Phase C)
+    CREATE TABLE IF NOT EXISTS document_ingest_jobs (
+      id                       TEXT PRIMARY KEY,
+      case_id                  TEXT NOT NULL,
+      document_id              TEXT,
+      original_filename        TEXT NOT NULL,
+      status                   TEXT NOT NULL DEFAULT 'pending',
+      -- status: pending | running | completed | failed | partial | cancelled
+      current_step             TEXT,
+      retry_count              INTEGER NOT NULL DEFAULT 0,
+      max_retries              INTEGER NOT NULL DEFAULT 2,
+      steps_json               TEXT NOT NULL DEFAULT '{}',
+      error_text               TEXT,
+      recoverable_actions_json TEXT NOT NULL DEFAULT '[]',
+      started_at               TEXT,
+      completed_at             TEXT,
+      created_at               TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at               TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (document_id) REFERENCES case_documents(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_doc_ingest_jobs_case_id
+      ON document_ingest_jobs(case_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_doc_ingest_jobs_status
+      ON document_ingest_jobs(status, updated_at DESC);
 
     -- ── document_extractions (Phase 5) ────────────────────────────────────────
     -- Tracks each extraction job run against a document.
@@ -557,3 +581,4 @@ export function initSchema(db) {
     log.error('schema:phase10-init', { error: err.message });
   }
 }
+

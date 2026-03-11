@@ -175,6 +175,7 @@ export function getTableCounts() {
     'staged_memory_reviews',
     'assignment_intelligence',
     'case_documents',
+    'document_ingest_jobs',
     'document_extractions',
     'extracted_facts',
     'extracted_sections',
