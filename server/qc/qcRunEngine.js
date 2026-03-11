@@ -18,6 +18,7 @@
 
 import { getDb } from '../db/database.js';
 import { getRunById, getGeneratedSectionsForRun } from '../db/repositories/generationRepo.js';
+import log from '../logger.js';
 import { getApplicableRules, RULE_SET_VERSION } from './qcRuleRegistry.js';
 import { sortByPriority, filterNoise, computeDraftReadiness } from './severityModel.js';
 import { buildQCSummary } from './summaryBuilder.js';
@@ -182,7 +183,7 @@ export async function runQC({ caseId, generationRunId }) {
       if (run.draft_package_json) {
         try {
           draftPackage = JSON.parse(run.draft_package_json);
-        } catch { /* ignore parse errors */ }
+        } catch (e) { log.warn('[QC] failed to parse draft_package_json for run', generationRunId, e.message); }
       }
 
       // Load generated sections
@@ -203,7 +204,7 @@ export async function runQC({ caseId, generationRunId }) {
         if (latestRun.draft_package_json) {
           try {
             draftPackage = JSON.parse(latestRun.draft_package_json);
-          } catch { /* ignore */ }
+          } catch (e) { log.warn('[QC] failed to parse draft_package_json for latest run', e.message); }
         }
         const generatedSections = getGeneratedSectionsForRun(latestRun.id);
         sections = buildSectionsMap(generatedSections);

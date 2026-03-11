@@ -33,6 +33,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import log from './logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const KB_DIR = path.join(__dirname, '..', 'knowledge_base');
@@ -78,7 +79,7 @@ export function indexExamples() {
     try {
       const ex = readJSON(path.join(APPROVED_DIR, file));
       if (ex.id) examples.push({ ...ex, sourceType: 'approved_edit' });
-    } catch { /* skip corrupt files */ }
+    } catch (e) { log.warn('[KB] skipping corrupt file:', file, e.message); }
   }
 
   // Scan curated_examples/<formType>/
@@ -90,7 +91,7 @@ export function indexExamples() {
       try {
         const ex = readJSON(path.join(formDir, file));
         if (ex.id) examples.push({ ...ex, sourceType: ex.sourceType || 'curated' });
-      } catch { /* skip */ }
+      } catch (e) { log.warn('[KB] skipping corrupt curated file:', file, e.message); }
     }
   }
 
