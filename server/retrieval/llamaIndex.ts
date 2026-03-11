@@ -243,7 +243,7 @@ export async function storeExample(params: StoreExampleParams): Promise<boolean>
 
     const vector = await embeddings.embedDocuments([params.text]);
 
-    await pineconeIndex.upsert([{
+    await pineconeIndex.upsert({ records: [{
       id:     params.id,
       values: vector[0],
       metadata: {
@@ -259,7 +259,7 @@ export async function storeExample(params: StoreExampleParams): Promise<boolean>
         storedAt:     new Date().toISOString(),
         ...params.metadata,
       },
-    }]);
+    }] });
 
     log.info('retrieval:pinecone-store', { id: params.id, fieldId: params.fieldId, formType: params.formType });
     return true;
@@ -326,7 +326,7 @@ export async function ingestLocalKBToPinecone(): Promise<{
 
       const pineconeIndex = getPineconeIndex();
       if (pineconeIndex) {
-        await pineconeIndex.upsert(records);
+        await pineconeIndex.upsert({ records });
         ingested += records.length;
       }
     } catch (err: any) {
