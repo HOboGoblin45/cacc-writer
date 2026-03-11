@@ -1,0 +1,22 @@
+{
+  "id": "5d5a80252e0a",
+  "text": "test text here for feedback that is more than thirty chars",
+  "sectionType": "test",
+  "formType": "1004",
+  "propertyType": "residential",
+  "assignmentPurpose": "",
+  "loanProgram": "",
+  "subjectCondition": "",
+  "state": "",
+  "county": "",
+  "city": "",
+  "marketType": "suburban",
+  "approvalTimestamp": "2026-03-11T01:15:18.222Z",
+  "sourceType": "approvedNarrative",
+  "sourceReportId": "",
+  "qualityScore": 95,
+  "tags": [],
+  "customMetadata": {},
+  "createdAt": "2026-03-11T01:15:18.222Z",
+  "updatedAt": "2026-03-11T01:15:18.222Z"
+}

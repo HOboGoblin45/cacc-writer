@@ -97,7 +97,7 @@ router.post('/kb/migrate-voice', (_req, res) => {
           text,
         });
         migrated++;
-      } catch { skipped++; }
+      } catch (err) { log.warn('memory:migrate-skip', { error: err.message }); skipped++; }
     }
     res.json({ ok: true, migrated, skipped, total: voiceEntries.length });
   } catch (err) {
@@ -188,7 +188,7 @@ router.post('/voice/import-pdf', ensureAI, upload.single('file'), async (req, re
       // Also save to KB so new imports immediately improve generation
       try {
         addExample({ fieldId: field.id, formType: requestedFormType, sourceType: 'imported', qualityScore: 70, tags: [], text });
-      } catch { /* non-fatal */ }
+      } catch (err) { log.warn('memory:kb-add-example', { error: err.message }); }
     }
 
     await withVoiceLock(() => {
@@ -366,7 +366,7 @@ router.post('/voice/import-folder', ensureAI, async (req, res) => {
           addedCount++;
           try {
             addExample({ fieldId: field.id, formType: requestedFormType, sourceType: 'imported', qualityScore: 70, tags: [], text });
-          } catch { /* non-fatal */ }
+          } catch (err) { log.warn('memory:kb-add-example', { error: err.message }); }
         }
         importedFiles.push({ filename, importId, fields: addedCount });
       } catch (err) {

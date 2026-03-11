@@ -83,6 +83,27 @@ function scoreExample(example, context, sectionId) {
   const ctxCity = (context.subject?.city || context.market?.marketArea || '').toLowerCase();
   if (exCity && ctxCity && exCity.includes(ctxCity)) score += 15;
 
+  // Loan program match — FHA/VA/USDA narratives have distinct compliance language
+  const ctxLoan = (context.assignment?.loanProgram || '').toLowerCase();
+  const exLoan  = (example.loanProgram || '').toLowerCase();
+  if (ctxLoan && exLoan && ctxLoan === exLoan) score += 20;
+
+  // Property condition match — C1-C6 narratives use different framing
+  const ctxCond = (context.subject?.condition || context.assignment?.subjectCondition || '').toUpperCase();
+  const exCond  = (example.subjectCondition || example.condition || '').toUpperCase();
+  if (ctxCond && exCond) {
+    if (ctxCond === exCond) {
+      score += 15; // exact match
+    } else {
+      // Adjacent condition (e.g., C3 example for C4 property) gets partial credit
+      const condNum = parseInt(ctxCond.replace('C', ''));
+      const exNum   = parseInt(exCond.replace('C', ''));
+      if (!isNaN(condNum) && !isNaN(exNum) && Math.abs(condNum - exNum) === 1) {
+        score += 7;
+      }
+    }
+  }
+
   // Source type bonus
   if (example.sourceType === 'approvedNarrative') score += 15;
   if (example.sourceType === 'approved_edit')     score += 10;

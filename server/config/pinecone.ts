@@ -26,6 +26,7 @@
 
 import 'dotenv/config';
 import { Pinecone } from '@pinecone-database/pinecone';
+import log from '../logger.js';
 
 // ── Environment ───────────────────────────────────────────────────────────────
 
@@ -35,9 +36,9 @@ const PINECONE_INDEX   = process.env.PINECONE_INDEX_NAME || process.env.PINECONE
 const PINECONE_ENABLED = Boolean(PINECONE_API_KEY);
 
 if (!PINECONE_ENABLED) {
-  console.log('[config/pinecone] PINECONE_API_KEY not set. Vector retrieval will use local KB fallback.');
+  log.info('config:pinecone', { detail: 'PINECONE_API_KEY not set. Vector retrieval will use local KB fallback.' });
 } else {
-  console.log(`[config/pinecone] Pinecone enabled. Index: ${PINECONE_INDEX}`);
+  log.info('config:pinecone', { detail: 'Pinecone enabled', index: PINECONE_INDEX });
 }
 
 // ── Singleton client ──────────────────────────────────────────────────────────
@@ -78,11 +79,11 @@ export async function ensurePineconeIndex(): Promise<boolean> {
     const exists = (indexes || []).some((idx: any) => idx.name === PINECONE_INDEX);
 
     if (exists) {
-      console.log(`[config/pinecone] Index '${PINECONE_INDEX}' already exists.`);
+      log.info('config:pinecone', { detail: 'Index already exists', index: PINECONE_INDEX });
       return true;
     }
 
-    console.log(`[config/pinecone] Creating index '${PINECONE_INDEX}' (dim=1536, metric=cosine)...`);
+    log.info('config:pinecone', { detail: 'Creating index', index: PINECONE_INDEX, dim: 1536, metric: 'cosine' });
     await client.createIndex({
       name:      PINECONE_INDEX,
       dimension: 1536,
@@ -96,10 +97,10 @@ export async function ensurePineconeIndex(): Promise<boolean> {
       waitUntilReady:    true,
       suppressConflicts: true,
     });
-    console.log(`[config/pinecone] ✓ Index '${PINECONE_INDEX}' created and ready.`);
+    log.info('config:pinecone', { detail: 'Index created and ready', index: PINECONE_INDEX });
     return true;
   } catch (err: any) {
-    console.error('[config/pinecone] ensurePineconeIndex failed:', err.message);
+    log.error('config:pinecone', { detail: 'ensurePineconeIndex failed', error: err.message });
     return false;
   }
 }

@@ -62,104 +62,15 @@ const SYSTEM_CACC  = loadPromptFile('system_cacc_writer.txt');
 const STYLE_CRESCI = loadPromptFile('style_guide_cresci.txt');
 const REVIEW_PASS  = loadPromptFile('review_pass.txt');
 
-// ── LEGACY_TRANSITIONAL: FIELD_LABELS ────────────────────────────────────────
-// These hardcoded maps are retained as fallback only.
-// The canonical source is now server/fieldRegistry.js (getFieldLabel / getPhraseTags).
-// Do NOT extend these maps — add new fields to fieldRegistry.js instead.
-// TODO Phase 1 cleanup: remove these maps once all callers use registry helpers.
+// ── Field metadata resolution ────────────────────────────────────────────────
+// Canonical source: server/fieldRegistry.js (getFieldLabel / getPhraseTags).
 
-const FIELD_LABELS = {
-  // 1004 URAR — Single Family
-  offering_history:            'Offering History',
-  contract_analysis:           'Contract Analysis',
-  concessions:                 'Concessions / Financial Assistance',
-  neighborhood_boundaries:     'Neighborhood Boundaries',
-  neighborhood_description:    'Neighborhood Description',
-  market_conditions:           'Market Conditions Addendum',
-  market_conditions_addendum:  'Market Conditions Addendum',
-  site_comments:               'Site / Utilities / Adverse Conditions',
-  improvements_condition:      'Improvements / Condition Narrative',
-  sca_summary:                 'Sales Comparison Approach Summary',
-  sales_comparison_commentary: 'Sales Comparison Commentary',
-  reconciliation:              'Reconciliation',
-  exposure_time:               'Exposure Time',
-  // 1073 — Individual Condo
-  condo_project_analysis:      'Condominium Project Analysis',
-  project_description:         'Project Description',
-  project_site:                'Project Site',
-  // 1025 — Small Residential Income
-  income_approach:             'Income Approach',
-  rental_analysis:             'Rental Analysis',
-  gross_rent_multiplier:       'Gross Rent Multiplier Analysis',
-  // 1004C — Manufactured Home
-  manufactured_home_comments:  'Manufactured Home Comments',
-  // Commercial
-  site_description:            'Site Description',
-  improvement_description:     'Improvement Description',
-  market_area:                 'Market Area Analysis',
-  hbu_analysis:                'Highest and Best Use Analysis',
-  sales_comparison:            'Sales Comparison Narrative',
-  cost_approach:               'Cost Approach',
-  // Shared / generic
-  subject_improvements:        'Subject Improvements',
-  prior_sales_subject:         'Prior Sales / Offering History',
-  listing_history:             'Listing History',
-  functional_utility:          'Functional Utility',
-  adverse_conditions:          'Adverse Conditions / External Factors',
-  final_value_opinion:         'Final Value Opinion',
-};
-
-// ── LEGACY_TRANSITIONAL: FIELD_PHRASE_TAGS ────────────────────────────────────
-// Retained as fallback only. Canonical source: fieldRegistry.js phraseTags property.
-// Do NOT extend — add phrase tags to fieldRegistry.js field entries instead.
-
-const FIELD_PHRASE_TAGS = {
-  offering_history:            ['market_conditions'],
-  contract_analysis:           ['concession_adjustment'],
-  concessions:                 ['concession_adjustment'],
-  neighborhood_boundaries:     ['flood_zone', 'zoning'],
-  neighborhood_description:    ['flood_zone', 'zoning', 'market_conditions'],
-  market_conditions:           ['market_conditions'],
-  market_conditions_addendum:  ['market_conditions'],
-  site_comments:               ['flood_zone', 'zoning', 'fha_well_septic', 'rural_acreage'],
-  site_description:            ['flood_zone', 'zoning', 'fha_well_septic'],
-  improvements_condition:      ['accessory_dwelling'],
-  improvement_description:     ['accessory_dwelling'],
-  sca_summary:                 ['concession_adjustment', 'gla_adjustment', 'market_conditions'],
-  sales_comparison:            ['concession_adjustment', 'gla_adjustment'],
-  sales_comparison_commentary: ['concession_adjustment', 'gla_adjustment'],
-  reconciliation:              ['highest_best_use'],
-  market_area:                 ['market_conditions'],
-  hbu_analysis:                ['highest_best_use'],
-  exposure_time:               ['market_conditions'],
-  income_approach:             ['market_conditions'],
-  rental_analysis:             ['market_conditions'],
-};
-
-/**
- * resolveFieldLabel(formType, fieldId)
- * Registry-first label resolution with legacy fallback.
- * Phase 1 adapter — callers should migrate to getFieldLabel() directly.
- */
 function resolveFieldLabel(formType, fieldId) {
-  try {
-    const registryLabel = getFieldLabel(formType, fieldId);
-    if (registryLabel && registryLabel !== fieldId) return registryLabel;
-  } catch { /* registry unavailable — fall through to legacy */ }
-  return FIELD_LABELS[fieldId] || fieldId;
+  return getFieldLabel(formType, fieldId) || fieldId;
 }
 
-/**
- * resolvePhraseTags(formType, fieldId)
- * Registry-first phrase tag resolution with legacy fallback.
- * Phase 1 adapter — callers should migrate to getPhraseTags() directly.
- */
 function resolvePhraseTags(formType, fieldId) {
-  try {
-    const registryTags = getPhraseTags(formType, fieldId);
-    if (registryTags && registryTags.length > 0) return registryTags;
-  } catch { /* registry unavailable — fall through to legacy */ }
-  return FIELD_PHRASE_TAGS[fieldId] || [];
+  return getPhraseTags(formType, fieldId) || [];
 }
 
 // ── Confidence-aware facts formatter ─────────────────────────────────────────
@@ -522,14 +433,16 @@ export function buildPromptMessages({
  * missing placeholders, and USPAP compliance.
  *
  * @param {object} params
- *   @param {string} params.draftText   The draft narrative to review
- *   @param {object} [params.facts]     Case facts (so reviewer knows what's supported)
- *   @param {string} [params.fieldId]   Field being reviewed
- *   @param {string} [params.formType]  Form type
+ *   @param {string} params.draftText       The draft narrative to review
+ *   @param {object} [params.facts]         Case facts (so reviewer knows what's supported)
+ *   @param {string} [params.fieldId]       Field being reviewed
+ *   @param {string} [params.formType]      Form type
+ *   @param {object} [params.assignmentMeta] Assignment context (loan program, condition mode)
+ *   @param {string} [params.locationContext] Location context string
  *
  * @returns {Array<{role: string, content: string}>}
  */
-export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formType = '1004' }) {
+export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formType = '1004', assignmentMeta = null, locationContext = null }) {
   const messages = [];
 
   // Block 1: Review system prompt
@@ -588,6 +501,19 @@ Return JSON only:
       role: 'system',
       content: 'SUPPORTED FACTS (only these facts are confirmed in this report — anything else is unsupported):\n\n' + supportedFacts.join('\n'),
     });
+  }
+
+  // Block 2.5: Assignment context (so reviewer can check compliance language)
+  if (assignmentMeta && typeof assignmentMeta === 'object') {
+    const block = buildAssignmentContextBlock(assignmentMeta);
+    if (block) {
+      messages.push({ role: 'system', content: block });
+    }
+  }
+
+  // Block 2.7: Location context (so reviewer can verify geographic claims)
+  if (locationContext && LOCATION_CONTEXT_FIELDS.has(fieldId)) {
+    messages.push({ role: 'system', content: locationContext });
   }
 
   // Block 3: The draft to review

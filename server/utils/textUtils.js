@@ -8,6 +8,8 @@
  * No business logic — no AI calls, no appraisal decisions.
  */
 
+import log from '../logger.js';
+
 // ── String helpers ────────────────────────────────────────────────────────────
 
 /**
@@ -101,7 +103,8 @@ export function parseJSONObject(text) {
   try {
     const raw = extractBalancedJSON(String(text || ''), '{', '}');
     return raw ? JSON.parse(raw) : null;
-  } catch {
+  } catch (e) {
+    log.debug('textUtils:parseJSONObject', { error: e.message, preview: String(text || '').slice(0, 120) });
     return null;
   }
 }
@@ -118,7 +121,8 @@ export function parseJSONArray(text) {
   try {
     const raw = extractBalancedJSON(String(text || ''), '[', ']');
     return raw ? JSON.parse(raw) : null;
-  } catch {
+  } catch (e) {
+    log.debug('textUtils:parseJSONArray', { error: e.message, preview: String(text || '').slice(0, 120) });
     return null;
   }
 }

@@ -46,6 +46,7 @@ import { aciTool }                         from '../tools/aciTool.js';
 import { realQuantumTool }                 from '../tools/realQuantumTool.js';
 import { logWorkflowRun }                  from '../observability/langfuse.js';
 import { createWorkflowRun }               from '../observability/langsmith.js';
+import log                                 from '../logger.js';
 
 import type {
   WorkflowState,
@@ -139,7 +140,7 @@ const WorkflowStateAnnotation = Annotation.Root({
 // ── Node: create_case ─────────────────────────────────────────────────────────
 
 async function nodeCreateCase(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] create_case | caseId=${state.caseId} formType=${state.formType} fieldId=${state.fieldId}`);
+  log.info('workflow:create-case', { caseId: state.caseId, formType: state.formType, fieldId: state.fieldId });
 
   // Validate required inputs
   const errors: string[] = [];
@@ -176,7 +177,7 @@ async function nodeCreateCase(state: WorkflowState): Promise<Partial<WorkflowSta
 // ── Node: parse_documents ─────────────────────────────────────────────────────
 
 async function nodeParseDocuments(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] parse_documents | caseId=${state.caseId}`);
+  log.info('workflow:parse-documents', { caseId: state.caseId });
 
   // Documents are pre-loaded before workflow invocation in most cases.
   // This node handles any pending document parsing.
@@ -193,7 +194,7 @@ async function nodeParseDocuments(state: WorkflowState): Promise<Partial<Workflo
 // ── Node: extract_facts ───────────────────────────────────────────────────────
 
 async function nodeExtractFacts(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] extract_facts | caseId=${state.caseId}`);
+  log.info('workflow:extract-facts', { caseId: state.caseId });
 
   // Facts are typically pre-loaded from the case directory.
   // This node validates and normalizes them.
@@ -212,7 +213,7 @@ async function nodeExtractFacts(state: WorkflowState): Promise<Partial<WorkflowS
 // ── Node: retrieve_examples ───────────────────────────────────────────────────
 
 async function nodeRetrieveExamples(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] retrieve_examples | fieldId=${state.fieldId}`);
+  log.info('workflow:retrieve-examples', { fieldId: state.fieldId });
 
   let examples: ExampleRef[] = [];
   try {
@@ -231,7 +232,7 @@ async function nodeRetrieveExamples(state: WorkflowState): Promise<Partial<Workf
       score:        ex.score,
     }));
   } catch (err: any) {
-    console.warn('[workflow] retrieve_examples failed (non-fatal):', err.message);
+    log.warn('workflow:retrieve-examples', { error: err.message, nonFatal: true });
   }
 
   return { currentStage: 'draft_section', examples };
@@ -240,7 +241,7 @@ async function nodeRetrieveExamples(state: WorkflowState): Promise<Partial<Workf
 // ── Node: draft_section ───────────────────────────────────────────────────────
 
 async function nodeDraftSection(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] draft_section | fieldId=${state.fieldId}`);
+  log.info('workflow:draft-section', { fieldId: state.fieldId });
 
   try {
     const output = await draftSection(state);
@@ -249,7 +250,7 @@ async function nodeDraftSection(state: WorkflowState): Promise<Partial<WorkflowS
       draftText:    output.draft_text,
     };
   } catch (err: any) {
-    console.error('[workflow] draft_section failed:', err.message);
+    log.error('workflow:draft-section', { error: err.message });
     return {
       currentStage: 'failed',
       errors:       [...(state.errors || []), `Draft failed: ${err.message}`],
@@ -260,7 +261,7 @@ async function nodeDraftSection(state: WorkflowState): Promise<Partial<WorkflowS
 // ── Node: review_section ──────────────────────────────────────────────────────
 
 async function nodeReviewSection(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] review_section | fieldId=${state.fieldId}`);
+  log.info('workflow:review-section', { fieldId: state.fieldId });
 
   try {
     const review = await reviewSection(state);
@@ -275,7 +276,7 @@ async function nodeReviewSection(state: WorkflowState): Promise<Partial<Workflow
     };
   } catch (err: any) {
     // Review failure is non-fatal — use draft text
-    console.warn('[workflow] review_section failed (non-fatal):', err.message);
+    log.warn('workflow:review-section', { error: err.message, nonFatal: true });
     return {
       currentStage: 'insert_section',
       reviewedText: state.draftText,
@@ -291,7 +292,7 @@ async function nodeInsertSection(state: WorkflowState): Promise<Partial<Workflow
   const { caseId, formType, fieldId, finalText, reviewedText, draftText } = state;
   const text = finalText || reviewedText || draftText || '';
 
-  console.log(`[workflow] insert_section | fieldId=${fieldId} textLen=${text.length}`);
+  log.info('workflow:insert-section', { fieldId, textLen: text.length });
 
   if (!text || text.length < 10) {
     return {
@@ -341,13 +342,13 @@ async function nodeInsertSection(state: WorkflowState): Promise<Partial<Workflow
 // ── Node: verify_insert ───────────────────────────────────────────────────────
 
 async function nodeVerifyInsert(state: WorkflowState): Promise<Partial<WorkflowState>> {
-  console.log(`[workflow] verify_insert | fieldId=${state.fieldId} retryCount=${state.retryCount}`);
+  log.info('workflow:verify-insert', { fieldId: state.fieldId, retryCount: state.retryCount });
 
   const verificationResult = await verifyInsertion(state);
 
   if (!verificationResult.passed && (state.retryCount || 0) === 0) {
     // First failure — retry insertion
-    console.warn(`[workflow] Verification failed — retrying insertion for ${state.fieldId}`);
+    log.warn('workflow:verify-insert', { fieldId: state.fieldId, action: 'retrying' });
     const retryResult = await retryInsertion(state);
     const retryVerify = await verifyInsertion({ ...state, retryCount: 1 });
 
@@ -377,7 +378,7 @@ async function nodeSaveOutput(state: WorkflowState): Promise<Partial<WorkflowSta
   const { caseId, formType, fieldId, finalText, reviewedText, draftText } = state;
   const text = finalText || reviewedText || draftText || '';
 
-  console.log(`[workflow] save_output | fieldId=${fieldId}`);
+  log.info('workflow:save-output', { fieldId });
 
   try {
     const exampleId = `approved-${caseId}-${fieldId}-${Date.now()}`;
@@ -396,9 +397,9 @@ async function nodeSaveOutput(state: WorkflowState): Promise<Partial<WorkflowSta
         verifiedAt:   new Date().toISOString(),
       },
     });
-    console.log(`[workflow] ✓ Saved approved section ${exampleId}`);
+    log.info('workflow:save-output', { exampleId, status: 'saved' });
   } catch (err: any) {
-    console.warn('[workflow] save_output failed (non-fatal):', err.message);
+    log.warn('workflow:save-output', { error: err.message, nonFatal: true });
   }
 
   const completedAt = new Date().toISOString();
@@ -537,54 +538,66 @@ export async function runBatchWorkflow(input: BatchWorkflowInput): Promise<Batch
   const results: Record<string, WorkflowFieldResult> = {};
   const errors:  Record<string, string> = {};
 
-  console.log(`[workflow] Starting batch for case=${input.caseId} form=${input.formType} fields=${input.fieldIds.join(',')}`);
+  const BATCH_PARALLEL = Number(process.env.WORKFLOW_BATCH_PARALLEL) || 3;
 
-  for (const fieldId of input.fieldIds) {
-    const fieldStart = Date.now();
-    try {
-      const finalState = await runWorkflow({
-        caseId:   input.caseId,
-        formType: input.formType,
-        fieldId,
-        facts:    input.facts || {},
-      });
+  log.info('workflow:batch-start', {
+    caseId: input.caseId, formType: input.formType,
+    fields: input.fieldIds, concurrency: BATCH_PARALLEL,
+  });
 
-      const text = finalState.finalText || finalState.reviewedText || finalState.draftText || '';
+  // Process fields in parallel batches of BATCH_PARALLEL
+  for (let i = 0; i < input.fieldIds.length; i += BATCH_PARALLEL) {
+    const batch = input.fieldIds.slice(i, i + BATCH_PARALLEL);
 
-      results[fieldId] = {
-        fieldId,
-        finalText:    text,
-        draftText:    finalState.draftText,
-        reviewedText: finalState.reviewedText,
-        inserted:     finalState.insertionResult?.success || false,
-        verified:     finalState.verificationResult?.passed || false,
-        examplesUsed: finalState.examples?.length || 0,
-        durationMs:   Date.now() - fieldStart,
-        stage:        finalState.currentStage,
-        error:        finalState.errors?.join('; ') || undefined,
-      };
+    const batchResults = await Promise.allSettled(
+      batch.map(async (fieldId) => {
+        const fieldStart = Date.now();
+        try {
+          const finalState = await runWorkflow({
+            caseId:   input.caseId,
+            formType: input.formType,
+            fieldId,
+            facts:    input.facts || {},
+          });
 
-      console.log(`[workflow] ✓ ${fieldId} complete (${Date.now() - fieldStart}ms)`);
-    } catch (err: any) {
-      console.error(`[workflow] ✗ ${fieldId} failed:`, err.message);
-      errors[fieldId] = err.message;
-      results[fieldId] = {
-        fieldId,
-        finalText:   '',
-        inserted:    false,
-        verified:    false,
-        examplesUsed: 0,
-        durationMs:  Date.now() - fieldStart,
-        stage:       'failed',
-        error:       err.message,
-      };
-    }
+          const text = finalState.finalText || finalState.reviewedText || finalState.draftText || '';
+
+          results[fieldId] = {
+            fieldId,
+            finalText:    text,
+            draftText:    finalState.draftText,
+            reviewedText: finalState.reviewedText,
+            inserted:     finalState.insertionResult?.success || false,
+            verified:     finalState.verificationResult?.passed || false,
+            examplesUsed: finalState.examples?.length || 0,
+            durationMs:   Date.now() - fieldStart,
+            stage:        finalState.currentStage,
+            error:        finalState.errors?.join('; ') || undefined,
+          };
+
+          log.info('workflow:field-complete', { fieldId, durationMs: Date.now() - fieldStart });
+        } catch (err: any) {
+          log.error('workflow:field-failed', { fieldId, error: err.message });
+          errors[fieldId] = err.message;
+          results[fieldId] = {
+            fieldId,
+            finalText:   '',
+            inserted:    false,
+            verified:    false,
+            examplesUsed: 0,
+            durationMs:  Date.now() - fieldStart,
+            stage:       'failed',
+            error:       err.message,
+          };
+        }
+      })
+    );
   }
 
   const completedAt = new Date().toISOString();
   const durationMs  = Date.now() - batchStart;
 
-  console.log(`[workflow] Batch complete: ${Object.keys(results).length} fields in ${durationMs}ms`);
+  log.info('workflow:batch-complete', { fields: Object.keys(results).length, durationMs });
 
   return {
     caseId:      input.caseId,
