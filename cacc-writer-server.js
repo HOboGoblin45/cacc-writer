@@ -311,8 +311,8 @@ app.post('/api/cases/:caseId/upload', upload.single('file'), async (req, res) =>
       const { text, method } = await extractPdfText(req.file.buffer,client,MODEL);
       extractedText=text||'';
       try { const p=await pdfParse(req.file.buffer); pageCount=p.numpages||0; } catch { pageCount=0; }
-      console.log('/upload OCR method:',method,'chars:',extractedText.length,'docType:',req.body.docType);
-    } catch (ocrErr) { console.warn('/upload OCR failed:',ocrErr.message); extractedText='[PDF text extraction failed]'; }
+      log.info('upload:ocr', { method, chars: extractedText.length, docType: req.body.docType });
+    } catch (ocrErr) { log.warn('upload:ocr-failed', { error: ocrErr.message }); extractedText='[PDF text extraction failed]'; }
     extractedText=extractedText.replace(/\n{4,}/g,'\n\n').replace(/[ \t]{3,}/g,'  ').trim();
     const dtf=path.join(cd,'doc_text.json'), docText=readJSON(dtf,{});
     docText[docType]=extractedText; writeJSON(dtf,docText);
@@ -388,7 +388,7 @@ app.post('/api/cases/:caseId/feedback', async (req, res) => {
         const { formType }=getCaseFormConfig(cd);
         await addApprovedNarrative({ fieldId:sid, text:safeText, formType, source:'user-approved' });
         savedToKB=true;
-      } catch (kbErr) { console.warn('[feedback] KB write failed:',kbErr.message); }
+      } catch (kbErr) { log.warn('feedback:kb-write', { error: kbErr.message }); }
     }
     const meta=readJSON(path.join(cd,'meta.json'));
     meta.updatedAt=new Date().toISOString();
@@ -740,28 +740,25 @@ app.patch('/api/cases/:caseId/outputs/:fieldId', (req, res) => {
 
 // ── Server startup ────────────────────────────────────────────────────────────
 const server=app.listen(PORT, () => {
-  console.log('CACC Writer server running on port '+PORT);
-  console.log('Model: '+MODEL);
-  console.log('Cases dir: '+CASES_DIR);
-  console.log('Active forms: '+ACTIVE_FORMS.join(', '));
-  if (DEFERRED_FORMS.length) console.log('Deferred forms: '+DEFERRED_FORMS.join(', '));
-  try { initFileLogger(); setFileLogWriter(writeLogEntry); } catch (e) { console.warn('File logger init failed:',e.message); }
+  log.info('startup:listening', { port: PORT, model: MODEL, casesDir: CASES_DIR, activeForms: ACTIVE_FORMS });
+  if (DEFERRED_FORMS.length) log.info('startup:deferred-forms', { forms: DEFERRED_FORMS });
+  try { initFileLogger(); setFileLogWriter(writeLogEntry); } catch (e) { log.warn('startup:file-logger', { error: e.message }); }
 
   // Phase 10: Initialize audit logger with DB accessor
-  try { initAuditLogger(getDb); } catch (e) { console.warn('Audit logger init failed:',e.message); }
+  try { initAuditLogger(getDb); } catch (e) { log.warn('startup:audit-logger', { error: e.message }); }
 
   // Phase 10: Emit system startup event
-  try { emitSystemEvent('system.startup', 'CACC Writer server started', { port: PORT, model: MODEL, activeForms: ACTIVE_FORMS }); } catch (e) { console.warn('Startup audit event failed:', e.message); }
+  try { emitSystemEvent('system.startup', 'CACC Writer server started', { port: PORT, model: MODEL, activeForms: ACTIVE_FORMS }); } catch (e) { log.warn('startup:audit-event', { error: e.message }); }
 
   // Phase 10: Run transient cleanup on startup (expired cache, etc.)
-  try { runTransientCleanup(); } catch (e) { console.warn('Startup cleanup failed:',e.message); }
+  try { runTransientCleanup(); } catch (e) { log.warn('startup:cleanup', { error: e.message }); }
 });
 
 server.on('error', (err) => {
   if (err.code==='EADDRINUSE') {
-    console.error('Port '+PORT+' is already in use. Kill the existing process and restart.');
+    log.error('startup:port-in-use', { port: PORT });
   } else {
-    console.error('Server error:',err.message);
+    log.error('startup:server-error', { error: err.message });
   }
   process.exit(1);
 });
