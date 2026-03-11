@@ -16,6 +16,7 @@
  */
 
 import 'dotenv/config';
+import log from '../logger.js';
 
 // ── Environment ───────────────────────────────────────────────────────────────
 
@@ -30,9 +31,9 @@ if (TRACING_ENABLED) {
   process.env.LANGCHAIN_API_KEY     = LANGSMITH_API_KEY;
   process.env.LANGCHAIN_PROJECT     = LANGSMITH_PROJECT;
   process.env.LANGCHAIN_ENDPOINT    = LANGSMITH_ENDPOINT;
-  console.log(`[langsmith] Tracing ENABLED → project: ${LANGSMITH_PROJECT}`);
+  log.info('langsmith:init', { detail: 'Tracing ENABLED', project: LANGSMITH_PROJECT });
 } else {
-  console.log('[langsmith] Tracing disabled. Set LANGCHAIN_TRACING_V2=true + LANGCHAIN_API_KEY to enable.');
+  log.info('langsmith:init', { detail: 'Tracing disabled. Set LANGCHAIN_TRACING_V2=true + LANGCHAIN_API_KEY to enable.' });
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ export async function wrapWithTrace<T>(
   } catch (traceErr: any) {
     // Tracing failure must never break the workflow
     if (traceErr.message?.includes('langsmith')) {
-      console.warn('[langsmith] Trace failed (non-fatal):', traceErr.message);
+      log.warn('langsmith:trace', { error: traceErr.message, detail: 'non-fatal' });
     }
     const result = await fn();
     return { result, runId: null, durationMs: Date.now() - start };
@@ -146,7 +147,7 @@ export async function createWorkflowRun(params: {
     await run.postRun();
     return run.id || null;
   } catch (err: any) {
-    console.warn('[langsmith] createWorkflowRun failed (non-fatal):', err.message);
+    log.warn('langsmith:createWorkflowRun', { error: err.message, detail: 'non-fatal' });
     return null;
   }
 }

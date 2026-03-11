@@ -29,6 +29,7 @@ import { getDb } from '../db/database.js';
 import fs   from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const KB_ROOT   = path.join(__dirname, '..', '..', 'knowledge_base');
@@ -177,7 +178,7 @@ function insertMemoryItem(item, priority) {
     return 'inserted';
 
   } catch (err) {
-    console.error('[legacyKbImport] insert error:', err.message, { hash });
+    log.error('legacyKbImport:insert', { error: err.message, hash });
     return 'error';
   }
 }
@@ -351,21 +352,21 @@ export async function runLegacyKbImport() {
     },
   };
 
-  console.log('[legacyKbImport] Starting legacy KB import...');
+  log.info('legacyKbImport:start', { detail: 'Starting legacy KB import' });
 
   // Run in priority order: approvedNarratives first, then approved_edits, then index
   await importApprovedNarratives(stats);
-  console.log(`[legacyKbImport] approvedNarratives: ${stats.sources.approvedNarratives} processed`);
+  log.info('legacyKbImport:approvedNarratives', { processed: stats.sources.approvedNarratives });
 
   await importApprovedEdits(stats);
-  console.log(`[legacyKbImport] approved_edits: ${stats.sources.approvedEdits} processed`);
+  log.info('legacyKbImport:approvedEdits', { processed: stats.sources.approvedEdits });
 
   await importKbIndex(stats);
-  console.log(`[legacyKbImport] kb/index.json: ${stats.sources.kbIndex} processed`);
+  log.info('legacyKbImport:kbIndex', { processed: stats.sources.kbIndex });
 
   const durationMs = Date.now() - t0;
 
-  console.log(`[legacyKbImport] Complete — imported: ${stats.imported}, skipped: ${stats.skipped}, upgraded: ${stats.upgraded}, errors: ${stats.errors} (${durationMs}ms)`);
+  log.info('legacyKbImport:complete', { imported: stats.imported, skipped: stats.skipped, upgraded: stats.upgraded, errors: stats.errors, durationMs });
 
   return {
     ok:        stats.errors === 0 || stats.imported > 0,

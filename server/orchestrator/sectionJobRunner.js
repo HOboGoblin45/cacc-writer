@@ -38,6 +38,7 @@ import {
   getSectionJobsForRun,
   saveGeneratedSection,
 } from '../db/repositories/generationRepo.js';
+import log  from '../logger.js';
 import fs   from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -530,10 +531,9 @@ export async function runSectionJob({
     } catch (err) {
       lastError = err;
 
-      console.error(
-        `[sectionJobRunner] Section "${sectionId}" attempt ${attemptCount} failed:`,
-        err.message
-      );
+      log.error('sectionJobRunner:attempt-failed', {
+        sectionId, attempt: attemptCount, error: err.message,
+      });
 
       if (attemptCount > MAX_RETRIES) {
         // All attempts exhausted

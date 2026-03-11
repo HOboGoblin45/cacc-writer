@@ -16,6 +16,7 @@ import 'dotenv/config';
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import type { BaseMessage } from '@langchain/core/messages';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import log from '../logger.js';
 
 // ── Environment ───────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ const EMBEDDING_MODEL     = process.env.OPENAI_EMBEDDING_MODEL || 'text-embeddin
 const TEMPERATURE         = parseFloat(process.env.OPENAI_TEMPERATURE || '0.3');
 
 if (!OPENAI_API_KEY) {
-  console.warn('[config/openai] WARNING: OPENAI_API_KEY not set. AI calls will fail.');
+  log.warn('config:openai', { detail: 'OPENAI_API_KEY not set. AI calls will fail.' });
 }
 
 // ── LangChain-compatible ChatOpenAI instance ──────────────────────────────────

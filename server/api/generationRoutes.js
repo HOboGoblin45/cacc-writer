@@ -54,12 +54,23 @@ import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImpo
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
 import log from '../logger.js';
 
-// ── In-memory run result store ────────────────────────────────────────────────
+// ── In-memory run result store (LRU-bounded) ─────────────────────────────────
 // Stores the full draftPackage result keyed by runId.
 // Run status is always read from SQLite; this stores the full result object
 // for fast retrieval without re-querying all section rows.
+// Capped at 100 entries to prevent unbounded memory growth.
+const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
 const MAX_BATCH_FIELDS = 20;
+
+function _setRunResult(runId, result) {
+  // Evict oldest entry if at capacity (Map preserves insertion order)
+  if (_runResults.size >= _MAX_RUN_RESULTS) {
+    const oldestKey = _runResults.keys().next().value;
+    _runResults.delete(oldestKey);
+  }
+  _runResults.set(runId, result);
+}
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
@@ -651,7 +662,7 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
     orchestratorPromise
       .then(result => {
         if (result?.runId) {
-          _runResults.set(result.runId, result);
+          _setRunResult(result.runId, result);
           log.info('[orchestrator] run complete', { runId: result.runId, ok: result.ok });
         }
       })
@@ -659,20 +670,21 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
         log.error('[orchestrator] run error', { error: err.message });
       });
 
-    // Brief yield so orchestrator can create the run record in SQLite
-    await new Promise(r => setTimeout(r, 50));
-
-    // Read the most recent active run for this case using canonical statuses
-    const db        = getDb();
-    const latestRun = db.prepare(`
-      SELECT id FROM generation_runs
-       WHERE case_id = ? AND status IN (
-         'queued','preparing','retrieving','analyzing',
-         'drafting','validating','assembling'
-       )
-       ORDER BY created_at DESC LIMIT 1
-    `).get(caseId);
-    runId = latestRun?.id || null;
+    // Poll for the run record the orchestrator creates synchronously via createRun().
+    // Retry up to 5 times (50ms apart) to handle scheduling jitter.
+    const db = getDb();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise(r => setTimeout(r, 50));
+      const latestRun = db.prepare(`
+        SELECT id FROM generation_runs
+         WHERE case_id = ? AND status IN (
+           'queued','preparing','retrieving','analyzing',
+           'drafting','validating','assembling'
+         )
+         ORDER BY created_at DESC LIMIT 1
+      `).get(caseId);
+      if (latestRun?.id) { runId = latestRun.id; break; }
+    }
 
     res.json({
       ok:                 true,
@@ -749,7 +761,7 @@ router.post('/generation/full-draft', async (req, res) => {
     orchestratorPromise
       .then(result => {
         if (result?.runId) {
-          _runResults.set(result.runId, result);
+          _setRunResult(result.runId, result);
           log.info('[orchestrator] run complete', { runId: result.runId, ok: result.ok });
         }
       })
@@ -757,18 +769,20 @@ router.post('/generation/full-draft', async (req, res) => {
         log.error('[orchestrator] run error', { error: err.message });
       });
 
-    await new Promise(r => setTimeout(r, 50));
-
-    const db        = getDb();
-    const latestRun = db.prepare(`
-      SELECT id FROM generation_runs
-       WHERE case_id = ? AND status IN (
-         'queued','preparing','retrieving','analyzing',
-         'drafting','validating','assembling'
-       )
-       ORDER BY created_at DESC LIMIT 1
-    `).get(caseId);
-    runId = latestRun?.id || null;
+    // Poll for the run record the orchestrator creates synchronously via createRun().
+    const db = getDb();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise(r => setTimeout(r, 50));
+      const latestRun = db.prepare(`
+        SELECT id FROM generation_runs
+         WHERE case_id = ? AND status IN (
+           'queued','preparing','retrieving','analyzing',
+           'drafting','validating','assembling'
+         )
+         ORDER BY created_at DESC LIMIT 1
+      `).get(caseId);
+      if (latestRun?.id) { runId = latestRun.id; break; }
+    }
 
     res.json({
       ok:                 true,
