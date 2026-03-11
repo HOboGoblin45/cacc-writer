@@ -117,6 +117,57 @@ function addExtractedFact(caseId, { factPath, value, confidence = 'high', review
   );
 }
 
+function addExtractedSection(caseId, {
+  sectionType = 'neighborhood_description',
+  sectionLabel = 'Neighborhood Description',
+  text = 'Example extracted narrative section.',
+  confidence = 'medium',
+  reviewStatus = 'pending',
+  docType = 'prior_appraisal',
+}) {
+  const db = dbModule.getDb();
+  const docId = crypto.randomUUID();
+  const extractionId = crypto.randomUUID();
+  const sectionId = crypto.randomUUID();
+  const textHash = crypto.createHash('sha256').update(text).digest('hex');
+
+  db.prepare(`
+    INSERT INTO case_documents (
+      id, case_id, original_filename, stored_filename, doc_type
+    ) VALUES (?, ?, ?, ?, ?)
+  `).run(
+    docId,
+    caseId,
+    `${docType}.pdf`,
+    `${docType}-${Date.now()}.pdf`,
+    docType,
+  );
+
+  db.prepare(`
+    INSERT INTO document_extractions (
+      id, document_id, case_id, doc_type, status
+    ) VALUES (?, ?, ?, ?, 'completed')
+  `).run(extractionId, docId, caseId, docType);
+
+  db.prepare(`
+    INSERT INTO extracted_sections (
+      id, extraction_id, document_id, case_id, section_type, section_label,
+      text, text_hash, confidence, review_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    sectionId,
+    extractionId,
+    docId,
+    caseId,
+    sectionType,
+    sectionLabel,
+    text,
+    textHash,
+    confidence,
+    reviewStatus,
+  );
+}
+
 async function cleanup() {
   try {
     dbModule.closeDb();
@@ -165,6 +216,87 @@ await test('detectFactConflicts flags blocker conflict for critical fact path', 
   assert.ok(glaConflict, 'expected conflict on subject.gla');
   assert.equal(glaConflict.severity, 'blocker');
   assert.ok(glaConflict.valueCount >= 2, 'expected two distinct values');
+});
+
+await test('detectFactConflicts normalizes date, currency, and address variants', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '123 Main St., Springfield', confidence: 'high' },
+      },
+      contract: {
+        contractDate: { value: '2026-01-01', confidence: 'high' },
+        contractPrice: { value: '500000', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.address',
+    value: '123 Main St Springfield',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+  addExtractedFact(caseId, {
+    factPath: 'contract.contractDate',
+    value: '01/01/2026',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+  addExtractedFact(caseId, {
+    factPath: 'contract.contractPrice',
+    value: '$500,000.00',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  assert.equal(report.summary.totalConflicts, 0, 'normalized variants should not produce conflicts');
+});
+
+await test('detectFactConflicts marks non-critical disagreement as high severity', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        style: { value: 'Ranch', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.style',
+    value: 'Colonial',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  const styleConflict = report.conflicts.find(c => c.factPath === 'subject.style');
+  assert.ok(styleConflict, 'expected subject.style conflict');
+  assert.equal(styleConflict.severity, 'high');
+});
+
+await test('detectFactConflicts ignores rejected extracted facts', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        gla: { value: '1800', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.gla',
+    value: '2500',
+    confidence: 'high',
+    reviewStatus: 'rejected',
+  });
+
+  const report = detectFactConflicts(caseId);
+  assert.ok(report, 'expected conflict report');
+  assert.equal(report.summary.totalConflicts, 0, 'rejected candidates should not create conflicts');
 });
 
 await test('evaluatePreDraftGate blocks when required section facts are missing', () => {
@@ -241,6 +373,35 @@ await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance
   assert.equal(gate.ok, true, 'alias should satisfy required section facts');
   assert.ok(gate.summary.provenanceCoveragePct < 100, 'expected provenance gap warning');
   assert.ok(gate.warnings.some(w => w.type === 'provenance_gaps'));
+});
+
+await test('evaluatePreDraftGate reports pending extracted sections as warnings only', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '120 Section Ave', confidence: 'high' },
+        siteSize: { value: '10200', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedSection(caseId, {
+    sectionType: 'market_conditions',
+    text: 'Pending extracted market conditions narrative.',
+    reviewStatus: 'pending',
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'pending sections should not block pre-draft gate by themselves');
+  assert.equal(gate.summary.pendingFactReviews, 0);
+  assert.equal(gate.summary.pendingSectionReviews, 1);
+  assert.ok(gate.warnings.some(w => w.type === 'pending_section_reviews'));
 });
 
 await cleanup();
