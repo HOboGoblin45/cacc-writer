@@ -39,6 +39,7 @@ import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
 import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
+import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import {
   getNeighborhoodBoundaryFeatures,
   formatLocationContextBlock,
@@ -56,6 +57,25 @@ function safeSyncCaseRecord(caseId) {
     // Keep legacy workflow endpoints stable if canonical sync has an issue.
     log.warn('case-record:sync-failed', { caseId, error: err.message });
   }
+}
+
+function toSectionIds(fields) {
+  if (!Array.isArray(fields)) return [];
+  const ids = [];
+  for (const field of fields) {
+    const id = trimText(field?.id || field, 80);
+    if (!id) continue;
+    if (!ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+function shouldBypassPreDraftGate(req) {
+  return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
+}
+
+function evaluateGateForCase(caseId, formType, sectionIds) {
+  return evaluatePreDraftGate({ caseId, formType, sectionIds });
 }
 
 router.post('/workflow/run', ensureAI, async (req, res) => {
@@ -101,6 +121,18 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
       ? fields
       : (formConfig.workflowFields || CORE_SECTIONS[formType] || []);
     if (!targetFields.length) return res.status(400).json({ ok: false, error: 'No fields to generate' });
+    if (!shouldBypassPreDraftGate(req)) {
+      const gate = evaluateGateForCase(caseId, formType, toSectionIds(targetFields));
+      if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: 'PRE_DRAFT_GATE_BLOCKED',
+          error: 'Pre-draft integrity gate blocked workflow run',
+          gate,
+        });
+      }
+    }
 
     const results = {};
     const errors = {};
@@ -204,6 +236,22 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
         const targetFields = Array.isArray(fields) && fields.length
           ? fields
           : (formConfig.workflowFields || CORE_SECTIONS[formType] || []);
+        if (!shouldBypassPreDraftGate(req)) {
+          const gate = evaluateGateForCase(caseId, formType, toSectionIds(targetFields));
+          if (!gate) {
+            batchErrors.push({ caseId, error: 'Case not found' });
+            continue;
+          }
+          if (!gate.ok) {
+            batchErrors.push({
+              caseId,
+              error: 'Pre-draft integrity gate blocked workflow run',
+              code: 'PRE_DRAFT_GATE_BLOCKED',
+              gate,
+            });
+            continue;
+          }
+        }
 
         const results = {};
         const errors = {};
