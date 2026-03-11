@@ -15,23 +15,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from '../db/database.js';
-import fs   from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname  = path.dirname(fileURLToPath(import.meta.url));
-const CASES_DIR  = path.join(__dirname, '..', '..', 'cases');
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function readJSON(filePath, fallback = {}) {
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
-}
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 
 /** Safely extract a fact value from the nested facts schema. */
 function factVal(obj, key, fallback = null) {
@@ -208,14 +192,11 @@ function normalizeContext(caseId, meta, facts) {
  */
 export async function buildAssignmentContext(caseId) {
   const t0      = Date.now();
-  const caseDir = path.join(CASES_DIR, caseId);
+  const projection = getCaseProjection(caseId);
+  if (!projection) throw new Error(`Case not found: ${caseId}`);
 
-  if (!fs.existsSync(caseDir)) {
-    throw new Error(`Case directory not found: ${caseId}`);
-  }
-
-  const meta  = readJSON(path.join(caseDir, 'meta.json'),  {});
-  const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+  const meta = projection.meta || {};
+  const facts = projection.facts || {};
 
   const context = normalizeContext(caseId, meta, facts);
 

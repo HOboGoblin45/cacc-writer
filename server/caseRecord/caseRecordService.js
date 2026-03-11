@@ -9,6 +9,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 import { CASES_DIR, CASE_ID_RE, casePath, normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
@@ -22,6 +23,40 @@ import {
   listCaseAggregates,
   deleteCaseAggregate,
 } from '../db/repositories/caseRecordRepo.js';
+
+function stableStringify(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+  const keys = Object.keys(value).sort();
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',') + '}';
+}
+
+function normalizeMetaForDigest(meta = {}, caseId = null) {
+  const safe = applyMetaDefaults({ ...(meta || {}) });
+  safe.formType = normalizeFormType(safe.formType);
+  safe.caseId = caseId || safe.caseId || null;
+  safe.unresolvedIssues = Array.isArray(meta?.unresolvedIssues)
+    ? meta.unresolvedIssues
+    : [];
+  return safe;
+}
+
+function comparableCasePayload(raw) {
+  return {
+    meta: normalizeMetaForDigest(raw?.meta || {}, raw?.caseId || null),
+    facts: raw?.facts || {},
+    provenance: raw?.provenance || {},
+    outputs: raw?.outputs || {},
+    history: raw?.history || {},
+  };
+}
+
+function buildCaseDigest(raw) {
+  return crypto
+    .createHash('sha256')
+    .update(stableStringify(comparableCasePayload(raw)))
+    .digest('hex');
+}
 
 function buildDocSummary(docText) {
   const summary = {};
@@ -248,4 +283,198 @@ export function getCaseFactProvenance(caseId) {
   const projection = getCaseProjection(caseId);
   if (!projection) return null;
   return projection.provenance || readFactSources(caseId) || {};
+}
+
+export function listFilesystemCaseIds() {
+  if (!fs.existsSync(CASES_DIR)) return [];
+  return fs.readdirSync(CASES_DIR)
+    .filter(caseId => CASE_ID_RE.test(caseId))
+    .filter(caseId => {
+      try {
+        return fs.statSync(path.join(CASES_DIR, caseId)).isDirectory();
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+}
+
+export function checkCanonicalCaseIntegrity(caseId) {
+  const fsRaw = loadRawCaseFromFilesystem(caseId);
+  const dbRaw = loadRawCaseFromDb(caseId);
+
+  if (!fsRaw && !dbRaw) {
+    return {
+      caseId,
+      ok: false,
+      reason: 'case_missing_in_filesystem_and_canonical',
+      hasFilesystemCase: false,
+      hasCanonicalCase: false,
+      expectedDigest: null,
+      actualDigest: null,
+    };
+  }
+
+  if (!fsRaw) {
+    return {
+      caseId,
+      ok: false,
+      reason: 'filesystem_case_missing',
+      hasFilesystemCase: false,
+      hasCanonicalCase: true,
+      expectedDigest: null,
+      actualDigest: buildCaseDigest(dbRaw),
+    };
+  }
+
+  if (!dbRaw) {
+    return {
+      caseId,
+      ok: false,
+      reason: 'canonical_record_missing',
+      hasFilesystemCase: true,
+      hasCanonicalCase: false,
+      expectedDigest: buildCaseDigest(fsRaw),
+      actualDigest: null,
+    };
+  }
+
+  const expectedDigest = buildCaseDigest(fsRaw);
+  const actualDigest = buildCaseDigest(dbRaw);
+  const ok = expectedDigest === actualDigest;
+
+  return {
+    caseId,
+    ok,
+    reason: ok ? 'matched' : 'digest_mismatch',
+    hasFilesystemCase: true,
+    hasCanonicalCase: true,
+    expectedDigest,
+    actualDigest,
+  };
+}
+
+export function runCanonicalBackfill({
+  caseIds = null,
+  verifyAfterWrite = true,
+  limit = null,
+} = {}) {
+  const inputCaseIds = Array.isArray(caseIds) && caseIds.length
+    ? caseIds
+      .map(v => String(v || '').trim())
+      .filter(v => CASE_ID_RE.test(v))
+    : listFilesystemCaseIds();
+
+  const deduped = Array.from(new Set(inputCaseIds));
+  const selected = Number.isInteger(limit) && limit > 0
+    ? deduped.slice(0, limit)
+    : deduped;
+
+  const summary = {
+    ok: true,
+    totalDiscovered: deduped.length,
+    totalProcessed: selected.length,
+    inserted: 0,
+    updated: 0,
+    unchanged: 0,
+    skipped: 0,
+    failed: 0,
+    results: [],
+  };
+
+  for (const caseId of selected) {
+    const fsRaw = loadRawCaseFromFilesystem(caseId);
+    if (!fsRaw) {
+      summary.skipped += 1;
+      summary.results.push({
+        caseId,
+        status: 'skipped',
+        reason: 'filesystem_case_missing',
+      });
+      continue;
+    }
+
+    const sourceDigest = buildCaseDigest(fsRaw);
+    const existingCanonical = loadRawCaseFromDb(caseId);
+    const existingDigest = existingCanonical ? buildCaseDigest(existingCanonical) : null;
+
+    let status = 'unchanged';
+    let reason = 'already_synced';
+
+    if (!existingCanonical) {
+      persistRawCase(fsRaw, { writeLegacyFiles: false });
+      summary.inserted += 1;
+      status = 'inserted';
+      reason = 'created_canonical_record';
+    } else if (existingDigest !== sourceDigest) {
+      persistRawCase(fsRaw, { writeLegacyFiles: false });
+      summary.updated += 1;
+      status = 'updated';
+      reason = 'refreshed_from_filesystem';
+    } else {
+      summary.unchanged += 1;
+    }
+
+    let integrity = null;
+    if (verifyAfterWrite) {
+      integrity = checkCanonicalCaseIntegrity(caseId);
+      if (!integrity.ok) {
+        summary.failed += 1;
+        summary.ok = false;
+
+        if (status === 'inserted') summary.inserted -= 1;
+        if (status === 'updated') summary.updated -= 1;
+        if (status === 'unchanged') summary.unchanged -= 1;
+
+        status = 'failed';
+        reason = integrity.reason;
+      }
+    }
+
+    summary.results.push({
+      caseId,
+      status,
+      reason,
+      sourceDigest,
+      canonicalDigest: integrity?.actualDigest || sourceDigest,
+      integrityOk: integrity ? integrity.ok : null,
+    });
+  }
+
+  return summary;
+}
+
+export function getCanonicalBackfillStatus({
+  includeIntegrity = false,
+  integrityLimit = null,
+} = {}) {
+  const filesystemCaseIds = listFilesystemCaseIds();
+  const canonicalCaseIds = new Set(listCaseAggregates(100000).map(item => item.caseId));
+  const missingCanonicalCaseIds = filesystemCaseIds.filter(caseId => !canonicalCaseIds.has(caseId));
+
+  const status = {
+    filesystemCaseCount: filesystemCaseIds.length,
+    canonicalCaseCount: canonicalCaseIds.size,
+    missingCanonicalCount: missingCanonicalCaseIds.length,
+    syncedCaseCount: filesystemCaseIds.length - missingCanonicalCaseIds.length,
+    missingCanonicalCaseIds,
+  };
+
+  if (includeIntegrity) {
+    const scopedCaseIds = Number.isInteger(integrityLimit) && integrityLimit > 0
+      ? filesystemCaseIds.slice(0, integrityLimit)
+      : filesystemCaseIds;
+
+    const mismatchedCases = [];
+    for (const caseId of scopedCaseIds) {
+      const integrity = checkCanonicalCaseIntegrity(caseId);
+      if (!integrity.ok) mismatchedCases.push(integrity);
+    }
+
+    status.integrityCheckedCount = scopedCaseIds.length;
+    status.integrityMismatchCount = mismatchedCases.length;
+    status.integrityMismatches = mismatchedCases;
+  }
+
+  return status;
 }

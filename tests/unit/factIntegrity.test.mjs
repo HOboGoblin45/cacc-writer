@@ -189,6 +189,35 @@ await test('evaluatePreDraftGate blocks when required section facts are missing'
   assert.ok(gate.summary.missingRequiredFacts >= 1, 'expected missing required facts');
 });
 
+await test('evaluatePreDraftGate blocks when extracted facts are pending review', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '900 Review St', confidence: 'high' },
+        siteSize: { value: '7800', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.gla',
+    value: '1980',
+    confidence: 'high',
+    reviewStatus: 'pending',
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, false, 'pending extracted fact reviews should block drafting');
+  assert.ok(gate.blockers.some(b => b.type === 'pending_fact_reviews'));
+  assert.equal(gate.summary.pendingFactReviews, 1);
+});
+
 await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance warnings', () => {
   const { caseId } = createFilesystemCase({
     facts: {
@@ -227,4 +256,3 @@ if (failures.length) {
 }
 console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);
-

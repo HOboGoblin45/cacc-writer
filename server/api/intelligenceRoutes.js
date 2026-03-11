@@ -17,6 +17,7 @@
 
 import { Router } from 'express';
 import { resolveCaseDir } from '../utils/caseUtils.js';
+import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import {
   buildIntelligenceBundle,
   getIntelligenceBundle,
@@ -41,6 +42,7 @@ async function loadOrBuildBundle(caseId) {
 router.param('caseId', (req, res, next, caseId) => {
   const cd = resolveCaseDir(caseId);
   if (!cd) return res.status(400).json({ error: 'Invalid case ID format' });
+  if (!getCaseProjection(caseId)) return res.status(404).json({ error: 'Case not found' });
   req.caseDir = cd;
   next();
 });
@@ -48,7 +50,7 @@ router.param('caseId', (req, res, next, caseId) => {
 // ── POST /cases/:caseId/intelligence/build ──────────────────────────────────
 /**
  * Build (or rebuild) the full assignment intelligence bundle for a case.
- * Reads meta.json + facts.json, runs all Phase 4 subsystems,
+ * Reads canonical case projection (meta + facts), runs all Phase 4 subsystems,
  * persists the result to SQLite, and returns the bundle.
  */
 router.post('/cases/:caseId/intelligence/build', async (req, res) => {
@@ -108,7 +110,8 @@ router.get('/cases/:caseId/intelligence/requirements', async (req, res) => {
       sectionRequirements: bundle.sectionRequirements || null,
     });
   } catch (err) {
-    const code = String(err?.message || '').includes('Case directory not found') ? 404 : 500;
+    const msg = String(err?.message || '');
+    const code = msg.includes('Case directory not found') || msg.includes('Case not found') ? 404 : 500;
     res.status(code).json({ error: err.message });
   }
 });
@@ -127,7 +130,8 @@ router.get('/cases/:caseId/intelligence/compliance-check', async (req, res) => {
       complianceChecks: bundle.complianceChecks || null,
     });
   } catch (err) {
-    const code = String(err?.message || '').includes('Case directory not found') ? 404 : 500;
+    const msg = String(err?.message || '');
+    const code = msg.includes('Case directory not found') || msg.includes('Case not found') ? 404 : 500;
     res.status(code).json({ error: err.message });
   }
 });

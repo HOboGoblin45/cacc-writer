@@ -11,6 +11,7 @@
 import { getDb } from '../db/database.js';
 import { queryAuditEvents, countAuditEvents, getAuditCountsByCategory, getLatestMetric } from './operationsRepo.js';
 import { quickHealthCheck, runHealthDiagnostics } from './healthDiagnostics.js';
+import { getCanonicalBackfillStatus } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -77,6 +78,10 @@ function getOverview() {
     documentsWithWarnings: 0,
     duplicateDocuments: 0,
     lowQualityDocuments: 0,
+    filesystemCaseCount: 0,
+    canonicalCaseCount: 0,
+    missingCanonicalCases: 0,
+    canonicalCoveragePct: 100,
   };
 
   try {
@@ -133,6 +138,17 @@ function getOverview() {
          OR duplicate_of_document_id IS NOT NULL
     `).get();
     overview.lowQualityDocuments = lowQualityRow?.cnt || 0;
+  } catch { /* */ }
+
+  try {
+    const migrationStatus = getCanonicalBackfillStatus();
+    overview.filesystemCaseCount = migrationStatus.filesystemCaseCount;
+    overview.canonicalCaseCount = migrationStatus.canonicalCaseCount;
+    overview.missingCanonicalCases = migrationStatus.missingCanonicalCount;
+    overview.canonicalCoveragePct = migrationStatus.filesystemCaseCount > 0
+      ? Math.round(((migrationStatus.filesystemCaseCount - migrationStatus.missingCanonicalCount)
+        / migrationStatus.filesystemCaseCount) * 100)
+      : 100;
   } catch { /* */ }
 
   return overview;
