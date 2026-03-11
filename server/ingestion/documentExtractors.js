@@ -58,8 +58,9 @@ export async function extractStructuredFacts(docType, text, options = {}) {
       return deterministicFacts;
     }
 
-    // Fall back to AI-assisted extraction
-    if (options.aiClient || callAI) {
+    // Fall back to AI-assisted extraction unless explicitly disabled.
+    const aiFallbackEnabled = options.disableAI !== true;
+    if (aiFallbackEnabled && (options.aiClient || callAI)) {
       const aiFacts = await extractor.aiAssisted(text);
       // Merge: deterministic facts take priority (higher confidence)
       return mergeFacts(deterministicFacts, aiFacts);
