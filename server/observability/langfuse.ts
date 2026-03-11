@@ -110,10 +110,8 @@ async function getLangfuseClient(): Promise<any | null> {
 export async function logWorkflowRun(log: WorkflowRunLog): Promise<void> {
   const ts = new Date().toISOString();
 
-  // Always log to console (structured)
+  // Always log structured output
   const status = log.success ? '✓' : '✗';
-  const errStr = log.error ? ` | error: ${log.error}` : '';
-  const durStr = log.durationMs ? ` | ${log.durationMs}ms` : '';
   logger.info('workflow:run', { status, stage: log.stage, caseId: log.caseId, fieldId: log.fieldId, durationMs: log.durationMs, error: log.error });
 
   const lf = await getLangfuseClient();
