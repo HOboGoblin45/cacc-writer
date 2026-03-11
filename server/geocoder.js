@@ -53,7 +53,7 @@ export async function geocodeAddress(address) {
     });
 
     if (!res.ok) {
-      log.warn('[geocoder] Nominatim returned', res.status, 'for:', address);
+      log.warn('geocoder:nominatim-error', { status: res.status, address });
       return null;
     }
 
@@ -77,7 +77,7 @@ export async function geocodeAddress(address) {
       osmId:        r.osm_id   || null,
     };
   } catch (err) {
-    log.warn('[geocoder] geocodeAddress failed for "' + address + '":', err.message);
+    log.warn('geocoder:geocode-failed', { address, error: err.message });
     return null;
   }
 }
