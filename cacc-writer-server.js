@@ -21,23 +21,17 @@ dotenv.config({ override: true });
 
 import express from 'express';
 import { createRequire } from 'module';
-import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import {
-  DEFAULT_FORM_TYPE, isValidFormType, getFormConfig,
-  listForms, getActiveForms, getDeferredForms,
-} from './forms/index.js';
-import {
-  isActiveForm, isDeferredForm, getScopeWarning, logDeferredAccess,
-  getScopeMetaForForm, ACTIVE_FORMS, DEFERRED_FORMS,
+  isDeferredForm, logDeferredAccess, ACTIVE_FORMS, DEFERRED_FORMS,
 } from './server/config/productionScope.js';
+import { CORE_SECTIONS } from './server/config/coreSections.js';
 
 import {
-  CASES_DIR, CASE_ID_RE, casePath, resolveCaseDir,
-  normalizeFormType, getCaseFormConfig,
+  CASES_DIR, resolveCaseDir, getCaseFormConfig,
 } from './server/utils/caseUtils.js';
 import { readJSON, writeJSON, withVoiceLock } from './server/utils/fileUtils.js';
 import {
@@ -47,20 +41,16 @@ import {
 } from './server/utils/textUtils.js';
 import { upload, ensureAI } from './server/utils/middleware.js';
 import { extractPdfText } from './server/ingestion/pdfExtractor.js';
-import { genInput, collectExamples } from './server/services/legacyGenerationService.js';
 
 import { callAI, client, MODEL } from './server/openaiClient.js';
 import { addExample, indexExamples, addApprovedNarrative } from './server/knowledgeBase.js';
-import { getRelevantExamples, getRelevantExamplesWithVoice } from './server/retrieval.js';
 import { initFileLogger, writeLogEntry, getLogFiles, readLogFile, getLogsDir } from './server/fileLogger.js';
 import { setFileLogWriter } from './server/logger.js';
 import { listAllDestinations, getDestination, getTargetSoftware, getFallbackStrategy } from './server/destinationRegistry.js';
 import { getBundleStats, createSupportBundle, listExports } from './server/backupExport.js';
-import { buildPromptMessages, buildReviewMessages } from './server/promptBuilder.js';
+import { buildReviewMessages } from './server/promptBuilder.js';
 import log from './server/logger.js';
 import { geocodeAddress, distanceMiles, cardinalDirection, buildAddressString } from './server/geocoder.js';
-import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock, LOCATION_CONTEXT_FIELDS } from './server/neighborhoodContext.js';
-import { applyMetaDefaults, extractMetaFields, buildAssignmentMetaBlock } from './server/caseMetadata.js';
 import { computeWorkflowStatus, isValidWorkflowStatus, pipelineToWorkflowStatus } from './server/workflowStatus.js';
 import { getMissingFacts, formatMissingFactsForUI } from './server/sectionDependencies.js';
 
@@ -76,6 +66,7 @@ import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from './server/db/da
 
 import casesRouter        from './server/api/casesRoutes.js';
 import generationRouter   from './server/api/generationRoutes.js';
+import workflowRouter     from './server/api/workflowRoutes.js';
 import memoryRouter       from './server/api/memoryRoutes.js';
 import agentsRouter       from './server/api/agentsRoutes.js';
 import healthRouter       from './server/api/healthRoutes.js';
@@ -87,6 +78,7 @@ import insertionRouter    from './server/api/insertionRoutes.js';
 import operationsRouter   from './server/api/operationsRoutes.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
+import { runStartupChecks } from './server/config/startupChecks.js';
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -96,31 +88,19 @@ const PORT           = Number(process.env.PORT) || 5178;
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const ACI_AGENT_URL  = process.env.ACI_AGENT_URL || 'http://localhost:5180';
 const RQ_AGENT_URL   = process.env.RQ_AGENT_URL  || 'http://localhost:5181';
-const MAX_BATCH_FIELDS = 20;
 const PIPELINE_STAGES  = ['intake','extracting','generating','review','approved','inserting','complete'];
 const VALID_SECTION_STATUSES = ['not_started','drafted','reviewed','approved','inserted','verified','copied','error'];
-const CORE_SECTIONS = {
-  '1004': [
-    { id: 'neighborhood_description', title: 'Neighborhood Description' },
-    { id: 'market_conditions',        title: 'Market Conditions' },
-    { id: 'improvements_condition',   title: 'Improvements / Condition' },
-    { id: 'sca_summary',              title: 'Sales Comparison Summary' },
-    { id: 'reconciliation',           title: 'Reconciliation' },
-  ],
-  'commercial': [
-    { id: 'market_area',             title: 'Market Area / Neighborhood' },
-    { id: 'improvement_description', title: 'Improvements Description' },
-    { id: 'hbu_analysis',            title: 'Highest & Best Use' },
-    { id: 'reconciliation',          title: 'Reconciliation / Conclusion' },
-    { id: 'site_description',        title: 'Site Description' },
-  ],
-};
 
-if (!fs.existsSync(CASES_DIR)) fs.mkdirSync(CASES_DIR, { recursive: true });
+runStartupChecks({
+  port: PORT,
+  casesDir: CASES_DIR,
+  openAiApiKey: OPENAI_API_KEY,
+  logger: console,
+});
+
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 console.log('CACC Writer starting... Model:', MODEL);
-if (!OPENAI_API_KEY) console.warn('OPENAI_API_KEY is missing. AI endpoints will return 503.');
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -147,6 +127,7 @@ app.param('caseId', (req, res, next, caseId) => {
 app.use('/api',        healthRouter);
 app.use('/api/cases',  casesRouter);
 app.use('/api',        generationRouter);
+app.use('/api',        workflowRouter);
 app.use('/api',        memoryRouter);
 app.use('/api',        agentsRouter);
 app.use('/api',        intelligenceRouter);
@@ -160,144 +141,6 @@ app.use('/api',        operationsRouter);
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
 // ══════════════════════════════════════════════════════════════════════════════
 
-app.post('/api/generate', ensureAI, async (req, res) => {
-  try {
-    const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
-    const prompt = trimText(req.body?.prompt, 24000);
-    const requestedFt = String(formType || '').trim().toLowerCase();
-    if (requestedFt && isDeferredForm(requestedFt)) {
-      logDeferredAccess(requestedFt, 'POST /api/generate', log);
-      return res.status(400).json({ ok:false, supported:false, formType:requestedFt, scope:'deferred',
-        message:`Generation is not available for form type "${requestedFt}". Active forms: ${ACTIVE_FORMS.join(', ')}.` });
-    }
-    if (fieldId) {
-      let caseFacts = bodyFacts || {}, locationContext = null;
-      if (caseId && !bodyFacts) {
-        const cd = resolveCaseDir(caseId);
-        if (cd && fs.existsSync(cd)) {
-          caseFacts = readJSON(path.join(cd, 'facts.json'), {});
-          if (LOCATION_CONTEXT_FIELDS.has(fieldId)) {
-            const geo = readJSON(path.join(cd, 'geocode.json'), null);
-            if (geo?.subject?.result?.lat) {
-              try {
-                const { lat, lng } = geo.subject.result;
-                const bf = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
-                locationContext = formatLocationContextBlock({ subject: geo.subject, comps: geo.comps||[], boundaryFeatures: bf });
-              } catch (e) { log.warn('[generate] location context unavailable:', e.message); }
-            }
-          }
-        }
-      }
-      const ft = normalizeFormType(formType);
-      let assignmentMeta = null;
-      if (caseId) {
-        const cd = resolveCaseDir(caseId);
-        if (cd && fs.existsSync(cd)) assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd,'meta.json'),{})));
-      }
-      const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType: ft, fieldId });
-      const messages = buildPromptMessages({ formType:ft, fieldId, facts:caseFacts, voiceExamples, examples:otherExamples, locationContext, assignmentMeta });
-      const text = await callAI(messages);
-      return res.json({ ok:true, result:text, fieldId, formType:ft, examplesUsed:voiceExamples.length+otherExamples.length, locationContextInjected:Boolean(locationContext) });
-    }
-    if (!prompt) return res.status(400).json({ ok:false, error:'prompt or fieldId is required' });
-    const r = await client.responses.create({ model:MODEL, input:genInput(prompt) });
-    res.json({ ok:true, result:aiText(r) });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-
-app.post('/api/generate-batch', ensureAI, async (req, res) => {
-  try {
-    const { fields, caseId, twoPass = false } = req.body;
-    if (!Array.isArray(fields)||!fields.length) return res.status(400).json({ ok:false, error:'fields must be a non-empty array' });
-    if (fields.length > MAX_BATCH_FIELDS) return res.status(400).json({ ok:false, error:'fields must be <= '+MAX_BATCH_FIELDS });
-    let caseFacts={}, caseDir=null, caseFormType=DEFAULT_FORM_TYPE, batchLocationContext=null, batchAssignmentMeta=null;
-    if (caseId) {
-      caseDir = resolveCaseDir(caseId);
-      if (!caseDir) return res.status(400).json({ ok:false, error:'Invalid caseId format' });
-      if (!fs.existsSync(caseDir)) return res.status(404).json({ ok:false, error:'Case not found' });
-      caseFacts = readJSON(path.join(caseDir,'facts.json'),{});
-      const { formType:bFt, meta:bMeta } = getCaseFormConfig(caseDir);
-      caseFormType = bFt;
-      batchAssignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(bMeta||{}));
-      if (isDeferredForm(caseFormType)) {
-        logDeferredAccess(caseFormType,'POST /api/generate-batch',log);
-        return res.status(400).json({ ok:false, supported:false, formType:caseFormType, scope:'deferred',
-          message:`Batch generation is not available for form type "${caseFormType}". Active forms: ${ACTIVE_FORMS.join(', ')}.` });
-      }
-      if (fields.some(f=>LOCATION_CONTEXT_FIELDS.has(f?.id))) {
-        const geo = readJSON(path.join(caseDir,'geocode.json'),null);
-        if (geo?.subject?.result?.lat) {
-          try {
-            const { lat, lng } = geo.subject.result;
-            const bf = await getNeighborhoodBoundaryFeatures(lat,lng,1.5);
-            batchLocationContext = formatLocationContextBlock({ subject:geo.subject, comps:geo.comps||[], boundaryFeatures:bf });
-          } catch (e) { log.warn('[generate-batch] location context unavailable:',e.message); }
-        }
-      }
-    }
-    const results={}, errors={};
-    const CONCURRENCY=3; let qi=0;
-    async function processField() {
-      while (qi < fields.length) {
-        const f=fields[qi++], sid=trimText(f?.id,80)||('field_'+Math.random().toString(36).slice(2,8));
-        try {
-          const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType:caseFormType, fieldId:sid });
-          const messages = buildPromptMessages({ formType:caseFormType, fieldId:sid, facts:caseFacts, voiceExamples, examples:otherExamples, locationContext:LOCATION_CONTEXT_FIELDS.has(sid)?batchLocationContext:null, assignmentMeta:batchAssignmentMeta });
-          let text = await callAI(messages);
-          if (twoPass && text) {
-            try {
-              const rm = buildReviewMessages({ draftText:text, facts:caseFacts, fieldId:sid, formType:caseFormType });
-              const rr = await callAI(rm);
-              const rv = JSON.parse(rr.trim().replace(/^`json\n?/,'').replace(/\n?`$/,''));
-              if (rv?.revisedText) text = rv.revisedText;
-            } catch { /* non-fatal */ }
-          }
-          results[sid] = { title:trimText(f?.title,160)||sid, text, examplesUsed:voiceExamples.length+otherExamples.length };
-        } catch (e) { errors[sid] = e?.message||'Unknown error'; }
-      }
-    }
-    await Promise.all(Array.from({ length:Math.min(CONCURRENCY,fields.length) }, processField));
-    if (caseDir) {
-      const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-      const histFile=path.join(caseDir,'history.json'), history=readJSON(histFile,{});
-      for (const fid of Object.keys(results)) {
-        if (existing[fid]?.text) {
-          if (!history[fid]) history[fid]=[];
-          history[fid].unshift({ text:existing[fid].text, title:existing[fid].title, savedAt:new Date().toISOString() });
-          history[fid]=history[fid].slice(0,3);
-        }
-      }
-      writeJSON(histFile,history);
-      writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-      const meta=readJSON(path.join(caseDir,'meta.json'));
-      meta.updatedAt=new Date().toISOString();
-      writeJSON(path.join(caseDir,'meta.json'),meta);
-    }
-    res.json({ ok:true, results, errors });
-  } catch (err) { res.status(500).json({ ok:false, error:'Batch generation failed' }); }
-});
-
-app.post('/api/cases/create', (req, res) => {
-  try {
-    const requestedFormType = String(req.body?.formType||'').trim().toLowerCase() || DEFAULT_FORM_TYPE;
-    if (isDeferredForm(requestedFormType)) {
-      logDeferredAccess(requestedFormType,'POST /api/cases/create',log);
-      return res.status(400).json({ ok:false, supported:false, formType:requestedFormType, scope:'deferred',
-        message:'Cannot create a new case for form type '+JSON.stringify(requestedFormType)+'. Active forms: '+ACTIVE_FORMS.join(', ')+'.' });
-    }
-    let caseId='', caseDir='';
-    do { caseId=uuidv4().replace(/-/g,'').slice(0,8); caseDir=casePath(caseId); } while (fs.existsSync(caseDir));
-    const baseMeta = { caseId, address:trimText(req.body?.address,240), borrower:trimText(req.body?.borrower,180),
-      notes:trimText(req.body?.notes,1000), formType:normalizeFormType(req.body?.formType),
-      status:'active', pipelineStage:'intake', createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
-    const meta = applyMetaDefaults({ ...baseMeta, ...extractMetaFields(req.body,trimText) });
-    fs.mkdirSync(path.join(caseDir,'documents'),{ recursive:true });
-    ['meta.json','facts.json','doc_text.json','outputs.json'].forEach(f=>writeJSON(path.join(caseDir,f),{}));
-    writeJSON(path.join(caseDir,'feedback.json'),[]);
-    writeJSON(path.join(caseDir,'meta.json'),meta);
-    res.json({ ok:true, caseId, meta });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
 app.post('/api/cases/:caseId/upload', upload.single('file'), async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -415,190 +258,6 @@ app.post('/api/cases/:caseId/review-section', ensureAI, async (req, res) => {
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
-app.post('/api/similar-examples', (req, res) => {
-  try {
-    const { fieldId, limit=3, formType } = req.body;
-    const safeLimit=Math.max(1,Math.min(Number(limit)||3,10));
-    const normalized=formType?normalizeFormType(formType):null;
-    res.json({ ok:true, examples:collectExamples(trimText(fieldId,80)||null,safeLimit,normalized) });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-app.post('/api/workflow/run', ensureAI, async (req, res) => {
-  try {
-    const { caseId, fields, twoPass=false, saveOutputs=true } = req.body;
-    const _wfFt=String(req.body?.formType||'').trim().toLowerCase();
-    if (_wfFt&&isDeferredForm(_wfFt)) { logDeferredAccess(_wfFt,'POST /api/workflow/run',log); return res.status(400).json({ ok:false, supported:false, formType:_wfFt, scope:'deferred' }); }
-    if (!caseId) return res.status(400).json({ ok:false, error:'caseId is required' });
-    const caseDir=resolveCaseDir(caseId);
-    if (!caseDir||!fs.existsSync(caseDir)) return res.status(404).json({ ok:false, error:'Case not found' });
-    const { formType, formConfig }=getCaseFormConfig(caseDir);
-    if (isDeferredForm(formType)) {
-      logDeferredAccess(formType,'POST /api/workflow/run',log);
-      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred' });
-    }
-    const facts=readJSON(path.join(caseDir,'facts.json'),{});
-    const rawMeta=readJSON(path.join(caseDir,'meta.json'),{});
-    const assignmentMeta=buildAssignmentMetaBlock(applyMetaDefaults(rawMeta));
-    const geo=readJSON(path.join(caseDir,'geocode.json'),null);
-    let locationContext=null;
-    if (geo?.subject?.result?.lat) {
-      try {
-        const { lat, lng }=geo.subject.result;
-        const bf=await getNeighborhoodBoundaryFeatures(lat,lng,1.5);
-        locationContext=formatLocationContextBlock({ subject:geo.subject, comps:geo.comps||[], boundaryFeatures:bf });
-      } catch (e) { log.warn('[workflow/run] location context unavailable:',e.message); }
-    }
-    const targetFields=Array.isArray(fields)&&fields.length?fields:(formConfig.workflowFields||CORE_SECTIONS[formType]||[]);
-    if (!targetFields.length) return res.status(400).json({ ok:false, error:'No fields to generate' });
-    const results={}, errors={};
-    const CONCURRENCY=3; let qi=0;
-    async function runField() {
-      while (qi<targetFields.length) {
-        const f=targetFields[qi++], sid=trimText(f?.id||f,80);
-        try {
-          const { voiceExamples, otherExamples }=getRelevantExamplesWithVoice({ formType, fieldId:sid });
-          const messages=buildPromptMessages({ formType, fieldId:sid, facts, voiceExamples, examples:otherExamples,
-            locationContext:LOCATION_CONTEXT_FIELDS.has(sid)?locationContext:null, assignmentMeta });
-          let text=await callAI(messages);
-          if (twoPass&&text) {
-            try {
-              const rm=buildReviewMessages({ draftText:text, facts, fieldId:sid, formType });
-              const rr=await callAI(rm);
-              const rv=JSON.parse(rr.trim().replace(/^`json\n?/,'').replace(/\n?`$/,''));
-              if (rv?.revisedText) text=rv.revisedText;
-            } catch { /* non-fatal */ }
-          }
-          results[sid]={ title:f?.title||sid, text, examplesUsed:voiceExamples.length+otherExamples.length };
-        } catch (e) { errors[sid]=e?.message||'Unknown error'; }
-      }
-    }
-    await Promise.all(Array.from({ length:Math.min(CONCURRENCY,targetFields.length) },runField));
-    if (saveOutputs&&Object.keys(results).length) {
-      const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-      writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-      const meta=readJSON(path.join(caseDir,'meta.json'));
-      meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
-      writeJSON(path.join(caseDir,'meta.json'),meta);
-    }
-    res.json({ ok:true, results, errors, formType, fieldsAttempted:targetFields.length });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-app.post('/api/workflow/run-batch', ensureAI, async (req, res) => {
-  try {
-    const { cases, fields, twoPass=false } = req.body;
-    const _wfbFt=String(req.body?.formType||'').trim().toLowerCase();
-    if (_wfbFt&&isDeferredForm(_wfbFt)) { logDeferredAccess(_wfbFt,'POST /api/workflow/run-batch',log); return res.status(400).json({ ok:false, supported:false, formType:_wfbFt, scope:'deferred' }); }
-    if (!Array.isArray(cases)||!cases.length) return res.status(400).json({ ok:false, error:'cases must be a non-empty array' });
-    if (cases.length>10) return res.status(400).json({ ok:false, error:'cases must be <= 10' });
-    const batchResults=[], batchErrors=[];
-    for (const caseId of cases) {
-      const caseDir=resolveCaseDir(caseId);
-      if (!caseDir||!fs.existsSync(caseDir)) { batchErrors.push({ caseId, error:'Case not found' }); continue; }
-      const { formType, formConfig }=getCaseFormConfig(caseDir);
-      if (isDeferredForm(formType)) { batchErrors.push({ caseId, error:'Deferred form type: '+formType }); continue; }
-      try {
-        const facts=readJSON(path.join(caseDir,'facts.json'),{});
-        const assignmentMeta=buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(caseDir,'meta.json'),{})));
-        const targetFields=Array.isArray(fields)&&fields.length?fields:(formConfig.workflowFields||CORE_SECTIONS[formType]||[]);
-        const results={}, errors={};
-        for (const f of targetFields) {
-          const sid=trimText(f?.id||f,80);
-          try {
-            const { voiceExamples, otherExamples }=getRelevantExamplesWithVoice({ formType, fieldId:sid });
-            const messages=buildPromptMessages({ formType, fieldId:sid, facts, voiceExamples, examples:otherExamples, assignmentMeta });
-            let text=await callAI(messages);
-            if (twoPass&&text) {
-              try {
-                const rm=buildReviewMessages({ draftText:text, facts, fieldId:sid, formType });
-                const rr=await callAI(rm);
-                const rv=JSON.parse(rr.trim().replace(/^`json\n?/,'').replace(/\n?`$/,''));
-                if (rv?.revisedText) text=rv.revisedText;
-              } catch { /* non-fatal */ }
-            }
-            results[sid]={ title:f?.title||sid, text };
-          } catch (e) { errors[sid]=e?.message||'Unknown error'; }
-        }
-        const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-        writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-        batchResults.push({ caseId, results, errors });
-      } catch (e) { batchErrors.push({ caseId, error:e.message }); }
-    }
-    res.json({ ok:true, batchResults, batchErrors });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-
-app.get('/api/workflow/health', (req, res) => {
-  const caseDirs=fs.existsSync(CASES_DIR)?fs.readdirSync(CASES_DIR).filter(d=>CASE_ID_RE.test(d)):[];
-  const activeCases=caseDirs.filter(d=>{ try { const m=readJSON(path.join(CASES_DIR,d,'meta.json')); return m?.status==='active'; } catch { return false; } });
-  res.json({ ok:true, status:'healthy', casesDir:CASES_DIR, totalCases:caseDirs.length, activeCases:activeCases.length,
-    model:MODEL, aiAvailable:Boolean(OPENAI_API_KEY), activeForms:ACTIVE_FORMS, deferredForms:DEFERRED_FORMS });
-});
-
-app.post('/api/workflow/ingest-pdf', upload.single('file'), ensureAI, async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ ok:false, error:'No file uploaded' });
-    const isPdf=req.file.mimetype==='application/pdf'||String(req.file.originalname||'').toLowerCase().endsWith('.pdf');
-    if (!isPdf) return res.status(400).json({ ok:false, error:'Only PDF files are allowed' });
-    const { text, method }=await extractPdfText(req.file.buffer,client,MODEL);
-    const clean=text.replace(/\n{4,}/g,'\n\n').replace(/[ \t]{3,}/g,'  ').trim();
-    res.json({ ok:true, text:clean, method, wordCount:clean.split(/\s+/).filter(Boolean).length, preview:clean.slice(0,500) });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-app.post('/api/cases/:caseId/generate-core', ensureAI, async (req, res) => {
-  try {
-    const cd=req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok:false, error:'Case not found' });
-    const { formType, formConfig }=getCaseFormConfig(cd);
-    if (isDeferredForm(formType)) {
-      logDeferredAccess(formType,'POST /api/cases/:caseId/generate-core',log);
-      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred' });
-    }
-    const facts=readJSON(path.join(cd,'facts.json'),{});
-    const assignmentMeta=buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd,'meta.json'),{})));
-    const geo=readJSON(path.join(cd,'geocode.json'),null);
-    let locationContext=null;
-    if (geo?.subject?.result?.lat) {
-      try {
-        const { lat, lng }=geo.subject.result;
-        const bf=await getNeighborhoodBoundaryFeatures(lat,lng,1.5);
-        locationContext=formatLocationContextBlock({ subject:geo.subject, comps:geo.comps||[], boundaryFeatures:bf });
-      } catch (e) { log.warn('[generate-core] location context unavailable:',e.message); }
-    }
-    const requestedFields=asArray(req.body?.fields);
-    const coreSections=CORE_SECTIONS[formType]||[];
-    const targetFields=requestedFields.length?coreSections.filter(s=>requestedFields.includes(s.id)):coreSections;
-    if (!targetFields.length) return res.status(400).json({ ok:false, error:'No core sections defined for form type: '+formType });
-    const results={}, errors={}, statuses={};
-    const CONCURRENCY=3; let qi=0;
-    async function runSection() {
-      while (qi<targetFields.length) {
-        const section=targetFields[qi++], sid=section.id;
-        try {
-          const { voiceExamples, otherExamples }=getRelevantExamplesWithVoice({ formType, fieldId:sid });
-          const messages=buildPromptMessages({ formType, fieldId:sid, facts, voiceExamples, examples:otherExamples,
-            locationContext:LOCATION_CONTEXT_FIELDS.has(sid)?locationContext:null, assignmentMeta });
-          const text=await callAI(messages);
-          results[sid]={ title:section.title, text, examplesUsed:voiceExamples.length+otherExamples.length };
-          statuses[sid]='drafted';
-        } catch (e) { errors[sid]=e?.message||'Unknown error'; statuses[sid]='error'; }
-      }
-    }
-    await Promise.all(Array.from({ length:Math.min(CONCURRENCY,targetFields.length) },runSection));
-    const outFile=path.join(cd,'outputs.json'), existing=readJSON(outFile,{});
-    writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-    const secFile=path.join(cd,'section_statuses.json'), secStatuses=readJSON(secFile,{});
-    for (const [sid,st] of Object.entries(statuses)) {
-      secStatuses[sid]={ status:st, updatedAt:new Date().toISOString(), title:results[sid]?.title||sid };
-    }
-    writeJSON(secFile,secStatuses);
-    const meta=readJSON(path.join(cd,'meta.json'));
-    meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
-    writeJSON(path.join(cd,'meta.json'),meta);
-    const genResults={}; for(const [sid,v] of Object.entries(results)) genResults[sid]={...v,sectionStatus:statuses[sid]||'drafted'};
-    res.json({ ok:true, results:genResults, errors, statuses, formType, sectionsAttempted:targetFields.length,
-      coreSections:targetFields, generated:Object.keys(results).length, failed:Object.keys(errors).length, pipelineStage:'generating' });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
 app.patch('/api/cases/:caseId/sections/:fieldId/status', (req, res) => {
   try {
     const cd=req.caseDir;
@@ -695,49 +354,6 @@ app.post('/api/cases/:caseId/sections/:fieldId/insert', async (req, res) => {
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
-app.post('/api/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
-  try {
-    const cd=req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok:false, error:'Case not found' });
-    const { formType }=getCaseFormConfig(cd);
-    if (isDeferredForm(formType)) {
-      logDeferredAccess(formType,'POST /api/cases/:caseId/generate-comp-commentary',log);
-      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred' });
-    }
-    if (formType!=='1004') return res.status(400).json({ ok:false, error:'Comp commentary is only available for 1004 form type', formType });
-    const facts=readJSON(path.join(cd,'facts.json'),{});
-    const assignmentMeta=buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd,'meta.json'),{})));
-    const comps=asArray(req.body?.comps||facts?.comps||[]);
-    if (!comps.length) return res.status(400).json({ ok:false, error:'No comparables provided' });
-    const results=[], errors=[];
-    for (let i=0;i<comps.length;i++) {
-      const comp=comps[i], compLabel='Comp '+(i+1);
-      try {
-        const compFacts={ ...facts, currentComp:comp, compIndex:i+1, compLabel };
-        const { voiceExamples, otherExamples }=getRelevantExamplesWithVoice({ formType, fieldId:'comp_commentary' });
-        const messages=buildPromptMessages({ formType, fieldId:'comp_commentary', facts:compFacts,
-          voiceExamples, examples:otherExamples, assignmentMeta });
-        const text=await callAI(messages);
-        results.push({ compIndex:i+1, compLabel, text, address:comp?.address||null });
-      } catch (e) { errors.push({ compIndex:i+1, compLabel, error:e.message }); }
-    }
-    if (results.length) {
-      const outFile=path.join(cd,'outputs.json'), existing=readJSON(outFile,{});
-      existing.comp_commentary={ comps:results, generatedAt:new Date().toISOString() };
-      writeJSON(outFile,existing);
-    }
-    const compFocus=trimText(req.body?.compFocus,40)||'all';
-    const combinedText=results.map(r=>r.compLabel+': '+r.text).join('\n\n');
-    if (results.length) {
-      const outFile2=path.join(cd,'outputs.json'), existing2=readJSON(outFile2,{});
-      existing2.sca_summary={ text:combinedText, comps:results, generatedAt:new Date().toISOString() };
-      writeJSON(outFile2,existing2);
-    }
-    const totalExamples=results.reduce((a,r)=>a+(r.examplesUsed||0),0);
-    res.json({ ok:true, fieldId:'sca_summary', text:combinedText, sectionStatus:'drafted', results, errors, compsAttempted:comps.length, compsUsed:results.length, compFocus, examplesUsed:totalExamples });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-
 app.post('/api/cases/:caseId/insert-all', async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -771,57 +387,6 @@ app.post('/api/cases/:caseId/insert-all', async (req, res) => {
     res.json({ ok:true, inserted:inserted.length, insertedSections:inserted, skipped, errors, totalInserted:inserted.length, pipelineStage:meta.pipelineStage||'inserting' });
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
-app.post('/api/cases/:caseId/generate-all', ensureAI, async (req, res) => {
-  try {
-    const cd=req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok:false, error:'Case not found' });
-    const { formType, formConfig }=getCaseFormConfig(cd);
-    if (isDeferredForm(formType)) {
-      logDeferredAccess(formType,'POST /api/cases/:caseId/generate-all',log);
-      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred' });
-    }
-    const facts=readJSON(path.join(cd,'facts.json'),{});
-    const assignmentMeta=buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd,'meta.json'),{})));
-    const geo=readJSON(path.join(cd,'geocode.json'),null);
-    let locationContext=null;
-    if (geo?.subject?.result?.lat) {
-      try {
-        const { lat, lng }=geo.subject.result;
-        const bf=await getNeighborhoodBoundaryFeatures(lat,lng,1.5);
-        locationContext=formatLocationContextBlock({ subject:geo.subject, comps:geo.comps||[], boundaryFeatures:bf });
-      } catch (e) { log.warn('[generate-all] location context unavailable:',e.message); }
-    }
-    const allFields=formConfig.workflowFields||CORE_SECTIONS[formType]||[];
-    if (!allFields.length) return res.status(400).json({ ok:false, error:'No fields configured for form type: '+formType });
-    const results={}, errors={}, statuses={};
-    const CONCURRENCY=3; let qi=0;
-    async function runAll() {
-      while (qi<allFields.length) {
-        const f=allFields[qi++], sid=trimText(f?.id||f,80);
-        try {
-          const { voiceExamples, otherExamples }=getRelevantExamplesWithVoice({ formType, fieldId:sid });
-          const messages=buildPromptMessages({ formType, fieldId:sid, facts, voiceExamples, examples:otherExamples,
-            locationContext:LOCATION_CONTEXT_FIELDS.has(sid)?locationContext:null, assignmentMeta });
-          const text=await callAI(messages);
-          results[sid]={ title:f?.title||sid, text, examplesUsed:voiceExamples.length+otherExamples.length };
-          statuses[sid]='drafted';
-        } catch (e) { errors[sid]=e?.message||'Unknown error'; statuses[sid]='error'; }
-      }
-    }
-    await Promise.all(Array.from({ length:Math.min(CONCURRENCY,allFields.length) },runAll));
-    const outFile=path.join(cd,'outputs.json'), existing=readJSON(outFile,{});
-    writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-    const secFile=path.join(cd,'section_statuses.json'), secStatuses=readJSON(secFile,{});
-    for (const [sid,st] of Object.entries(statuses)) {
-      secStatuses[sid]={ ...(secStatuses[sid]||{}), status:st, updatedAt:new Date().toISOString() };
-    }
-    writeJSON(secFile,secStatuses);
-    const meta=readJSON(path.join(cd,'meta.json')); meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
-    writeJSON(path.join(cd,'meta.json'),meta);
-    res.json({ ok:true, results, errors, statuses, formType, fieldsAttempted:allFields.length });
-  } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
-});
-
 app.patch('/api/cases/:caseId/outputs/:fieldId', (req, res) => {
   try {
     const cd=req.caseDir;
