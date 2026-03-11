@@ -117,11 +117,19 @@ const CORE_SECTIONS = {
   ],
 };
 
+// ── Startup validation ────────────────────────────────────────────────────────
+{
+  const warnings = [];
+  if (!OPENAI_API_KEY) warnings.push('OPENAI_API_KEY is not set — AI endpoints will return 503');
+  if (!process.env.PINECONE_API_KEY) warnings.push('PINECONE_API_KEY is not set — vector retrieval will be unavailable');
+  if (!process.env.PINECONE_INDEX_NAME) warnings.push('PINECONE_INDEX_NAME is not set — vector retrieval will be unavailable');
+  for (const w of warnings) log.warn('startup:env-check', w);
+}
+
 if (!fs.existsSync(CASES_DIR)) fs.mkdirSync(CASES_DIR, { recursive: true });
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-console.log('CACC Writer starting... Model:', MODEL);
-if (!OPENAI_API_KEY) console.warn('OPENAI_API_KEY is missing. AI endpoints will return 503.');
+log.info('startup', `CACC Writer starting... Model: ${MODEL}`);
 
 app.use((req, res, next) => {
   const start = Date.now();
