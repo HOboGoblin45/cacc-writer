@@ -62,7 +62,7 @@ import {
   getGeneratedSectionsForRun,
 } from '../db/repositories/generationRepo.js';
 
-const MAX_PARALLEL = 3; // max concurrent section jobs
+const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
 
 // ── Structured logger ─────────────────────────────────────────────────────────
 

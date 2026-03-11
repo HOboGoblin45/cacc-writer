@@ -37,7 +37,7 @@ const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 
 // ── Concurrency limiter ─────────────────────────────────────────────────────
 // Prevents flooding OpenAI with too many parallel requests (avoids 429 errors)
-const MAX_CONCURRENT = Number(process.env.OPENAI_MAX_CONCURRENT) || 5;
+const MAX_CONCURRENT = Number(process.env.OPENAI_MAX_CONCURRENT) || 8;
 let _activeRequests = 0;
 const _queue = [];
 
