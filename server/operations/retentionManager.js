@@ -158,9 +158,9 @@ export function listArchivedCases() {
             formType: meta.formType || meta.form_type || 'unknown',
           });
         }
-      } catch { /* skip unreadable cases */ }
+      } catch (err) { log.warn('retention:list-read-case', { dir, error: err.message }); }
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('retention:list-archived', { error: err.message }); }
 
   return archived;
 }

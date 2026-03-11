@@ -76,7 +76,7 @@ export async function buildCaseExportManifest(caseId) {
         updatedAt: intel.updated_at,
       };
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:assignment-intelligence', { caseId, error: err.message }); }
 
   // 3. Document manifest
   try {
@@ -90,7 +90,7 @@ export async function buildCaseExportManifest(caseId) {
       extractionStatus: d.extraction_status,
       uploadedAt: d.uploaded_at,
     }));
-  } catch { /* */ }
+  } catch (err) { log.warn('export:document-manifest', { caseId, error: err.message }); }
 
   // 4. Extraction summary
   try {
@@ -106,7 +106,7 @@ export async function buildCaseExportManifest(caseId) {
       durationMs: e.duration_ms,
       createdAt: e.created_at,
     }));
-  } catch { /* */ }
+  } catch (err) { log.warn('export:extraction-summary', { caseId, error: err.message }); }
 
   // 5. Generation run history
   try {
@@ -129,7 +129,7 @@ export async function buildCaseExportManifest(caseId) {
         })),
       });
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:generation-runs', { caseId, error: err.message }); }
 
   // 6. QC history
   try {
@@ -155,7 +155,7 @@ export async function buildCaseExportManifest(caseId) {
         })),
       });
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:qc-history', { caseId, error: err.message }); }
 
   // 7. Insertion run history
   try {
@@ -179,22 +179,22 @@ export async function buildCaseExportManifest(caseId) {
         })),
       });
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:insertion-runs', { caseId, error: err.message }); }
 
   // 8. Audit events for this case
   try {
     manifest.auditEvents = queryAuditEvents({ caseId, limit: 500 });
-  } catch { /* */ }
+  } catch (err) { log.warn('export:audit-events', { caseId, error: err.message }); }
 
   // 9. Timeline summary
   try {
     manifest.timelineSummary = getCaseTimelineSummary(caseId);
-  } catch { /* */ }
+  } catch (err) { log.warn('export:timeline-summary', { caseId, error: err.message }); }
 
   // 10. Health snapshot
   try {
     manifest.healthSnapshot = await runHealthDiagnostics();
-  } catch { /* */ }
+  } catch (err) { log.warn('export:health-snapshot', { error: err.message }); }
 
   return manifest;
 }
@@ -253,33 +253,33 @@ export function getSupportBundleData() {
         data.dbStats[t.name] = row?.cnt || 0;
       } catch { data.dbStats[t.name] = -1; }
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:db-stats', { error: err.message }); }
 
   // Recent audit events (last 100)
   try {
     data.recentAuditEvents = queryAuditEvents({ limit: 100 });
-  } catch { /* */ }
+  } catch (err) { log.warn('export:recent-audit', { error: err.message }); }
 
   // Recent generation runs (last 10)
   try {
     data.recentGenerationRuns = db.prepare(
       'SELECT id, case_id, status, form_type, started_at, completed_at, duration_ms, section_count, success_count, error_count FROM generation_runs ORDER BY created_at DESC LIMIT 10'
     ).all();
-  } catch { /* */ }
+  } catch (err) { log.warn('export:recent-gen-runs', { error: err.message }); }
 
   // Recent QC runs (last 10)
   try {
     data.recentQcRuns = db.prepare(
       'SELECT id, case_id, status, created_at, findings_count, blocker_count, high_count, readiness_signal FROM qc_runs ORDER BY created_at DESC LIMIT 10'
     ).all();
-  } catch { /* */ }
+  } catch (err) { log.warn('export:recent-qc-runs', { error: err.message }); }
 
   // Recent insertion runs (last 10)
   try {
     data.recentInsertionRuns = db.prepare(
       'SELECT id, case_id, status, destination, started_at, completed_at, total_items, success_count, failed_count, verified_count FROM insertion_runs ORDER BY created_at DESC LIMIT 10'
     ).all();
-  } catch { /* */ }
+  } catch (err) { log.warn('export:recent-insertion-runs', { error: err.message }); }
 
   return data;
 }
@@ -302,7 +302,7 @@ function getAppVersion() {
       const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf8'));
       return pkg.version || 'unknown';
     }
-  } catch { /* */ }
+  } catch (err) { log.warn('export:app-version', { error: err.message }); }
   return 'unknown';
 }
 
