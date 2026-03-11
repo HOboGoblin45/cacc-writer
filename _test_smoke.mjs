@@ -193,6 +193,24 @@ await test('PATCH /api/cases/:caseId/pipeline sets stage', async () => {
   assert(body.pipelineStage === 'extracting', 'pipelineStage should be extracting');
 });
 
+await test('PATCH /api/cases/:caseId/pipeline rejects skipped transitions', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'review',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+  assert(body.code === 'PIPELINE_SKIP_NOT_ALLOWED', 'expected skip-not-allowed code');
+});
+
+await test('PATCH /api/cases/:caseId/pipeline rejects backward transitions', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'intake',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+  assert(body.code === 'PIPELINE_BACKWARD_NOT_ALLOWED', 'expected backward-not-allowed code');
+});
+
 await test('PATCH /api/cases/:caseId/pipeline rejects invalid stage', async () => {
   const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
     stage: 'invalid_stage',
