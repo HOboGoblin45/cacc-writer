@@ -388,7 +388,38 @@ await test('evaluatePreDraftGate blocks when extracted facts are pending review'
   assert.ok(gate, 'expected gate result');
   assert.equal(gate.ok, false, 'pending extracted fact reviews should block drafting');
   assert.ok(gate.blockers.some(b => b.type === 'pending_fact_reviews'));
+  assert.ok(gate.summary.blockerPendingFactPathCount >= 1, 'expected blocker pending paths');
   assert.equal(gate.summary.pendingFactReviews, 1);
+});
+
+await test('evaluatePreDraftGate treats non-critical pending facts as warning-only', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '910 Optional Fact Rd', confidence: 'high' },
+        siteSize: { value: '7500', confidence: 'high' },
+      },
+    },
+  });
+
+  addExtractedFact(caseId, {
+    factPath: 'subject.style',
+    value: 'Colonial',
+    confidence: 'medium',
+    reviewStatus: 'pending',
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'non-critical pending fact reviews should not block drafting');
+  assert.equal(gate.summary.pendingFactReviews, 1);
+  assert.equal(gate.summary.blockerPendingFactPathCount, 0);
+  assert.ok(gate.warnings.some(w => w.type === 'pending_fact_reviews_non_blocking'));
 });
 
 await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance warnings', () => {
