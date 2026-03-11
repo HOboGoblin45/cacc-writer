@@ -466,7 +466,13 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
       sectionIds: sectionIds.length ? sectionIds : null,
     });
     if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
-    res.json({ ok: true, gate });
+    const decisionQueue = buildFactDecisionQueue(req.params.caseId);
+    res.json({
+      ok: true,
+      gate,
+      factReviewQueuePath: `/api/cases/${req.params.caseId}/fact-review-queue`,
+      decisionQueueSummary: decisionQueue?.summary || null,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
