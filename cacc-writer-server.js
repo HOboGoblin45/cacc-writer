@@ -21,23 +21,17 @@ dotenv.config({ override: true });
 
 import express from 'express';
 import { createRequire } from 'module';
-import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import {
-  DEFAULT_FORM_TYPE, isValidFormType, getFormConfig,
-  listForms, getActiveForms, getDeferredForms,
-} from './forms/index.js';
-import {
-  isActiveForm, isDeferredForm, getScopeWarning, logDeferredAccess,
-  getScopeMetaForForm, ACTIVE_FORMS, DEFERRED_FORMS,
+  isDeferredForm, logDeferredAccess, ACTIVE_FORMS, DEFERRED_FORMS,
 } from './server/config/productionScope.js';
+import { CORE_SECTIONS } from './server/config/coreSections.js';
 
 import {
-  CASES_DIR, CASE_ID_RE, casePath, resolveCaseDir,
-  normalizeFormType, getCaseFormConfig,
+  CASES_DIR, resolveCaseDir, getCaseFormConfig,
 } from './server/utils/caseUtils.js';
 import { readJSON, writeJSON, withVoiceLock } from './server/utils/fileUtils.js';
 import {
@@ -47,20 +41,16 @@ import {
 } from './server/utils/textUtils.js';
 import { upload, ensureAI } from './server/utils/middleware.js';
 import { extractPdfText } from './server/ingestion/pdfExtractor.js';
-import { genInput, collectExamples } from './server/services/legacyGenerationService.js';
 
 import { callAI, client, MODEL } from './server/openaiClient.js';
 import { addExample, indexExamples, addApprovedNarrative } from './server/knowledgeBase.js';
-import { getRelevantExamples, getRelevantExamplesWithVoice } from './server/retrieval.js';
 import { initFileLogger, writeLogEntry, getLogFiles, readLogFile, getLogsDir } from './server/fileLogger.js';
 import { setFileLogWriter } from './server/logger.js';
 import { listAllDestinations, getDestination, getTargetSoftware, getFallbackStrategy } from './server/destinationRegistry.js';
 import { getBundleStats, createSupportBundle, listExports } from './server/backupExport.js';
-import { buildPromptMessages, buildReviewMessages } from './server/promptBuilder.js';
+import { buildReviewMessages } from './server/promptBuilder.js';
 import log from './server/logger.js';
 import { geocodeAddress, distanceMiles, cardinalDirection, buildAddressString } from './server/geocoder.js';
-import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock, LOCATION_CONTEXT_FIELDS } from './server/neighborhoodContext.js';
-import { applyMetaDefaults, extractMetaFields, buildAssignmentMetaBlock } from './server/caseMetadata.js';
 import { computeWorkflowStatus, isValidWorkflowStatus, pipelineToWorkflowStatus } from './server/workflowStatus.js';
 import { getMissingFacts, formatMissingFactsForUI } from './server/sectionDependencies.js';
 
@@ -76,6 +66,7 @@ import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from './server/db/da
 
 import casesRouter        from './server/api/casesRoutes.js';
 import generationRouter   from './server/api/generationRoutes.js';
+import workflowRouter     from './server/api/workflowRoutes.js';
 import memoryRouter       from './server/api/memoryRoutes.js';
 import agentsRouter       from './server/api/agentsRoutes.js';
 import healthRouter       from './server/api/healthRoutes.js';
@@ -88,7 +79,11 @@ import operationsRouter   from './server/api/operationsRoutes.js';
 import queueRouter        from './server/api/queueRoutes.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
+<<<<<<< HEAD
 import { loadCaseContext, generateSection, generateSections, parseReviewResponse } from './server/services/generationService.js';
+=======
+import { runStartupChecks } from './server/config/startupChecks.js';
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 
 const require  = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -98,26 +93,10 @@ const PORT           = Number(process.env.PORT) || 5178;
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const ACI_AGENT_URL  = process.env.ACI_AGENT_URL || 'http://localhost:5180';
 const RQ_AGENT_URL   = process.env.RQ_AGENT_URL  || 'http://localhost:5181';
-const MAX_BATCH_FIELDS = 20;
 const PIPELINE_STAGES  = ['intake','extracting','generating','review','approved','inserting','complete'];
 const VALID_SECTION_STATUSES = ['not_started','drafted','reviewed','approved','inserted','verified','copied','error'];
-const CORE_SECTIONS = {
-  '1004': [
-    { id: 'neighborhood_description', title: 'Neighborhood Description' },
-    { id: 'market_conditions',        title: 'Market Conditions' },
-    { id: 'improvements_condition',   title: 'Improvements / Condition' },
-    { id: 'sca_summary',              title: 'Sales Comparison Summary' },
-    { id: 'reconciliation',           title: 'Reconciliation' },
-  ],
-  'commercial': [
-    { id: 'market_area',             title: 'Market Area / Neighborhood' },
-    { id: 'improvement_description', title: 'Improvements Description' },
-    { id: 'hbu_analysis',            title: 'Highest & Best Use' },
-    { id: 'reconciliation',          title: 'Reconciliation / Conclusion' },
-    { id: 'site_description',        title: 'Site Description' },
-  ],
-};
 
+<<<<<<< HEAD
 // ── Startup validation ────────────────────────────────────────────────────────
 {
   const warnings = [];
@@ -131,6 +110,18 @@ if (!fs.existsSync(CASES_DIR)) fs.mkdirSync(CASES_DIR, { recursive: true });
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 log.info('startup', `CACC Writer starting... Model: ${MODEL}`);
+=======
+runStartupChecks({
+  port: PORT,
+  casesDir: CASES_DIR,
+  openAiApiKey: OPENAI_API_KEY,
+  logger: console,
+});
+
+const app = express();
+app.use(express.json({ limit: '10mb' }));
+console.log('CACC Writer starting... Model:', MODEL);
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -158,6 +149,7 @@ app.param('caseId', (req, res, next, caseId) => {
 app.use('/api',        healthRouter);
 app.use('/api/cases',  casesRouter);
 app.use('/api',        generationRouter);
+app.use('/api',        workflowRouter);
 app.use('/api',        memoryRouter);
 app.use('/api',        agentsRouter);
 app.use('/api',        intelligenceRouter);
@@ -172,6 +164,7 @@ app.use('/api',        queueRouter);
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
 // ══════════════════════════════════════════════════════════════════════════════
 
+<<<<<<< HEAD
 // ── Shared helpers for consistent behavior across all generation endpoints ───
 
 /**
@@ -296,6 +289,8 @@ app.post('/api/cases/create', (req, res) => {
     res.json({ ok:true, caseId, meta });
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
+=======
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 app.post('/api/cases/:caseId/upload', upload.single('file'), async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -413,6 +408,7 @@ app.post('/api/cases/:caseId/review-section', ensureAI, async (req, res) => {
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
+<<<<<<< HEAD
 app.post('/api/similar-examples', (req, res) => {
   try {
     const { fieldId, limit=3, formType } = req.body;
@@ -521,6 +517,8 @@ app.post('/api/cases/:caseId/generate-core', ensureAI, async (req, res) => {
       coreSections:targetFields, generated:Object.keys(results).length, failed:Object.keys(errors).length, pipelineStage:'generating' });
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
+=======
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 app.patch('/api/cases/:caseId/sections/:fieldId/status', (req, res) => {
   try {
     const cd=req.caseDir;
@@ -617,6 +615,7 @@ app.post('/api/cases/:caseId/sections/:fieldId/insert', async (req, res) => {
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
+<<<<<<< HEAD
 app.post('/api/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -657,6 +656,8 @@ app.post('/api/cases/:caseId/generate-comp-commentary', ensureAI, async (req, re
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
+=======
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 app.post('/api/cases/:caseId/insert-all', async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -690,6 +691,7 @@ app.post('/api/cases/:caseId/insert-all', async (req, res) => {
     res.json({ ok:true, inserted:inserted.length, insertedSections:inserted, skipped, errors, totalInserted:inserted.length, pipelineStage:meta.pipelineStage||'inserting' });
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
+<<<<<<< HEAD
 app.post('/api/cases/:caseId/generate-all', ensureAI, async (req, res) => {
   try {
     const cd=req.caseDir;
@@ -715,6 +717,8 @@ app.post('/api/cases/:caseId/generate-all', ensureAI, async (req, res) => {
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
 
+=======
+>>>>>>> 4e8c1fb (Phase A: modularize workflow/generation routes and expand smoke coverage)
 app.patch('/api/cases/:caseId/outputs/:fieldId', (req, res) => {
   try {
     const cd=req.caseDir;
