@@ -38,6 +38,17 @@ import {
   getExtractedSections, approveSection, rejectSection,
   getCaseExtractionSummary, getDocumentExtractions, findDuplicateDocumentByHash,
 } from '../ingestion/stagingService.js';
+import {
+  createDocumentIngestJob,
+  attachDocumentToIngestJob,
+  runDocumentIngestStep,
+  skipDocumentIngestStep,
+  finalizeDocumentIngestJob,
+  setDocumentIngestJobStatus,
+  getDocumentIngestJob,
+  listCaseDocumentIngestJobs,
+  isDocumentIngestStepFailed,
+} from '../ingestion/ingestJobService.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { client, MODEL } from '../openaiClient.js';
@@ -106,6 +117,30 @@ function saveCaseRuntime(caseId, runtime, overrides = {}) {
   });
 }
 
+async function loadDocumentTextForExtraction({ doc, caseDir, runtimeDocText = {} }) {
+  let text = runtimeDocText[doc.doc_type] || '';
+  if (text && text.length >= 20) return text;
+
+  const filePath = path.join(caseDir, 'documents', doc.stored_filename);
+  if (!fs.existsSync(filePath)) return '';
+
+  const buffer = fs.readFileSync(filePath);
+  const ext = path.extname(doc.stored_filename || '').toLowerCase();
+
+  if (ext === '.pdf' || doc.file_type === 'pdf') {
+    const { text: extracted } = await extractPdfText(buffer, client, MODEL);
+    text = (extracted || '').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
+    return text;
+  }
+
+  const imageResult = await extractImageText(buffer, {
+    aiClient: client,
+    model: MODEL,
+    ext,
+  });
+  return imageResult.text || '';
+}
+
 // ── param: caseId validation ────────────────────────────────────────────────
 
 router.param('caseId', (req, res, next, caseId) => {
@@ -123,6 +158,7 @@ router.param('caseId', (req, res, next, caseId) => {
  * Body (multipart): file, docType (optional legacy docType hint)
  */
 router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req, res) => {
+  let ingestJobId = null;
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
@@ -142,6 +178,12 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     const originalFilename = req.file.originalname || 'document.pdf';
     const fileHash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
     const duplicateExisting = findDuplicateDocumentByHash(caseId, fileHash);
+    const job = createDocumentIngestJob({
+      caseId,
+      originalFilename,
+      maxRetries: 2,
+    });
+    ingestJobId = job?.id || null;
 
     const nameHint = classifyDocument(originalFilename, '', legacyDocType).docType;
     const storedFilename = buildStoredFilename({
@@ -157,28 +199,52 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     let extractionMethod = 'not_run';
     const warnings = [];
 
-    if (uploadKind.kind === 'pdf') {
-      try {
-        const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
-        extractedText = text || '';
-        extractionMethod = method;
-        try { const p = await pdfParse(req.file.buffer); pageCount = p.numpages || 0; } catch { pageCount = 0; }
-      } catch (err) {
-        log.warn('[documents] Text extraction failed:', err.message);
-        extractedText = '';
-        extractionMethod = 'failed';
-        warnings.push('PDF text extraction failed; document saved without parsed text.');
-      }
-    } else {
-      const imageResult = await extractImageText(req.file.buffer, {
-        aiClient: client,
-        model: MODEL,
-        ext: uploadKind.ext,
-        mimeType: req.file.mimetype,
-      });
-      extractedText = imageResult.text || '';
-      extractionMethod = imageResult.method || 'image_no_ocr';
-      if (imageResult.error) warnings.push(imageResult.error);
+    await runDocumentIngestStep(
+      ingestJobId,
+      'upload',
+      { maxAttempts: 1, fatalOnFinalFailure: true },
+      async () => ({ meta: { bytes: req.file.size, ext: uploadKind.ext, fileHash } }),
+    );
+
+    const ocrRun = await runDocumentIngestStep(
+      ingestJobId,
+      'ocr',
+      {
+        maxAttempts: 2,
+        fatalOnFinalFailure: false,
+        recoverableActionsOnFailure: [
+          { id: 'retry_ocr', label: 'Retry OCR', hint: 'Re-run OCR on this source file.' },
+          { id: 'reupload_searchable_pdf', label: 'Re-upload Searchable PDF', hint: 'Provide a cleaner/searchable source document.' },
+        ],
+      },
+      async () => {
+        if (uploadKind.kind === 'pdf') {
+          const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
+          extractedText = text || '';
+          extractionMethod = method || 'pdf_extract';
+          try { const p = await pdfParse(req.file.buffer); pageCount = p.numpages || 0; } catch { pageCount = 0; }
+          if (!extractedText) throw new Error('PDF extraction produced empty text');
+          return { meta: { method: extractionMethod, textLength: extractedText.length, pageCount } };
+        }
+
+        const imageResult = await extractImageText(req.file.buffer, {
+          aiClient: client,
+          model: MODEL,
+          ext: uploadKind.ext,
+          mimeType: req.file.mimetype,
+        });
+        extractedText = imageResult.text || '';
+        extractionMethod = imageResult.method || 'image_no_ocr';
+        if (imageResult.error && !extractedText) {
+          throw new Error(imageResult.error);
+        }
+        if (imageResult.error) warnings.push(imageResult.error);
+        return { meta: { method: extractionMethod, textLength: extractedText.length, pageCount } };
+      },
+    );
+    if (!ocrRun.ok) {
+      extractionMethod = 'failed';
+      warnings.push('OCR/text extraction failed; document saved without parsed text.');
     }
 
     extractedText = extractedText.replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
@@ -195,25 +261,51 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     // 3. Register document row (classification + duplicate linkage).
     const shouldSkipExtraction = Boolean(duplicateExisting) || extractedText.length < 20;
     const ingestionWarning = warnings.length ? warnings.join(' ') : null;
-    const {
-      documentId,
-      docType,
-      classification,
-      duplicateDetected,
-      duplicateOfDocumentId,
-      quality,
-    } = registerDocument({
-      caseId,
-      originalFilename,
-      storedFilename,
-      legacyDocType,
-      fileSizeBytes: req.file.size,
-      pageCount,
-      extractedText,
-      fileHash,
-      extractionStatus: duplicateExisting ? 'skipped' : (extractedText ? 'extracted' : 'pending'),
-      ingestionWarning,
-    });
+    let documentId = null;
+    let docType = 'unknown';
+    let classification = null;
+    let duplicateDetected = Boolean(duplicateExisting);
+    let duplicateOfDocumentId = duplicateExisting?.id || null;
+    let quality = null;
+
+    await runDocumentIngestStep(
+      ingestJobId,
+      'classify',
+      {
+        maxAttempts: 1,
+        fatalOnFinalFailure: true,
+      },
+      async () => {
+        const registered = registerDocument({
+          caseId,
+          originalFilename,
+          storedFilename,
+          legacyDocType,
+          fileSizeBytes: req.file.size,
+          pageCount,
+          extractedText,
+          fileHash,
+          extractionStatus: duplicateExisting ? 'skipped' : (extractedText ? 'extracted' : 'pending'),
+          ingestionWarning,
+        });
+
+        documentId = registered.documentId;
+        docType = registered.docType;
+        classification = registered.classification;
+        duplicateDetected = registered.duplicateDetected;
+        duplicateOfDocumentId = registered.duplicateOfDocumentId;
+        quality = registered.quality;
+        attachDocumentToIngestJob(ingestJobId, documentId);
+        return {
+          meta: {
+            docType,
+            classificationMethod: classification?.method || 'unknown',
+            classificationConfidence: classification?.confidence ?? null,
+            duplicateDetected,
+          },
+        };
+      },
+    );
 
     // 4. Update canonical case projection with ingestion artifacts.
     const runtime = getCaseRuntime(caseId);
@@ -236,19 +328,62 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       duplicateOf: duplicateOfDocumentId || null,
       warning: ingestionWarning,
     };
-    saveCaseRuntime(caseId, runtime, { meta, docText });
+    await runDocumentIngestStep(
+      ingestJobId,
+      'stage',
+      {
+        maxAttempts: 1,
+        fatalOnFinalFailure: true,
+      },
+      async () => {
+        saveCaseRuntime(caseId, runtime, { meta, docText });
+        return {
+          meta: {
+            docTextKey,
+            textLength: extractedText.length,
+            warningCount: warnings.length,
+          },
+        };
+      },
+    );
 
     // 5. Run extraction for eligible documents only.
     let extractionResult = null;
     if (!shouldSkipExtraction) {
-      try {
-        extractionResult = await runDocumentExtraction(documentId, extractedText, { aiClient: client, model: MODEL });
-      } catch (err) {
-        log.warn('[documents] Extraction failed for', documentId, err.message);
+      const extractRun = await runDocumentIngestStep(
+        ingestJobId,
+        'extract',
+        {
+          maxAttempts: 2,
+          fatalOnFinalFailure: false,
+          recoverableActionsOnFailure: [
+            { id: 'rerun_extraction', label: 'Retry Extraction', hint: 'Re-run structured extraction for this document.' },
+            { id: 'review_text_source', label: 'Review Text Source', hint: 'Inspect OCR/parsing output before extraction.' },
+          ],
+        },
+        async () => {
+          extractionResult = await runDocumentExtraction(documentId, extractedText, { aiClient: client, model: MODEL });
+          return {
+            meta: {
+              factsExtracted: extractionResult?.factsExtracted || 0,
+              sectionsExtracted: extractionResult?.sectionsExtracted || 0,
+            },
+          };
+        },
+      );
+
+      if (!extractRun.ok) {
+        log.warn('[documents] Extraction failed for', documentId);
+        warnings.push('Structured extraction failed. Retry is available from ingest job actions.');
       }
     } else if (!duplicateExisting && extractedText.length < 20) {
       warnings.push('Text content was too short for structured extraction.');
+      skipDocumentIngestStep(ingestJobId, 'extract', 'text_too_short');
+    } else if (duplicateExisting) {
+      skipDocumentIngestStep(ingestJobId, 'extract', 'duplicate_document');
     }
+
+    const finalizedJob = finalizeDocumentIngestJob(ingestJobId);
 
     log.info('[documents] Upload complete', {
       caseId, documentId, docType, classification: classification.method,
@@ -256,6 +391,8 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       factsExtracted: extractionResult?.factsExtracted || 0,
       sectionsExtracted: extractionResult?.sectionsExtracted || 0,
       duplicateDetected,
+      ingestJobId,
+      ingestJobStatus: finalizedJob?.status || null,
     });
 
     res.json({
@@ -276,11 +413,32 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
         factsExtracted: extractionResult.factsExtracted,
         sectionsExtracted: extractionResult.sectionsExtracted,
       } : null,
+      ingestJob: finalizedJob ? {
+        id: finalizedJob.id,
+        status: finalizedJob.status,
+        currentStep: finalizedJob.currentStep,
+        retryCount: finalizedJob.retryCount,
+        recoverableActions: finalizedJob.recoverableActions,
+      } : null,
     });
 
   } catch (err) {
+    if (ingestJobId) {
+      const job = getDocumentIngestJob(ingestJobId);
+      if (!job || job.status !== 'failed') {
+        setDocumentIngestJobStatus(ingestJobId, {
+          status: 'failed',
+          errorText: err.message,
+          currentStep: job?.currentStep || 'upload',
+          recoverableActions: [
+            { id: 'retry_upload', label: 'Retry Upload', hint: 'Try upload again for this document.' },
+          ],
+          completed: true,
+        });
+      }
+    }
     log.error('[documents] Upload error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, ingestJobId });
   }
 });
 
@@ -368,27 +526,11 @@ router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
     // Get extracted text from canonical docText projection or re-read from file
     const runtime = getCaseRuntime(req.params.caseId);
     const docText = runtime?.docText || {};
-    let text = docText[doc.doc_type] || '';
-
-    if (!text) {
-      // Try to read from stored file
-      const filePath = path.join(req.caseDir, 'documents', doc.stored_filename);
-      if (fs.existsSync(filePath)) {
-        const buffer = fs.readFileSync(filePath);
-        const ext = path.extname(doc.stored_filename || '').toLowerCase();
-        if (ext === '.pdf' || doc.file_type === 'pdf') {
-          const { text: extracted } = await extractPdfText(buffer, client, MODEL);
-          text = (extracted || '').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
-        } else {
-          const imageResult = await extractImageText(buffer, {
-            aiClient: client,
-            model: MODEL,
-            ext,
-          });
-          text = imageResult.text || '';
-        }
-      }
-    }
+    const text = await loadDocumentTextForExtraction({
+      doc,
+      caseDir: req.caseDir,
+      runtimeDocText: docText,
+    });
 
     if (!text || text.length < 20) {
       return res.status(400).json({ error: 'No text available for extraction. Re-upload the document.' });
@@ -402,6 +544,95 @@ router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
 });
 
 // ── GET /cases/:caseId/extraction-summary ────────────────────────────────────
+// Ingestion job status endpoints (Phase C)
+router.get('/cases/:caseId/ingest-jobs', (req, res) => {
+  try {
+    const limit = Math.min(200, Math.max(1, Number(req.query.limit || 50)));
+    const jobs = listCaseDocumentIngestJobs(req.params.caseId, limit);
+    res.json({ ok: true, jobs });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/cases/:caseId/ingest-jobs/:jobId', (req, res) => {
+  try {
+    const job = getDocumentIngestJob(req.params.jobId);
+    if (!job || job.caseId !== req.params.caseId) {
+      return res.status(404).json({ error: 'Ingest job not found' });
+    }
+    res.json({ ok: true, job });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
+  try {
+    const step = String(req.body?.step || 'extract').toLowerCase();
+    const job = getDocumentIngestJob(req.params.jobId);
+    if (!job || job.caseId !== req.params.caseId) {
+      return res.status(404).json({ error: 'Ingest job not found' });
+    }
+    if (step !== 'extract') {
+      return res.status(400).json({ error: 'Only extract step retry is currently supported.' });
+    }
+    if (!isDocumentIngestStepFailed(job, step)) {
+      return res.status(409).json({ error: 'Requested step is not in failed state.' });
+    }
+    if (!job.documentId) {
+      return res.status(400).json({ error: 'Ingest job has no linked document.' });
+    }
+
+    const doc = getDocument(job.documentId);
+    if (!doc || doc.case_id !== req.params.caseId) {
+      return res.status(404).json({ error: 'Linked document not found' });
+    }
+
+    const runtime = getCaseRuntime(req.params.caseId);
+    const text = await loadDocumentTextForExtraction({
+      doc,
+      caseDir: req.caseDir,
+      runtimeDocText: runtime?.docText || {},
+    });
+    if (!text || text.length < 20) {
+      return res.status(400).json({ error: 'No text available for extraction retry.' });
+    }
+
+    const stepRun = await runDocumentIngestStep(
+      job.id,
+      'extract',
+      {
+        maxAttempts: Math.max(1, Number(job.maxRetries || 2)),
+        fatalOnFinalFailure: false,
+        recoverableActionsOnFailure: [
+          { id: 'rerun_extraction', label: 'Retry Extraction', hint: 'Run extraction again after reviewing text source.' }
+        ],
+      },
+      async () => {
+        const result = await runDocumentExtraction(doc.id, text, { aiClient: client, model: MODEL });
+        return {
+          meta: {
+            factsExtracted: result?.factsExtracted || 0,
+            sectionsExtracted: result?.sectionsExtracted || 0,
+          },
+          result,
+        };
+      }
+    );
+
+    const finalized = finalizeDocumentIngestJob(job.id);
+    res.json({
+      ok: true,
+      retry: stepRun.ok,
+      attempts: stepRun.attempts,
+      job: finalized,
+      extraction: stepRun.result?.result || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router.get('/cases/:caseId/extraction-summary', (req, res) => {
   try {
     const summary = getCaseExtractionSummary(req.params.caseId);
@@ -496,3 +727,4 @@ function safeParseJSON(str, fallback) {
 }
 
 export default router;
+
