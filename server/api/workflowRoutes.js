@@ -38,6 +38,7 @@ import { callAI, client, MODEL } from '../openaiClient.js';
 import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
+import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
 import {
   getNeighborhoodBoundaryFeatures,
   formatLocationContextBlock,
@@ -47,6 +48,15 @@ import log from '../logger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const router = Router();
+
+function safeSyncCaseRecord(caseId) {
+  try {
+    syncCaseRecordFromFilesystem(caseId);
+  } catch (err) {
+    // Keep legacy workflow endpoints stable if canonical sync has an issue.
+    log.warn('case-record:sync-failed', { caseId, error: err.message });
+  }
+}
 
 router.post('/workflow/run', ensureAI, async (req, res) => {
   try {
@@ -151,6 +161,7 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
       meta.updatedAt = new Date().toISOString();
       meta.pipelineStage = 'generating';
       writeJSON(path.join(caseDir, 'meta.json'), meta);
+      safeSyncCaseRecord(caseId);
     }
 
     res.json({ ok: true, results, errors, formType, fieldsAttempted: targetFields.length });
@@ -233,6 +244,13 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
         const outputsFile = path.join(caseDir, 'outputs.json');
         const existing = readJSON(outputsFile, {});
         writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
+
+        const metaPath = path.join(caseDir, 'meta.json');
+        const meta = readJSON(metaPath, {});
+        meta.updatedAt = new Date().toISOString();
+        meta.pipelineStage = 'generating';
+        writeJSON(metaPath, meta);
+        safeSyncCaseRecord(caseId);
         batchResults.push({ caseId, results, errors });
       } catch (e) {
         batchErrors.push({ caseId, error: e.message });

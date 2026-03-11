@@ -46,7 +46,12 @@ import { getMissingFacts, formatMissingFactsForUI } from '../sectionDependencies
 import { geocodeAddress, distanceMiles, cardinalDirection, buildAddressString } from '../geocoder.js';
 import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock } from '../neighborhoodContext.js';
 import { getRunsForCase } from '../orchestrator/generationOrchestrator.js';
-import { getCaseProjection, listCaseProjections } from '../caseRecord/caseRecordService.js';
+import {
+  getCaseProjection,
+  listCaseProjections,
+  syncCaseRecordFromFilesystem,
+  deleteCanonicalCaseRecord,
+} from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -112,6 +117,24 @@ function parsePayload(schema, payload, res) {
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
+function safeSyncCaseRecord(caseId) {
+  try {
+    return syncCaseRecordFromFilesystem(caseId);
+  } catch (err) {
+    // Keep core file-based workflows usable if canonical write-through fails.
+    log.warn('case-record:sync-failed', { caseId, error: err.message });
+    return null;
+  }
+}
+
+function safeDeleteCaseRecord(caseId) {
+  try {
+    deleteCanonicalCaseRecord(caseId);
+  } catch (err) {
+    log.warn('case-record:delete-failed', { caseId, error: err.message });
+  }
+}
+
 const router = Router();
 
 /**
@@ -174,7 +197,8 @@ function createCaseHandler(req, res) {
     writeJSON(path.join(caseDir, 'feedback.json'), []);
     writeJSON(path.join(caseDir, 'meta.json'), meta);
 
-    res.json({ ok: true, caseId, meta });
+    const projection = safeSyncCaseRecord(caseId);
+    res.json({ ok: true, caseId, meta: projection?.meta || meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -267,7 +291,8 @@ router.patch('/:caseId', (req, res) => {
     meta.updatedAt = new Date().toISOString();
 
     writeJSON(mf, meta);
-    res.json({ ok: true, meta: applyMetaDefaults(meta) });
+    const projection = safeSyncCaseRecord(req.params.caseId);
+    res.json({ ok: true, meta: projection?.meta || applyMetaDefaults(meta) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -279,6 +304,7 @@ router.delete('/:caseId', (req, res) => {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
     fs.rmSync(cd, { recursive: true, force: true });
+    safeDeleteCaseRecord(req.params.caseId);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -301,7 +327,8 @@ router.patch('/:caseId/status', (req, res) => {
     meta.status    = nextStatus;
     meta.updatedAt = new Date().toISOString();
     writeJSON(mf, meta);
-    res.json({ ok: true, meta });
+    const projection = safeSyncCaseRecord(req.params.caseId);
+    res.json({ ok: true, meta: projection?.meta || meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -325,7 +352,12 @@ router.patch('/:caseId/pipeline', (req, res) => {
     if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
     meta.pipelineHistory.push({ stage, at: meta.updatedAt });
     writeJSON(mf, meta);
-    res.json({ ok: true, pipelineStage: stage, meta });
+    const projection = safeSyncCaseRecord(req.params.caseId);
+    res.json({
+      ok: true,
+      pipelineStage: stage,
+      meta: projection?.meta || meta,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -357,7 +389,12 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     meta.workflowStatus = status;
     meta.updatedAt      = new Date().toISOString();
     writeJSON(mf, meta);
-    res.json({ ok: true, workflowStatus: status, meta: applyMetaDefaults(meta) });
+    const projection = safeSyncCaseRecord(req.params.caseId);
+    res.json({
+      ok: true,
+      workflowStatus: status,
+      meta: projection?.meta || applyMetaDefaults(meta),
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -385,6 +422,7 @@ router.put('/:caseId/facts', (req, res) => {
     meta.updatedAt = new Date().toISOString();
     writeJSON(path.join(cd, 'meta.json'), meta);
 
+    safeSyncCaseRecord(req.params.caseId);
     res.json({ ok: true, facts: updated });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
