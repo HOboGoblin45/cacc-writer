@@ -22,10 +22,21 @@ import fs from 'fs';
 import path from 'path';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
-import { resolveCaseDir } from '../utils/caseUtils.js';
+import { resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
+import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { trimText, asArray, aiText } from '../utils/textUtils.js';
+import { ensureAI } from '../utils/middleware.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
-import { isDeferredForm, logDeferredAccess } from '../config/productionScope.js';
+import { DEFAULT_FORM_TYPE } from '../../forms/index.js';
+import { ACTIVE_FORMS, isDeferredForm, logDeferredAccess } from '../config/productionScope.js';
+import { CORE_SECTIONS } from '../config/coreSections.js';
+import { callAI, client, MODEL } from '../openaiClient.js';
+import { getRelevantExamplesWithVoice } from '../retrieval.js';
+import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
+import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
+import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock, LOCATION_CONTEXT_FIELDS } from '../neighborhoodContext.js';
+import { genInput, collectExamples } from '../services/legacyGenerationService.js';
 import {
   runFullDraftOrchestrator,
   getRunStatus,
@@ -50,6 +61,7 @@ import log from '../logger.js';
 // Capped at 100 entries to prevent unbounded memory growth.
 const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
+const MAX_BATCH_FIELDS = 20;
 
 function _setRunResult(runId, result) {
   // Evict oldest entry if at capacity (Map preserves insertion order)
@@ -72,6 +84,530 @@ router.param('caseId', (req, res, next, caseId) => {
   if (!cd) return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
   req.caseDir = cd;
   next();
+});
+
+// ── POST /generate (legacy compat, now modular) ──────────────────────────────
+router.post('/generate', ensureAI, async (req, res) => {
+  try {
+    const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
+    const prompt = trimText(req.body?.prompt, 24000);
+    const requestedFt = String(formType || '').trim().toLowerCase();
+    if (requestedFt && isDeferredForm(requestedFt)) {
+      logDeferredAccess(requestedFt, 'POST /api/generate', log);
+      return res.status(400).json({
+        ok: false,
+        supported: false,
+        formType: requestedFt,
+        scope: 'deferred',
+        message: `Generation is not available for form type "${requestedFt}". Active forms: ${ACTIVE_FORMS.join(', ')}.`,
+      });
+    }
+    if (fieldId) {
+      let caseFacts = bodyFacts || {};
+      let locationContext = null;
+      if (caseId && !bodyFacts) {
+        const cd = resolveCaseDir(caseId);
+        if (cd && fs.existsSync(cd)) {
+          caseFacts = readJSON(path.join(cd, 'facts.json'), {});
+          if (LOCATION_CONTEXT_FIELDS.has(fieldId)) {
+            const geo = readJSON(path.join(cd, 'geocode.json'), null);
+            if (geo?.subject?.result?.lat) {
+              try {
+                const { lat, lng } = geo.subject.result;
+                const bf = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+                locationContext = formatLocationContextBlock({
+                  subject: geo.subject,
+                  comps: geo.comps || [],
+                  boundaryFeatures: bf,
+                });
+              } catch (e) {
+                log.warn('[generate] location context unavailable:', e.message);
+              }
+            }
+          }
+        }
+      }
+      const ft = normalizeFormType(formType);
+      let assignmentMeta = null;
+      if (caseId) {
+        const cd = resolveCaseDir(caseId);
+        if (cd && fs.existsSync(cd)) {
+          assignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(readJSON(path.join(cd, 'meta.json'), {})));
+        }
+      }
+      const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType: ft, fieldId });
+      const messages = buildPromptMessages({
+        formType: ft,
+        fieldId,
+        facts: caseFacts,
+        voiceExamples,
+        examples: otherExamples,
+        locationContext,
+        assignmentMeta,
+      });
+      const text = await callAI(messages);
+      return res.json({
+        ok: true,
+        result: text,
+        fieldId,
+        formType: ft,
+        examplesUsed: voiceExamples.length + otherExamples.length,
+        locationContextInjected: Boolean(locationContext),
+      });
+    }
+    if (!prompt) return res.status(400).json({ ok: false, error: 'prompt or fieldId is required' });
+    const r = await client.responses.create({ model: MODEL, input: genInput(prompt) });
+    res.json({ ok: true, result: aiText(r) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /generate-batch (legacy compat, now modular) ────────────────────────
+router.post('/generate-batch', ensureAI, async (req, res) => {
+  try {
+    const { fields, caseId, twoPass = false } = req.body;
+    if (!Array.isArray(fields) || !fields.length) {
+      return res.status(400).json({ ok: false, error: 'fields must be a non-empty array' });
+    }
+    if (fields.length > MAX_BATCH_FIELDS) {
+      return res.status(400).json({ ok: false, error: 'fields must be <= ' + MAX_BATCH_FIELDS });
+    }
+
+    let caseFacts = {};
+    let caseDir = null;
+    let caseFormType = DEFAULT_FORM_TYPE;
+    let batchLocationContext = null;
+    let batchAssignmentMeta = null;
+
+    if (caseId) {
+      caseDir = resolveCaseDir(caseId);
+      if (!caseDir) return res.status(400).json({ ok: false, error: 'Invalid caseId format' });
+      if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
+      caseFacts = readJSON(path.join(caseDir, 'facts.json'), {});
+      const { formType: bFt, meta: bMeta } = getCaseFormConfig(caseDir);
+      caseFormType = bFt;
+      batchAssignmentMeta = buildAssignmentMetaBlock(applyMetaDefaults(bMeta || {}));
+      if (isDeferredForm(caseFormType)) {
+        logDeferredAccess(caseFormType, 'POST /api/generate-batch', log);
+        return res.status(400).json({
+          ok: false,
+          supported: false,
+          formType: caseFormType,
+          scope: 'deferred',
+          message: `Batch generation is not available for form type "${caseFormType}". Active forms: ${ACTIVE_FORMS.join(', ')}.`,
+        });
+      }
+      if (fields.some(f => LOCATION_CONTEXT_FIELDS.has(f?.id))) {
+        const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+        if (geo?.subject?.result?.lat) {
+          try {
+            const { lat, lng } = geo.subject.result;
+            const bf = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+            batchLocationContext = formatLocationContextBlock({
+              subject: geo.subject,
+              comps: geo.comps || [],
+              boundaryFeatures: bf,
+            });
+          } catch (e) {
+            log.warn('[generate-batch] location context unavailable:', e.message);
+          }
+        }
+      }
+    }
+
+    const results = {};
+    const errors = {};
+    const CONCURRENCY = 3;
+    let qi = 0;
+    async function processField() {
+      while (qi < fields.length) {
+        const f = fields[qi++];
+        const sid = trimText(f?.id, 80) || ('field_' + Math.random().toString(36).slice(2, 8));
+        try {
+          const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType: caseFormType, fieldId: sid });
+          const messages = buildPromptMessages({
+            formType: caseFormType,
+            fieldId: sid,
+            facts: caseFacts,
+            voiceExamples,
+            examples: otherExamples,
+            locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? batchLocationContext : null,
+            assignmentMeta: batchAssignmentMeta,
+          });
+          let text = await callAI(messages);
+          if (twoPass && text) {
+            try {
+              const rm = buildReviewMessages({ draftText: text, facts: caseFacts, fieldId: sid, formType: caseFormType });
+              const rr = await callAI(rm);
+              const rv = JSON.parse(rr.trim().replace(/^```json\n?/, '').replace(/\n?```$/, ''));
+              if (rv?.revisedText) text = rv.revisedText;
+            } catch {
+              // non-fatal
+            }
+          }
+          results[sid] = {
+            title: trimText(f?.title, 160) || sid,
+            text,
+            examplesUsed: voiceExamples.length + otherExamples.length,
+          };
+        } catch (e) {
+          errors[sid] = e?.message || 'Unknown error';
+        }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, fields.length) }, processField));
+
+    if (caseDir) {
+      const outFile = path.join(caseDir, 'outputs.json');
+      const existing = readJSON(outFile, {});
+      const histFile = path.join(caseDir, 'history.json');
+      const history = readJSON(histFile, {});
+      for (const fid of Object.keys(results)) {
+        if (existing[fid]?.text) {
+          if (!history[fid]) history[fid] = [];
+          history[fid].unshift({
+            text: existing[fid].text,
+            title: existing[fid].title,
+            savedAt: new Date().toISOString(),
+          });
+          history[fid] = history[fid].slice(0, 3);
+        }
+      }
+      writeJSON(histFile, history);
+      writeJSON(outFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
+      const meta = readJSON(path.join(caseDir, 'meta.json'));
+      meta.updatedAt = new Date().toISOString();
+      writeJSON(path.join(caseDir, 'meta.json'), meta);
+    }
+    res.json({ ok: true, results, errors });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Batch generation failed' });
+  }
+});
+
+// ── POST /similar-examples (legacy compat, now modular) ──────────────────────
+router.post('/similar-examples', (req, res) => {
+  try {
+    const { fieldId, limit = 3, formType } = req.body;
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 3, 10));
+    const normalized = formType ? normalizeFormType(formType) : null;
+    res.json({
+      ok: true,
+      examples: collectExamples(trimText(fieldId, 80) || null, safeLimit, normalized),
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
+  try {
+    const caseDir = req.caseDir;
+    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const { formType, formConfig } = getCaseFormConfig(caseDir);
+    if (isDeferredForm(formType)) {
+      logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-core', log);
+      return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
+    }
+
+    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    const assignmentMeta = buildAssignmentMetaBlock(
+      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
+    );
+    const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+    let locationContext = null;
+    if (geo?.subject?.result?.lat) {
+      try {
+        const { lat, lng } = geo.subject.result;
+        const boundaryFeatures = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+        locationContext = formatLocationContextBlock({
+          subject: geo.subject,
+          comps: geo.comps || [],
+          boundaryFeatures,
+        });
+      } catch (e) {
+        log.warn('[generate-core] location context unavailable:', e.message);
+      }
+    }
+
+    const requestedFields = asArray(req.body?.fields);
+    const coreSections = formConfig.workflowFields || CORE_SECTIONS[formType] || [];
+    const targetFields = requestedFields.length
+      ? coreSections.filter(section => requestedFields.includes(section.id))
+      : coreSections;
+    if (!targetFields.length) {
+      return res.status(400).json({ ok: false, error: 'No core sections defined for form type: ' + formType });
+    }
+
+    const results = {};
+    const errors = {};
+    const statuses = {};
+    const CONCURRENCY = 3;
+    let qi = 0;
+
+    async function runSection() {
+      while (qi < targetFields.length) {
+        const section = targetFields[qi++];
+        const sid = section.id;
+        try {
+          const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType, fieldId: sid });
+          const messages = buildPromptMessages({
+            formType,
+            fieldId: sid,
+            facts,
+            voiceExamples,
+            examples: otherExamples,
+            locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? locationContext : null,
+            assignmentMeta,
+          });
+          const text = await callAI(messages);
+          results[sid] = {
+            title: section.title,
+            text,
+            examplesUsed: voiceExamples.length + otherExamples.length,
+          };
+          statuses[sid] = 'drafted';
+        } catch (e) {
+          errors[sid] = e?.message || 'Unknown error';
+          statuses[sid] = 'error';
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, targetFields.length) }, runSection));
+
+    const outputsFile = path.join(caseDir, 'outputs.json');
+    const existing = readJSON(outputsFile, {});
+    writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
+
+    const sectionStatusFile = path.join(caseDir, 'section_statuses.json');
+    const sectionStatuses = readJSON(sectionStatusFile, {});
+    for (const [sid, st] of Object.entries(statuses)) {
+      sectionStatuses[sid] = {
+        status: st,
+        updatedAt: new Date().toISOString(),
+        title: results[sid]?.title || sid,
+      };
+    }
+    writeJSON(sectionStatusFile, sectionStatuses);
+
+    const meta = readJSON(path.join(caseDir, 'meta.json'));
+    meta.updatedAt = new Date().toISOString();
+    meta.pipelineStage = 'generating';
+    writeJSON(path.join(caseDir, 'meta.json'), meta);
+
+    const genResults = {};
+    for (const [sid, value] of Object.entries(results)) {
+      genResults[sid] = { ...value, sectionStatus: statuses[sid] || 'drafted' };
+    }
+
+    res.json({
+      ok: true,
+      results: genResults,
+      errors,
+      statuses,
+      formType,
+      sectionsAttempted: targetFields.length,
+      coreSections: targetFields,
+      generated: Object.keys(results).length,
+      failed: Object.keys(errors).length,
+      pipelineStage: 'generating',
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
+  try {
+    const caseDir = req.caseDir;
+    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const { formType } = getCaseFormConfig(caseDir);
+    if (isDeferredForm(formType)) {
+      logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-comp-commentary', log);
+      return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
+    }
+    if (formType !== '1004') {
+      return res.status(400).json({
+        ok: false,
+        error: 'Comp commentary is only available for 1004 form type',
+        formType,
+      });
+    }
+
+    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    const assignmentMeta = buildAssignmentMetaBlock(
+      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
+    );
+    const comps = asArray(req.body?.comps || facts?.comps || []);
+    if (!comps.length) return res.status(400).json({ ok: false, error: 'No comparables provided' });
+
+    const results = [];
+    const errors = [];
+    for (let i = 0; i < comps.length; i++) {
+      const comp = comps[i];
+      const compLabel = 'Comp ' + (i + 1);
+      try {
+        const compFacts = { ...facts, currentComp: comp, compIndex: i + 1, compLabel };
+        const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({
+          formType,
+          fieldId: 'comp_commentary',
+        });
+        const messages = buildPromptMessages({
+          formType,
+          fieldId: 'comp_commentary',
+          facts: compFacts,
+          voiceExamples,
+          examples: otherExamples,
+          assignmentMeta,
+        });
+        const text = await callAI(messages);
+        results.push({
+          compIndex: i + 1,
+          compLabel,
+          text,
+          address: comp?.address || null,
+          examplesUsed: voiceExamples.length + otherExamples.length,
+        });
+      } catch (e) {
+        errors.push({ compIndex: i + 1, compLabel, error: e.message });
+      }
+    }
+
+    if (results.length) {
+      const outputsFile = path.join(caseDir, 'outputs.json');
+      const existing = readJSON(outputsFile, {});
+      existing.comp_commentary = { comps: results, generatedAt: new Date().toISOString() };
+      writeJSON(outputsFile, existing);
+    }
+
+    const compFocus = trimText(req.body?.compFocus, 40) || 'all';
+    const combinedText = results.map(result => result.compLabel + ': ' + result.text).join('\n\n');
+    if (results.length) {
+      const outputsFile = path.join(caseDir, 'outputs.json');
+      const existing = readJSON(outputsFile, {});
+      existing.sca_summary = { text: combinedText, comps: results, generatedAt: new Date().toISOString() };
+      writeJSON(outputsFile, existing);
+    }
+
+    const totalExamples = results.reduce((acc, result) => acc + (result.examplesUsed || 0), 0);
+    res.json({
+      ok: true,
+      fieldId: 'sca_summary',
+      text: combinedText,
+      sectionStatus: 'drafted',
+      results,
+      errors,
+      compsAttempted: comps.length,
+      compsUsed: results.length,
+      compFocus,
+      examplesUsed: totalExamples,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
+  try {
+    const caseDir = req.caseDir;
+    if (!fs.existsSync(caseDir)) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const { formType, formConfig } = getCaseFormConfig(caseDir);
+    if (isDeferredForm(formType)) {
+      logDeferredAccess(formType, 'POST /api/cases/:caseId/generate-all', log);
+      return res.status(400).json({ ok: false, supported: false, formType, scope: 'deferred' });
+    }
+
+    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    const assignmentMeta = buildAssignmentMetaBlock(
+      applyMetaDefaults(readJSON(path.join(caseDir, 'meta.json'), {})),
+    );
+    const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
+    let locationContext = null;
+    if (geo?.subject?.result?.lat) {
+      try {
+        const { lat, lng } = geo.subject.result;
+        const boundaryFeatures = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+        locationContext = formatLocationContextBlock({
+          subject: geo.subject,
+          comps: geo.comps || [],
+          boundaryFeatures,
+        });
+      } catch (e) {
+        log.warn('[generate-all] location context unavailable:', e.message);
+      }
+    }
+
+    const allFields = formConfig.workflowFields || CORE_SECTIONS[formType] || [];
+    if (!allFields.length) {
+      return res.status(400).json({ ok: false, error: 'No fields configured for form type: ' + formType });
+    }
+
+    const results = {};
+    const errors = {};
+    const statuses = {};
+    const CONCURRENCY = 3;
+    let qi = 0;
+
+    async function runAll() {
+      while (qi < allFields.length) {
+        const field = allFields[qi++];
+        const sid = trimText(field?.id || field, 80);
+        try {
+          const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType, fieldId: sid });
+          const messages = buildPromptMessages({
+            formType,
+            fieldId: sid,
+            facts,
+            voiceExamples,
+            examples: otherExamples,
+            locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? locationContext : null,
+            assignmentMeta,
+          });
+          const text = await callAI(messages);
+          results[sid] = {
+            title: field?.title || sid,
+            text,
+            examplesUsed: voiceExamples.length + otherExamples.length,
+          };
+          statuses[sid] = 'drafted';
+        } catch (e) {
+          errors[sid] = e?.message || 'Unknown error';
+          statuses[sid] = 'error';
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, allFields.length) }, runAll));
+
+    const outputsFile = path.join(caseDir, 'outputs.json');
+    const existing = readJSON(outputsFile, {});
+    writeJSON(outputsFile, { ...existing, ...results, updatedAt: new Date().toISOString() });
+
+    const sectionStatusFile = path.join(caseDir, 'section_statuses.json');
+    const sectionStatuses = readJSON(sectionStatusFile, {});
+    for (const [sid, st] of Object.entries(statuses)) {
+      sectionStatuses[sid] = {
+        ...(sectionStatuses[sid] || {}),
+        status: st,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    writeJSON(sectionStatusFile, sectionStatuses);
+
+    const meta = readJSON(path.join(caseDir, 'meta.json'));
+    meta.updatedAt = new Date().toISOString();
+    meta.pipelineStage = 'generating';
+    writeJSON(path.join(caseDir, 'meta.json'), meta);
+
+    res.json({ ok: true, results, errors, statuses, formType, fieldsAttempted: allFields.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // ── POST /cases/:caseId/generate-full-draft ───────────────────────────────────
