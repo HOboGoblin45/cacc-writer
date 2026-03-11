@@ -38,8 +38,8 @@ import {
   getExtractedSections, approveSection, rejectSection,
   getCaseExtractionSummary, getDocumentExtractions, findDuplicateDocumentByHash,
 } from '../ingestion/stagingService.js';
-import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
-import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
+import { readJSON } from '../utils/fileUtils.js';
 import { client, MODEL } from '../openaiClient.js';
 import log from '../logger.js';
 
@@ -79,13 +79,31 @@ function buildStoredFilename({ caseId, docTypeHint, originalFilename, fileHash }
   return `${caseId}_${docType}_${stamp}_${hashShort}_${baseName}${ext}`;
 }
 
-function safeSyncCaseRecord(caseId) {
-  try {
-    syncCaseRecordFromFilesystem(caseId);
-  } catch (err) {
-    // Keep document ingestion flows stable if canonical sync has an issue.
-    log.warn('case-record:sync-failed', { caseId, error: err.message });
-  }
+function getCaseRuntime(caseId) {
+  const projection = getCaseProjection(caseId);
+  if (!projection) return null;
+  return {
+    projection,
+    meta: projection.meta || {},
+    facts: projection.facts || {},
+    outputs: projection.outputs || {},
+    history: projection.history || {},
+    docText: projection.docText || {},
+    provenance: projection.provenance || {},
+  };
+}
+
+function saveCaseRuntime(caseId, runtime, overrides = {}) {
+  const projection = runtime?.projection || {};
+  return saveCaseProjection({
+    caseId,
+    meta: overrides.meta ?? runtime.meta ?? projection.meta ?? {},
+    facts: overrides.facts ?? runtime.facts ?? projection.facts ?? {},
+    provenance: overrides.provenance ?? runtime.provenance ?? projection.provenance ?? {},
+    outputs: overrides.outputs ?? runtime.outputs ?? projection.outputs ?? {},
+    history: overrides.history ?? runtime.history ?? projection.history ?? {},
+    docText: overrides.docText ?? runtime.docText ?? projection.docText ?? {},
+  });
 }
 
 // ── param: caseId validation ────────────────────────────────────────────────
@@ -197,15 +215,16 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       ingestionWarning,
     });
 
-    // 4. Backward compatibility write-through.
-    const dtf = path.join(cd, 'doc_text.json');
-    const docText = readJSON(dtf, {});
+    // 4. Update canonical case projection with ingestion artifacts.
+    const runtime = getCaseRuntime(caseId);
+    if (!runtime) {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+    const docText = { ...(runtime.docText || {}) };
     const docTextKey = legacyDocType || docType;
     if (extractedText) docText[docTextKey] = extractedText;
-    writeJSON(dtf, docText);
 
-    const mf = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
+    const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = new Date().toISOString();
     if (!meta.docs) meta.docs = {};
     meta.docs[docTextKey] = {
@@ -217,8 +236,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       duplicateOf: duplicateOfDocumentId || null,
       warning: ingestionWarning,
     };
-    writeJSON(mf, meta);
-    safeSyncCaseRecord(caseId);
+    saveCaseRuntime(caseId, runtime, { meta, docText });
 
     // 5. Run extraction for eligible documents only.
     let extractionResult = null;
@@ -347,9 +365,9 @@ router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    // Get extracted text from doc_text.json or re-read from file
-    const dtf = path.join(req.caseDir, 'doc_text.json');
-    const docText = readJSON(dtf, {});
+    // Get extracted text from canonical docText projection or re-read from file
+    const runtime = getCaseRuntime(req.params.caseId);
+    const docText = runtime?.docText || {};
     let text = docText[doc.doc_type] || '';
 
     if (!text) {
@@ -426,7 +444,6 @@ router.post('/cases/:caseId/extracted-facts/merge', (req, res) => {
       return res.status(400).json({ error: 'Provide factIds array' });
     }
     const result = acceptAndMergeFacts(req.params.caseId, factIds);
-    safeSyncCaseRecord(req.params.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ error: err.message });

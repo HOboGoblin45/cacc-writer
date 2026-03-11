@@ -13,12 +13,10 @@
  */
 
 import { Router } from 'express';
-import fs from 'fs';
 import path from 'path';
 
 import {
   CASES_DIR,
-  CASE_ID_RE,
   resolveCaseDir,
   normalizeFormType,
 } from '../utils/caseUtils.js';
@@ -39,7 +37,7 @@ import { callAI, client, MODEL } from '../openaiClient.js';
 import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
-import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
+import { getCaseProjection, saveCaseProjection, listCaseProjections } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import {
   getNeighborhoodBoundaryFeatures,
@@ -317,23 +315,15 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
 });
 
 router.get('/workflow/health', (_req, res) => {
-  const caseDirs = fs.existsSync(CASES_DIR)
-    ? fs.readdirSync(CASES_DIR).filter(d => CASE_ID_RE.test(d))
-    : [];
-  const activeCases = caseDirs.filter(d => {
-    try {
-      const meta = readJSON(path.join(CASES_DIR, d, 'meta.json'));
-      return meta?.status === 'active';
-    } catch {
-      return false;
-    }
-  });
+  const projections = listCaseProjections();
+  const totalCases = projections.length;
+  const activeCases = projections.filter(p => p?.meta?.status === 'active').length;
   res.json({
     ok: true,
     status: 'healthy',
     casesDir: CASES_DIR,
-    totalCases: caseDirs.length,
-    activeCases: activeCases.length,
+    totalCases,
+    activeCases,
     model: MODEL,
     aiAvailable: Boolean(OPENAI_API_KEY),
     activeForms: ACTIVE_FORMS,
