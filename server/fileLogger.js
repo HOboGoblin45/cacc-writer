@@ -73,7 +73,7 @@ export function initFileLogger() {
     });
   } catch (err) {
     // File logger failure is non-fatal — server continues without disk logging
-    console.error('[fileLogger] init failed (non-fatal):', err.message);
+    process.stderr.write(JSON.stringify({ ts: new Date().toISOString(), level: 'error', msg: 'fileLogger:init', error: err.message, detail: 'non-fatal' }) + '\n');
   }
 }
 
