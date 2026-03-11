@@ -33,6 +33,7 @@ const suites = [
   'documentQuality.test.mjs',
   'intelligenceRules.test.mjs',
   'insertionQcGate.test.mjs',
+  'envPrecedence.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
   'openaiClient.test.mjs',
