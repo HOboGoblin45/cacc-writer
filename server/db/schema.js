@@ -69,6 +69,53 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_assignments_case_id
       ON assignments(case_id);
 
+    -- ── case_records (Phase B) ───────────────────────────────────────────────
+    -- Canonical assignment-level case header/state record.
+    -- This becomes the authoritative mutable case source-of-truth over time.
+    CREATE TABLE IF NOT EXISTS case_records (
+      case_id              TEXT PRIMARY KEY,
+      form_type            TEXT NOT NULL,
+      status               TEXT NOT NULL DEFAULT 'active',
+      pipeline_stage       TEXT NOT NULL DEFAULT 'intake',
+      workflow_status      TEXT NOT NULL DEFAULT 'facts_incomplete',
+      address              TEXT NOT NULL DEFAULT '',
+      borrower             TEXT NOT NULL DEFAULT '',
+      unresolved_issues_json TEXT NOT NULL DEFAULT '[]',
+      meta_json            TEXT NOT NULL DEFAULT '{}',
+      created_at           TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at           TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_case_records_updated_at
+      ON case_records(updated_at);
+
+    -- ── case_facts (Phase B) ─────────────────────────────────────────────────
+    -- Canonical structured facts payload + provenance links per case.
+    CREATE TABLE IF NOT EXISTS case_facts (
+      case_id         TEXT PRIMARY KEY,
+      facts_json      TEXT NOT NULL DEFAULT '{}',
+      provenance_json TEXT NOT NULL DEFAULT '{}',
+      updated_at      TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
+    );
+
+    -- ── case_outputs (Phase B) ───────────────────────────────────────────────
+    -- Canonical drafted output payload per case.
+    CREATE TABLE IF NOT EXISTS case_outputs (
+      case_id     TEXT PRIMARY KEY,
+      outputs_json TEXT NOT NULL DEFAULT '{}',
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
+    );
+
+    -- ── case_history (Phase B) ───────────────────────────────────────────────
+    -- Canonical section revision history per case.
+    CREATE TABLE IF NOT EXISTS case_history (
+      case_id      TEXT PRIMARY KEY,
+      history_json TEXT NOT NULL DEFAULT '{}',
+      updated_at   TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
+    );
+
     -- ── report_plans ─────────────────────────────────────────────────────────
     CREATE TABLE IF NOT EXISTS report_plans (
       id            TEXT PRIMARY KEY,

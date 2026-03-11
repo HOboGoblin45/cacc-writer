@@ -35,6 +35,7 @@ import {
   getExtractedSections, approveSection, rejectSection,
   getCaseExtractionSummary, getDocumentExtractions,
 } from '../ingestion/stagingService.js';
+import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { client, MODEL } from '../openaiClient.js';
 import log from '../logger.js';
@@ -43,6 +44,15 @@ const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
 const router = Router();
+
+function safeSyncCaseRecord(caseId) {
+  try {
+    syncCaseRecordFromFilesystem(caseId);
+  } catch (err) {
+    // Keep document ingestion flows stable if canonical sync has an issue.
+    log.warn('case-record:sync-failed', { caseId, error: err.message });
+  }
+}
 
 // ── param: caseId validation ────────────────────────────────────────────────
 
@@ -126,6 +136,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       docType,
     };
     writeJSON(mf, meta);
+    safeSyncCaseRecord(caseId);
 
     // 5. Run structured extraction (async — don't block response)
     let extractionResult = null;
@@ -309,6 +320,7 @@ router.post('/cases/:caseId/extracted-facts/merge', (req, res) => {
       return res.status(400).json({ error: 'Provide factIds array' });
     }
     const result = acceptAndMergeFacts(req.params.caseId, factIds);
+    safeSyncCaseRecord(req.params.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ error: err.message });
