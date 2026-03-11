@@ -22,7 +22,7 @@
     "benchmark:phase-c": "node scripts/runPhaseCBenchmarks.mjs",
     "benchmark:phase-c:check": "node scripts/checkPhaseCBenchmarkThresholds.mjs",
     "test:all": "node tests/unit/run.mjs && node _test_smoke.mjs",
-    "ci:check": "npm run typecheck && npm run test:unit && npm run test:smoke"
+    "ci:check": "npm run typecheck && npm run test:unit && npm run benchmark:phase-c:check && npm run test:smoke"
   },
   "dependencies": {
     "@langchain/core": "^1.1.31",
