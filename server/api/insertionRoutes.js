@@ -24,6 +24,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
 import {
   getInsertionRun, listInsertionRuns, getInsertionRunItems,
@@ -37,15 +38,50 @@ import { getDb } from '../db/database.js';
 
 const router = Router();
 
+const insertionConfigSchema = z.object({
+  dryRun: z.boolean().optional(),
+  verifyAfter: z.boolean().optional(),
+  skipQcBlockers: z.boolean().optional(),
+  requireQcRun: z.boolean().optional(),
+  requireFreshQcForGeneration: z.boolean().optional(),
+  forceReinsert: z.boolean().optional(),
+  maxRetries: z.number().int().min(0).max(10).optional(),
+  defaultFallback: z.enum(['retry', 'clipboard', 'manual_prompt', 'retry_then_clipboard']).optional(),
+  fieldIds: z.array(z.string().min(1)).max(200).optional(),
+}).catchall(z.unknown());
+
+const prepareInsertionSchema = z.object({
+  caseId: z.string().trim().min(1, 'caseId is required'),
+  formType: z.string().trim().min(1, 'formType is required'),
+  targetSoftware: z.string().trim().min(1).optional(),
+  generationRunId: z.string().trim().min(1).optional(),
+  config: insertionConfigSchema.optional(),
+});
+
+const runInsertionSchema = prepareInsertionSchema;
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    issues: parsed.error.issues.map(issue => ({
+      path: issue.path.join('.'),
+      message: issue.message,
+    })),
+  });
+  return null;
+}
+
 // ── Prepare Insertion Run ─────────────────────────────────────────────────────
 
 router.post('/insertion/prepare', (req, res) => {
   try {
-    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
-
-    if (!caseId || !formType) {
-      return res.status(400).json({ error: 'caseId and formType are required' });
-    }
+    const body = parsePayload(prepareInsertionSchema, req.body || {}, res);
+    if (!body) return;
+    const { caseId, formType, targetSoftware, generationRunId, config } = body;
 
     const result = prepareInsertionRun({
       caseId,
@@ -110,11 +146,9 @@ router.post('/insertion/execute/:runId', async (req, res) => {
 
 router.post('/insertion/run', async (req, res) => {
   try {
-    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
-
-    if (!caseId || !formType) {
-      return res.status(400).json({ error: 'caseId and formType are required' });
-    }
+    const body = parsePayload(runInsertionSchema, req.body || {}, res);
+    if (!body) return;
+    const { caseId, formType, targetSoftware, generationRunId, config } = body;
 
     const prepared = prepareInsertionRun({
       caseId,
