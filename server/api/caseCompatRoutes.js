@@ -39,6 +39,7 @@ import {
   getFallbackStrategy,
 } from '../destinationRegistry.js';
 import { buildReviewMessages } from '../promptBuilder.js';
+import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 const require = createRequire(import.meta.url);
@@ -97,6 +98,15 @@ function ensureCaseDir(req, res) {
     return null;
   }
   return cd;
+}
+
+function syncCanonicalCaseRecord(caseId) {
+  try {
+    syncCaseRecordFromFilesystem(caseId);
+  } catch (err) {
+    // Keep legacy route responses stable during canonical write-through migration.
+    log.warn('case-record:sync-failed', { caseId, error: err.message });
+  }
 }
 
 function parseReviewResult(raw) {
@@ -180,6 +190,7 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
       bytes: req.file.size,
     };
     writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({
       ok: true,
@@ -227,6 +238,7 @@ router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
     const facts = parseJSONObject(aiText(r)) || {};
     const merged = { ...existingFacts, ...facts, extractedAt: new Date().toISOString() };
     writeJSON(path.join(cd, 'facts.json'), merged);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({ ok: true, facts: merged });
   } catch (err) {
@@ -338,6 +350,7 @@ router.post('/:caseId/feedback', async (req, res) => {
     const meta = readJSON(metaPath, {});
     meta.updatedAt = new Date().toISOString();
     writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({ ok: true, saved: true, count: feedbackItems.length, savedToKB });
   } catch (err) {
@@ -404,6 +417,7 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
       outputs[fieldId].approved = isApprovedStatus && hasText;
       writeJSON(outputsFile, outputs);
     }
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({
       ok: true,
@@ -437,6 +451,11 @@ router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
       updatedAt: new Date().toISOString(),
     };
     writeJSON(sectionStatusFile, statuses);
+    const metaPath = path.join(cd, 'meta.json');
+    const meta = readJSON(metaPath, {});
+    meta.updatedAt = new Date().toISOString();
+    writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({ ok: true, fieldId, text, charCount: text.length, status: 'copied', message: 'Text ready for manual paste' });
   } catch (err) {
@@ -595,6 +614,11 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       updatedAt: new Date().toISOString(),
     };
     writeJSON(sectionStatusFile, statuses);
+    const metaPath = path.join(cd, 'meta.json');
+    const meta = readJSON(metaPath, {});
+    meta.updatedAt = new Date().toISOString();
+    writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({
       ok: true,
@@ -681,6 +705,7 @@ router.post('/:caseId/insert-all', (req, res) => {
     meta.updatedAt = new Date().toISOString();
     if (inserted.length === coreSections.length) meta.pipelineStage = 'inserting';
     writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({
       ok: true,
@@ -734,6 +759,7 @@ router.patch('/:caseId/outputs/:fieldId', (req, res) => {
     const meta = readJSON(metaPath, {});
     meta.updatedAt = new Date().toISOString();
     writeJSON(metaPath, meta);
+    syncCanonicalCaseRecord(req.params.caseId);
 
     res.json({ ok: true, fieldId, charCount: text.length });
   } catch (err) {

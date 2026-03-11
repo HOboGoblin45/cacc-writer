@@ -52,6 +52,7 @@ import { buildReportPlan, getSectionDef } from '../context/reportPlanner.js';
 import { buildRetrievalPack } from '../context/retrievalPackBuilder.js';
 import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImport.js';
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
+import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -70,6 +71,15 @@ function _setRunResult(runId, result) {
     _runResults.delete(oldestKey);
   }
   _runResults.set(runId, result);
+}
+
+function safeSyncCaseRecord(caseId) {
+  try {
+    syncCaseRecordFromFilesystem(caseId);
+  } catch (err) {
+    // Keep generation endpoints stable if canonical sync has an issue.
+    log.warn('case-record:sync-failed', { caseId, error: err.message });
+  }
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -279,6 +289,7 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
       const meta = readJSON(path.join(caseDir, 'meta.json'));
       meta.updatedAt = new Date().toISOString();
       writeJSON(path.join(caseDir, 'meta.json'), meta);
+      safeSyncCaseRecord(caseId);
     }
     res.json({ ok: true, results, errors });
   } catch (err) {
@@ -397,6 +408,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
     meta.updatedAt = new Date().toISOString();
     meta.pipelineStage = 'generating';
     writeJSON(path.join(caseDir, 'meta.json'), meta);
+    safeSyncCaseRecord(req.params.caseId);
 
     const genResults = {};
     for (const [sid, value] of Object.entries(results)) {
@@ -491,6 +503,12 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       const existing = readJSON(outputsFile, {});
       existing.sca_summary = { text: combinedText, comps: results, generatedAt: new Date().toISOString() };
       writeJSON(outputsFile, existing);
+
+      const meta = readJSON(path.join(caseDir, 'meta.json'));
+      meta.updatedAt = new Date().toISOString();
+      meta.pipelineStage = 'generating';
+      writeJSON(path.join(caseDir, 'meta.json'), meta);
+      safeSyncCaseRecord(req.params.caseId);
     }
 
     const totalExamples = results.reduce((acc, result) => acc + (result.examplesUsed || 0), 0);
@@ -603,6 +621,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     meta.updatedAt = new Date().toISOString();
     meta.pipelineStage = 'generating';
     writeJSON(path.join(caseDir, 'meta.json'), meta);
+    safeSyncCaseRecord(req.params.caseId);
 
     res.json({ ok: true, results, errors, statuses, formType, fieldsAttempted: allFields.length });
   } catch (err) {

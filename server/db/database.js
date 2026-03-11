@@ -159,6 +159,10 @@ export function dbTransaction(fn) {
  */
 export function getTableCounts() {
   const tables = [
+    'case_records',
+    'case_facts',
+    'case_outputs',
+    'case_history',
     'assignments',
     'report_plans',
     'generation_runs',
