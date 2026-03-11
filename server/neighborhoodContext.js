@@ -15,6 +15,7 @@
  * No authentication required. Reasonable use policy applies.
  */
 
+import log from './logger.js';
 import { distanceMiles, cardinalDirection } from './geocoder.js';
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
@@ -127,7 +128,7 @@ out tags;
 
     return processOverpassResults(data.elements || [], lat, lng);
   } catch (err) {
-    console.warn('[neighborhoodContext] Overpass query failed:', err.message);
+    log.warn('neighborhoodContext:overpass-failed', { error: err.message });
     return {
       majorRoads:    [],
       landUseTypes:  [],

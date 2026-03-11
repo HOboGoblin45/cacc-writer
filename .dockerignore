@@ -1,0 +1,12 @@
+node_modules
+.git
+.env
+*.db
+*.db-wal
+*.db-shm
+desktop_agent
+real_quantum_agent
+logs
+.github
+tests
+_test_*.mjs

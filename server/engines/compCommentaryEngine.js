@@ -35,6 +35,7 @@
  *   - Describes the search process and adjustment rationale only
  */
 
+import log from '../logger.js';
 import { getApprovedNarrativeIndex, getApprovedNarrativeById } from '../storage/saveApprovedNarrative.js';
 import { callAI } from '../openaiClient.js';
 import fs   from 'fs';
@@ -225,7 +226,7 @@ export async function generateCompCommentary(input) {
     text = text.trim();
   } catch (err) {
     // Fallback to template if AI fails
-    console.warn('[compCommentaryEngine] AI call failed, using fallback template:', err.message);
+    log.warn('compCommentaryEngine:ai-failed', { error: err.message });
     text = buildFallbackTemplate(input);
     sources.push('fallback:template');
   }
