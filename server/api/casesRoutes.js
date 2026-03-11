@@ -32,25 +32,86 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
-import { CASES_DIR, CASE_ID_RE, casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
+import { casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
 import { DEFAULT_FORM_TYPE } from '../../forms/index.js';
-import { ACTIVE_FORMS, isDeferredForm, logDeferredAccess, getScopeMetaForForm } from '../config/productionScope.js';
+import { ACTIVE_FORMS, isDeferredForm, logDeferredAccess } from '../config/productionScope.js';
 import { applyMetaDefaults, extractMetaFields } from '../caseMetadata.js';
-import { computeWorkflowStatus, isValidWorkflowStatus } from '../workflowStatus.js';
+import { isValidWorkflowStatus } from '../workflowStatus.js';
 import { getMissingFacts, formatMissingFactsForUI } from '../sectionDependencies.js';
 import { geocodeAddress, distanceMiles, cardinalDirection, buildAddressString } from '../geocoder.js';
 import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock } from '../neighborhoodContext.js';
 import { getRunsForCase } from '../orchestrator/generationOrchestrator.js';
+import { getCaseProjection, listCaseProjections } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
 const PIPELINE_STAGES = ['intake', 'extracting', 'generating', 'review', 'approved', 'inserting', 'complete'];
+const CASE_STATUSES = ['active', 'submitted', 'archived'];
+
+const createCaseSchema = z.object({
+  address: z.string().max(240).optional(),
+  borrower: z.string().max(180).optional(),
+  notes: z.string().max(1000).optional(),
+  formType: z.string().max(40).optional(),
+}).passthrough();
+
+const updateCaseSchema = z.object({
+  address: z.string().max(240).optional(),
+  borrower: z.string().max(180).optional(),
+  notes: z.string().max(1000).optional(),
+  formType: z.string().max(40).optional(),
+  assignmentPurpose: z.string().optional(),
+  loanProgram: z.string().optional(),
+  propertyType: z.string().optional(),
+  occupancyType: z.string().optional(),
+  reportConditionMode: z.string().optional(),
+  subjectCondition: z.string().optional(),
+  marketType: z.string().optional(),
+  clientName: z.string().max(200).optional(),
+  lenderName: z.string().max(200).optional(),
+  amcName: z.string().max(200).optional(),
+  state: z.string().max(50).optional(),
+  county: z.string().max(100).optional(),
+  city: z.string().max(100).optional(),
+  marketArea: z.string().max(200).optional(),
+  neighborhood: z.string().max(200).optional(),
+  assignmentNotes: z.string().max(2000).optional(),
+}).passthrough();
+
+const statusSchema = z.object({
+  status: z.enum(CASE_STATUSES),
+});
+
+const pipelineSchema = z.object({
+  stage: z.enum(PIPELINE_STAGES),
+});
+
+const workflowStatusSchema = z.object({
+  workflowStatus: z.string().min(1).max(40),
+});
+
+const factsSchema = z.record(z.unknown());
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
@@ -67,10 +128,13 @@ router.param('caseId', (req, res, next, caseId) => {
   next();
 });
 
-// ── POST / — Create case ──────────────────────────────────────────────────────
-router.post('/', (req, res) => {
+// ── POST / and /create — Create case ─────────────────────────────────────────
+function createCaseHandler(req, res) {
+  const body = parsePayload(createCaseSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const requestedFormType = String(req.body?.formType || '').trim().toLowerCase() || DEFAULT_FORM_TYPE;
+    const requestedFormType = String(body.formType || '').trim().toLowerCase() || DEFAULT_FORM_TYPE;
 
     // Scope enforcement: block new cases for deferred form types
     if (isDeferredForm(requestedFormType)) {
@@ -92,17 +156,17 @@ router.post('/', (req, res) => {
 
     const baseMeta = {
       caseId,
-      address:       trimText(req.body?.address,  240),
-      borrower:      trimText(req.body?.borrower, 180),
-      notes:         trimText(req.body?.notes,    1000),
-      formType:      normalizeFormType(req.body?.formType),
+      address:       trimText(body.address,  240),
+      borrower:      trimText(body.borrower, 180),
+      notes:         trimText(body.notes,    1000),
+      formType:      normalizeFormType(body.formType),
       status:        'active',
       pipelineStage: 'intake',
       createdAt:     new Date().toISOString(),
       updatedAt:     new Date().toISOString(),
     };
 
-    const assignmentFields = extractMetaFields(req.body, trimText);
+    const assignmentFields = extractMetaFields(body, trimText);
     const meta = applyMetaDefaults({ ...baseMeta, ...assignmentFields });
 
     fs.mkdirSync(path.join(caseDir, 'documents'), { recursive: true });
@@ -116,26 +180,42 @@ router.post('/', (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
-});
+}
+
+router.post('/', createCaseHandler);
+router.post('/create', createCaseHandler);
 
 // ── GET / — List cases ────────────────────────────────────────────────────────
 router.get('/', (_req, res) => {
   try {
-    if (!fs.existsSync(CASES_DIR)) return res.json({ ok: true, cases: [] });
-    const dirs = fs.readdirSync(CASES_DIR).filter(
-      d => CASE_ID_RE.test(d) && fs.statSync(path.join(CASES_DIR, d)).isDirectory(),
-    );
-    const cases = dirs
-      .map(id => {
-        try {
-          const m = readJSON(path.join(CASES_DIR, id, 'meta.json'));
-          m.formType = normalizeFormType(m.formType);
-          return m;
-        } catch { return null; }
-      })
-      .filter(Boolean)
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const cases = listCaseProjections().map(c => c.meta);
     res.json({ ok: true, cases });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /records — List canonical case headers ────────────────────────────────
+router.get('/records', (_req, res) => {
+  try {
+    const records = listCaseProjections().map(c => c.caseRecord);
+    const headers = records.map(r => r.header);
+    res.json({ ok: true, count: records.length, headers });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /:caseId/record — Canonical case projection ──────────────────────────
+router.get('/:caseId/record', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      record: projection.caseRecord,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -144,36 +224,15 @@ router.get('/', (_req, res) => {
 // ── GET /:caseId — Load case ──────────────────────────────────────────────────
 router.get('/:caseId', (req, res) => {
   try {
-    const cd = req.caseDir;
-    if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
-
-    let meta = readJSON(path.join(cd, 'meta.json'));
-    meta.formType = normalizeFormType(meta.formType);
-    meta = applyMetaDefaults(meta);
-
-    const facts   = readJSON(path.join(cd, 'facts.json'));
-    const docText = readJSON(path.join(cd, 'doc_text.json'));
-    const outputs = readJSON(path.join(cd, 'outputs.json'));
-
-    meta.workflowStatus = computeWorkflowStatus(meta, facts, outputs);
-
-    const docSummary = {};
-    for (const [label, text] of Object.entries(docText)) {
-      if (typeof text === 'string') {
-        docSummary[label] = {
-          wordCount: text.split(/\s+/).filter(Boolean).length,
-          preview:   text.slice(0, 200),
-        };
-      }
-    }
-
-    const scopeMeta = getScopeMetaForForm(meta.formType);
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const { meta, facts, outputs, docSummary, scopeMeta, caseRecord } = projection;
     if (scopeMeta.scope === 'deferred') {
       log.warn(`[SCOPE] Legacy deferred-form case loaded — caseId="${req.params.caseId}" formType="${meta.formType}"`);
     }
 
     res.json({
-      ok: true, meta, facts, docSummary, outputs,
+      ok: true, meta, facts, docSummary, outputs, caseRecord,
       scopeStatus:    scopeMeta.scope,
       scopeSupported: scopeMeta.supported,
       ...(scopeMeta.scope === 'deferred' ? {
@@ -190,6 +249,9 @@ router.get('/:caseId', (req, res) => {
 
 // ── PATCH /:caseId — Update case metadata ─────────────────────────────────────
 router.patch('/:caseId', (req, res) => {
+  const body = parsePayload(updateCaseSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -197,12 +259,12 @@ router.patch('/:caseId', (req, res) => {
     const mf = path.join(cd, 'meta.json');
     let meta = readJSON(mf);
 
-    meta.address  = trimText(req.body?.address  ?? meta.address,  240);
-    meta.borrower = trimText(req.body?.borrower ?? meta.borrower, 180);
-    if (req.body?.notes    !== undefined) meta.notes    = trimText(req.body.notes, 1000);
-    if (req.body?.formType !== undefined) meta.formType = normalizeFormType(req.body.formType);
+    meta.address  = trimText(body.address  ?? meta.address,  240);
+    meta.borrower = trimText(body.borrower ?? meta.borrower, 180);
+    if (body.notes    !== undefined) meta.notes    = trimText(body.notes, 1000);
+    if (body.formType !== undefined) meta.formType = normalizeFormType(body.formType);
 
-    const assignmentFields = extractMetaFields(req.body, trimText);
+    const assignmentFields = extractMetaFields(body, trimText);
     meta = { ...meta, ...assignmentFields };
     meta.updatedAt = new Date().toISOString();
 
@@ -227,14 +289,14 @@ router.delete('/:caseId', (req, res) => {
 
 // ── PATCH /:caseId/status — Set case status ───────────────────────────────────
 router.patch('/:caseId/status', (req, res) => {
+  const body = parsePayload(statusSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const nextStatus = trimText(req.body?.status, 20).toLowerCase() || 'active';
-    if (!['active', 'submitted', 'archived'].includes(nextStatus)) {
-      return res.status(400).json({ ok: false, error: 'Invalid status' });
-    }
+    const nextStatus = trimText(body.status, 20).toLowerCase() || 'active';
 
     const mf   = path.join(cd, 'meta.json');
     const meta = readJSON(mf);
@@ -249,23 +311,20 @@ router.patch('/:caseId/status', (req, res) => {
 
 // ── PATCH /:caseId/pipeline — Advance pipeline stage ─────────────────────────
 router.patch('/:caseId/pipeline', (req, res) => {
+  const body = parsePayload(pipelineSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const stage = trimText(req.body?.stage, 20).toLowerCase();
-    if (!PIPELINE_STAGES.includes(stage)) {
-      return res.status(400).json({
-        ok:    false,
-        error: `Invalid stage. Must be one of: ${PIPELINE_STAGES.join(', ')}`,
-      });
-    }
+    const stage = trimText(body.stage, 20).toLowerCase();
 
     const mf   = path.join(cd, 'meta.json');
     const meta = readJSON(mf);
     meta.pipelineStage = stage;
     meta.updatedAt     = new Date().toISOString();
-    if (!meta.pipelineHistory) meta.pipelineHistory = [];
+    if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
     meta.pipelineHistory.push({ stage, at: meta.updatedAt });
     writeJSON(mf, meta);
     res.json({ ok: true, pipelineStage: stage, meta });
@@ -276,11 +335,14 @@ router.patch('/:caseId/pipeline', (req, res) => {
 
 // ── PATCH /:caseId/workflow-status — Set workflowStatus ──────────────────────
 router.patch('/:caseId/workflow-status', (req, res) => {
+  const body = parsePayload(workflowStatusSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const status = trimText(req.body?.workflowStatus, 40);
+    const status = trimText(body.workflowStatus, 40);
     if (!isValidWorkflowStatus(status)) {
       return res.status(400).json({
         ok:    false,
@@ -305,12 +367,20 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
 router.put('/:caseId/facts', (req, res) => {
+  const body = parsePayload(factsSchema, req.body || {}, res);
+  if (!body || Array.isArray(body)) {
+    if (!res.headersSent) {
+      res.status(400).json({ ok: false, error: 'Facts payload must be a JSON object' });
+    }
+    return;
+  }
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const factsFile = path.join(cd, 'facts.json');
-    const updated   = { ...readJSON(factsFile, {}), ...req.body, updatedAt: new Date().toISOString() };
+    const updated   = { ...readJSON(factsFile, {}), ...body, updatedAt: new Date().toISOString() };
     writeJSON(factsFile, updated);
 
     const meta = readJSON(path.join(cd, 'meta.json'));
