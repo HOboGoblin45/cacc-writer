@@ -584,6 +584,19 @@ await test('POST /api/insertion/prepare blocks generation insertion when fresh Q
   assert(body.qcGate.reason === 'missing_fresh_generation_qc', 'reason should indicate missing fresh QC');
 });
 
+await test('POST /api/insertion/run does not bypass missing fresh QC with skipQcBlockers', async () => {
+  const { status, body } = await api('POST', '/api/insertion/run', {
+    caseId: testCaseId,
+    formType: '1004',
+    generationRunId: `smoke-gen-${Date.now()}-run`,
+    config: { skipQcBlockers: true, dryRun: true },
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.blocked === true, 'blocked should be true');
+  assert(body?.overrideAllowed === false, 'overrideAllowed should be false');
+  assert(body?.qcGate?.reason === 'missing_fresh_generation_qc', 'qcGate.reason should match');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {

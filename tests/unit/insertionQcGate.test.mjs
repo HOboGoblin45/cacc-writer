@@ -35,7 +35,7 @@ const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cacc-insertion-qc-'));
 process.env.CACC_DB_PATH = path.join(tmpRoot, 'insertion-qc.db');
 
 const { getDb, closeDb } = await import('../../server/db/database.js');
-const { prepareInsertionRun } = await import('../../server/insertion/insertionRunEngine.js');
+const { prepareInsertionRun, executeInsertionRun } = await import('../../server/insertion/insertionRunEngine.js');
 
 function insertQcRun({
   caseId,
@@ -109,6 +109,8 @@ await test('blocks when generation run has no completed QC', () => {
   assert.equal(result.qcGate.passed, false);
   assert.equal(result.qcGate.recommendation, 'blocked');
   assert.equal(result.qcGate.reason, 'missing_fresh_generation_qc');
+  assert.equal(result.qcGate.overrideAllowed, false);
+  assert.equal(result.run.config.qcOverrideAllowed, false);
   assert.match(result.qcGate.blockerMessages[0], /Run QC before insertion/i);
 });
 
@@ -120,6 +122,7 @@ await test('passes when matching completed generation QC exists and is clean', (
   assert.equal(result.qcGate.passed, true);
   assert.equal(result.qcGate.qcRunId, qc.id);
   assert.equal(result.qcGate.reason, 'clean');
+  assert.equal(result.qcGate.overrideAllowed, false);
 });
 
 await test('blocks when matching completed generation QC has open blocker findings', () => {
@@ -131,6 +134,7 @@ await test('blocks when matching completed generation QC has open blocker findin
   assert.equal(result.qcGate.passed, false);
   assert.equal(result.qcGate.blockerCount, 1);
   assert.equal(result.qcGate.reason, 'blocker_findings');
+  assert.equal(result.qcGate.overrideAllowed, true);
 });
 
 await test('uses latest completed case QC when freshness override is disabled', () => {
@@ -176,6 +180,42 @@ await test('ignores non-completed QC runs when evaluating gate', () => {
   });
   assert.equal(result.qcGate.passed, false);
   assert.equal(result.qcGate.reason, 'missing_qc_run');
+});
+
+await test('executeInsertionRun does not bypass missing fresh QC even with skipQcBlockers', async () => {
+  const caseId = randomId('case');
+  const generationRunId = randomId('gen');
+  const prepared = prepareInsertionRun({
+    caseId,
+    formType: '1004',
+    generationRunId,
+    config: { skipQcBlockers: true, dryRun: true },
+  });
+  assert.equal(prepared.qcGate.reason, 'missing_fresh_generation_qc');
+  assert.equal(prepared.run.config.qcOverrideAllowed, false);
+
+  const executed = await executeInsertionRun(prepared.run.id);
+  assert.equal(executed.status, 'failed');
+  assert.equal(executed.summary?.error, 'QC gate blocked insertion');
+});
+
+await test('executeInsertionRun can bypass blocker findings when skipQcBlockers is enabled', async () => {
+  const caseId = randomId('case');
+  const generationRunId = randomId('gen');
+  const qc = insertQcRun({ caseId, generationRunId, status: 'completed' });
+  insertFinding({ qcRunId: qc.id, severity: 'blocker', status: 'open' });
+
+  const prepared = prepareInsertionRun({
+    caseId,
+    formType: '1004',
+    generationRunId,
+    config: { skipQcBlockers: true, dryRun: true },
+  });
+  assert.equal(prepared.qcGate.reason, 'blocker_findings');
+  assert.equal(prepared.run.config.qcOverrideAllowed, true);
+
+  const executed = await executeInsertionRun(prepared.run.id);
+  assert.equal(executed.status, 'completed');
 });
 
 await cleanup();
