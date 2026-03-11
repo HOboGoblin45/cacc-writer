@@ -560,7 +560,30 @@ await test('GET /api/agents/status returns agent health', async () => {
   assert(typeof body.rq === 'boolean', 'rq should be boolean');
 });
 
-// ── 8. AI Endpoints (error handling when no key) ──────────────────────────────
+// -- 7b. Insertion Gate --------------------------------------------------------
+console.log('\n7b. Insertion Gate');
+
+await test('POST /api/insertion/prepare validates required params', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {});
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/insertion/prepare blocks generation insertion when fresh QC is missing', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {
+    caseId: testCaseId,
+    formType: '1004',
+    generationRunId: `smoke-gen-${Date.now()}`,
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.run?.id === 'string', 'run.id should be present');
+  assert(Array.isArray(body?.items), 'items should be an array');
+  assert(typeof body?.qcGate === 'object', 'qcGate should be an object');
+  assert(body.qcGate.passed === false, 'qcGate should fail when fresh QC is missing');
+  assert(body.qcGate.recommendation === 'blocked', 'recommendation should be blocked');
+  assert(body.qcGate.reason === 'missing_fresh_generation_qc', 'reason should indicate missing fresh QC');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
@@ -662,5 +685,7 @@ console.log('══════════════════════�
 
 await serverHarness.stop();
 process.exit(failed > 0 ? 1 : 0);
+
+
 
 

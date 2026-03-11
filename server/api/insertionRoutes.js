@@ -128,7 +128,7 @@ router.post('/insertion/run', async (req, res) => {
         run: prepared.run,
         qcGate: prepared.qcGate,
         blocked: true,
-        message: 'QC gate blocked insertion — resolve blockers or set skipQcBlockers',
+        message: 'QC gate blocked insertion - review qcGate details or set skipQcBlockers',
       });
     }
 
@@ -338,3 +338,4 @@ router.get('/insertion/field-history/:caseId/:fieldId', (req, res) => {
 });
 
 export default router;
+

@@ -48,6 +48,8 @@ export function prepareInsertionRun({
     dryRun: false,
     verifyAfter: true,
     skipQcBlockers: false,
+    requireQcRun: false,
+    requireFreshQcForGeneration: true,
     forceReinsert: false,
     maxRetries: 3,
     defaultFallback: 'retry_then_clipboard',
@@ -74,7 +76,7 @@ export function prepareInsertionRun({
   });
 
   // Check QC gate
-  const qcGate = checkQcGate(caseId, mergedConfig);
+  const qcGate = checkQcGate(caseId, generationRunId, mergedConfig);
 
   // Create the run
   const run = createInsertionRun({
@@ -135,7 +137,7 @@ export async function executeInsertionRun(runId) {
     updateInsertionRun(runId, {
       status: 'failed',
       completedAt: new Date().toISOString(),
-      summaryJson: { error: 'QC gate blocked — blocker findings exist', blockerCount: run.qcBlockerCount },
+      summaryJson: { error: 'QC gate blocked insertion', blockerCount: run.qcBlockerCount },
     });
     return getInsertionRun(runId);
   }
@@ -544,20 +546,68 @@ function gatherFieldTexts(caseId, formType, generationRunId = null) {
  * @param {Object} config
  * @returns {import('./types.js').QCGateResult}
  */
-function checkQcGate(caseId, config) {
+function checkQcGate(caseId, generationRunId, config) {
   const db = getDb();
+  const requireQcRun = !!config.requireQcRun;
+  const requireFreshQcForGeneration = config.requireFreshQcForGeneration !== false;
 
-  // Find the latest QC run for this case
+  // Prefer a completed QC run bound to the same generation run.
+  // This prevents insertion from relying on stale QC from an older draft.
   let qcRun = null;
   try {
-    qcRun = db.prepare(
-      'SELECT * FROM qc_runs WHERE case_id = ? ORDER BY created_at DESC LIMIT 1'
-    ).get(caseId);
+    if (generationRunId && requireFreshQcForGeneration) {
+      qcRun = db.prepare(`
+        SELECT *
+        FROM qc_runs
+        WHERE case_id = ?
+          AND generation_run_id = ?
+          AND status = 'completed'
+        ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
+        LIMIT 1
+      `).get(caseId, generationRunId);
+    } else {
+      qcRun = db.prepare(`
+        SELECT *
+        FROM qc_runs
+        WHERE case_id = ?
+          AND status = 'completed'
+        ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
+        LIMIT 1
+      `).get(caseId);
+    }
   } catch {
     // QC tables may not exist yet
   }
 
   if (!qcRun) {
+    if (generationRunId && requireFreshQcForGeneration) {
+      return {
+        passed: false,
+        qcRunId: null,
+        blockerCount: 0,
+        highCount: 0,
+        blockerMessages: [
+          `No completed QC run found for generation run ${generationRunId}. Run QC before insertion.`,
+        ],
+        highMessages: [],
+        recommendation: 'blocked',
+        reason: 'missing_fresh_generation_qc',
+      };
+    }
+
+    if (requireQcRun) {
+      return {
+        passed: false,
+        qcRunId: null,
+        blockerCount: 0,
+        highCount: 0,
+        blockerMessages: ['No completed QC run found. Run QC before insertion.'],
+        highMessages: [],
+        recommendation: 'blocked',
+        reason: 'missing_qc_run',
+      };
+    }
+
     return {
       passed: true,
       qcRunId: null,
@@ -566,6 +616,7 @@ function checkQcGate(caseId, config) {
       blockerMessages: [],
       highMessages: [],
       recommendation: 'proceed',
+      reason: 'no_qc_run',
     };
   }
 
@@ -607,6 +658,7 @@ function checkQcGate(caseId, config) {
     blockerMessages: blockerFindings.map(f => f.brief_message || f.message || 'Blocker finding'),
     highMessages: highFindings.map(f => f.brief_message || f.message || 'High finding'),
     recommendation,
+    reason: blockerCount > 0 ? 'blocker_findings' : (highCount > 0 ? 'high_findings' : 'clean'),
   };
 }
 
@@ -621,3 +673,4 @@ function getDefaultAgentUrl(targetSoftware) {
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
