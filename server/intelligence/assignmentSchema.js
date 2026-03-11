@@ -150,6 +150,8 @@ export const QUALITY_RATINGS = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6'];
  * @property {object}                     reportFamily    — resolved ReportFamilyManifest
  * @property {object[]}                   canonicalFields — applicable canonical fields
  * @property {object}                     sectionPlan     — v2 section plan
+ * @property {object}                     sectionRequirements — deterministic requirement matrix
+ * @property {object}                     complianceChecks — deterministic hard-rule findings
  * @property {string}                     _version
  * @property {string}                     _builtAt
  * @property {number}                     _buildMs

@@ -32,6 +32,8 @@ import { buildComplianceProfile } from './complianceProfile.js';
 import { getManifestForFormType, resolveReportFamily } from './reportFamilyManifest.js';
 import { getApplicableFields, groupFieldsBySectionGroup } from './canonicalFields.js';
 import { buildSectionPlanV2, toOrchestratorPlan } from './sectionPlanner.js';
+import { buildSectionRequirementMatrix } from './sectionRequirementMatrix.js';
+import { evaluateHardComplianceRules } from './hardComplianceRules.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const CASES_DIR  = path.join(__dirname, '..', '..', 'cases');
@@ -86,6 +88,17 @@ export async function buildIntelligenceBundle(caseId) {
 
   // 6. Section plan v2
   const sectionPlan = buildSectionPlanV2(context, flags, compliance, manifest, applicableFields);
+  const sectionRequirements = buildSectionRequirementMatrix({
+    manifest,
+    flags,
+    applicableFields,
+  });
+  const complianceChecks = evaluateHardComplianceRules({
+    context,
+    flags,
+    compliance,
+    sectionRequirements,
+  });
 
   // 7. Assemble bundle
   const bundle = {
@@ -118,6 +131,8 @@ export async function buildIntelligenceBundle(caseId) {
       totalApplicable: applicableFields.length,
     },
     sectionPlan,
+    sectionRequirements,
+    complianceChecks,
 
     _version: '4.0',
     _builtAt: new Date().toISOString(),
@@ -225,4 +240,6 @@ export { buildComplianceProfile } from './complianceProfile.js';
 export { getManifestForFormType, resolveReportFamily, listReportFamilies, getManifestSummaries } from './reportFamilyManifest.js';
 export { getApplicableFields, getCanonicalField, getAllCanonicalFields, getCanonicalFieldStats } from './canonicalFields.js';
 export { buildSectionPlanV2, toOrchestratorPlan } from './sectionPlanner.js';
+export { buildSectionRequirementMatrix } from './sectionRequirementMatrix.js';
+export { evaluateHardComplianceRules } from './hardComplianceRules.js';
 export { normalizeAssignmentContextV2 } from './normalizer.js';

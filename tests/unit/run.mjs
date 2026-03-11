@@ -16,6 +16,7 @@ const suites = [
   'caseUtils.test.mjs',
   'caseRecordService.test.mjs',
   'factIntegrity.test.mjs',
+  'intelligenceRules.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
   'openaiClient.test.mjs',
