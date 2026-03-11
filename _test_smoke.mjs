@@ -19,7 +19,16 @@
  *   1 = one or more tests failed
  */
 
-const BASE = process.env.TEST_BASE_URL || 'http://localhost:5178';
+import { ensureServerRunning } from './tests/helpers/serverHarness.mjs';
+
+const REQUESTED_BASE = process.env.TEST_BASE_URL || 'http://localhost:5178';
+const AUTO_START = process.env.SMOKE_AUTO_START !== '0';
+const serverHarness = await ensureServerRunning({
+  baseUrl: REQUESTED_BASE,
+  autoStart: AUTO_START,
+  cwd: process.cwd(),
+});
+const BASE = serverHarness.baseUrl;
 const TIMEOUT_MS = 8000;
 
 // ── Test runner ───────────────────────────────────────────────────────────────
@@ -294,8 +303,36 @@ await test('POST /api/cases/:caseId/insert-all with no approved sections returns
   assert(body.ok === false, 'ok should be false');
 });
 
+console.log('\n9. Workflow Endpoints');
+
+await test('GET /api/workflow/health returns workflow health', async () => {
+  const { status, body } = await api('GET', '/api/workflow/health');
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/workflow/health');
+  assert(body.status === 'healthy', 'status should be healthy');
+  assert(typeof body.totalCases === 'number', 'totalCases should be a number');
+});
+
+await test('POST /api/workflow/run without caseId returns 400 or 503', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run', {});
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/workflow/run-batch with empty cases returns 400 or 503', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run-batch', { cases: [] });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/workflow/ingest-pdf without file returns 400 or 503', async () => {
+  const { status, body } = await api('POST', '/api/workflow/ingest-pdf', {});
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body.ok === false, 'ok should be false');
+});
+
 // ── 9. Voice Examples ─────────────────────────────────────────────────────────
-console.log('\n9. Voice Examples');
+console.log('\n10. Voice Examples');
 
 await test('GET /api/voice/examples returns voice data', async () => {
   const { status, body } = await api('GET', '/api/voice/examples');
@@ -313,7 +350,7 @@ await test('GET /api/voice/folder-status returns folder info', async () => {
 });
 
 // ── 10. Cleanup ───────────────────────────────────────────────────────────────
-console.log('\n10. Cleanup');
+console.log('\n11. Cleanup');
 
 await test('DELETE /api/cases/:caseId removes test case', async () => {
   const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`);
@@ -336,4 +373,5 @@ if (failures.length) {
 }
 console.log('══════════════════════════════════════════\n');
 
+await serverHarness.stop();
 process.exit(failed > 0 ? 1 : 0);
