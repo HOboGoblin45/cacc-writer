@@ -76,6 +76,22 @@ async function api(method, path, body) {
   }
 }
 
+async function apiForm(path, formData) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      method: 'POST',
+      body: formData,
+      signal: ctrl.signal,
+    });
+    const json = await res.json().catch(() => null);
+    return { status: res.status, body: json };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 
@@ -235,6 +251,65 @@ await test('PUT /api/cases/:caseId/fact-sources saves source links', async () =>
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'PUT /api/cases/:caseId/fact-sources');
   assert(body.sources?.['subject.address']?.sourceId === 'order_sheet.pdf', 'source link should be saved');
+});
+
+// —— 4b. Document Intake & Classification ——————————————————————————————
+console.log('\n4b. Document Intake');
+
+await test('POST /api/cases/:caseId/documents/upload rejects unsupported file types', async () => {
+  const form = new FormData();
+  form.append('file', new Blob(['plain text'], { type: 'text/plain' }), 'notes.txt');
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/documents/upload`, form);
+  assert(status === 415, `Expected 415, got ${status}`);
+  assert(body?.code === 'UNSUPPORTED_FILE_TYPE', 'expected unsupported file type code');
+});
+
+await test('POST /api/cases/:caseId/documents/upload accepts PDF upload', async () => {
+  const pseudoPdf = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<<>>\n%%EOF`;
+  const form = new FormData();
+  form.append('file', new Blob([pseudoPdf], { type: 'application/pdf' }), 'contract-smoke.pdf');
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/documents/upload`, form);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(typeof body?.documentId === 'string', 'documentId should be string');
+  assert(body?.duplicateDetected === false, 'first upload should not be duplicate');
+});
+
+await test('POST /api/cases/:caseId/documents/upload flags duplicate PDF by hash', async () => {
+  const pseudoPdf = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<<>>\n%%EOF`;
+  const form = new FormData();
+  form.append('file', new Blob([pseudoPdf], { type: 'application/pdf' }), 'contract-smoke-copy.pdf');
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/documents/upload`, form);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(body?.duplicateDetected === true, 'second identical upload should be duplicate');
+  assert(typeof body?.duplicateOfDocumentId === 'string' && body.duplicateOfDocumentId.length > 0, 'duplicate link should be present');
+});
+
+await test('POST /api/cases/:caseId/documents/upload accepts image upload', async () => {
+  const tinyPng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jxscAAAAASUVORK5CYII=',
+    'base64',
+  );
+  const form = new FormData();
+  form.append('file', new Blob([tinyPng], { type: 'image/png' }), 'inspection-photo.png');
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/documents/upload`, form);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(typeof body?.extractionMethod === 'string', 'extractionMethod should be string');
+});
+
+await test('GET /api/cases/:caseId/extraction-summary includes quality metrics', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/extraction-summary`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(typeof body?.quality === 'object', 'quality should be object');
+  assert(typeof body.quality?.averageScore === 'number' || body.quality?.averageScore === null, 'averageScore should be number|null');
+  assert(typeof body.quality?.buckets === 'object', 'buckets should be object');
+  assert(typeof body.quality?.duplicateCount === 'number', 'duplicateCount should be number');
+  assert(typeof body.quality?.warningCount === 'number', 'warningCount should be number');
+  assert(Array.isArray(body.quality?.flaggedDocuments), 'flaggedDocuments should be an array');
+  assert(body.quality.duplicateCount >= 1, 'duplicateCount should reflect duplicate upload');
 });
 
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────

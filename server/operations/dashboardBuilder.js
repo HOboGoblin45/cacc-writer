@@ -74,6 +74,9 @@ function getOverview() {
     totalInsertionRuns: 0,
     totalMemoryItems: 0,
     totalDocuments: 0,
+    documentsWithWarnings: 0,
+    duplicateDocuments: 0,
+    lowQualityDocuments: 0,
   };
 
   try {
@@ -104,6 +107,32 @@ function getOverview() {
   try {
     const docRow = db.prepare('SELECT COUNT(*) as cnt FROM case_documents').get();
     overview.totalDocuments = docRow?.cnt || 0;
+  } catch { /* */ }
+
+  try {
+    const warningRow = db.prepare(
+      "SELECT COUNT(*) as cnt FROM case_documents WHERE ingestion_warning IS NOT NULL AND TRIM(ingestion_warning) <> ''"
+    ).get();
+    overview.documentsWithWarnings = warningRow?.cnt || 0;
+  } catch { /* */ }
+
+  try {
+    const duplicateRow = db.prepare(
+      'SELECT COUNT(*) as cnt FROM case_documents WHERE duplicate_of_document_id IS NOT NULL'
+    ).get();
+    overview.duplicateDocuments = duplicateRow?.cnt || 0;
+  } catch { /* */ }
+
+  try {
+    const lowQualityRow = db.prepare(`
+      SELECT COUNT(*) as cnt
+      FROM case_documents
+      WHERE extraction_status = 'failed'
+         OR classification_confidence < 0.6
+         OR (extraction_status = 'extracted' AND text_length < 80)
+         OR duplicate_of_document_id IS NOT NULL
+    `).get();
+    overview.lowQualityDocuments = lowQualityRow?.cnt || 0;
   } catch { /* */ }
 
   return overview;
