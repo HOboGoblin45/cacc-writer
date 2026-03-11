@@ -77,6 +77,7 @@ export function prepareInsertionRun({
 
   // Check QC gate
   const qcGate = checkQcGate(caseId, generationRunId, mergedConfig);
+  mergedConfig.qcOverrideAllowed = qcGate.overrideAllowed !== false;
 
   // Create the run
   const run = createInsertionRun({
@@ -133,7 +134,8 @@ export async function executeInsertionRun(runId) {
   if (!run) throw new Error(`Insertion run not found: ${runId}`);
 
   // Check if QC gate blocks execution
-  if (!run.qcGatePassed && !run.config.skipQcBlockers) {
+  const canBypassQcGate = !!run.config.skipQcBlockers && run.config.qcOverrideAllowed !== false;
+  if (!run.qcGatePassed && !canBypassQcGate) {
     updateInsertionRun(runId, {
       status: 'failed',
       completedAt: new Date().toISOString(),
@@ -592,6 +594,7 @@ function checkQcGate(caseId, generationRunId, config) {
         highMessages: [],
         recommendation: 'blocked',
         reason: 'missing_fresh_generation_qc',
+        overrideAllowed: false,
       };
     }
 
@@ -605,6 +608,7 @@ function checkQcGate(caseId, generationRunId, config) {
         highMessages: [],
         recommendation: 'blocked',
         reason: 'missing_qc_run',
+        overrideAllowed: false,
       };
     }
 
@@ -617,6 +621,7 @@ function checkQcGate(caseId, generationRunId, config) {
       highMessages: [],
       recommendation: 'proceed',
       reason: 'no_qc_run',
+      overrideAllowed: true,
     };
   }
 
@@ -659,6 +664,7 @@ function checkQcGate(caseId, generationRunId, config) {
     highMessages: highFindings.map(f => f.brief_message || f.message || 'High finding'),
     recommendation,
     reason: blockerCount > 0 ? 'blocker_findings' : (highCount > 0 ? 'high_findings' : 'clean'),
+    overrideAllowed: blockerCount > 0,
   };
 }
 

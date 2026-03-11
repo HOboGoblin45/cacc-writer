@@ -59,6 +59,8 @@ router.post('/insertion/prepare', (req, res) => {
       run: result.run,
       items: result.items,
       qcGate: result.qcGate,
+      blocked: !result.qcGate.passed,
+      overrideAllowed: result.qcGate.overrideAllowed !== false,
       profile: result.profile,
       totalFields: result.items.length,
     });
@@ -122,13 +124,18 @@ router.post('/insertion/run', async (req, res) => {
       config: config || {},
     });
 
-    // If QC gate blocked and not overridden
-    if (!prepared.qcGate.passed && !(config || {}).skipQcBlockers) {
+    const canBypassQcGate = !!(config || {}).skipQcBlockers && prepared.qcGate.overrideAllowed !== false;
+
+    // If QC gate blocked and not (or cannot be) overridden
+    if (!prepared.qcGate.passed && !canBypassQcGate) {
       return res.json({
         run: prepared.run,
         qcGate: prepared.qcGate,
         blocked: true,
-        message: 'QC gate blocked insertion - review qcGate details or set skipQcBlockers',
+        overrideAllowed: prepared.qcGate.overrideAllowed !== false,
+        message: prepared.qcGate.overrideAllowed === false
+          ? 'QC gate blocked insertion - run QC for this generation before insertion'
+          : 'QC gate blocked insertion - review qcGate details or set skipQcBlockers',
       });
     }
 
