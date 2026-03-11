@@ -411,6 +411,31 @@ await test('GET /api/templates/neighborhood returns templates', async () => {
   assert(Array.isArray(body.templates), 'templates should be an array');
 });
 
+// ── 6b. Canonical Migration ───────────────────────────────────────────────────
+console.log('\n6b. Canonical Migration');
+
+await test('GET /api/cases/migration/status returns backfill status', async () => {
+  const { status, body } = await api('GET', '/api/cases/migration/status?integrity=1&integrityLimit=25');
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/migration/status');
+  assert(typeof body.filesystemCaseCount === 'number', 'filesystemCaseCount should be number');
+  assert(typeof body.canonicalCaseCount === 'number', 'canonicalCaseCount should be number');
+  assert(typeof body.missingCanonicalCount === 'number', 'missingCanonicalCount should be number');
+  assert(Array.isArray(body.missingCanonicalCaseIds), 'missingCanonicalCaseIds should be array');
+});
+
+await test('POST /api/cases/migration/backfill supports targeted idempotent backfill', async () => {
+  const { status, body } = await api('POST', '/api/cases/migration/backfill', {
+    caseIds: [testCaseId],
+    verifyAfterWrite: true,
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/cases/migration/backfill');
+  assert(body.totalProcessed === 1, `Expected totalProcessed=1, got ${body.totalProcessed}`);
+  assert(body.failed === 0, 'failed should be 0');
+  assert(Array.isArray(body.results) && body.results.length === 1, 'results should contain one entry');
+});
+
 // ── 7. Agent Status ───────────────────────────────────────────────────────────
 console.log('\n7. Agent Status');
 
@@ -524,3 +549,4 @@ console.log('══════════════════════�
 
 await serverHarness.stop();
 process.exit(failed > 0 ? 1 : 0);
+

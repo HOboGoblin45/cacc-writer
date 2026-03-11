@@ -53,6 +53,8 @@ import {
   deleteCanonicalCaseRecord,
   updateCaseFactProvenance,
   getCaseFactProvenance,
+  runCanonicalBackfill,
+  getCanonicalBackfillStatus,
 } from '../caseRecord/caseRecordService.js';
 import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
@@ -111,6 +113,12 @@ const factsSchema = z.record(z.unknown());
 const factSourcesSchema = z.object({
   sources: z.record(z.unknown()).optional(),
   replace: z.boolean().optional(),
+}).passthrough();
+
+const migrationBackfillSchema = z.object({
+  caseIds: z.array(z.string().regex(/^[a-f0-9]{8}$/i)).max(500).optional(),
+  verifyAfterWrite: z.boolean().optional(),
+  limit: z.number().int().min(1).max(5000).optional(),
 }).passthrough();
 
 function parsePayload(schema, payload, res) {
@@ -302,6 +310,37 @@ router.get('/records', (_req, res) => {
 });
 
 // ── GET /:caseId/record — Canonical case projection ──────────────────────────
+router.get('/migration/status', (req, res) => {
+  try {
+    const includeIntegrity = ['1', 'true', 'yes'].includes(String(req.query.integrity || '').toLowerCase());
+    const requestedLimit = Number.parseInt(String(req.query.integrityLimit || ''), 10);
+    const integrityLimit = Number.isInteger(requestedLimit) && requestedLimit > 0
+      ? Math.min(requestedLimit, 5000)
+      : null;
+
+    const status = getCanonicalBackfillStatus({ includeIntegrity, integrityLimit });
+    res.json({ ok: true, ...status });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/migration/backfill', (req, res) => {
+  const body = parsePayload(migrationBackfillSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const result = runCanonicalBackfill({
+      caseIds: body.caseIds || null,
+      verifyAfterWrite: body.verifyAfterWrite !== false,
+      limit: body.limit || null,
+    });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/:caseId/record', (req, res) => {
   try {
     const projection = getCaseProjection(req.params.caseId);

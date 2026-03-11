@@ -228,6 +228,101 @@ await test('updateCaseFactProvenance persists canonical + compatibility file', (
   assert.equal(fromDisk['subject.yearBuilt'].sourceId, 'assessor-record-2026.pdf');
 });
 
+await test('runCanonicalBackfill inserts missing canonical records from filesystem', () => {
+  const caseId = uniqueCaseId(casePath);
+  createFilesystemCase(caseId, {
+    address: '701 Backfill Way, Bloomington, IL',
+    facts: { subject: { siteSizeSqFt: 12000 } },
+  });
+
+  const before = repo.getCaseAggregate(caseId);
+  assert.equal(before, null, 'expected no canonical row before backfill');
+
+  const result = service.runCanonicalBackfill({
+    caseIds: [caseId],
+    verifyAfterWrite: true,
+  });
+
+  assert.equal(result.inserted, 1, 'expected inserted count to be 1');
+  assert.equal(result.updated, 0, 'expected updated count to be 0');
+  assert.equal(result.failed, 0, 'expected no failures');
+  assert.equal(result.results[0].status, 'inserted');
+
+  const after = repo.getCaseAggregate(caseId);
+  assert.ok(after, 'expected canonical row after backfill');
+  assert.equal(after.facts.subject.siteSizeSqFt, 12000);
+});
+
+await test('runCanonicalBackfill is idempotent on rerun (unchanged)', () => {
+  const caseId = uniqueCaseId(casePath);
+  createFilesystemCase(caseId, {
+    address: '702 Idempotent Ct, Bloomington, IL',
+    facts: { subject: { yearBuilt: 2003 } },
+  });
+
+  const first = service.runCanonicalBackfill({
+    caseIds: [caseId],
+    verifyAfterWrite: true,
+  });
+  assert.equal(first.inserted, 1);
+
+  const second = service.runCanonicalBackfill({
+    caseIds: [caseId],
+    verifyAfterWrite: true,
+  });
+  assert.equal(second.inserted, 0);
+  assert.equal(second.updated, 0);
+  assert.equal(second.unchanged, 1);
+  assert.equal(second.failed, 0);
+  assert.equal(second.results[0].status, 'unchanged');
+});
+
+await test('checkCanonicalCaseIntegrity detects drift and backfill repairs it', () => {
+  const caseId = uniqueCaseId(casePath);
+  createFilesystemCase(caseId, {
+    address: '703 Drift Ln, Bloomington, IL',
+    facts: { subject: { bedroomCount: 3 } },
+  });
+  service.syncCaseRecordFromFilesystem(caseId);
+
+  const drifted = repo.getCaseAggregate(caseId);
+  drifted.facts = { subject: { bedroomCount: 5 } };
+  repo.saveCaseAggregate({
+    caseId,
+    meta: drifted.meta,
+    facts: drifted.facts,
+    provenance: drifted.provenance,
+    outputs: drifted.outputs,
+    history: drifted.history,
+  });
+
+  const integrityBefore = service.checkCanonicalCaseIntegrity(caseId);
+  assert.equal(integrityBefore.ok, false, 'expected mismatch before repair');
+  assert.equal(integrityBefore.reason, 'digest_mismatch');
+
+  const repair = service.runCanonicalBackfill({
+    caseIds: [caseId],
+    verifyAfterWrite: true,
+  });
+  assert.equal(repair.updated, 1, 'expected one updated record during repair');
+  assert.equal(repair.failed, 0, 'expected repair without failures');
+
+  const integrityAfter = service.checkCanonicalCaseIntegrity(caseId);
+  assert.equal(integrityAfter.ok, true, 'expected integrity to match after repair');
+});
+
+await test('getCanonicalBackfillStatus reports missing canonical cases', () => {
+  const caseId = uniqueCaseId(casePath);
+  createFilesystemCase(caseId, {
+    address: '704 Missing Canonical Ave, Bloomington, IL',
+  });
+
+  const status = service.getCanonicalBackfillStatus();
+  assert.ok(Array.isArray(status.missingCanonicalCaseIds), 'missing list should be an array');
+  assert.ok(status.missingCanonicalCaseIds.includes(caseId), 'expected unsynced case in missing list');
+  assert.ok(status.missingCanonicalCount >= 1, 'expected at least one missing canonical record');
+});
+
 const counts = db.getTableCounts();
 await test('database status exposes new canonical tables', () => {
   assert.ok(Object.prototype.hasOwnProperty.call(counts, 'case_records'));
