@@ -30,6 +30,40 @@
         { "factPath": "site.zoning", "value": "R-3" },
         { "factPath": "site.zoningConformity", "value": "legal_nonconforming" }
       ]
+    },
+    {
+      "id": "extract-assessor-core",
+      "docType": "assessor_record",
+      "text": "County Assessor Record\nParcel # 01-01-100-123\nAssessed Value: $312,400\nYear Built: 1998\nLiving Area: 1540\nLot Size: 8,200 sf\nTax Year: 2025",
+      "expectedFacts": [
+        { "factPath": "subject.parcelNumber", "value": "01-01-100-123" },
+        { "factPath": "subject.assessedValue", "value": "312400" },
+        { "factPath": "subject.yearBuilt", "value": "1998" },
+        { "factPath": "subject.gla", "value": "1540" }
+      ]
+    },
+    {
+      "id": "extract-flood-core",
+      "docType": "flood_document",
+      "text": "Flood Determination\nFlood Zone: AE\nPanel Number: 17031C0123F\nMap Date: 08/02/2019\nCommunity Number: 170310",
+      "expectedFacts": [
+        { "factPath": "site.floodZone", "value": "AE" },
+        { "factPath": "site.floodMapNumber", "value": "17031C0123F" },
+        { "factPath": "site.floodMapDate", "value": "2019-08-02" },
+        { "factPath": "site.floodCommunityNumber", "value": "170310" }
+      ]
+    },
+    {
+      "id": "extract-order-sheet-basic",
+      "docType": "order_sheet",
+      "text": "Order Sheet\nBorrower: Jordan Smith\nSubject Address: 255 Lake Dr, Aurora, IL\nLender: First Horizon Bank\nLoan Program: FHA\nDue Date: 03/15/2026",
+      "expectedFacts": [
+        { "factPath": "assignment.borrower", "value": "Jordan Smith" },
+        { "factPath": "subject.address", "value": "255 Lake Dr, Aurora, IL" },
+        { "factPath": "assignment.lenderName", "value": "First Horizon Bank" },
+        { "factPath": "assignment.loanProgram", "value": "FHA" },
+        { "factPath": "assignment.dueDate", "value": "2026-03-15" }
+      ]
     }
   ],
   "gateFixtures": [
@@ -50,6 +84,28 @@
         "ok": false,
         "blockers": [
           { "type": "pending_fact_reviews" }
+        ]
+      }
+    },
+    {
+      "id": "gate-block-conflict",
+      "expectedOk": false,
+      "expectedBlockerTypes": ["blocker_fact_conflicts"],
+      "gateResult": {
+        "ok": false,
+        "blockers": [
+          { "type": "blocker_fact_conflicts" }
+        ]
+      }
+    },
+    {
+      "id": "gate-block-compliance",
+      "expectedOk": false,
+      "expectedBlockerTypes": ["compliance_hard_rules"],
+      "gateResult": {
+        "ok": false,
+        "blockers": [
+          { "type": "compliance_hard_rules" }
         ]
       }
     }

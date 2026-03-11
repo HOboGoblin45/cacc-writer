@@ -24,6 +24,7 @@ const suites = [
   'caseRecordService.test.mjs',
   'accuracyBenchmarks.test.mjs',
   'benchmarkRunner.test.mjs',
+  'benchmarkThresholds.test.mjs',
   'factIntegrity.test.mjs',
   'documentIntake.test.mjs',
   'ingestJobService.test.mjs',

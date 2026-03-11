@@ -35,6 +35,9 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Phase C benchmark threshold gate
+        run: npm run benchmark:phase-c:check
+
       - name: Smoke tests
         run: npm run test:smoke
 

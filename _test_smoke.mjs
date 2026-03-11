@@ -445,6 +445,8 @@ await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot'
   assert(typeof body.cached === 'boolean', 'cached should be boolean');
   assert(typeof body.results === 'object', 'results should be an object');
   assert(typeof body.results.summary === 'object', 'results.summary should be an object');
+  assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
+  assert(typeof body.qualityGate.ok === 'boolean', 'qualityGate.ok should be boolean');
 });
 
 await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run', async () => {
@@ -454,6 +456,7 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
   assert(body.persisted === false, 'persisted should be false when persist=false');
   assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
   assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
+  assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
 });
 
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
