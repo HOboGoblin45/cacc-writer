@@ -13,16 +13,15 @@
  * Only transient/debug/cache artifacts are cleaned up.
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { getDb } from '../db/database.js';
+import {
+  getCaseProjection,
+  listCaseProjections,
+  saveCaseProjection,
+} from '../caseRecord/caseRecordService.js';
 import { purgeMetrics } from './operationsRepo.js';
 import { emitCaseEvent, emitSystemEvent } from './auditLogger.js';
 import log from '../logger.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CASES_DIR = path.join(__dirname, '..', '..', 'cases');
 
 // ── Default Retention Policy ──────────────────────────────────────────────────
 
@@ -45,21 +44,23 @@ const DEFAULT_POLICY = {
  */
 export function archiveCase(caseId) {
   try {
-    const metaPath = path.join(CASES_DIR, caseId, 'meta.json');
-    if (!fs.existsSync(metaPath)) {
+    const projection = getCaseProjection(caseId);
+    if (!projection) {
       return { success: false, message: `Case ${caseId} not found` };
     }
 
-    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-    const previousStatus = meta.status;
+    const now = new Date().toISOString();
+    const meta = { ...(projection.meta || {}) };
+    const previousStatus = meta.status || 'active';
 
     if (meta.status === 'archived') {
       return { success: true, message: 'Case already archived' };
     }
 
     meta.status = 'archived';
-    meta.archivedAt = new Date().toISOString();
+    meta.archivedAt = now;
     meta.previousStatus = previousStatus;
+    meta.updatedAt = now;
 
     // Add to pipeline history
     if (!meta.pipelineHistory) meta.pipelineHistory = [];
@@ -69,7 +70,15 @@ export function archiveCase(caseId) {
       from: previousStatus,
     });
 
-    fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf8');
+    saveCaseProjection({
+      caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    }, { writeLegacyFiles: true });
 
     emitCaseEvent(caseId, 'case.archived', `Case archived (was: ${previousStatus})`, {
       previousStatus,
@@ -92,12 +101,13 @@ export function archiveCase(caseId) {
  */
 export function restoreCase(caseId) {
   try {
-    const metaPath = path.join(CASES_DIR, caseId, 'meta.json');
-    if (!fs.existsSync(metaPath)) {
+    const projection = getCaseProjection(caseId);
+    if (!projection) {
       return { success: false, message: `Case ${caseId} not found` };
     }
 
-    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const now = new Date().toISOString();
+    const meta = { ...(projection.meta || {}) };
 
     if (meta.status !== 'archived') {
       return { success: true, message: `Case is not archived (status: ${meta.status})` };
@@ -105,7 +115,8 @@ export function restoreCase(caseId) {
 
     const restoredStatus = meta.previousStatus || 'active';
     meta.status = restoredStatus;
-    meta.restoredAt = new Date().toISOString();
+    meta.restoredAt = now;
+    meta.updatedAt = now;
     delete meta.previousStatus;
 
     if (!meta.pipelineHistory) meta.pipelineHistory = [];
@@ -116,7 +127,15 @@ export function restoreCase(caseId) {
       to: restoredStatus,
     });
 
-    fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf8');
+    saveCaseProjection({
+      caseId,
+      meta,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      outputs: projection.outputs || {},
+      history: projection.history || {},
+      docText: projection.docText || {},
+    }, { writeLegacyFiles: true });
 
     emitCaseEvent(caseId, 'case.restored', `Case restored to ${restoredStatus}`, {
       restoredStatus,
@@ -137,32 +156,19 @@ export function restoreCase(caseId) {
  * @returns {Array<{ caseId: string, archivedAt: string, address: string }>}
  */
 export function listArchivedCases() {
-  const archived = [];
   try {
-    if (!fs.existsSync(CASES_DIR)) return archived;
-
-    const dirs = fs.readdirSync(CASES_DIR).filter(f => {
-      return fs.statSync(path.join(CASES_DIR, f)).isDirectory();
-    });
-
-    for (const dir of dirs) {
-      try {
-        const metaPath = path.join(CASES_DIR, dir, 'meta.json');
-        if (!fs.existsSync(metaPath)) continue;
-        const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-        if (meta.status === 'archived') {
-          archived.push({
-            caseId: dir,
-            archivedAt: meta.archivedAt || null,
-            address: meta.address || meta.subject?.address || 'Unknown',
-            formType: meta.formType || meta.form_type || 'unknown',
-          });
-        }
-      } catch (err) { log.warn('retention:list-read-case', { dir, error: err.message }); }
-    }
-  } catch (err) { log.warn('retention:list-archived', { error: err.message }); }
-
-  return archived;
+    return listCaseProjections()
+      .filter(p => p?.meta?.status === 'archived')
+      .map(p => ({
+        caseId: p.caseId,
+        archivedAt: p.meta?.archivedAt || null,
+        address: p.meta?.address || p.meta?.subject?.address || 'Unknown',
+        formType: p.meta?.formType || p.meta?.form_type || 'unknown',
+      }));
+  } catch (err) {
+    log.warn('retention:list-archived', { error: err.message });
+    return [];
+  }
 }
 
 // ── Transient Cleanup ─────────────────────────────────────────────────────────
