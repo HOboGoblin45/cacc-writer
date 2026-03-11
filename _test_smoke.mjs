@@ -381,6 +381,36 @@ await test('GET /api/cases/:caseId/fact-conflicts returns conflict summary', asy
   assert(Array.isArray(body.conflicts), 'conflicts should be an array');
 });
 
+await test('GET /api/cases/:caseId/fact-review-queue returns decision queue', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/fact-review-queue`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/fact-review-queue');
+  assert(typeof body.queue === 'object', 'queue should be an object');
+  assert(typeof body.queue.summary === 'object', 'queue.summary should be an object');
+  assert(Array.isArray(body.queue.pendingFactGroups), 'queue.pendingFactGroups should be an array');
+});
+
+await test('POST /api/cases/:caseId/fact-review-queue/resolve accepts manual decision', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/fact-review-queue/resolve`, {
+    factPath: 'subject.address',
+    selectedValue: '123 Test St',
+    sourceType: 'manual',
+    note: 'Smoke test manual confirmation',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/cases/:caseId/fact-review-queue/resolve');
+  assert(body.result?.factPath === 'subject.address', 'result.factPath should match request');
+  assert(body.result?.sourceType === 'manual', 'sourceType should be manual');
+});
+
+await test('POST /api/cases/:caseId/fact-review-queue/resolve rejects missing selectedValue', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/fact-review-queue/resolve`, {
+    factPath: 'subject.address',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+});
+
 await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/pre-draft-check`);
   assert(status === 200, `Expected 200, got ${status}`);
