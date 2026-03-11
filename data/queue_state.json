@@ -1,0 +1,35 @@
+{
+  "queue": [
+    {
+      "jobId": "266574a3-827b-4c7e-9d9c-e9d3ec01eef2",
+      "batchId": "157a6286-ea87-4e03-9675-085ef51896e5",
+      "caseId": "test-case-1",
+      "formType": null,
+      "status": "failed",
+      "runId": "58db13c0-0d6d-4be1-a63f-3ee39bc12609",
+      "error": "Case directory not found: test-case-1",
+      "durationMs": 13,
+      "queuedAt": "2026-03-11T04:23:14.646Z",
+      "startedAt": "2026-03-11T04:23:14.647Z",
+      "completedAt": "2026-03-11T04:23:14.660Z",
+      "retryAttempt": 0,
+      "sectionsTotal": null,
+      "sectionsCompleted": null,
+      "sectionsFailed": null
+    }
+  ],
+  "batches": {
+    "723f37a2-80ea-4b47-b961-507a7012106e": "[\"ee1d0869-b952-4fc3-9fd6-c571e7c67d0f\",\"586917cd-2162-4cf1-b103-6f24597357ec\"]",
+    "9c1a9033-7409-40d1-8030-63bd5d0b7a3b": "[\"e6c23cab-3d68-4c34-a3c4-c6dad030f3e7\"]",
+    "d6b781b1-8d1b-4ca2-803a-a183e5ebb73f": "[\"562d558a-7c5a-4ad5-b1aa-6295c756363b\"]",
+    "b7f0d2fb-460f-4898-89aa-d677557b9b87": "[\"ede6dc9a-8dde-4d08-8288-37f75a204253\"]",
+    "d8c7cab1-c084-4b82-b69b-99d85e07d228": "[\"c01b868b-309f-43c4-90a2-ed5f60f1f731\"]",
+    "8a3e84b0-1738-4b47-be8c-de81da7410b2": "[\"80efb3c4-d3ed-415f-8213-621a1e2f6bb7\",\"a7089270-be5b-4f49-9f8f-150805971e7c\"]",
+    "157a6286-ea87-4e03-9675-085ef51896e5": "[\"266574a3-827b-4c7e-9d9c-e9d3ec01eef2\",\"3c5ad2dd-69e1-4159-9007-096ce9d932bb\"]",
+    "0d988c9d-7f82-49f1-8451-ad195ca87eb0": "[\"bf259f51-6d24-449c-958e-9c3d4e3d3e35\"]",
+    "2d016133-644f-4b76-bcfb-4e37065799b8": "[\"e1f21445-3847-40a9-8e8c-010fd2962d25\"]",
+    "54b3994e-8130-4815-92b7-5e2db0431994": "[\"9741c9c1-8991-4cc7-8eb3-7d8576362979\"]",
+    "82215c6b-772a-441f-b72e-cec1f2d5f39c": "[\"09f9cb77-b363-4fab-8159-d20f6f3f7481\"]",
+    "c2961d49-87c6-4cd0-9f98-d6c6eee2fe20": "[\"ffd2f6fe-bd59-4530-a474-958d129efe47\",\"a5bf54e9-034f-477c-9137-4b2a8b4e0eb6\"]"
+  }
+}
