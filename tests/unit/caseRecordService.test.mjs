@@ -65,6 +65,7 @@ function createFilesystemCase(caseId, seed = {}) {
 
   writeJSON(path.join(caseDir, 'meta.json'), meta);
   writeJSON(path.join(caseDir, 'facts.json'), seed.facts || { subject: { address: meta.address } });
+  writeJSON(path.join(caseDir, 'fact_sources.json'), seed.provenance || {});
   writeJSON(path.join(caseDir, 'outputs.json'), seed.outputs || {
     neighborhood: {
       title: 'Neighborhood',
@@ -145,6 +146,7 @@ await test('syncCaseRecordFromFilesystem backfills canonical tables from case fo
   const { meta } = createFilesystemCase(caseId, {
     address: '902 Sync Ave, Bloomington, IL',
     facts: { subject: { gla: 1880 } },
+    provenance: { 'subject.gla': { sourceType: 'document', sourceId: 'assessor.pdf' } },
   });
 
   const projection = service.syncCaseRecordFromFilesystem(caseId);
@@ -157,6 +159,8 @@ await test('syncCaseRecordFromFilesystem backfills canonical tables from case fo
   assert.ok(agg, 'aggregate should be persisted');
   assert.equal(agg.meta.address, meta.address);
   assert.equal(agg.facts.subject.gla, 1880);
+  assert.equal(agg.provenance['subject.gla'].sourceId, 'assessor.pdf');
+  assert.equal(projection.caseRecord.evidence.factProvenance['subject.gla'].sourceId, 'assessor.pdf');
 });
 
 await test('getCaseProjection serves DB-backed facts even if facts.json is removed', () => {
@@ -199,6 +203,29 @@ await test('deleteCanonicalCaseRecord removes aggregate row', () => {
   service.deleteCanonicalCaseRecord(caseId);
   agg = repo.getCaseAggregate(caseId);
   assert.equal(agg, null);
+});
+
+await test('updateCaseFactProvenance persists canonical + compatibility file', () => {
+  const caseId = uniqueCaseId(casePath);
+  const { caseDir } = createFilesystemCase(caseId, {
+    facts: { subject: { yearBuilt: 1998 } },
+  });
+  service.syncCaseRecordFromFilesystem(caseId);
+
+  const updated = service.updateCaseFactProvenance(caseId, {
+    'subject.yearBuilt': {
+      sourceType: 'document',
+      sourceId: 'assessor-record-2026.pdf',
+      confidence: 'high',
+    },
+  });
+
+  assert.ok(updated, 'expected updated projection');
+  assert.equal(updated.provenance['subject.yearBuilt'].sourceId, 'assessor-record-2026.pdf');
+
+  const sourceFile = path.join(caseDir, 'fact_sources.json');
+  const fromDisk = JSON.parse(fs.readFileSync(sourceFile, 'utf8'));
+  assert.equal(fromDisk['subject.yearBuilt'].sourceId, 'assessor-record-2026.pdf');
 });
 
 const counts = db.getTableCounts();
