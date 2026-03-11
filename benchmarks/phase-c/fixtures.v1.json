@@ -1,0 +1,57 @@
+{
+  "version": "phase-c.v1",
+  "extractionFixtures": [
+    {
+      "id": "extract-contract-basic",
+      "docType": "contract",
+      "text": "Purchase Contract\nContract Date: 01/02/2026\nPurchase Price: $525,000\nClosing Date: 02/14/2026",
+      "expectedFacts": [
+        { "factPath": "contract.salePrice", "value": "525000" },
+        { "factPath": "contract.contractDate", "value": "2026-01-02" },
+        { "factPath": "contract.closingDate", "value": "2026-02-14" }
+      ]
+    },
+    {
+      "id": "extract-mls-core",
+      "docType": "mls_sheet",
+      "text": "MLS Listing Sheet\nAddress: 101 Market St\nList Price: $410,000\nDOM: 9\nGLA: 1820\nYear Built: 2004",
+      "expectedFacts": [
+        { "factPath": "subject.address", "value": "101 Market St" },
+        { "factPath": "market.listPrice", "value": "410000" },
+        { "factPath": "market.dom", "value": "9" },
+        { "factPath": "subject.gla", "value": "1820" }
+      ]
+    },
+    {
+      "id": "extract-zoning-legal-nc",
+      "docType": "zoning_document",
+      "text": "Zoning Classification: R-3\nPermitted Use: Residential\nThe subject is a legal nonconforming use under current ordinance.",
+      "expectedFacts": [
+        { "factPath": "site.zoning", "value": "R-3" },
+        { "factPath": "site.zoningConformity", "value": "legal_nonconforming" }
+      ]
+    }
+  ],
+  "gateFixtures": [
+    {
+      "id": "gate-pass-clean",
+      "expectedOk": true,
+      "expectedBlockerTypes": [],
+      "gateResult": {
+        "ok": true,
+        "blockers": []
+      }
+    },
+    {
+      "id": "gate-block-pending-facts",
+      "expectedOk": false,
+      "expectedBlockerTypes": ["pending_fact_reviews"],
+      "gateResult": {
+        "ok": false,
+        "blockers": [
+          { "type": "pending_fact_reviews" }
+        ]
+      }
+    }
+  ]
+}

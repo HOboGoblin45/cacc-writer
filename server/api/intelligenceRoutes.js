@@ -26,6 +26,11 @@ import {
   getCanonicalFieldStats,
   getAllCanonicalFields,
 } from '../intelligence/index.js';
+import {
+  runPhaseCBenchmarksFromFile,
+  readPhaseCBenchmarkResults,
+  writePhaseCBenchmarkResults,
+} from '../factIntegrity/benchmarkRunner.js';
 import log from '../logger.js';
 
 const router = Router();
@@ -177,6 +182,55 @@ router.get('/intelligence/manifest-summaries', (_req, res) => {
     ok: true,
     summaries: getManifestSummaries(),
   });
+});
+
+// —— GET /intelligence/benchmarks/phase-c ——————————————————————————————————————
+/**
+ * Return latest persisted Phase C benchmark results.
+ * If no snapshot exists yet, runs benchmarks once and returns ephemeral results.
+ */
+router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
+  try {
+    const cached = readPhaseCBenchmarkResults();
+    if (cached) {
+      return res.json({
+        ok: true,
+        cached: true,
+        results: cached,
+      });
+    }
+
+    const run = await runPhaseCBenchmarksFromFile();
+
+    res.json({
+      ok: true,
+      cached: false,
+      results: run.results,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// —— POST /intelligence/benchmarks/phase-c/run ————————————————————————————————
+/**
+ * Force-run Phase C benchmarks and optionally persist the snapshot.
+ * Query param: ?persist=false to skip file write.
+ */
+router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
+  try {
+    const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
+    const run = await runPhaseCBenchmarksFromFile();
+    if (persist) writePhaseCBenchmarkResults(run.results);
+
+    res.json({
+      ok: true,
+      persisted: persist,
+      results: run.results,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

@@ -19,6 +19,7 @@
     "workflow:dev": "tsx server/workflow/appraisalWorkflow.ts",
     "validate:registry": "node scripts/validateFieldRegistry.js",
     "test:unit": "node tests/unit/run.mjs",
+    "benchmark:phase-c": "node scripts/runPhaseCBenchmarks.mjs",
     "test:all": "node tests/unit/run.mjs && node _test_smoke.mjs",
     "ci:check": "npm run typecheck && npm run test:unit && npm run test:smoke"
   },
