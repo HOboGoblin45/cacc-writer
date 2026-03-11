@@ -26,7 +26,7 @@
     "@langchain/langgraph": "^1.2.2",
     "@langchain/openai": "^1.2.12",
     "@napi-rs/canvas": "^0.1.96",
-    "@pinecone-database/pinecone": "^3.0.0",
+    "@pinecone-database/pinecone": "^7.1.0",
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
