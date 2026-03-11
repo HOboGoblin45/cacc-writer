@@ -21,6 +21,7 @@
  */
 
 import 'dotenv/config';
+import log from '../logger.js';
 import { logAutomation, logWorkflowRun } from '../observability/langfuse.js';
 import { aciTool }          from '../tools/aciTool.js';
 import { realQuantumTool }  from '../tools/realQuantumTool.js';
@@ -100,12 +101,12 @@ export async function verifyInsertion(state: WorkflowState): Promise<Verificatio
 
   if (!result.passed) {
     if (retryCount === 0) {
-      console.warn(`[verificationAgent] Verification FAILED for ${fieldId} — will retry insertion (attempt 1)`);
+      log.warn('verificationAgent:failed', { fieldId, message: 'will retry insertion (attempt 1)' });
     } else {
-      console.error(`[verificationAgent] Verification FAILED for ${fieldId} after retry — stopping workflow for this field`);
+      log.error('verificationAgent:failed-final', { fieldId, message: 'stopping workflow for this field' });
     }
   } else {
-    console.log(`[verificationAgent] ✓ Verification PASSED for ${fieldId}`);
+    log.info('verificationAgent:passed', { fieldId });
   }
 
   return result;
@@ -135,7 +136,7 @@ export async function retryInsertion(state: WorkflowState): Promise<InsertionRes
   }
 
   const software = getSoftwareForForm(formType);
-  console.log(`[verificationAgent] Retrying insertion for ${fieldId} (attempt 2)`);
+  log.info('verificationAgent:retry', { fieldId, attempt: 2 });
 
   try {
     if (software === 'aci') {

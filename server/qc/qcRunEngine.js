@@ -246,7 +246,7 @@ export async function runQC({ caseId, generationRunId }) {
         }
       } catch (err) {
         // Rule execution failure — log but don't abort the run
-        console.error(`[qcRunEngine] Rule ${rule.ruleId} failed:`, err.message);
+        log.error('qcRunEngine:rule-failed', { ruleId: rule.ruleId, error: err.message });
         rawFindings.push({
           ruleId: rule.ruleId,
           severity: 'advisory',

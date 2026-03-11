@@ -19,6 +19,7 @@ import { Router } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -59,7 +60,7 @@ router.post('/agents/aci/start', (_req, res) => {
   const proc   = spawn('python', [script], { stdio: 'pipe' });
   _agentProcs.aci = proc;
   proc.on('exit', () => { _agentProcs.aci = null; });
-  proc.stderr?.on('data', d => console.error('[aci-agent]', d.toString().trim()));
+  proc.stderr?.on('data', d => log.warn('aci-agent:stderr', { output: d.toString().trim() }));
   res.json({ ok: true, message: 'ACI agent starting…' });
 });
 
@@ -82,7 +83,7 @@ router.post('/agents/rq/start', (_req, res) => {
   const proc   = spawn('python', [script], { stdio: 'pipe' });
   _agentProcs.rq = proc;
   proc.on('exit', () => { _agentProcs.rq = null; });
-  proc.stderr?.on('data', d => console.error('[rq-agent]', d.toString().trim()));
+  proc.stderr?.on('data', d => log.warn('rq-agent:stderr', { output: d.toString().trim() }));
   res.json({ ok: true, message: 'RQ agent starting…' });
 });
 
@@ -133,7 +134,7 @@ router.post('/insert-aci', async (req, res) => {
         error: 'ACI automation agent is not running. Start desktop_agent/agent.py first.',
       });
     }
-    console.error('[/api/insert-aci]', err.message);
+    log.error('api:insert-aci', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
@@ -176,7 +177,7 @@ router.post('/insert-rq', async (req, res) => {
         error: 'Real Quantum agent is not running. Start real_quantum_agent/agent.py first.',
       });
     }
-    console.error('[/api/insert-rq]', err.message);
+    log.error('api:insert-rq', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });

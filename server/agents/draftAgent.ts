@@ -23,6 +23,7 @@
  */
 
 import 'dotenv/config';
+import log from '../logger.js';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { wrapWithTrace } from '../observability/langsmith.js';
@@ -100,7 +101,7 @@ async function _draftSection(state: WorkflowState): Promise<DraftOutput> {
       topK:      5,
     });
   } catch (err: any) {
-    console.warn(`[draftAgent] Example retrieval failed (non-fatal): ${err.message}`);
+    log.warn('draftAgent:retrieval-failed', { error: err.message });
   }
 
   // ── Step 2: Build prompt using existing pipeline ──────────────────────────

@@ -30,6 +30,7 @@
 //   section_jobs.retrieval_source_ids_json — stores example IDs used per section
 //   section_jobs.estimated_cost_usd      — optional cost tracking
 
+import log from '../logger.js';
 import { initPhase6Schema } from '../migration/phase6Schema.js';
 import { initPhase7Schema } from '../migration/phase7Schema.js';
 import { initPhase9Schema } from '../migration/phase9Schema.js';
@@ -479,27 +480,27 @@ export function initSchema(db) {
   try {
     initPhase6Schema(db);
   } catch (err) {
-    console.error('[schema] Phase 6 schema init failed (non-fatal):', err.message);
+    log.error('schema:phase6-init', { error: err.message });
   }
 
   // Run Phase 7 schema additions (QC tables)
   try {
     initPhase7Schema(db);
   } catch (err) {
-    console.error('[schema] Phase 7 schema init failed (non-fatal):', err.message);
+    log.error('schema:phase7-init', { error: err.message });
   }
 
   // Run Phase 9 schema additions (insertion tracking + destination profiles)
   try {
     initPhase9Schema(db);
   } catch (err) {
-    console.error('[schema] Phase 9 schema init failed (non-fatal):', err.message);
+    log.error('schema:phase9-init', { error: err.message });
   }
 
   // Run Phase 10 schema additions (business operations layer)
   try {
     initPhase10Schema(db);
   } catch (err) {
-    console.error('[schema] Phase 10 schema init failed (non-fatal):', err.message);
+    log.error('schema:phase10-init', { error: err.message });
   }
 }

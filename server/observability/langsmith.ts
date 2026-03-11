@@ -16,6 +16,7 @@
  */
 
 import 'dotenv/config';
+import log from '../logger.js';
 
 // ── Environment ───────────────────────────────────────────────────────────────
 
@@ -30,9 +31,9 @@ if (TRACING_ENABLED) {
   process.env.LANGCHAIN_API_KEY     = LANGSMITH_API_KEY;
   process.env.LANGCHAIN_PROJECT     = LANGSMITH_PROJECT;
   process.env.LANGCHAIN_ENDPOINT    = LANGSMITH_ENDPOINT;
-  console.log(`[langsmith] Tracing ENABLED → project: ${LANGSMITH_PROJECT}`);
+  log.info('langsmith:init', { detail: 'Tracing ENABLED', project: LANGSMITH_PROJECT });
 } else {
-  console.log('[langsmith] Tracing disabled. Set LANGCHAIN_TRACING_V2=true + LANGCHAIN_API_KEY to enable.');
+  log.info('langsmith:init', { detail: 'Tracing disabled. Set LANGCHAIN_TRACING_V2=true + LANGCHAIN_API_KEY to enable.' });
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────

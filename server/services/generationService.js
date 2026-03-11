@@ -15,7 +15,7 @@ import path from 'path';
 import { resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
-import { callAI } from '../openaiClient.js';
+import { callAI, estimateTokens, getContextWindowLimit } from '../openaiClient.js';
 import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { getNeighborhoodBoundaryFeatures, formatLocationContextBlock, LOCATION_CONTEXT_FIELDS } from '../neighborhoodContext.js';
@@ -128,6 +128,36 @@ export async function generateSection({
     assignmentMeta,
     extraContext,
   });
+
+  // Guard: warn if prompt is approaching context window limit
+  const estTokens = estimateTokens(messages);
+  const windowLimit = getContextWindowLimit();
+  const safeLimit = Math.floor(windowLimit * 0.85); // leave 15% for output
+  if (estTokens > safeLimit) {
+    log.warn('generation:context-window-warning', {
+      fieldId, estimatedTokens: estTokens, windowLimit, safeLimit,
+    });
+    // Trim examples to fit — remove lowest-priority examples first
+    while (messages.length > 4 && estimateTokens(messages) > safeLimit) {
+      // Find and remove the last examples block (Block 3b — lowest priority)
+      const exIdx = messages.findLastIndex(m =>
+        m.role === 'system' && (m.content || '').startsWith('SUPPLEMENTAL EXAMPLES')
+      );
+      if (exIdx > -1) {
+        messages.splice(exIdx, 1);
+        continue;
+      }
+      // Then try removing phrase bank entries
+      const phIdx = messages.findLastIndex(m =>
+        m.role === 'system' && (m.content || '').startsWith('APPROVED PHRASES')
+      );
+      if (phIdx > -1) {
+        messages.splice(phIdx, 1);
+        continue;
+      }
+      break; // don't remove system prompts, facts, or user request
+    }
+  }
 
   let text = await callAI(messages);
 
