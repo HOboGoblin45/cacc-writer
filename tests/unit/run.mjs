@@ -15,6 +15,11 @@ const suites = [
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',
   'middleware.test.mjs',
+  'logger.test.mjs',
+  'openaiClient.test.mjs',
+  'promptBuilder.test.mjs',
+  'generationService.test.mjs',
+  'reportQueue.test.mjs',
 ];
 
 let totalPassed = 0;

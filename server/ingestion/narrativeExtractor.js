@@ -24,6 +24,7 @@
 
 import crypto from 'crypto';
 import { callAI } from '../openaiClient.js';
+import log from '../logger.js';
 
 // ── Section header patterns ──────────────────────────────────────────────────
 // Maps regex patterns to canonical field IDs.
@@ -121,7 +122,7 @@ export async function extractNarrativeSections(text, formType = '1004') {
       return aiSections;
     }
   } catch (err) {
-    console.warn('[narrativeExtractor] AI extraction failed:', err.message);
+    log.warn('[narrativeExtractor] AI extraction failed:', err.message);
   }
 
   return deterministicSections;
@@ -218,7 +219,13 @@ async function extractByAI(text, formType, targetFields) {
   const end = cleaned.lastIndexOf('}');
   if (start === -1 || end === -1) return [];
 
-  const parsed = JSON.parse(cleaned.slice(start, end + 1));
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned.slice(start, end + 1));
+  } catch (err) {
+    log.warn('[narrativeExtractor] AI response JSON parse failed:', err.message);
+    return [];
+  }
   const sections = [];
 
   for (const fieldId of targetFields) {

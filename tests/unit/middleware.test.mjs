@@ -222,60 +222,65 @@ test('when ensureAI returns 503, body has ok:false', () => {
   // If next() was called instead, this test is vacuously satisfied
 });
 
-// ── ensureAI — live server integration ───────────────────────────────────────
+// ── ensureAI — live server integration (skipped if server not running) ────────
 
 console.log('\nensureAI — live server integration');
 
 const BASE = 'http://localhost:5178';
 
-await testAsync('AI-guarded endpoint does not return 503 (client initialized)', async () => {
-  // POST /api/generate is guarded by ensureAI.
-  // With a valid OPENAI_API_KEY the guard passes and we get 400 (missing params),
-  // not 503 (client unavailable).
-  const r = await fetch(BASE + '/api/generate', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({}),
-  });
-  assert.notEqual(r.status, 503,
-    'Expected ensureAI to pass through (client initialized), but got 503');
-  // Should be 400 — missing required params
-  assert.equal(r.status, 400,
-    'Expected 400 (missing params) after ensureAI passes, got ' + r.status);
-});
+// Check if server is reachable before running integration tests
+let serverAvailable = false;
+try {
+  const probe = await fetch(BASE + '/api/workflow/health', { signal: AbortSignal.timeout(2000) });
+  serverAvailable = probe.ok;
+} catch { /* server not running */ }
 
-await testAsync('AI-guarded endpoint returns JSON with ok:false on bad input', async () => {
-  const r = await fetch(BASE + '/api/generate', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({}),
+if (!serverAvailable) {
+  console.log('  SKIP (server not running at ' + BASE + ')');
+} else {
+  await testAsync('AI-guarded endpoint does not return 503 (client initialized)', async () => {
+    const r = await fetch(BASE + '/api/generate', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({}),
+    });
+    assert.notEqual(r.status, 503,
+      'Expected ensureAI to pass through (client initialized), but got 503');
+    assert.equal(r.status, 400,
+      'Expected 400 (missing params) after ensureAI passes, got ' + r.status);
   });
-  const j = await r.json();
-  assert.equal(j.ok, false);
-  assert.equal(typeof j.error, 'string');
-});
 
-await testAsync('review-section endpoint guarded by ensureAI passes through', async () => {
-  // Create a temp case first
-  const cr = await fetch(BASE + '/api/cases', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ address: 'Middleware Test', formType: '1004' }),
+  await testAsync('AI-guarded endpoint returns JSON with ok:false on bad input', async () => {
+    const r = await fetch(BASE + '/api/generate', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({}),
+    });
+    const j = await r.json();
+    assert.equal(j.ok, false);
+    assert.equal(typeof j.error, 'string');
   });
-  const cj = await cr.json();
-  const caseId = cj.caseId;
 
-  const r = await fetch(BASE + '/api/cases/' + caseId + '/review-section', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({}),  // missing draftText → 400
+  await testAsync('review-section endpoint guarded by ensureAI passes through', async () => {
+    const cr = await fetch(BASE + '/api/cases', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ address: 'Middleware Test', formType: '1004' }),
+    });
+    const cj = await cr.json();
+    const caseId = cj.caseId;
+
+    const r = await fetch(BASE + '/api/cases/' + caseId + '/review-section', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({}),
+    });
+    assert.notEqual(r.status, 503, 'ensureAI should pass through (client initialized)');
+    assert.equal(r.status, 400, 'Expected 400 for missing draftText');
+
+    await fetch(BASE + '/api/cases/' + caseId, { method: 'DELETE' });
   });
-  assert.notEqual(r.status, 503, 'ensureAI should pass through (client initialized)');
-  assert.equal(r.status, 400, 'Expected 400 for missing draftText');
-
-  // Cleanup
-  await fetch(BASE + '/api/cases/' + caseId, { method: 'DELETE' });
-});
+}
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 

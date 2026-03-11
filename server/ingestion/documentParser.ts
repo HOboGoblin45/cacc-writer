@@ -29,6 +29,7 @@ import 'dotenv/config';
 import { v4 as uuidv4 } from 'uuid';
 import { storeExample } from '../retrieval/llamaIndex.js';
 import { logWorkflowRun } from '../observability/langfuse.js';
+import log from '../logger.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -169,7 +170,7 @@ export async function parseDocument(
       extractedSections = JSON.parse(cleaned.slice(start, end + 1));
     }
   } catch (err: any) {
-    console.error('[documentParser] Extraction failed:', err.message);
+    log.error('documentParser:extraction', { error: err.message });
   }
 
   // Build ParsedSection array
