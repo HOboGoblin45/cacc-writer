@@ -1,17 +1,17 @@
 {
   "queue": [
     {
-      "jobId": "266574a3-827b-4c7e-9d9c-e9d3ec01eef2",
-      "batchId": "157a6286-ea87-4e03-9675-085ef51896e5",
+      "jobId": "647ef51c-9fcd-4d57-8816-0a76e9c4d222",
+      "batchId": "e9b60671-54b6-4c48-b14a-42936a1f5a7a",
       "caseId": "test-case-1",
       "formType": null,
       "status": "failed",
-      "runId": "58db13c0-0d6d-4be1-a63f-3ee39bc12609",
+      "runId": "ac74af23-74fe-481b-81e1-3918861d9a22",
       "error": "Case directory not found: test-case-1",
-      "durationMs": 13,
-      "queuedAt": "2026-03-11T04:23:14.646Z",
-      "startedAt": "2026-03-11T04:23:14.647Z",
-      "completedAt": "2026-03-11T04:23:14.660Z",
+      "durationMs": 317,
+      "queuedAt": "2026-03-11T13:38:54.024Z",
+      "startedAt": "2026-03-11T13:38:54.025Z",
+      "completedAt": "2026-03-11T13:38:54.342Z",
       "retryAttempt": 0,
       "sectionsTotal": null,
       "sectionsCompleted": null,
@@ -30,6 +30,12 @@
     "2d016133-644f-4b76-bcfb-4e37065799b8": "[\"e1f21445-3847-40a9-8e8c-010fd2962d25\"]",
     "54b3994e-8130-4815-92b7-5e2db0431994": "[\"9741c9c1-8991-4cc7-8eb3-7d8576362979\"]",
     "82215c6b-772a-441f-b72e-cec1f2d5f39c": "[\"09f9cb77-b363-4fab-8159-d20f6f3f7481\"]",
-    "c2961d49-87c6-4cd0-9f98-d6c6eee2fe20": "[\"ffd2f6fe-bd59-4530-a474-958d129efe47\",\"a5bf54e9-034f-477c-9137-4b2a8b4e0eb6\"]"
+    "c2961d49-87c6-4cd0-9f98-d6c6eee2fe20": "[\"ffd2f6fe-bd59-4530-a474-958d129efe47\",\"a5bf54e9-034f-477c-9137-4b2a8b4e0eb6\"]",
+    "e9b60671-54b6-4c48-b14a-42936a1f5a7a": "[\"647ef51c-9fcd-4d57-8816-0a76e9c4d222\",\"211919be-4acf-48eb-9653-e6bd2ff97261\"]",
+    "f48764a9-cb78-451d-b70f-1a28505954ef": "[\"79146690-8cd5-48da-863b-93954da9863f\"]",
+    "75c49dd8-38f9-4eef-a8ad-dbef1344ea5c": "[\"4c139473-a8d2-4dd7-b53e-db23c4550f16\"]",
+    "734236f0-3a73-40d9-8baa-e3d775f09212": "[\"e0739b22-a522-4c20-a9af-dffa05a9cefe\"]",
+    "cd1f6872-0f8c-45d9-a332-f83f0c4aaf30": "[\"9ef730c5-f832-446e-bd61-74083ab819e7\"]",
+    "03aa5ec5-5c64-4ac2-a764-aadb34b14517": "[\"1e378fff-cfcb-46cd-a874-dbb86a4bb924\",\"55ab19b8-6099-4279-8b01-0921935c5720\"]"
   }
 }
