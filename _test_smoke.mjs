@@ -379,6 +379,24 @@ await test('GET /api/cases/:caseId/intelligence/compliance-check returns determi
   assert(typeof body.complianceChecks.summary === 'object', 'complianceChecks.summary should be an object');
 });
 
+await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot', async () => {
+  const { status, body } = await api('GET', '/api/intelligence/benchmarks/phase-c');
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/intelligence/benchmarks/phase-c');
+  assert(typeof body.cached === 'boolean', 'cached should be boolean');
+  assert(typeof body.results === 'object', 'results should be an object');
+  assert(typeof body.results.summary === 'object', 'results.summary should be an object');
+});
+
+await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run', async () => {
+  const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {});
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/intelligence/benchmarks/phase-c/run');
+  assert(body.persisted === false, 'persisted should be false when persist=false');
+  assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
+  assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
+});
+
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {});
   assert(status === 409, `Expected 409, got ${status}`);

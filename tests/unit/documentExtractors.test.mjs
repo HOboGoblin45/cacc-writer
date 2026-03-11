@@ -89,6 +89,13 @@ await test('extractStructuredFacts returns empty for very short text', async () 
   assert.deepEqual(facts, []);
 });
 
+await test('extractStructuredFacts supports disableAI option for deterministic-only mode', async () => {
+  const text = 'Purchase Price: $500,000';
+  const facts = await extractStructuredFacts('contract', text, { disableAI: true });
+  assert.ok(Array.isArray(facts));
+  assert.ok(facts.some(f => f.factPath === 'contract.salePrice'));
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`documentExtractors: ${passed} passed, ${failed} failed`);
 if (failures.length) {
