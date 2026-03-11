@@ -29,7 +29,7 @@ const RETRY_BASE_DELAY_MS = 1000;     // 1s, 2s, 4s exponential backoff
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 
 if (!OPENAI_API_KEY) {
-  log.warn('openai:init', 'OPENAI_API_KEY is not set. AI calls will fail.');
+  log.warn('openai:init', { error: 'OPENAI_API_KEY is not set. AI calls will fail.' });
 }
 
 // Single shared client instance

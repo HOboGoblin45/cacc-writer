@@ -1,0 +1,13 @@
+services:
+  server:
+    build: .
+    ports:
+      - "5178:5178"
+    volumes:
+      - ./data:/app/data
+      - ./cases:/app/cases
+      - ./logs:/app/logs
+      - ./knowledge_base:/app/knowledge_base
+    env_file:
+      - .env
+    restart: unless-stopped
