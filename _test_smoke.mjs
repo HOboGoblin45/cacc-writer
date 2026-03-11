@@ -257,6 +257,24 @@ await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async 
   assert(Array.isArray(body.gate.blockers), 'gate.blockers should be an array');
 });
 
+await test('GET /api/cases/:caseId/intelligence/requirements returns deterministic section matrix', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/intelligence/requirements`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/intelligence/requirements');
+  assert(typeof body.sectionRequirements === 'object', 'sectionRequirements should be an object');
+  assert(Array.isArray(body.sectionRequirements.sections), 'sectionRequirements.sections should be an array');
+  assert(Array.isArray(body.sectionRequirements.requiredSectionIds), 'requiredSectionIds should be an array');
+});
+
+await test('GET /api/cases/:caseId/intelligence/compliance-check returns deterministic findings', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/intelligence/compliance-check`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/intelligence/compliance-check');
+  assert(typeof body.complianceChecks === 'object', 'complianceChecks should be an object');
+  assert(Array.isArray(body.complianceChecks.checks), 'complianceChecks.checks should be an array');
+  assert(typeof body.complianceChecks.summary === 'object', 'complianceChecks.summary should be an object');
+});
+
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {});
   assert(status === 409, `Expected 409, got ${status}`);
