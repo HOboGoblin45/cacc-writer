@@ -37,6 +37,7 @@ const {
   registerDocument,
   getCaseDocuments,
   findDuplicateDocumentByHash,
+  getCaseExtractionSummary,
 } = await import('../../server/ingestion/stagingService.js');
 
 async function cleanup() {
@@ -126,6 +127,43 @@ await test('duplicate row is stored with skipped extraction status', () => {
   assert.equal(duplicateRow.extraction_status, 'skipped', 'duplicate extraction should be skipped');
   assert.equal(duplicateRow.duplicate_of_document_id, first.documentId, 'duplicate row should link to first row');
   assert.equal(duplicateRow.classification_method, 'duplicate', 'classification method should be duplicate');
+});
+
+await test('getCaseExtractionSummary includes deterministic quality metrics', () => {
+  const caseId = '1122aabb';
+  const hashA = 'b'.repeat(64);
+
+  registerDocument({
+    caseId,
+    originalFilename: 'order.pdf',
+    storedFilename: '1122aabb_order_1.pdf',
+    legacyDocType: 'order_sheet',
+    fileSizeBytes: 4096,
+    pageCount: 2,
+    extractedText: 'Order Number 100 Product Type 1004 Loan Program FHA Due Date 01/01/2026',
+    fileHash: hashA,
+  });
+
+  registerDocument({
+    caseId,
+    originalFilename: 'order-copy.pdf',
+    storedFilename: '1122aabb_order_2.pdf',
+    legacyDocType: 'order_sheet',
+    fileSizeBytes: 4096,
+    pageCount: 2,
+    extractedText: 'Order Number 100 Product Type 1004 Loan Program FHA Due Date 01/01/2026',
+    fileHash: hashA,
+    ingestionWarning: 'duplicate upload',
+  });
+
+  const summary = getCaseExtractionSummary(caseId);
+  assert.equal(summary.totalDocuments, 2);
+  assert.equal(summary.pendingFacts, 0);
+  assert.equal(summary.pendingSections, 0);
+  assert.equal(summary.quality.duplicateCount, 1);
+  assert.equal(summary.quality.warningCount, 1);
+  assert.ok(summary.quality.averageScore !== null);
+  assert.ok(Array.isArray(summary.quality.flaggedDocuments));
 });
 
 await cleanup();
