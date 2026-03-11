@@ -36,7 +36,12 @@ export function parseReviewResponse(raw) {
   const cleaned = raw.trim()
     .replace(/^```json\n?/, '')
     .replace(/\n?```$/, '');
-  return JSON.parse(cleaned);
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    log.warn('[generationService] parseReviewResponse failed:', err.message);
+    return {};
+  }
 }
 
 // ── Case context loading ─────────────────────────────────────────────────────

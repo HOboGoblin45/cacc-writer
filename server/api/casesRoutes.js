@@ -35,7 +35,7 @@ import path from 'path';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { CASES_DIR, CASE_ID_RE, casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
-import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { readJSON, writeJSON, withCaseLock } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
@@ -189,25 +189,28 @@ router.get('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId — Update case metadata ─────────────────────────────────────
-router.patch('/:caseId', (req, res) => {
+router.patch('/:caseId', async (req, res) => {
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const mf = path.join(cd, 'meta.json');
-    let meta = readJSON(mf);
+    const result = await withCaseLock(req.params.caseId, () => {
+      const mf = path.join(cd, 'meta.json');
+      let meta = readJSON(mf);
 
-    meta.address  = trimText(req.body?.address  ?? meta.address,  240);
-    meta.borrower = trimText(req.body?.borrower ?? meta.borrower, 180);
-    if (req.body?.notes    !== undefined) meta.notes    = trimText(req.body.notes, 1000);
-    if (req.body?.formType !== undefined) meta.formType = normalizeFormType(req.body.formType);
+      meta.address  = trimText(req.body?.address  ?? meta.address,  240);
+      meta.borrower = trimText(req.body?.borrower ?? meta.borrower, 180);
+      if (req.body?.notes    !== undefined) meta.notes    = trimText(req.body.notes, 1000);
+      if (req.body?.formType !== undefined) meta.formType = normalizeFormType(req.body.formType);
 
-    const assignmentFields = extractMetaFields(req.body, trimText);
-    meta = { ...meta, ...assignmentFields };
-    meta.updatedAt = new Date().toISOString();
+      const assignmentFields = extractMetaFields(req.body, trimText);
+      meta = { ...meta, ...assignmentFields };
+      meta.updatedAt = new Date().toISOString();
 
-    writeJSON(mf, meta);
-    res.json({ ok: true, meta: applyMetaDefaults(meta) });
+      writeJSON(mf, meta);
+      return meta;
+    });
+    res.json({ ok: true, meta: applyMetaDefaults(result) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -226,7 +229,7 @@ router.delete('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId/status — Set case status ───────────────────────────────────
-router.patch('/:caseId/status', (req, res) => {
+router.patch('/:caseId/status', async (req, res) => {
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -236,11 +239,14 @@ router.patch('/:caseId/status', (req, res) => {
       return res.status(400).json({ ok: false, error: 'Invalid status' });
     }
 
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
-    meta.status    = nextStatus;
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(mf, meta);
+    const meta = await withCaseLock(req.params.caseId, () => {
+      const mf   = path.join(cd, 'meta.json');
+      const m = readJSON(mf);
+      m.status    = nextStatus;
+      m.updatedAt = new Date().toISOString();
+      writeJSON(mf, m);
+      return m;
+    });
     res.json({ ok: true, meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -248,7 +254,7 @@ router.patch('/:caseId/status', (req, res) => {
 });
 
 // ── PATCH /:caseId/pipeline — Advance pipeline stage ─────────────────────────
-router.patch('/:caseId/pipeline', (req, res) => {
+router.patch('/:caseId/pipeline', async (req, res) => {
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -261,13 +267,16 @@ router.patch('/:caseId/pipeline', (req, res) => {
       });
     }
 
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
-    meta.pipelineStage = stage;
-    meta.updatedAt     = new Date().toISOString();
-    if (!meta.pipelineHistory) meta.pipelineHistory = [];
-    meta.pipelineHistory.push({ stage, at: meta.updatedAt });
-    writeJSON(mf, meta);
+    const meta = await withCaseLock(req.params.caseId, () => {
+      const mf   = path.join(cd, 'meta.json');
+      const m = readJSON(mf);
+      m.pipelineStage = stage;
+      m.updatedAt     = new Date().toISOString();
+      if (!m.pipelineHistory) m.pipelineHistory = [];
+      m.pipelineHistory.push({ stage, at: m.updatedAt });
+      writeJSON(mf, m);
+      return m;
+    });
     res.json({ ok: true, pipelineStage: stage, meta });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -275,7 +284,7 @@ router.patch('/:caseId/pipeline', (req, res) => {
 });
 
 // ── PATCH /:caseId/workflow-status — Set workflowStatus ──────────────────────
-router.patch('/:caseId/workflow-status', (req, res) => {
+router.patch('/:caseId/workflow-status', async (req, res) => {
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -292,11 +301,14 @@ router.patch('/:caseId/workflow-status', (req, res) => {
       });
     }
 
-    const mf   = path.join(cd, 'meta.json');
-    const meta = readJSON(mf);
-    meta.workflowStatus = status;
-    meta.updatedAt      = new Date().toISOString();
-    writeJSON(mf, meta);
+    const meta = await withCaseLock(req.params.caseId, () => {
+      const mf   = path.join(cd, 'meta.json');
+      const m = readJSON(mf);
+      m.workflowStatus = status;
+      m.updatedAt      = new Date().toISOString();
+      writeJSON(mf, m);
+      return m;
+    });
     res.json({ ok: true, workflowStatus: status, meta: applyMetaDefaults(meta) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -304,20 +316,23 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 });
 
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
-router.put('/:caseId/facts', (req, res) => {
+router.put('/:caseId/facts', async (req, res) => {
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const factsFile = path.join(cd, 'facts.json');
-    const updated   = { ...readJSON(factsFile, {}), ...req.body, updatedAt: new Date().toISOString() };
-    writeJSON(factsFile, updated);
+    const result = await withCaseLock(req.params.caseId, () => {
+      const factsFile = path.join(cd, 'facts.json');
+      const updated   = { ...readJSON(factsFile, {}), ...req.body, updatedAt: new Date().toISOString() };
+      writeJSON(factsFile, updated);
 
-    const meta = readJSON(path.join(cd, 'meta.json'));
-    meta.updatedAt = new Date().toISOString();
-    writeJSON(path.join(cd, 'meta.json'), meta);
+      const meta = readJSON(path.join(cd, 'meta.json'));
+      meta.updatedAt = new Date().toISOString();
+      writeJSON(path.join(cd, 'meta.json'), meta);
 
-    res.json({ ok: true, facts: updated });
+      return updated;
+    });
+    res.json({ ok: true, facts: result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
