@@ -24,16 +24,19 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { createRequire } from 'module';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { upload } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
+import { extractImageText } from '../ingestion/imageOcrExtractor.js';
+import { scoreDocumentQuality } from '../ingestion/documentQuality.js';
 import { DOC_TYPES, DOC_TYPE_LABELS, classifyDocument } from '../ingestion/documentClassifier.js';
 import {
   registerDocument, getCaseDocuments, getDocument, reclassifyDocument, deleteDocument,
   runDocumentExtraction, getExtractedFacts, reviewFact, acceptAndMergeFacts,
   getExtractedSections, approveSection, rejectSection,
-  getCaseExtractionSummary, getDocumentExtractions,
+  getCaseExtractionSummary, getDocumentExtractions, findDuplicateDocumentByHash,
 } from '../ingestion/stagingService.js';
 import { syncCaseRecordFromFilesystem } from '../caseRecord/caseRecordService.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
@@ -44,6 +47,37 @@ const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
 const router = Router();
+const SUPPORTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.tif', '.tiff'];
+
+function detectUploadKind(file) {
+  const ext = path.extname(file?.originalname || '').toLowerCase();
+  const mime = String(file?.mimetype || '').toLowerCase();
+
+  if (ext === '.pdf' || mime === 'application/pdf') return { supported: true, kind: 'pdf', ext };
+  if (SUPPORTED_EXTENSIONS.includes(ext) || mime.startsWith('image/')) {
+    return { supported: true, kind: 'image', ext };
+  }
+
+  return { supported: false, kind: 'unsupported', ext };
+}
+
+function sanitizeFilenameToken(value, maxLen = 48) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, maxLen) || 'document';
+}
+
+function buildStoredFilename({ caseId, docTypeHint, originalFilename, fileHash }) {
+  const ext = path.extname(originalFilename || '').toLowerCase() || '.pdf';
+  const baseName = sanitizeFilenameToken(path.basename(originalFilename || 'document', ext), 36);
+  const docType = sanitizeFilenameToken(docTypeHint || 'unknown', 24);
+  const stamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
+  const hashShort = String(fileHash || '').slice(0, 12) || 'nohash';
+  return `${caseId}_${docType}_${stamp}_${hashShort}_${baseName}${ext}`;
+}
 
 function safeSyncCaseRecord(caseId) {
   try {
@@ -76,37 +110,81 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const isPdf = req.file.mimetype === 'application/pdf' ||
-      String(req.file.originalname || '').toLowerCase().endsWith('.pdf');
-    if (!isPdf) return res.status(400).json({ error: 'Only PDF files are allowed' });
+    const uploadKind = detectUploadKind(req.file);
+    if (!uploadKind.supported) {
+      return res.status(415).json({
+        ok: false,
+        code: 'UNSUPPORTED_FILE_TYPE',
+        error: `Unsupported file type. Allowed extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`,
+      });
+    }
 
     const caseId = req.params.caseId;
     const legacyDocType = req.body.docType || null;
     const originalFilename = req.file.originalname || 'document.pdf';
+    const fileHash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
+    const duplicateExisting = findDuplicateDocumentByHash(caseId, fileHash);
 
-    // 1. Extract text from PDF
+    const nameHint = classifyDocument(originalFilename, '', legacyDocType).docType;
+    const storedFilename = buildStoredFilename({
+      caseId,
+      docTypeHint: duplicateExisting?.doc_type || nameHint,
+      originalFilename,
+      fileHash,
+    });
+
+    // 1. Extract text from uploaded PDF/image when possible.
     let extractedText = '';
     let pageCount = 0;
-    let extractionMethod = 'failed';
-    try {
-      const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
-      extractedText = text || '';
-      extractionMethod = method;
-      try { const p = await pdfParse(req.file.buffer); pageCount = p.numpages || 0; } catch { pageCount = 0; }
-    } catch (err) {
-      log.warn('[documents] Text extraction failed:', err.message);
-      extractedText = '';
+    let extractionMethod = 'not_run';
+    const warnings = [];
+
+    if (uploadKind.kind === 'pdf') {
+      try {
+        const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
+        extractedText = text || '';
+        extractionMethod = method;
+        try { const p = await pdfParse(req.file.buffer); pageCount = p.numpages || 0; } catch { pageCount = 0; }
+      } catch (err) {
+        log.warn('[documents] Text extraction failed:', err.message);
+        extractedText = '';
+        extractionMethod = 'failed';
+        warnings.push('PDF text extraction failed; document saved without parsed text.');
+      }
+    } else {
+      const imageResult = await extractImageText(req.file.buffer, {
+        aiClient: client,
+        model: MODEL,
+        ext: uploadKind.ext,
+        mimeType: req.file.mimetype,
+      });
+      extractedText = imageResult.text || '';
+      extractionMethod = imageResult.method || 'image_no_ocr';
+      if (imageResult.error) warnings.push(imageResult.error);
     }
 
     extractedText = extractedText.replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
 
-    // 2. Register document (classifies automatically)
-    const storedFilename = `${Date.now()}_${originalFilename.replace(/[^a-z0-9._-]/gi, '_')}`;
+    // 2. Persist uploaded bytes unless this is a duplicate.
     const docsDir = path.join(cd, 'documents');
     fs.mkdirSync(docsDir, { recursive: true });
-    fs.writeFileSync(path.join(docsDir, storedFilename), req.file.buffer);
+    if (!duplicateExisting) {
+      fs.writeFileSync(path.join(docsDir, storedFilename), req.file.buffer);
+    } else {
+      warnings.push(`Duplicate document detected (matches ${duplicateExisting.id}); skipped duplicate file write.`);
+    }
 
-    const { documentId, docType, classification } = registerDocument({
+    // 3. Register document row (classification + duplicate linkage).
+    const shouldSkipExtraction = Boolean(duplicateExisting) || extractedText.length < 20;
+    const ingestionWarning = warnings.length ? warnings.join(' ') : null;
+    const {
+      documentId,
+      docType,
+      classification,
+      duplicateDetected,
+      duplicateOfDocumentId,
+      quality,
+    } = registerDocument({
       caseId,
       originalFilename,
       storedFilename,
@@ -114,16 +192,18 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       fileSizeBytes: req.file.size,
       pageCount,
       extractedText,
+      fileHash,
+      extractionStatus: duplicateExisting ? 'skipped' : (extractedText ? 'extracted' : 'pending'),
+      ingestionWarning,
     });
 
-    // 3. Also write to doc_text.json for backward compatibility
+    // 4. Backward compatibility write-through.
     const dtf = path.join(cd, 'doc_text.json');
     const docText = readJSON(dtf, {});
     const docTextKey = legacyDocType || docType;
-    docText[docTextKey] = extractedText;
+    if (extractedText) docText[docTextKey] = extractedText;
     writeJSON(dtf, docText);
 
-    // 4. Update meta.json for backward compatibility
     const mf = path.join(cd, 'meta.json');
     const meta = readJSON(mf);
     meta.updatedAt = new Date().toISOString();
@@ -134,16 +214,22 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       bytes: req.file.size,
       documentId,
       docType,
+      duplicateOf: duplicateOfDocumentId || null,
+      warning: ingestionWarning,
     };
     writeJSON(mf, meta);
     safeSyncCaseRecord(caseId);
 
-    // 5. Run structured extraction (async — don't block response)
+    // 5. Run extraction for eligible documents only.
     let extractionResult = null;
-    try {
-      extractionResult = await runDocumentExtraction(documentId, extractedText, { aiClient: client, model: MODEL });
-    } catch (err) {
-      log.warn('[documents] Extraction failed for', documentId, err.message);
+    if (!shouldSkipExtraction) {
+      try {
+        extractionResult = await runDocumentExtraction(documentId, extractedText, { aiClient: client, model: MODEL });
+      } catch (err) {
+        log.warn('[documents] Extraction failed for', documentId, err.message);
+      }
+    } else if (!duplicateExisting && extractedText.length < 20) {
+      warnings.push('Text content was too short for structured extraction.');
     }
 
     log.info('[documents] Upload complete', {
@@ -151,6 +237,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       confidence: classification.confidence, textLength: extractedText.length,
       factsExtracted: extractionResult?.factsExtracted || 0,
       sectionsExtracted: extractionResult?.sectionsExtracted || 0,
+      duplicateDetected,
     });
 
     res.json({
@@ -158,13 +245,17 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       documentId,
       docType,
       classification,
+      duplicateDetected,
+      duplicateOfDocumentId,
       extractionMethod,
       textLength: extractedText.length,
       wordCount: extractedText.split(/\s+/).filter(Boolean).length,
       pageCount,
       preview: extractedText.slice(0, 400),
+      warnings,
+      quality,
       extraction: extractionResult ? {
-        factsExtracted:    extractionResult.factsExtracted,
+        factsExtracted: extractionResult.factsExtracted,
         sectionsExtracted: extractionResult.sectionsExtracted,
       } : null,
     });
@@ -185,6 +276,7 @@ router.get('/cases/:caseId/documents', (req, res) => {
         ...d,
         label: DOC_TYPE_LABELS[d.doc_type] || d.doc_type,
         tags: safeParseJSON(d.tags_json, []),
+        quality: scoreDocumentQuality(d),
       })),
     });
   } catch (err) {
@@ -202,7 +294,11 @@ router.get('/cases/:caseId/documents/:docId', (req, res) => {
     const extractions = getDocumentExtractions(req.params.docId);
     res.json({
       ok: true,
-      document: { ...doc, label: DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type },
+      document: {
+        ...doc,
+        label: DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type,
+        quality: scoreDocumentQuality(doc),
+      },
       extractions,
     });
   } catch (err) {
@@ -261,8 +357,18 @@ router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
       const filePath = path.join(req.caseDir, 'documents', doc.stored_filename);
       if (fs.existsSync(filePath)) {
         const buffer = fs.readFileSync(filePath);
-        const { text: extracted } = await extractPdfText(buffer, client, MODEL);
-        text = (extracted || '').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
+        const ext = path.extname(doc.stored_filename || '').toLowerCase();
+        if (ext === '.pdf' || doc.file_type === 'pdf') {
+          const { text: extracted } = await extractPdfText(buffer, client, MODEL);
+          text = (extracted || '').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
+        } else {
+          const imageResult = await extractImageText(buffer, {
+            aiClient: client,
+            model: MODEL,
+            ext,
+          });
+          text = imageResult.text || '';
+        }
       }
     }
 
