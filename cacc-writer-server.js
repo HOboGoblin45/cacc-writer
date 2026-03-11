@@ -85,6 +85,7 @@ import phase6MemoryRouter from './server/api/phase6Routes.js';
 import qcRouter           from './server/api/qcRoutes.js';
 import insertionRouter    from './server/api/insertionRoutes.js';
 import operationsRouter   from './server/api/operationsRoutes.js';
+import queueRouter        from './server/api/queueRoutes.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
 import { loadCaseContext, generateSection, generateSections, parseReviewResponse } from './server/services/generationService.js';
@@ -165,6 +166,7 @@ app.use('/api/memory', phase6MemoryRouter);
 app.use('/api',        qcRouter);
 app.use('/api',        insertionRouter);
 app.use('/api',        operationsRouter);
+app.use('/api',        queueRouter);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
