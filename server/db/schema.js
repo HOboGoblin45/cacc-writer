@@ -44,6 +44,10 @@ function runMigrations(db) {
     `ALTER TABLE section_jobs ADD COLUMN retrieval_source_ids_json TEXT DEFAULT '[]'`,
     // Phase 3 — optional cost tracking per section job
     `ALTER TABLE section_jobs ADD COLUMN estimated_cost_usd REAL`,
+    // Phase C document intake hardening — duplicate linkage
+    `ALTER TABLE case_documents ADD COLUMN duplicate_of_document_id TEXT`,
+    // Phase C document intake hardening — ingestion warning note
+    `ALTER TABLE case_documents ADD COLUMN ingestion_warning TEXT`,
   ];
 
   for (const sql of migrations) {
@@ -391,7 +395,7 @@ export function initSchema(db) {
       file_hash         TEXT,
 
       classification_method   TEXT DEFAULT 'manual',
-      -- classification_method: manual | filename | keyword | ai
+      -- classification_method: manual | filename | keyword | ai | duplicate
       classification_confidence REAL DEFAULT 1.0,
 
       extraction_status TEXT DEFAULT 'pending',
@@ -400,6 +404,8 @@ export function initSchema(db) {
       text_length       INTEGER DEFAULT 0,
       notes             TEXT,
       tags_json         TEXT DEFAULT '[]',
+      duplicate_of_document_id TEXT,
+      ingestion_warning TEXT,
 
       uploaded_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
