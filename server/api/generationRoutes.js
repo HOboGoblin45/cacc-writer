@@ -134,20 +134,21 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
         log.error('[orchestrator] run error', { error: err.message });
       });
 
-    // Brief yield so orchestrator can create the run record in SQLite
-    await new Promise(r => setTimeout(r, 50));
-
-    // Read the most recent active run for this case using canonical statuses
-    const db        = getDb();
-    const latestRun = db.prepare(`
-      SELECT id FROM generation_runs
-       WHERE case_id = ? AND status IN (
-         'queued','preparing','retrieving','analyzing',
-         'drafting','validating','assembling'
-       )
-       ORDER BY created_at DESC LIMIT 1
-    `).get(caseId);
-    runId = latestRun?.id || null;
+    // Poll for the run record the orchestrator creates synchronously via createRun().
+    // Retry up to 5 times (50ms apart) to handle scheduling jitter.
+    const db = getDb();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise(r => setTimeout(r, 50));
+      const latestRun = db.prepare(`
+        SELECT id FROM generation_runs
+         WHERE case_id = ? AND status IN (
+           'queued','preparing','retrieving','analyzing',
+           'drafting','validating','assembling'
+         )
+         ORDER BY created_at DESC LIMIT 1
+      `).get(caseId);
+      if (latestRun?.id) { runId = latestRun.id; break; }
+    }
 
     res.json({
       ok:                 true,
@@ -232,18 +233,20 @@ router.post('/generation/full-draft', async (req, res) => {
         log.error('[orchestrator] run error', { error: err.message });
       });
 
-    await new Promise(r => setTimeout(r, 50));
-
-    const db        = getDb();
-    const latestRun = db.prepare(`
-      SELECT id FROM generation_runs
-       WHERE case_id = ? AND status IN (
-         'queued','preparing','retrieving','analyzing',
-         'drafting','validating','assembling'
-       )
-       ORDER BY created_at DESC LIMIT 1
-    `).get(caseId);
-    runId = latestRun?.id || null;
+    // Poll for the run record the orchestrator creates synchronously via createRun().
+    const db = getDb();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise(r => setTimeout(r, 50));
+      const latestRun = db.prepare(`
+        SELECT id FROM generation_runs
+         WHERE case_id = ? AND status IN (
+           'queued','preparing','retrieving','analyzing',
+           'drafting','validating','assembling'
+         )
+         ORDER BY created_at DESC LIMIT 1
+      `).get(caseId);
+      if (latestRun?.id) { runId = latestRun.id; break; }
+    }
 
     res.json({
       ok:                 true,

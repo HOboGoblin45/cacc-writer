@@ -162,6 +162,47 @@ app.use('/api',        operationsRouter);
 // LEGACY INLINE ENDPOINTS — preserved for compatibility, do not extend
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Shared helpers for consistent behavior across all generation endpoints ───
+
+/**
+ * saveOutputsWithHistory(caseDir, newResults)
+ * Archives previous output text to history.json before overwriting outputs.json.
+ * Ensures all generation endpoints preserve version history consistently.
+ */
+function saveOutputsWithHistory(caseDir, newResults) {
+  const outFile = path.join(caseDir, 'outputs.json');
+  const histFile = path.join(caseDir, 'history.json');
+  const existing = readJSON(outFile, {});
+  const history = readJSON(histFile, {});
+  for (const fid of Object.keys(newResults)) {
+    if (existing[fid]?.text) {
+      if (!history[fid]) history[fid] = [];
+      history[fid].unshift({ text: existing[fid].text, title: existing[fid].title, savedAt: new Date().toISOString() });
+      history[fid] = history[fid].slice(0, 3);
+    }
+  }
+  writeJSON(histFile, history);
+  writeJSON(outFile, { ...existing, ...newResults, updatedAt: new Date().toISOString() });
+}
+
+/**
+ * updateSectionStatuses(caseDir, results, errors)
+ * Writes section_statuses.json with 'drafted' for successes and 'error' for failures.
+ * Ensures all generation endpoints update section status consistently.
+ */
+function updateSectionStatuses(caseDir, results, errors) {
+  const secFile = path.join(caseDir, 'section_statuses.json');
+  const secStatuses = readJSON(secFile, {});
+  for (const sid of Object.keys(results)) {
+    secStatuses[sid] = { ...(secStatuses[sid] || {}), status: 'drafted', updatedAt: new Date().toISOString(), title: results[sid]?.title || sid };
+  }
+  for (const sid of Object.keys(errors)) {
+    secStatuses[sid] = { ...(secStatuses[sid] || {}), status: 'error', updatedAt: new Date().toISOString() };
+  }
+  writeJSON(secFile, secStatuses);
+  return secStatuses;
+}
+
 app.post('/api/generate', ensureAI, async (req, res) => {
   try {
     const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
@@ -214,23 +255,14 @@ app.post('/api/generate-batch', ensureAI, async (req, res) => {
       assignmentMeta: ctx?.assignmentMeta, locationContext: ctx?.locationContext, twoPass,
     });
     if (caseDir) {
-      const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-      const histFile=path.join(caseDir,'history.json'), history=readJSON(histFile,{});
-      for (const fid of Object.keys(results)) {
-        if (existing[fid]?.text) {
-          if (!history[fid]) history[fid]=[];
-          history[fid].unshift({ text:existing[fid].text, title:existing[fid].title, savedAt:new Date().toISOString() });
-          history[fid]=history[fid].slice(0,3);
-        }
-      }
-      writeJSON(histFile,history);
-      writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
+      saveOutputsWithHistory(caseDir, results);
+      updateSectionStatuses(caseDir, results, errors);
       const meta=readJSON(path.join(caseDir,'meta.json'));
-      meta.updatedAt=new Date().toISOString();
+      meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
       writeJSON(path.join(caseDir,'meta.json'),meta);
     }
     res.json({ ok:true, results, errors });
-  } catch (err) { res.status(500).json({ ok:false, error:'Batch generation failed' }); }
+  } catch (err) { log.error('[generate-batch]', err.message); res.status(500).json({ ok:false, error:err.message }); }
 });
 
 app.post('/api/cases/create', (req, res) => {
@@ -327,7 +359,7 @@ app.post('/api/cases/:caseId/grade', ensureAI, async (req, res) => {
     res.json({ ok:true, fieldId, grade:normalizeGrade(grade) });
   } catch (err) { res.status(500).json({ ok:false, error:err.message }); }
 });
-app.post('/api/cases/:caseId/feedback', ensureAI, async (req, res) => {
+app.post('/api/cases/:caseId/feedback', async (req, res) => {
   try {
     const cd=req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok:false, error:'Case not found' });
@@ -383,21 +415,21 @@ app.post('/api/workflow/run', ensureAI, async (req, res) => {
   try {
     const { caseId, fields, twoPass=false, saveOutputs=true } = req.body;
     const _wfFt=String(req.body?.formType||'').trim().toLowerCase();
-    if (_wfFt&&isDeferredForm(_wfFt)) { logDeferredAccess(_wfFt,'POST /api/workflow/run',log); return res.status(400).json({ ok:false, supported:false, formType:_wfFt, scope:'deferred' }); }
+    if (_wfFt&&isDeferredForm(_wfFt)) { logDeferredAccess(_wfFt,'POST /api/workflow/run',log); return res.status(400).json({ ok:false, supported:false, formType:_wfFt, scope:'deferred', message:`Generation is not available for form type "${_wfFt}". Active forms: ${ACTIVE_FORMS.join(', ')}.` }); }
     if (!caseId) return res.status(400).json({ ok:false, error:'caseId is required' });
     const ctx = await loadCaseContext(caseId);
     if (!ctx) return res.status(404).json({ ok:false, error:'Case not found' });
     const { caseDir, formType, formConfig, facts, assignmentMeta, locationContext } = ctx;
     if (isDeferredForm(formType)) {
       logDeferredAccess(formType,'POST /api/workflow/run',log);
-      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred' });
+      return res.status(400).json({ ok:false, supported:false, formType, scope:'deferred', message:`Generation is not available for form type "${formType}". Active forms: ${ACTIVE_FORMS.join(', ')}.` });
     }
     const targetFields=Array.isArray(fields)&&fields.length?fields:(formConfig.workflowFields||CORE_SECTIONS[formType]||[]);
     if (!targetFields.length) return res.status(400).json({ ok:false, error:'No fields to generate' });
     const { results, errors } = await generateSections({ fields: targetFields, formType, facts, assignmentMeta, locationContext, twoPass });
     if (saveOutputs&&Object.keys(results).length) {
-      const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-      writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
+      saveOutputsWithHistory(caseDir, results);
+      updateSectionStatuses(caseDir, results, errors);
       const meta=readJSON(path.join(caseDir,'meta.json'));
       meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
       writeJSON(path.join(caseDir,'meta.json'),meta);
@@ -409,7 +441,7 @@ app.post('/api/workflow/run-batch', ensureAI, async (req, res) => {
   try {
     const { cases, fields, twoPass=false } = req.body;
     const _wfbFt=String(req.body?.formType||'').trim().toLowerCase();
-    if (_wfbFt&&isDeferredForm(_wfbFt)) { logDeferredAccess(_wfbFt,'POST /api/workflow/run-batch',log); return res.status(400).json({ ok:false, supported:false, formType:_wfbFt, scope:'deferred' }); }
+    if (_wfbFt&&isDeferredForm(_wfbFt)) { logDeferredAccess(_wfbFt,'POST /api/workflow/run-batch',log); return res.status(400).json({ ok:false, supported:false, formType:_wfbFt, scope:'deferred', message:`Batch generation is not available for form type "${_wfbFt}". Active forms: ${ACTIVE_FORMS.join(', ')}.` }); }
     if (!Array.isArray(cases)||!cases.length) return res.status(400).json({ ok:false, error:'cases must be a non-empty array' });
     if (cases.length>10) return res.status(400).json({ ok:false, error:'cases must be <= 10' });
     const batchResults=[], batchErrors=[];
@@ -421,8 +453,11 @@ app.post('/api/workflow/run-batch', ensureAI, async (req, res) => {
       try {
         const targetFields=Array.isArray(fields)&&fields.length?fields:(formConfig.workflowFields||CORE_SECTIONS[formType]||[]);
         const { results, errors } = await generateSections({ fields: targetFields, formType, facts, assignmentMeta, locationContext, twoPass });
-        const outFile=path.join(caseDir,'outputs.json'), existing=readJSON(outFile,{});
-        writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
+        saveOutputsWithHistory(caseDir, results);
+        updateSectionStatuses(caseDir, results, errors);
+        const meta=readJSON(path.join(caseDir,'meta.json'));
+        meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
+        writeJSON(path.join(caseDir,'meta.json'),meta);
         batchResults.push({ caseId, results, errors });
       } catch (e) { batchErrors.push({ caseId, error:e.message }); }
     }
@@ -463,19 +498,14 @@ app.post('/api/cases/:caseId/generate-core', ensureAI, async (req, res) => {
     const targetFields=requestedFields.length?coreSections.filter(s=>requestedFields.includes(s.id)):coreSections;
     if (!targetFields.length) return res.status(400).json({ ok:false, error:'No core sections defined for form type: '+formType });
     const { results, errors } = await generateSections({ fields: targetFields, formType, facts, assignmentMeta, locationContext });
-    const statuses = {};
-    for (const sid of Object.keys(results)) statuses[sid] = 'drafted';
-    for (const sid of Object.keys(errors)) statuses[sid] = 'error';
-    const outFile=path.join(cd,'outputs.json'), existing=readJSON(outFile,{});
-    writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-    const secFile=path.join(cd,'section_statuses.json'), secStatuses=readJSON(secFile,{});
-    for (const [sid,st] of Object.entries(statuses)) {
-      secStatuses[sid]={ status:st, updatedAt:new Date().toISOString(), title:results[sid]?.title||sid };
-    }
-    writeJSON(secFile,secStatuses);
+    saveOutputsWithHistory(cd, results);
+    const secStatuses = updateSectionStatuses(cd, results, errors);
     const meta=readJSON(path.join(cd,'meta.json'));
     meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
     writeJSON(path.join(cd,'meta.json'),meta);
+    const statuses = {};
+    for (const sid of Object.keys(results)) statuses[sid] = 'drafted';
+    for (const sid of Object.keys(errors)) statuses[sid] = 'error';
     const genResults={}; for(const [sid,v] of Object.entries(results)) genResults[sid]={...v,sectionStatus:statuses[sid]||'drafted'};
     res.json({ ok:true, results:genResults, errors, statuses, formType, sectionsAttempted:targetFields.length,
       coreSections:targetFields, generated:Object.keys(results).length, failed:Object.keys(errors).length, pipelineStage:'generating' });
@@ -664,16 +694,11 @@ app.post('/api/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     const allFields=formConfig.workflowFields||CORE_SECTIONS[formType]||[];
     if (!allFields.length) return res.status(400).json({ ok:false, error:'No fields configured for form type: '+formType });
     const { results, errors } = await generateSections({ fields: allFields, formType, facts, assignmentMeta, locationContext });
+    saveOutputsWithHistory(cd, results);
+    updateSectionStatuses(cd, results, errors);
     const statuses = {};
     for (const sid of Object.keys(results)) statuses[sid] = 'drafted';
     for (const sid of Object.keys(errors)) statuses[sid] = 'error';
-    const outFile=path.join(cd,'outputs.json'), existing=readJSON(outFile,{});
-    writeJSON(outFile,{ ...existing, ...results, updatedAt:new Date().toISOString() });
-    const secFile=path.join(cd,'section_statuses.json'), secStatuses=readJSON(secFile,{});
-    for (const [sid,st] of Object.entries(statuses)) {
-      secStatuses[sid]={ ...(secStatuses[sid]||{}), status:st, updatedAt:new Date().toISOString() };
-    }
-    writeJSON(secFile,secStatuses);
     const meta=readJSON(path.join(cd,'meta.json')); meta.updatedAt=new Date().toISOString(); meta.pipelineStage='generating';
     writeJSON(path.join(cd,'meta.json'),meta);
     res.json({ ok:true, results, errors, statuses, formType, fieldsAttempted:allFields.length });

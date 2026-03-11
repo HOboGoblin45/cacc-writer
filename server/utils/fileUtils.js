@@ -57,7 +57,7 @@ export function writeJSON(p, data) {
 let _voiceLock = Promise.resolve();
 
 export function withVoiceLock(fn) {
-  const next = _voiceLock.then(() => fn()).catch(() => fn());
+  const next = _voiceLock.catch(() => {}).then(fn);
   _voiceLock = next.catch(() => {});
   return next;
 }

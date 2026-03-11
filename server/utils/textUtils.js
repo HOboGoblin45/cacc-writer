@@ -101,7 +101,8 @@ export function parseJSONObject(text) {
   try {
     const raw = extractBalancedJSON(String(text || ''), '{', '}');
     return raw ? JSON.parse(raw) : null;
-  } catch {
+  } catch (e) {
+    console.debug('[textUtils] parseJSONObject failed:', e.message, '| input preview:', String(text || '').slice(0, 120));
     return null;
   }
 }
@@ -118,7 +119,8 @@ export function parseJSONArray(text) {
   try {
     const raw = extractBalancedJSON(String(text || ''), '[', ']');
     return raw ? JSON.parse(raw) : null;
-  } catch {
+  } catch (e) {
+    console.debug('[textUtils] parseJSONArray failed:', e.message, '| input preview:', String(text || '').slice(0, 120));
     return null;
   }
 }
