@@ -288,7 +288,7 @@ router.post('/:caseId/grade', ensureAI, async (req, res) => {
   }
 });
 
-router.post('/:caseId/feedback', ensureAI, async (req, res) => {
+router.post('/:caseId/feedback', async (req, res) => {
   const body = parsePayload(feedbackSchema, req.body || {}, res);
   if (!body) return;
 
