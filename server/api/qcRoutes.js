@@ -289,6 +289,7 @@ router.post('/qc/findings/:findingId/resolve', (req, res) => {
  */
 router.post('/qc/findings/:findingId/reopen', (req, res) => {
   const { findingId } = req.params;
+  if (!parsePayload(findingActionSchema, req.body || {}, res)) return;
 
   try {
     const success = reopenFinding(findingId);

@@ -951,6 +951,16 @@ await test('POST /api/qc/findings/:findingId/resolve rejects invalid note payloa
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+await test('POST /api/qc/findings/:findingId/reopen rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/reopen', {
+    note: { bad: 'payload' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
