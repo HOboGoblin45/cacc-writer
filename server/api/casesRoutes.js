@@ -62,6 +62,19 @@ import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue, resolveFactDecision } from '../factIntegrity/factDecisionQueue.js';
 import { evaluateCaseApprovalGate } from '../qc/caseApprovalGate.js';
+import { getExtractedFacts } from '../ingestion/stagingService.js';
+import {
+  getWorkspaceDefinition,
+  buildWorkspacePayload,
+  applyWorkspacePatch,
+} from '../workspace/workspaceService.js';
+import {
+  buildComparableIntelligence,
+  acceptComparableCandidate,
+  rejectComparableCandidate,
+  holdComparableCandidate,
+  saveAdjustmentSupportDecision,
+} from '../comparableIntelligence/comparableIntelligenceService.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -143,7 +156,56 @@ const geocodeSchema = z.object({
 const missingFactsBatchSchema = z.object({
   fieldIds: z.array(z.string().max(80)).max(200).optional(),
 }).passthrough();
+const workspacePatchSchema = z.object({
+  changes: z.array(z.object({
+    fieldId: z.string().min(1).max(120),
+    value: z.unknown(),
+    provenance: z.record(z.unknown()).optional(),
+  })).min(1).max(250),
+  actor: z.string().max(120).optional(),
+}).passthrough();
 const emptyMutationSchema = z.object({}).strict();
+const comparableAcceptSchema = z.object({
+  acceptedBy: z.string().max(120).optional(),
+  gridSlot: z.enum(['comp1', 'comp2', 'comp3']).optional().nullable(),
+  becameFinalComp: z.boolean().optional(),
+}).passthrough();
+const comparableHoldSchema = z.object({
+  actor: z.string().max(120).optional(),
+}).passthrough();
+const comparableRejectSchema = z.object({
+  rejectedBy: z.string().max(120).optional(),
+  reasonCode: z.enum([
+    'too_distant',
+    'inferior_data_quality',
+    'poor_condition_match',
+    'poor_design_style_match',
+    'poor_market_area_match',
+    'poor_date_relevance',
+    'atypical_sale',
+    'unsupported_verification',
+    'other',
+  ]).optional(),
+  note: z.string().max(600).optional(),
+}).passthrough();
+const comparableAdjustmentDecisionSchema = z.object({
+  decisionStatus: z.enum(['pending', 'accepted', 'modified', 'rejected']),
+  rationaleNote: z.string().max(1000).optional(),
+  finalAmount: z.number().finite().optional().nullable(),
+  finalRange: z.object({
+    low: z.number().finite().optional().nullable(),
+    high: z.number().finite().optional().nullable(),
+  }).optional().nullable(),
+  supportType: z.enum([
+    'paired_sales_support',
+    'grouped_market_extraction',
+    'sensitivity_analysis',
+    'depreciated_cost_support',
+    'qualitative_support_only',
+    'appraiser_judgment_with_explanation',
+    'no_adjustment_warranted',
+  ]).optional(),
+}).passthrough();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -366,6 +428,218 @@ router.get('/:caseId/record', (req, res) => {
       ok: true,
       caseId: req.params.caseId,
       record: projection.caseRecord,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/workspace', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const definition = getWorkspaceDefinition(formType);
+    if (!definition) {
+      return res.status(404).json({
+        ok: false,
+        error: `No workspace definition available for form type "${formType}"`,
+        formType,
+      });
+    }
+
+    const conflictReport = detectFactConflicts(req.params.caseId) || { summary: {}, conflicts: [] };
+    const decisionQueue = buildFactDecisionQueue(req.params.caseId) || { summary: {}, conflicts: [], pendingFactGroups: [] };
+    const approvalGate = evaluateCaseApprovalGate(req.params.caseId);
+    const extractedFacts = getExtractedFacts(req.params.caseId);
+    const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
+
+    const workspace = buildWorkspacePayload({
+      formType,
+      facts: projection.facts || {},
+      provenance: projection.provenance || {},
+      history: projection.history || {},
+      meta: projection.meta || {},
+      extractedFacts,
+      conflictReport,
+      decisionQueue,
+      qc: {
+        conflictCount: Array.isArray(conflictReport.conflicts) ? conflictReport.conflicts.length : 0,
+        conflictSummary: conflictReport.summary || {},
+        approvalGate,
+        extractedFactCount: Array.isArray(extractedFacts) ? extractedFacts.length : 0,
+      },
+    });
+    workspace.comparableIntelligence = comparableIntelligence;
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      formType,
+      workspace,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/comparable-intelligence', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const intelligence = buildComparableIntelligence(req.params.caseId);
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      intelligence,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', (req, res) => {
+  const body = parsePayload(comparableAcceptSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const result = acceptComparableCandidate({
+      caseId: req.params.caseId,
+      candidateId: req.params.candidateId,
+      acceptedBy: trimText(body.acceptedBy, 120) || 'appraiser',
+      gridSlot: body.gridSlot || null,
+      becameFinalComp: Boolean(body.becameFinalComp),
+    });
+    if (!result) return res.status(404).json({ ok: false, error: 'Comparable candidate not found' });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      intelligence: result.intelligence,
+      meta: result.projection?.meta || null,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/hold', (req, res) => {
+  const body = parsePayload(comparableHoldSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const intelligence = holdComparableCandidate({
+      caseId: req.params.caseId,
+      candidateId: req.params.candidateId,
+      actor: trimText(body.actor, 120) || 'appraiser',
+    });
+    if (!intelligence) return res.status(404).json({ ok: false, error: 'Comparable candidate not found' });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      intelligence,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', (req, res) => {
+  const body = parsePayload(comparableRejectSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const intelligence = rejectComparableCandidate({
+      caseId: req.params.caseId,
+      candidateId: req.params.candidateId,
+      rejectedBy: trimText(body.rejectedBy, 120) || 'appraiser',
+      reasonCode: body.reasonCode || 'other',
+      note: trimText(body.note, 600) || '',
+    });
+    if (!intelligence) return res.status(404).json({ ok: false, error: 'Comparable candidate not found' });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      intelligence,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adjustmentCategory', (req, res) => {
+  const body = parsePayload(comparableAdjustmentDecisionSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const intelligence = saveAdjustmentSupportDecision({
+      caseId: req.params.caseId,
+      gridSlot: trimText(req.params.gridSlot, 20),
+      adjustmentCategory: trimText(req.params.adjustmentCategory, 80),
+      decisionStatus: body.decisionStatus,
+      rationaleNote: trimText(body.rationaleNote, 1000) || '',
+      finalAmount: body.finalAmount ?? null,
+      finalRange: body.finalRange ?? undefined,
+      supportType: body.supportType,
+    });
+    if (!intelligence) return res.status(404).json({ ok: false, error: 'Adjustment support record not found' });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      intelligence,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/:caseId/workspace', (req, res) => {
+  const body = parsePayload(workspacePatchSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const definition = getWorkspaceDefinition(formType);
+    if (!definition) {
+      return res.status(404).json({
+        ok: false,
+        error: `No workspace definition available for form type "${formType}"`,
+        formType,
+      });
+    }
+
+    const result = applyWorkspacePatch({
+      definition,
+      projection,
+      changes: body.changes || [],
+      actor: trimText(body.actor, 120) || 'appraiser',
+    });
+
+    const updated = saveCaseProjection({
+      caseId: req.params.caseId,
+      meta: result.meta,
+      facts: result.facts,
+      provenance: result.provenance,
+      outputs: projection.outputs || {},
+      history: result.history,
+      docText: projection.docText || {},
+    }, { writeLegacyFiles: true });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      formType,
+      savedAt: result.savedAt,
+      saved: result.saved,
+      meta: updated.meta,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

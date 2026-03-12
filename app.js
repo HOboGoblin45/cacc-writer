@@ -39,6 +39,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   $('tab-'+name).classList.add('active');
   document.querySelectorAll('.tab').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"))t.classList.add('active');});
+  if(name==='workspace' && typeof workspaceOnTabOpen==='function')workspaceOnTabOpen();
   if(name==='facts')loadNeighborhoodTemplates();
   if(name==='voice')loadVoiceExamples();
   if(name==='docs')loadDocsTab();
@@ -266,7 +267,7 @@ function countFactLeaves(node) {
   }
   let total=0;
   for(const [k,v] of Object.entries(node)) {
-    if(k==='updatedAt'||k==='extractedAt') continue;
+    if(k==='updatedAt'||k==='extractedAt'||k==='workspace1004') continue;
     if(v && typeof v==='object') {
       if(Object.prototype.hasOwnProperty.call(v,'value')) total++;
       else total+=countFactLeaves(v);
@@ -409,9 +410,10 @@ async function loadCase(caseId) {
   autoFillGenerateInputs(d.facts||{},d.meta);
   setStatus('genStatus','Ready.','');
   _updateGenStrip();
+  if(typeof workspaceOnCaseLoaded==='function')workspaceOnCaseLoaded();
   renderQuestionnaire([]);
   setStatus('questionnaireStatus','','');
-  if(d.facts&&Object.keys(d.facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt').length>0)await generateQuestions(true);
+  if(d.facts&&Object.keys(d.facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'&&k!=='workspace1004').length>0)await generateQuestions(true);
   document.querySelectorAll('.case-item').forEach(el=>el.classList.toggle('active',el.getAttribute('onclick')&&el.getAttribute('onclick').includes(caseId)));
 }
 async function updateCase() {
@@ -463,6 +465,7 @@ async function deleteCase(caseId,btn) {
     setStatus('factSourceStatus','');
     renderCaseStripMeta({});
     $('output').innerHTML='';setStatus('genStatus','Ready.','');
+    if(typeof workspaceReset==='function')workspaceReset();
   }
   await loadCases();
 }
@@ -572,7 +575,7 @@ async function saveAnswers() {
 // ====== FACTS DISPLAY ======
 function renderFacts(facts) {
   const wrap=$('factsDisplay');
-  const keys=facts?Object.keys(facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'):[];
+  const keys=facts?Object.keys(facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'&&k!=='workspace1004'):[];
   if(!keys.length){wrap.innerHTML='<div class="hint">No facts extracted yet. Upload documents then click Extract Facts from Docs.</div>';return;}
   STATE.factsObj=JSON.parse(JSON.stringify(facts));
   let html='';
@@ -609,7 +612,7 @@ function renderFacts(facts) {
 function renderFactsCompleteness(facts) {
   const bar=$('factsCompleteness');
   if(!bar)return;
-  const keys=facts?Object.keys(facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'):[];
+  const keys=facts?Object.keys(facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'&&k!=='workspace1004'):[];
   if(!keys.length){bar.style.display='none';return;}
   let total=0,filled=0;
   for(const secKey of keys){

@@ -547,6 +547,166 @@ export function initSchema(db) {
       ON extracted_sections(review_status);
     CREATE INDEX IF NOT EXISTS idx_extracted_sections_hash
       ON extracted_sections(text_hash);
+
+    -- —— comparable intelligence (Phase D/H foundation) ——————————————————————————————
+    CREATE TABLE IF NOT EXISTS comp_candidates (
+      id                 TEXT PRIMARY KEY,
+      case_id            TEXT NOT NULL,
+      source_key         TEXT NOT NULL,
+      source_type        TEXT NOT NULL,
+      source_document_id TEXT,
+      review_status      TEXT NOT NULL DEFAULT 'pending',
+      -- review_status: pending | held | accepted | rejected
+      is_active          INTEGER NOT NULL DEFAULT 1,
+      candidate_json     TEXT NOT NULL DEFAULT '{}',
+      created_at         TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at         TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_comp_candidates_case_source
+      ON comp_candidates(case_id, source_key);
+    CREATE INDEX IF NOT EXISTS idx_comp_candidates_case_active
+      ON comp_candidates(case_id, is_active, review_status);
+
+    CREATE TABLE IF NOT EXISTS comp_scores (
+      id                TEXT PRIMARY KEY,
+      case_id           TEXT NOT NULL,
+      comp_candidate_id TEXT NOT NULL,
+      overall_score     REAL NOT NULL,
+      coverage_score    REAL NOT NULL DEFAULT 0,
+      breakdown_json    TEXT NOT NULL DEFAULT '{}',
+      weights_json      TEXT NOT NULL DEFAULT '{}',
+      warnings_json     TEXT NOT NULL DEFAULT '[]',
+      computed_at       TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_comp_scores_case_candidate
+      ON comp_scores(case_id, comp_candidate_id);
+
+    CREATE TABLE IF NOT EXISTS comp_tier_assignments (
+      id                TEXT PRIMARY KEY,
+      case_id           TEXT NOT NULL,
+      comp_candidate_id TEXT NOT NULL,
+      tier              TEXT NOT NULL,
+      reasoning_json    TEXT NOT NULL DEFAULT '{}',
+      assigned_at       TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_comp_tiers_case_candidate
+      ON comp_tier_assignments(case_id, comp_candidate_id);
+
+    CREATE TABLE IF NOT EXISTS comp_acceptance_events (
+      id                     TEXT PRIMARY KEY,
+      case_id                TEXT NOT NULL,
+      comp_candidate_id      TEXT NOT NULL,
+      accepted_by            TEXT NOT NULL DEFAULT 'appraiser',
+      grid_slot              TEXT,
+      ranking_score          REAL,
+      visible_reasoning_json TEXT NOT NULL DEFAULT '{}',
+      became_final_comp      INTEGER NOT NULL DEFAULT 0,
+      note                   TEXT,
+      accepted_at            TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_comp_acceptance_case_candidate
+      ON comp_acceptance_events(case_id, comp_candidate_id, accepted_at DESC);
+
+    CREATE TABLE IF NOT EXISTS comp_rejection_events (
+      id                     TEXT PRIMARY KEY,
+      case_id                TEXT NOT NULL,
+      comp_candidate_id      TEXT NOT NULL,
+      rejected_by            TEXT NOT NULL DEFAULT 'appraiser',
+      reason_code            TEXT NOT NULL,
+      ranking_score          REAL,
+      visible_reasoning_json TEXT NOT NULL DEFAULT '{}',
+      note                   TEXT,
+      rejected_at            TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_comp_rejection_case_candidate
+      ON comp_rejection_events(case_id, comp_candidate_id, rejected_at DESC);
+
+    CREATE TABLE IF NOT EXISTS adjustment_support_records (
+      id                    TEXT PRIMARY KEY,
+      case_id               TEXT NOT NULL,
+      comp_candidate_id     TEXT,
+      grid_slot             TEXT NOT NULL,
+      adjustment_category   TEXT NOT NULL,
+      subject_value         TEXT,
+      comp_value            TEXT,
+      support_type          TEXT NOT NULL DEFAULT 'appraiser_judgment_with_explanation',
+      support_strength      TEXT NOT NULL DEFAULT 'medium',
+      suggested_amount      REAL,
+      suggested_range_json  TEXT NOT NULL DEFAULT '{}',
+      final_amount          REAL,
+      final_range_json      TEXT NOT NULL DEFAULT '{}',
+      support_evidence_json TEXT NOT NULL DEFAULT '[]',
+      rationale_note        TEXT,
+      decision_status       TEXT NOT NULL DEFAULT 'pending',
+      recommendation_source TEXT NOT NULL DEFAULT 'heuristic_seed',
+      updated_at            TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at            TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_adjustment_support_case_slot_category
+      ON adjustment_support_records(case_id, grid_slot, adjustment_category);
+    CREATE INDEX IF NOT EXISTS idx_adjustment_support_case_candidate
+      ON adjustment_support_records(case_id, comp_candidate_id, decision_status);
+
+    CREATE TABLE IF NOT EXISTS adjustment_recommendations (
+      id                  TEXT PRIMARY KEY,
+      case_id             TEXT NOT NULL,
+      comp_candidate_id   TEXT,
+      grid_slot           TEXT NOT NULL,
+      adjustment_category TEXT NOT NULL,
+      recommendation_json TEXT NOT NULL DEFAULT '{}',
+      created_at          TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at          TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_adjustment_recommendations_case_slot_category
+      ON adjustment_recommendations(case_id, grid_slot, adjustment_category);
+
+    CREATE TABLE IF NOT EXISTS paired_sales_library_records (
+      id                  TEXT PRIMARY KEY,
+      market_area         TEXT,
+      property_type       TEXT,
+      date_range_start    TEXT,
+      date_range_end      TEXT,
+      variable_analyzed   TEXT NOT NULL,
+      support_method      TEXT NOT NULL,
+      sample_size         INTEGER,
+      conclusion          TEXT,
+      confidence          TEXT,
+      narrative_summary   TEXT,
+      linked_assignments_json TEXT NOT NULL DEFAULT '[]',
+      linked_comp_sets_json   TEXT NOT NULL DEFAULT '[]',
+      creator             TEXT,
+      reviewer            TEXT,
+      approval_status     TEXT NOT NULL DEFAULT 'draft',
+      created_at          TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_paired_sales_library_variable
+      ON paired_sales_library_records(variable_analyzed, approval_status);
+
+    CREATE TABLE IF NOT EXISTS comp_burden_metrics (
+      id                         TEXT PRIMARY KEY,
+      case_id                    TEXT NOT NULL,
+      comp_candidate_id          TEXT,
+      grid_slot                  TEXT NOT NULL,
+      gross_adjustment_percent   REAL NOT NULL DEFAULT 0,
+      net_adjustment_percent     REAL NOT NULL DEFAULT 0,
+      burden_by_category_json    TEXT NOT NULL DEFAULT '{}',
+      major_mismatch_count       INTEGER NOT NULL DEFAULT 0,
+      data_confidence_score      REAL NOT NULL DEFAULT 0,
+      date_relevance_score       REAL NOT NULL DEFAULT 0,
+      location_confidence_score  REAL NOT NULL DEFAULT 0,
+      overall_stability_score    REAL NOT NULL DEFAULT 0,
+      computed_at                TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (comp_candidate_id) REFERENCES comp_candidates(id) ON DELETE CASCADE
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_comp_burden_case_slot
+      ON comp_burden_metrics(case_id, grid_slot);
   `);
 
   // Run column migrations for Phase 3 additions
