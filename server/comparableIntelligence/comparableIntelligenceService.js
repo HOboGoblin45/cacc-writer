@@ -19,6 +19,7 @@ import {
   updateAdjustmentSupportDecision,
   replaceAdjustmentRecommendations,
   replaceCompBurdenMetrics,
+  replaceReconciliationSupportRecord,
   upsertPairedSalesLibraryRecord,
   listPairedSalesLibraryRecords,
   markComparableCandidatesInactive,
@@ -493,6 +494,14 @@ export function buildComparableGridPreview(candidate = {}) {
     'Basement / Finished Rooms Below Grade': candidate.basement || (candidate.basementArea != null ? String(candidate.basementArea) : ''),
     'Garage / Carport': candidate.garageCarport || '',
   };
+}
+
+function formatCurrency(value) {
+  if (value == null || value === '') return '';
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return '';
+  const rounded = Math.round(amount);
+  return `${rounded < 0 ? '-' : ''}$${Math.abs(rounded).toLocaleString()}`;
 }
 
 function cleanObject(value = {}) {
@@ -1005,6 +1014,160 @@ function selectedAmountForRecord(record) {
   return record.suggestedAmount ?? 0;
 }
 
+function weightLabel(score) {
+  if (score >= 0.78) return 'Primary';
+  if (score >= 0.62) return 'Secondary';
+  return 'Context';
+}
+
+function buildSlotValuationMetrics(slot = {}) {
+  const records = Array.isArray(slot.adjustmentSupport) ? slot.adjustmentSupport : [];
+  const salePrice = asNumber(slot.candidate?.salePrice);
+  const contradictionCount = Array.isArray(slot.contradictions) ? slot.contradictions.length : 0;
+  const resolvedSupportCount = records.filter((record) => record.decisionStatus !== 'pending').length;
+  const supportCompleteness = records.length ? (resolvedSupportCount / records.length) : 0;
+
+  let netAdjustmentAmount = 0;
+  let grossAdjustmentAmount = 0;
+  let selectedAdjustmentCount = 0;
+  for (const record of records) {
+    const selectedAmount = selectedAmountForRecord(record);
+    if (!selectedAmount) continue;
+    selectedAdjustmentCount++;
+    netAdjustmentAmount += selectedAmount;
+    grossAdjustmentAmount += Math.abs(selectedAmount);
+  }
+
+  const adjustedSalePrice = salePrice != null ? Math.round(salePrice + netAdjustmentAmount) : null;
+  const contradictionPenalty = Math.min(contradictionCount * 0.08, 0.24);
+  const score = Math.max(0, Math.min(1, Number((
+    (
+      (Number(slot.burdenMetrics?.overallStabilityScore || 0) * 0.42) +
+      (Number(slot.relevanceScore || 0) * 0.24) +
+      (Number(slot.burdenMetrics?.dataConfidenceScore || 0) * 0.14) +
+      (supportCompleteness * 0.1) +
+      ((1 - contradictionPenalty) * 0.1)
+    )
+  ).toFixed(4))));
+
+  const reasoning = [];
+  if ((slot.burdenMetrics?.grossAdjustmentPercent || 0) <= 15) {
+    reasoning.push(`Gross adjustment burden is limited at ${slot.burdenMetrics?.grossAdjustmentPercent || 0}%.`);
+  } else {
+    reasoning.push(`Gross adjustment burden is elevated at ${slot.burdenMetrics?.grossAdjustmentPercent || 0}%.`);
+  }
+  if ((slot.burdenMetrics?.overallStabilityScore || 0) >= 0.7) {
+    reasoning.push(`Stability score is strong at ${Math.round((slot.burdenMetrics?.overallStabilityScore || 0) * 100)}%.`);
+  } else {
+    reasoning.push(`Stability score is weaker at ${Math.round((slot.burdenMetrics?.overallStabilityScore || 0) * 100)}%.`);
+  }
+  if (contradictionCount) {
+    reasoning.push(`${contradictionCount} contradiction flag${contradictionCount === 1 ? '' : 's'} remain open.`);
+  } else {
+    reasoning.push('No comparable contradiction flags are currently open.');
+  }
+
+  return {
+    salePrice,
+    grossAdjustmentAmount: Math.round(grossAdjustmentAmount),
+    netAdjustmentAmount: Math.round(netAdjustmentAmount),
+    adjustedSalePrice,
+    selectedAdjustmentCount,
+    supportCompleteness: Number(supportCompleteness.toFixed(4)),
+    contradictionCount,
+    suggestedWeightScore: score,
+    suggestedWeightLabel: weightLabel(score),
+    weightReasoning: reasoning,
+  };
+}
+
+function buildReconciliationSupport(caseId, subject, acceptedSlots = []) {
+  const valuedSlots = acceptedSlots
+    .filter((slot) => slot?.valuationMetrics?.adjustedSalePrice != null)
+    .map((slot) => ({
+      gridSlot: slot.gridSlot,
+      gridSlotLabel: slot.gridSlotLabel,
+      candidateId: slot.candidateId,
+      address: slot.address || slot.candidate?.address || '',
+      adjustedSalePrice: slot.valuationMetrics.adjustedSalePrice,
+      salePrice: slot.valuationMetrics.salePrice,
+      grossAdjustmentPercent: slot.burdenMetrics?.grossAdjustmentPercent || 0,
+      netAdjustmentPercent: slot.burdenMetrics?.netAdjustmentPercent || 0,
+      stabilityScore: slot.burdenMetrics?.overallStabilityScore || 0,
+      relevanceScore: slot.relevanceScore || 0,
+      suggestedWeightScore: slot.valuationMetrics.suggestedWeightScore || 0,
+      suggestedWeightLabel: slot.valuationMetrics.suggestedWeightLabel || 'Context',
+      contradictionCount: slot.valuationMetrics.contradictionCount || 0,
+      reasons: slot.valuationMetrics.weightReasoning || [],
+    }))
+    .sort((left, right) => right.suggestedWeightScore - left.suggestedWeightScore);
+
+  const support = {
+    caseId,
+    generatedAt: new Date().toISOString(),
+    summary: {
+      consideredCompCount: valuedSlots.length,
+      weightedIndication: null,
+      indicatedRangeLow: null,
+      indicatedRangeHigh: null,
+    },
+    mostReliable: [],
+    leastReliable: [],
+    weighting: [],
+    evidencePaths: [],
+    draftNarrative: '',
+  };
+
+  if (!valuedSlots.length) {
+    support.draftNarrative = 'No accepted comparable slots are available for reconciliation support yet.';
+    return support;
+  }
+
+  const totalWeight = valuedSlots.reduce((sum, slot) => sum + Math.max(slot.suggestedWeightScore, 0.05), 0);
+  const weightedIndication = totalWeight
+    ? Math.round(valuedSlots.reduce((sum, slot) => (
+      sum + (slot.adjustedSalePrice * Math.max(slot.suggestedWeightScore, 0.05))
+    ), 0) / totalWeight)
+    : null;
+  const indicatedRangeLow = Math.min(...valuedSlots.map((slot) => slot.adjustedSalePrice));
+  const indicatedRangeHigh = Math.max(...valuedSlots.map((slot) => slot.adjustedSalePrice));
+
+  support.summary = {
+    consideredCompCount: valuedSlots.length,
+    weightedIndication,
+    indicatedRangeLow,
+    indicatedRangeHigh,
+  };
+  support.mostReliable = valuedSlots.slice(0, Math.min(2, valuedSlots.length));
+  support.leastReliable = valuedSlots.slice(-Math.min(2, valuedSlots.length)).reverse();
+  support.weighting = valuedSlots.map((slot) => ({
+    ...slot,
+    contributionPercent: Number(((Math.max(slot.suggestedWeightScore, 0.05) / totalWeight) * 100).toFixed(1)),
+  }));
+  support.evidencePaths = valuedSlots.map((slot) => ({
+    gridSlot: slot.gridSlot,
+    candidateId: slot.candidateId,
+    paths: [
+      'workspace1004.salesComparison.grid',
+      `comparables.${slot.gridSlot}.adjustmentSupport`,
+      `comparables.${slot.gridSlot}.burdenMetrics`,
+    ],
+  }));
+
+  const primaryLabels = support.mostReliable.map((slot) => slot.gridSlotLabel).join(' and ');
+  const weakLabels = support.leastReliable
+    .filter((slot) => !support.mostReliable.some((entry) => entry.gridSlot === slot.gridSlot))
+    .map((slot) => slot.gridSlotLabel)
+    .join(' and ');
+  support.draftNarrative =
+    `${primaryLabels || 'The accepted comparables'} carry the greatest reconciliation weight because they combine stronger stability scores and lower adjustment burden. ` +
+    `The adjusted sale prices range from ${formatCurrency(indicatedRangeLow)} to ${formatCurrency(indicatedRangeHigh)}, with a weighted indication near ${formatCurrency(weightedIndication)}. ` +
+    `${weakLabels ? `${weakLabels} receive less weight due to higher burden or open contradictions. ` : ''}` +
+    `Final value selection remains an appraiser judgment based on market context in ${subject.marketArea || subject.city || 'the subject market'}.`;
+
+  return support;
+}
+
 function computeCompBurdenMetrics({ gridSlot, candidateRecord, records = [] }) {
   const salePrice = asNumber(candidateRecord?.candidate?.salePrice) || 0;
   const burdenByCategory = {};
@@ -1095,6 +1258,7 @@ function buildAcceptedSlotSupport(caseId, projection, rankedCandidates, subject)
       gridSlotLabel: gridSlot.replace('comp', 'Comp '),
       candidateId: candidateRecord.id,
       address: candidateRecord.candidate?.address || rowIndex.get('Address')?.[gridSlot] || '',
+      candidate: cloneValue(candidateRecord.candidate || {}),
       relevanceScore: candidateRecord.relevanceScore,
       tierLabel: candidateRecord.tierLabel,
       sourceStrength: candidateRecord.sourceStrength,
@@ -1111,12 +1275,18 @@ function buildAcceptedSlotSupport(caseId, projection, rankedCandidates, subject)
     acceptedSlots,
     rankedCandidates,
   });
+  for (const slot of acceptedSlots) {
+    slot.valuationMetrics = buildSlotValuationMetrics(slot);
+  }
   const librarySummary = syncPairedSalesLibraryRecords(caseId, subject, acceptedSlots);
+  const reconciliationSupport = buildReconciliationSupport(caseId, subject, acceptedSlots);
+  replaceReconciliationSupportRecord(caseId, reconciliationSupport);
 
   return {
     acceptedSlots,
     contradictions,
     librarySummary,
+    reconciliationSupport,
   };
 }
 
@@ -1224,6 +1394,7 @@ export function buildComparableIntelligence(caseId) {
   const acceptedSlots = supportBundle.acceptedSlots;
   const contradictions = supportBundle.contradictions;
   const librarySummary = supportBundle.librarySummary;
+  const reconciliationSupport = supportBundle.reconciliationSupport;
 
   return {
     caseId,
@@ -1237,11 +1408,13 @@ export function buildComparableIntelligence(caseId) {
       acceptedSlotCount: acceptedSlots.length,
       adjustmentSupportCount: acceptedSlots.reduce((sum, slot) => sum + slot.adjustmentSupport.length, 0),
       contradictionCount: contradictions.length,
+      reconciliationCompCount: reconciliationSupport?.summary?.consideredCompCount || 0,
     },
     candidates: rankedCandidates,
     acceptedSlots,
     contradictions,
     librarySummary,
+    reconciliationSupport,
   };
 }
 
@@ -1301,6 +1474,81 @@ function applyGridPreviewToWorkspaceGrid(gridRows = [], gridPreview = {}, gridSl
       [gridSlot]: String(previewValue),
     };
   });
+}
+
+function applyValuationMetricsToWorkspaceGrid(gridRows = [], acceptedSlots = []) {
+  const nextRows = cloneValue(gridRows || []);
+  const rowIndex = buildGridRowIndex(nextRows);
+
+  for (const slot of acceptedSlots) {
+    const netRow = rowIndex.get('Net Adjustment');
+    if (netRow) {
+      netRow[slot.gridSlot] = formatCurrency(slot.valuationMetrics?.netAdjustmentAmount);
+    }
+
+    const adjustedRow = rowIndex.get('Adjusted Sale Price');
+    if (adjustedRow) {
+      adjustedRow[slot.gridSlot] = formatCurrency(slot.valuationMetrics?.adjustedSalePrice);
+    }
+  }
+
+  return nextRows;
+}
+
+function canOverwriteComputedLeaf(leaf) {
+  if (!leaf || typeof leaf !== 'object') return true;
+  const value = asText(leaf.value);
+  const source = normalizeText(leaf.source);
+  return !value || source === 'comp-intelligence';
+}
+
+function setComputedLeafIfWritable(target, path, value, now) {
+  const existing = getNestedValue(target, path);
+  if (!canOverwriteComputedLeaf(existing)) return false;
+  setNestedValue(target, path, {
+    value,
+    confidence: 'medium',
+    source: 'comp-intelligence',
+    updatedAt: now,
+  });
+  return true;
+}
+
+function syncComparableAnalyticsProjection(projection, intelligence) {
+  if (!projection || !intelligence) return projection;
+  const currentGridLeaf = getNestedValue(projection.facts || {}, 'workspace1004.salesComparison.grid');
+  const currentRows = Array.isArray(currentGridLeaf?.value) ? currentGridLeaf.value : null;
+  if (!currentRows) return projection;
+
+  const now = new Date().toISOString();
+  const nextFacts = cloneValue(projection.facts || {});
+  const nextRows = applyValuationMetricsToWorkspaceGrid(currentRows, intelligence.acceptedSlots || []);
+  setNestedValue(nextFacts, 'workspace1004.salesComparison.grid', {
+    value: nextRows,
+    confidence: currentGridLeaf?.confidence || 'high',
+    source: 'comp-intelligence',
+    updatedAt: now,
+  });
+
+  const weightedIndication = intelligence.reconciliationSupport?.summary?.weightedIndication;
+  if (weightedIndication != null) {
+    const weightedText = formatCurrency(weightedIndication);
+    setComputedLeafIfWritable(nextFacts, 'workspace1004.salesComparison.indicatedValue', weightedText, now);
+    setComputedLeafIfWritable(nextFacts, 'workspace1004.reconciliation.salesComparisonValue', weightedText, now);
+  }
+
+  return saveCaseProjection({
+    caseId: projection.meta?.caseId || projection.caseId,
+    meta: {
+      ...(projection.meta || {}),
+      updatedAt: now,
+    },
+    facts: nextFacts,
+    provenance: projection.provenance || {},
+    outputs: projection.outputs || {},
+    history: projection.history || {},
+    docText: projection.docText || {},
+  }, { writeLegacyFiles: true });
 }
 
 function syncLegacyCompFacts(facts, gridPreview, gridSlot) {
@@ -1386,9 +1634,12 @@ export function acceptComparableCandidate({
     }, { writeLegacyFiles: true });
   }
 
+  const finalIntelligence = buildComparableIntelligence(caseId);
+  const analyticsProjection = syncComparableAnalyticsProjection(updatedProjection, finalIntelligence);
+
   return {
-    intelligence: buildComparableIntelligence(caseId),
-    projection: updatedProjection,
+    intelligence: finalIntelligence,
+    projection: analyticsProjection,
   };
 }
 
@@ -1414,5 +1665,8 @@ export function saveAdjustmentSupportDecision({
   });
 
   if (!updated) return null;
-  return buildComparableIntelligence(caseId);
+  const intelligence = buildComparableIntelligence(caseId);
+  const projection = getCaseProjection(caseId);
+  syncComparableAnalyticsProjection(projection, intelligence);
+  return intelligence;
 }

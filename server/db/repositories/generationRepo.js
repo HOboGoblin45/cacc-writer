@@ -320,22 +320,38 @@ export function getRunsForCase(caseId) {
  *   @param {string} params.status       — JOB_STATUS.QUEUED or JOB_STATUS.BLOCKED
  *   @param {string} params.profileId    — generator profile ID
  *   @param {string[]} params.dependsOn  — section IDs this job depends on
+ *   @param {string|null} [params.promptVersion]
+ *   @param {object|null} [params.sectionPolicy]
+ *   @param {object|null} [params.dependencySnapshot]
  * @returns {string} jobId
  */
-export function createSectionJob({ runId, sectionId, status, profileId, dependsOn = [] }) {
+export function createSectionJob({
+  runId,
+  sectionId,
+  status,
+  profileId,
+  dependsOn = [],
+  promptVersion = null,
+  sectionPolicy = null,
+  dependencySnapshot = null,
+}) {
   const jobId = uuidv4();
   getDb().prepare(`
     INSERT INTO section_jobs
       (id, run_id, section_id, status, generator_profile,
-       dependencies_json, attempt_count, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, 0, datetime('now'))
+       prompt_version, dependencies_json, section_policy_json,
+       dependency_snapshot_json, attempt_count, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
   `).run(
     jobId,
     runId,
     sectionId,
     status,
     profileId,
-    JSON.stringify(dependsOn)
+    promptVersion,
+    JSON.stringify(dependsOn),
+    JSON.stringify(sectionPolicy || {}),
+    JSON.stringify(dependencySnapshot || {})
   );
   return jobId;
 }
@@ -398,6 +414,7 @@ export function markJobRetrying(jobId) {
  *   @param {number|null} [metrics.promptTokens]
  *   @param {number|null} [metrics.completionTokens]
  *   @param {string[]} [metrics.retrievalSourceIds]
+ *   @param {object|null} [metrics.dependencySnapshot]
  * @returns {void}
  */
 export function markJobCompleted(jobId, metrics) {
@@ -411,7 +428,8 @@ export function markJobCompleted(jobId, metrics) {
            warnings_count          = ?,
            prompt_tokens           = ?,
            completion_tokens       = ?,
-           retrieval_source_ids_json = ?
+           retrieval_source_ids_json = ?,
+           dependency_snapshot_json = ?
      WHERE id = ?
   `).run(
     JOB_STATUS.COMPLETE,
@@ -422,6 +440,7 @@ export function markJobCompleted(jobId, metrics) {
     metrics.promptTokens        || null,
     metrics.completionTokens    || null,
     JSON.stringify(metrics.retrievalSourceIds || []),
+    JSON.stringify(metrics.dependencySnapshot || {}),
     jobId
   );
 }
@@ -472,7 +491,8 @@ export function markJobSkipped(jobId, reason) {
 export function getSectionJobsForRun(runId) {
   return getDb().prepare(`
     SELECT id, run_id, section_id, status, generator_profile,
-           dependencies_json, attempt_count,
+           prompt_version, dependencies_json, section_policy_json,
+           dependency_snapshot_json, attempt_count,
            started_at, completed_at, duration_ms,
            input_chars, output_chars, warnings_count,
            prompt_tokens, completion_tokens,
@@ -492,6 +512,7 @@ export function getSectionJobsForRun(runId) {
 export function getSectionJobById(jobId) {
   return getDb().prepare(`
     SELECT id, run_id, section_id, status, generator_profile,
+           prompt_version, section_policy_json, dependency_snapshot_json,
            attempt_count, started_at, completed_at, duration_ms,
            input_chars, output_chars, warnings_count, error_text
       FROM section_jobs WHERE id = ?
@@ -529,9 +550,23 @@ export function getJobIdForSection(runId, sectionId) {
  *   @param {string} params.formType
  *   @param {string} params.text
  *   @param {number} params.examplesUsed
+ *   @param {object|null} [params.auditMetadata]
+ *   @param {number|null} [params.qualityScore]
+ *   @param {object|null} [params.qualityMetadata]
  * @returns {string} record ID
  */
-export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType, text, examplesUsed }) {
+export function saveGeneratedSection({
+  jobId,
+  runId,
+  caseId,
+  sectionId,
+  formType,
+  text,
+  examplesUsed,
+  auditMetadata = null,
+  qualityScore = null,
+  qualityMetadata = null,
+}) {
   const db = getDb();
 
   const existing = db.prepare(`
@@ -541,9 +576,19 @@ export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType
   if (existing) {
     db.prepare(`
       UPDATE generated_sections
-         SET draft_text = ?, final_text = ?, examples_used = ?, job_id = ?
+         SET draft_text = ?, final_text = ?, examples_used = ?, job_id = ?,
+             audit_metadata_json = ?, quality_score = ?, quality_metadata_json = ?
        WHERE id = ?
-    `).run(text, text, examplesUsed, jobId, existing.id);
+    `).run(
+      text,
+      text,
+      examplesUsed,
+      jobId,
+      JSON.stringify(auditMetadata || {}),
+      qualityScore,
+      JSON.stringify(qualityMetadata || {}),
+      existing.id
+    );
     return existing.id;
   }
 
@@ -551,9 +596,23 @@ export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType
   db.prepare(`
     INSERT INTO generated_sections
       (id, job_id, run_id, case_id, section_id, form_type,
-       draft_text, final_text, examples_used, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `).run(id, jobId, runId, caseId, sectionId, formType, text, text, examplesUsed);
+       draft_text, final_text, audit_metadata_json, quality_score,
+       quality_metadata_json, examples_used, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `).run(
+    id,
+    jobId,
+    runId,
+    caseId,
+    sectionId,
+    formType,
+    text,
+    text,
+    JSON.stringify(auditMetadata || {}),
+    qualityScore,
+    JSON.stringify(qualityMetadata || {}),
+    examplesUsed
+  );
 
   return id;
 }
@@ -567,7 +626,8 @@ export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType
 export function getGeneratedSectionsForRun(runId) {
   return getDb().prepare(`
     SELECT section_id, final_text, draft_text, approved, approved_at,
-           inserted_at, examples_used, created_at
+           inserted_at, examples_used, audit_metadata_json,
+           quality_score, quality_metadata_json, created_at
       FROM generated_sections
      WHERE run_id = ?
      ORDER BY created_at ASC

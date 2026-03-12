@@ -39,6 +39,11 @@ import {
   saveGeneratedSection,
 } from '../db/repositories/generationRepo.js';
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
+import {
+  resolveSectionPolicy,
+  buildDependencySnapshot,
+  scoreSectionOutput,
+} from '../sectionFactory/sectionPolicyService.js';
 import log  from '../logger.js';
 
 const MAX_RETRIES = 1; // 1 retry per section as specified
@@ -395,6 +400,15 @@ export async function runSectionJob({
 }) {
   const sectionId = sectionDef.id;
   const t0        = Date.now();
+  const resolvedFormType = context.formType || '1004';
+  const sectionPolicy = resolveSectionPolicy({
+    formType: resolvedFormType,
+    sectionDef,
+  });
+  const dependencySnapshot = buildDependencySnapshot({
+    sectionPolicy,
+    generatedSections: priorResults,
+  });
 
   // ── Resolve job ID ─────────────────────────────────────────────────────────
   // Use pre-created jobId from orchestrator if provided.
@@ -408,6 +422,9 @@ export async function runSectionJob({
       status:    JOB_STATUS.QUEUED,
       profileId: sectionDef.generatorProfile || 'retrieval-guided',
       dependsOn: sectionDef.dependsOn || [],
+      promptVersion: sectionPolicy.promptVersion,
+      sectionPolicy,
+      dependencySnapshot,
     });
   }
 
@@ -438,7 +455,7 @@ export async function runSectionJob({
   // ── Build prompt messages ──────────────────────────────────────────────────
   const promptMessages = buildPromptMessages({
     fieldId:        sectionId,
-    formType:       context.formType || '1004',
+    formType:       resolvedFormType,
     facts,
     voiceExamples,
     examples:       otherExamples,
@@ -449,6 +466,8 @@ export async function runSectionJob({
   });
 
   const inputChars = JSON.stringify(promptMessages).length;
+  const analysisContextUsed = Boolean(analysisContext);
+  const priorSectionsContextUsed = Boolean(priorSectionsContext);
 
   // ── Execute with retry ─────────────────────────────────────────────────────
   let attemptCount = 0;
@@ -480,6 +499,15 @@ export async function runSectionJob({
       const durationMs    = Date.now() - t0;
       const outputChars   = outputText.length;
       const warningsCount = countWarnings(outputText);
+      const quality = scoreSectionOutput({
+        sectionPolicy,
+        text: outputText,
+        warningsCount,
+        dependencySnapshot,
+        analysisContextUsed,
+        priorSectionsContextUsed,
+        retrievalSourceIds: sourceIds,
+      });
 
       markJobCompleted(jobId, {
         durationMs,
@@ -489,6 +517,7 @@ export async function runSectionJob({
         promptTokens:       null, // not available from current callAI signature
         completionTokens:   null,
         retrievalSourceIds: sourceIds,
+        dependencySnapshot,
       });
 
       // Save generated section text
@@ -497,15 +526,40 @@ export async function runSectionJob({
         runId,
         caseId,
         sectionId,
-        formType:     context.formType || '1004',
+        formType:     resolvedFormType,
         text:         outputText,
         examplesUsed: voiceExamples.length + otherExamples.length,
+        auditMetadata: {
+          sectionId,
+          generatorProfile: profile.id,
+          promptVersion: sectionPolicy.promptVersion,
+          retrievalSourceIds: sourceIds,
+          dependencySnapshot,
+          contextBlocksUsed: {
+            analysisContext: analysisContextUsed,
+            priorSectionsContext: priorSectionsContextUsed,
+            voiceContext: Boolean(voiceContextBlock),
+            compCommentaryContext: Boolean(compCommentaryBlock),
+          },
+        },
+        qualityScore: quality.score,
+        qualityMetadata: quality.metadata,
       });
 
       return {
         ok:        true,
         sectionId,
         text:      outputText,
+        promptVersion: sectionPolicy.promptVersion,
+        sectionPolicy,
+        qualityScore: quality.score,
+        auditMetadata: {
+          sectionId,
+          generatorProfile: profile.id,
+          promptVersion: sectionPolicy.promptVersion,
+          retrievalSourceIds: sourceIds,
+          dependencySnapshot,
+        },
         metrics: {
           durationMs,
           attemptCount,
@@ -513,6 +567,9 @@ export async function runSectionJob({
           outputChars,
           warningsCount,
           retrievalSourceIds: sourceIds,
+          dependencySnapshot,
+          promptVersion: sectionPolicy.promptVersion,
+          qualityScore: quality.score,
         },
       };
 
@@ -544,12 +601,16 @@ export async function runSectionJob({
     sectionId,
     text:      '',
     error:     errorText,
+    promptVersion: sectionPolicy.promptVersion,
+    sectionPolicy,
     metrics: {
       durationMs,
       attemptCount,
       inputChars,
       outputChars:   0,
       warningsCount: 0,
+      dependencySnapshot,
+      promptVersion: sectionPolicy.promptVersion,
     },
   };
 }
@@ -566,7 +627,7 @@ export function getSectionJobStatus(jobId) {
   return getDb().prepare(`
     SELECT id, run_id, section_id, status, attempt_count,
            started_at, completed_at, duration_ms, error_text,
-           input_chars, output_chars, generator_profile
+           input_chars, output_chars, generator_profile, prompt_version
       FROM section_jobs WHERE id = ?
   `).get(jobId) || null;
 }

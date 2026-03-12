@@ -559,6 +559,53 @@ export function replaceCompBurdenMetrics(caseId, metrics = []) {
   tx();
 }
 
+export function getReconciliationSupportRecord(caseId) {
+  const row = getDb().prepare(`
+    SELECT *
+      FROM reconciliation_support_records
+     WHERE case_id = ?
+     LIMIT 1
+  `).get(caseId);
+
+  if (!row) return null;
+  return {
+    id: row.id,
+    caseId: row.case_id,
+    support: parseJSON(row.support_json, {}),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function replaceReconciliationSupportRecord(caseId, support = {}) {
+  const existing = getReconciliationSupportRecord(caseId);
+  const id = existing?.id || uuidv4();
+  const now = new Date().toISOString();
+
+  getDb().prepare(`
+    INSERT INTO reconciliation_support_records (
+      id, case_id, support_json, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(case_id) DO UPDATE SET
+      support_json = excluded.support_json,
+      updated_at = excluded.updated_at
+  `).run(
+    id,
+    caseId,
+    toJSON(support, {}),
+    existing?.createdAt || now,
+    now,
+  );
+
+  return {
+    id,
+    caseId,
+    support,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+}
+
 export function upsertPairedSalesLibraryRecord(record = {}) {
   const id = record.id || uuidv4();
   const now = new Date().toISOString();
