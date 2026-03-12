@@ -63,6 +63,28 @@ await test('1004 workspace definition exposes the required section order', () =>
   assert.ok(definition.fieldIndex.uspap_appraiser_name, 'expected appraiser certification field');
   assert.ok(definition.fieldIndex.dimension_area_summary, 'expected dimension area summary grid');
   assert.ok(definition.fieldIndex.photo_appraised_value, 'expected photo addendum appraised value field');
+
+  // --- Field completeness audit: new fields added in Priority 1 ---
+  assert.ok(definition.fieldIndex.assignment_amc_name, 'expected AMC name field');
+  assert.ok(definition.fieldIndex.assignment_amc_address, 'expected AMC address field');
+  assert.ok(definition.fieldIndex.assignment_transmittal_appraiser_name, 'expected transmittal appraiser name field');
+  assert.ok(definition.fieldIndex.assignment_transmittal_supervisory_name, 'expected transmittal supervisory appraiser name field');
+  assert.ok(definition.fieldIndex.subject_data_source_ownership, 'expected data source for owner of record field');
+  assert.ok(definition.fieldIndex.improvements_sqft_above_grade, 'expected sqft above grade field');
+  assert.ok(definition.fieldIndex.improvements_sqft_below_grade, 'expected sqft below grade field');
+  assert.ok(definition.fieldIndex.improvements_accessory_unit_present, 'expected accessory unit present field');
+  assert.ok(definition.fieldIndex.improvements_accessory_unit_sqft, 'expected accessory unit sqft field');
+  assert.ok(definition.fieldIndex.sales_comp_dom_subject, 'expected subject DOM field');
+  assert.ok(definition.fieldIndex.sales_comp_dom_comp1, 'expected comp 1 DOM field');
+  assert.ok(definition.fieldIndex.reconciliation_appraiser_name, 'expected reconciliation appraiser name field');
+  assert.ok(definition.fieldIndex.reconciliation_inspection_date, 'expected reconciliation inspection date field');
+  assert.ok(definition.fieldIndex.reconciliation_report_date, 'expected reconciliation report date field');
+  assert.ok(definition.fieldIndex.reconciliation_supervisory_appraiser_name, 'expected reconciliation supervisory appraiser name field');
+  assert.ok(definition.fieldIndex.uspap_supervisory_other_description, 'expected supervisory other description field');
+  assert.ok(definition.fieldIndex.uspap_supervisory_state_number, 'expected supervisory state number field');
+  assert.ok(definition.fieldIndex.photo_front_date, 'expected photo front date field');
+  assert.ok(definition.fieldIndex.photo_rear_date, 'expected photo rear date field');
+  assert.ok(definition.fieldIndex.photo_street_date, 'expected photo street date field');
 });
 
 await test('buildWorkspacePayload exposes suggestions from canonical fact paths', () => {

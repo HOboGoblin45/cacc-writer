@@ -340,13 +340,25 @@ export function findStaleDependentSections(regeneratedSectionId) {
  * @param {string} sectionId
  * @param {object} facts
  * @param {object} [existingSections] - map of sectionId → { generatedAt, ... }
+ * @param {object} [options]
+ * @param {string} [options.freshnessStatus] - current freshness_status from DB
+ * @param {number} [options.qualityScore] - current quality score (0-100)
+ * @param {number} [options.regenerationCount] - times this section has been regenerated
+ * @param {number} [options.maxRegenerations] - max allowed regenerations (default: 10)
  * @returns {{ allowed: boolean, warnings: string[], blockers: string[] }}
  */
-export function evaluateRegeneratePolicy(sectionId, facts, existingSections = {}) {
+export function evaluateRegeneratePolicy(sectionId, facts, existingSections = {}, options = {}) {
   const profile = resolveProfileForSection(sectionId);
   const missing = getMissingFacts(sectionId, facts);
   const warnings = [];
   const blockers = [];
+
+  const {
+    freshnessStatus,
+    qualityScore,
+    regenerationCount = 0,
+    maxRegenerations = 10,
+  } = options;
 
   // Block if required facts are missing
   if (missing.hasBlockers) {
@@ -362,9 +374,34 @@ export function evaluateRegeneratePolicy(sectionId, facts, existingSections = {}
     }
   }
 
+  // Block if regeneration count exceeds maximum (prevent loops)
+  if (regenerationCount >= maxRegenerations) {
+    blockers.push(`Regeneration limit reached (${regenerationCount}/${maxRegenerations}). Manual review required.`);
+  }
+
   // Warn about recommended fact gaps
   if (missing.recommended.length > 0) {
     warnings.push(`Missing recommended facts: ${missing.recommended.join(', ')}`);
+  }
+
+  // Warn about stale_due_to_prompt_change — allow but warn
+  if (freshnessStatus === FRESHNESS.STALE_DUE_TO_PROMPT_CHANGE) {
+    warnings.push('Section is stale due to prompt version change. Regeneration recommended to use updated prompt.');
+  }
+
+  // Warn about low quality scores — suggest regeneration
+  if (typeof qualityScore === 'number' && qualityScore < 50) {
+    warnings.push(`Quality score is low (${qualityScore}/100). Regeneration recommended.`);
+  }
+
+  // Warn about sections that are dependencies of other stale sections
+  if (freshnessStatus === FRESHNESS.STALE_DUE_TO_DEPENDENCY_CHANGE) {
+    warnings.push('Section is stale because a dependency section changed. Regeneration recommended.');
+  }
+
+  // Warn when approaching regeneration limit
+  if (regenerationCount >= maxRegenerations - 2 && regenerationCount < maxRegenerations) {
+    warnings.push(`Approaching regeneration limit (${regenerationCount}/${maxRegenerations}).`);
   }
 
   return {
