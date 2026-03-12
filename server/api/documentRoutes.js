@@ -64,6 +64,9 @@ const SUPPORTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.tif', 
 const classifyDocumentSchema = z.object({
   docType: z.string().max(60),
 }).passthrough();
+const uploadMetadataSchema = z.object({
+  docType: z.string().max(60).optional(),
+}).passthrough();
 const ingestRetrySchema = z.object({
   step: z.string().max(40).optional(),
 }).passthrough();
@@ -74,6 +77,7 @@ const reviewFactSchema = z.object({
 const mergeFactsSchema = z.object({
   factIds: z.array(z.string().max(80)).min(1).max(200),
 }).passthrough();
+const emptyMutationSchema = z.object({}).strict();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -189,6 +193,9 @@ router.param('caseId', (req, res, next, caseId) => {
  */
 router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req, res) => {
   let ingestJobId = null;
+  const body = parsePayload(uploadMetadataSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
@@ -204,7 +211,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     }
 
     const caseId = req.params.caseId;
-    const legacyDocType = req.body.docType || null;
+    const legacyDocType = body.docType || null;
     const originalFilename = req.file.originalname || 'document.pdf';
     const fileHash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
     const duplicateExisting = findDuplicateDocumentByHash(caseId, fileHash);
@@ -514,6 +521,8 @@ router.get('/cases/:caseId/documents/:docId', (req, res) => {
 
 // ── DELETE /cases/:caseId/documents/:docId ───────────────────────────────────
 router.delete('/cases/:caseId/documents/:docId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const doc = getDocument(req.params.docId);
     if (!doc || doc.case_id !== req.params.caseId) {
@@ -550,6 +559,8 @@ router.patch('/cases/:caseId/documents/:docId/classify', (req, res) => {
 
 // ── POST /cases/:caseId/documents/:docId/extract ─────────────────────────────
 router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const doc = getDocument(req.params.docId);
     if (!doc || doc.case_id !== req.params.caseId) {
@@ -762,6 +773,8 @@ router.get('/cases/:caseId/extracted-sections', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-sections/:id/approve ───────────────────────
 router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const result = approveSection(req.params.id);
     res.json({ ok: true, ...result });
@@ -772,6 +785,8 @@ router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-sections/:id/reject ────────────────────────
 router.post('/cases/:caseId/extracted-sections/:id/reject', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     rejectSection(req.params.id);
     res.json({ ok: true });

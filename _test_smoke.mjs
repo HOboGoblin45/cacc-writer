@@ -144,6 +144,7 @@ async function apiForm(path, formData) {
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 let latestIngestJobId = null;
+let latestDocumentId = null;
 let smokeQueueBatchId = null;
 let smokeQueueJobId = null;
 
@@ -403,6 +404,7 @@ await test('POST /api/cases/:caseId/documents/upload accepts PDF upload', async 
   assert(typeof body?.ingestJob?.id === 'string', 'ingestJob.id should be present');
   assert(typeof body?.ingestJob?.status === 'string', 'ingestJob.status should be present');
   latestIngestJobId = body.ingestJob.id;
+  latestDocumentId = body.documentId;
 });
 
 await test('POST /api/cases/:caseId/documents/upload flags duplicate PDF by hash', async () => {
@@ -429,6 +431,34 @@ await test('POST /api/cases/:caseId/documents/upload accepts image upload', asyn
   assert(typeof body?.extractionMethod === 'string', 'extractionMethod should be string');
 });
 
+await test('POST /api/cases/:caseId/documents/:docId/extract rejects unexpected payload fields', async () => {
+  const docId = latestDocumentId || 'smoke-doc-id';
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/documents/${docId}/extract`, {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-sections/:id/approve rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-sections/smoke-section-id/approve`, {
+    reviewer: 'smoke',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-sections/:id/reject rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-sections/smoke-section-id/reject`, {
+    reason: 'smoke',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('GET /api/cases/:caseId/extraction-summary includes quality metrics', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/extraction-summary`);
   assert(status === 200, `Expected 200, got ${status}`);
@@ -440,6 +470,91 @@ await test('GET /api/cases/:caseId/extraction-summary includes quality metrics',
   assert(typeof body.quality?.warningCount === 'number', 'warningCount should be number');
   assert(Array.isArray(body.quality?.flaggedDocuments), 'flaggedDocuments should be an array');
   assert(body.quality.duplicateCount >= 1, 'duplicateCount should reflect duplicate upload');
+});
+
+// —— 4c. Phase6 Memory API Contracts ————————————————————————————————
+console.log('\n4c. Memory API Contracts');
+
+await test('POST /api/memory/approved rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/approved', {
+    text: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('PATCH /api/memory/approved/:id rejects invalid payload type', async () => {
+  const { status, body } = await api('PATCH', '/api/memory/approved/smoke-approved-id', [
+    { bad: 'payload' },
+  ]);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('DELETE /api/memory/approved/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/memory/approved/smoke-approved-id', {
+    reason: 'cleanup',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/staging rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/staging', {
+    text: 123,
+    candidateSource: 'generated_section',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/staging/batch-approve rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/staging/batch-approve', {
+    ids: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/voice/profiles rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/voice/profiles', [
+    'not-an-object',
+  ]);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/retrieval/preview rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/retrieval/preview', {
+    canonicalFieldId: 1004,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/retrieval/rank rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/retrieval/rank', {
+    canonicalFieldId: 1004,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/comp-commentary rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/comp-commentary', {
+    text: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────
