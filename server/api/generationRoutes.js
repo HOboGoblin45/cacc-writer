@@ -64,6 +64,12 @@ import {
   evaluateRegeneratePolicy as evaluateFactRegeneratePolicy,
 } from '../services/sectionPolicyService.js';
 import {
+  evaluateSectionFreshness,
+  evaluateAllSectionsFreshness,
+  getStaleSections,
+  invalidateSections,
+} from '../services/sectionFreshnessService.js';
+import {
   resolveSectionPolicy,
   evaluateRegeneratePolicy as evaluateRunRegeneratePolicy,
 } from '../sectionFactory/sectionPolicyService.js';
@@ -1262,6 +1268,77 @@ router.post('/generation/regenerate-section', async (req, res) => {
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /cases/:caseId/sections/freshness ──────────────────────────────────────
+/**
+ * Get freshness status for all generated sections in a case.
+ *
+ * Returns: { ok, caseId, sections, summary }
+ */
+router.get('/cases/:caseId/sections/freshness', (req, res) => {
+  const { caseId } = req.params;
+  try {
+    const result = evaluateAllSectionsFreshness(caseId);
+    res.json({
+      ok: true,
+      caseId,
+      sections: result.sections,
+      summary: result.summary,
+    });
+  } catch (err) {
+    log.error('[sections/freshness]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /cases/:caseId/sections/:sectionId/freshness ─────────────────────────
+/**
+ * Get freshness status for a specific section.
+ *
+ * Returns: { ok, caseId, sectionId, freshness, changedPaths, reasons, ... }
+ */
+router.get('/cases/:caseId/sections/:sectionId/freshness', (req, res) => {
+  const { caseId, sectionId } = req.params;
+  try {
+    const result = evaluateSectionFreshness(caseId, sectionId);
+    res.json({
+      ok: true,
+      caseId,
+      ...result,
+    });
+  } catch (err) {
+    log.error('[sections/freshness]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /cases/:caseId/sections/invalidate ──────────────────────────────────
+/**
+ * Manually invalidate one or more sections, marking them as stale.
+ *
+ * Body:    { sectionIds: string[], reason?: string }
+ * Returns: { ok, invalidated, skipped }
+ */
+router.post('/cases/:caseId/sections/invalidate', (req, res) => {
+  const { caseId } = req.params;
+  const { sectionIds, reason } = req.body || {};
+
+  if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
+    return res.status(400).json({ ok: false, error: 'sectionIds must be a non-empty array' });
+  }
+
+  try {
+    const result = invalidateSections(caseId, sectionIds, reason || 'Manual invalidation via API');
+    res.json({
+      ok: true,
+      caseId,
+      ...result,
+    });
+  } catch (err) {
+    log.error('[sections/invalidate]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });

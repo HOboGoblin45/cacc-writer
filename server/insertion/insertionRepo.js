@@ -334,6 +334,8 @@ function hydrateItem(row) {
     startedAt: row.started_at,
     completedAt: row.completed_at,
     durationMs: row.duration_ms,
+    diffJson: parseJsonCol(row.diff_json, null),
+    similarityScore: row.similarity_score ?? null,
     sortOrder: row.sort_order,
     createdAt: row.created_at,
   };
