@@ -21,7 +21,12 @@ import {
   getItemHistoryForField,
   getLatestInsertionRun,
 } from '../insertion/insertionRepo.js';
-import { prepareInsertionRun, executeInsertionRun } from '../insertion/insertionRunEngine.js';
+import {
+  prepareInsertionRun, executeInsertionRun,
+  buildDryRunReport, resumeInsertionRun,
+} from '../insertion/insertionRunEngine.js';
+import { executeReplay, executeSelectiveReplay } from '../insertion/replayEngine.js';
+import { buildInsertionDiff } from '../insertion/diffEngine.js';
 import { resolveAllMappings, buildMappingPreview, inferTargetSoftware } from '../insertion/destinationMapper.js';
 import { getDb } from '../db/database.js';
 
@@ -388,6 +393,164 @@ router.get('/insertion/field-history/:caseId/:fieldId', (req, res) => {
     res.json({ history });
   } catch (err) {
     sendError(res, 500, 'INSERTION_FIELD_HISTORY_FAILED', err.message);
+  }
+});
+
+// ── Priority 5: Enhanced Insertion Reliability Routes ──────────────────────────
+
+/**
+ * POST /api/cases/:caseId/insertion/dry-run
+ * Execute a dry run and return a detailed preview report.
+ */
+router.post('/cases/:caseId/insertion/dry-run', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const body = parsePayload(
+      z.object({
+        formType: z.string().trim().min(1, 'formType is required'),
+        targetSoftware: z.string().trim().min(1).optional(),
+        generationRunId: z.string().trim().min(1).optional(),
+        config: insertionConfigSchema.optional(),
+      }),
+      req.body || {},
+      res,
+    );
+    if (!body) return;
+
+    const prepared = prepareInsertionRun({
+      caseId,
+      formType: body.formType,
+      targetSoftware: body.targetSoftware,
+      generationRunId: body.generationRunId,
+      config: { ...(body.config || {}), dryRun: true },
+    });
+
+    const report = buildDryRunReport(prepared.run.id);
+
+    res.json({
+      run: prepared.run,
+      dryRunReport: report,
+      qcGate: prepared.qcGate,
+    });
+  } catch (err) {
+    log.error('insertion:dry-run', { error: err.message });
+    sendError(res, 500, 'INSERTION_DRY_RUN_FAILED', err.message);
+  }
+});
+
+/**
+ * POST /api/cases/:caseId/insertion/replay/:runId
+ * Replay failed/mismatched items from a previous insertion run.
+ */
+router.post('/cases/:caseId/insertion/replay/:runId', async (req, res) => {
+  try {
+    const { caseId, runId } = req.params;
+    const run = getInsertionRun(runId);
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Original run not found');
+    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
+
+    const configBody = parsePayload(
+      z.object({ config: insertionConfigSchema.optional() }).passthrough(),
+      req.body || {},
+      res,
+    );
+    if (!configBody) return;
+
+    res.json({ runId, status: 'replay_started', message: 'Replay run started' });
+
+    executeReplay(runId, { config: configBody.config }).catch(err => {
+      log.error('insertion:replay-failed', { runId, error: err.message });
+    });
+  } catch (err) {
+    log.error('insertion:replay', { error: err.message });
+    sendError(res, 500, 'INSERTION_REPLAY_FAILED', err.message);
+  }
+});
+
+/**
+ * POST /api/cases/:caseId/insertion/replay/:runId/selective
+ * Replay specific fields from a previous insertion run.
+ */
+router.post('/cases/:caseId/insertion/replay/:runId/selective', async (req, res) => {
+  try {
+    const { caseId, runId } = req.params;
+    const run = getInsertionRun(runId);
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Original run not found');
+    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
+
+    const body = parsePayload(
+      z.object({
+        fieldIds: z.array(z.string().min(1)).min(1, 'At least one fieldId is required'),
+        config: insertionConfigSchema.optional(),
+      }),
+      req.body || {},
+      res,
+    );
+    if (!body) return;
+
+    res.json({ runId, status: 'selective_replay_started', fieldIds: body.fieldIds });
+
+    executeSelectiveReplay(runId, body.fieldIds, { config: body.config }).catch(err => {
+      log.error('insertion:selective-replay-failed', { runId, error: err.message });
+    });
+  } catch (err) {
+    log.error('insertion:selective-replay', { error: err.message });
+    sendError(res, 500, 'INSERTION_SELECTIVE_REPLAY_FAILED', err.message);
+  }
+});
+
+/**
+ * GET /api/cases/:caseId/insertion/runs/:runId/diff
+ * Get the post-insert diff view for a run.
+ */
+router.get('/cases/:caseId/insertion/runs/:runId/diff', (req, res) => {
+  try {
+    const { caseId, runId } = req.params;
+    const run = getInsertionRun(runId);
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
+    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
+
+    const diff = buildInsertionDiff(runId);
+    res.json({ diff });
+  } catch (err) {
+    log.error('insertion:diff', { error: err.message });
+    sendError(res, 500, 'INSERTION_DIFF_FAILED', err.message);
+  }
+});
+
+/**
+ * POST /api/cases/:caseId/insertion/runs/:runId/resume
+ * Resume a failed or partial insertion run.
+ */
+router.post('/cases/:caseId/insertion/runs/:runId/resume', async (req, res) => {
+  try {
+    const { caseId, runId } = req.params;
+    const run = getInsertionRun(runId);
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
+    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
+
+    if (!['failed', 'partial', 'running'].includes(run.status)) {
+      return sendError(
+        res,
+        400,
+        'INSERTION_RUN_INVALID_STATUS',
+        `Cannot resume run in status '${run.status}' — must be 'failed', 'partial', or 'running'`,
+      );
+    }
+
+    res.json({ runId, status: 'resume_started', message: 'Run resume started' });
+
+    resumeInsertionRun(runId).catch(err => {
+      log.error('insertion:resume-failed', { runId, error: err.message });
+      updateInsertionRun(runId, {
+        status: 'failed',
+        completedAt: new Date().toISOString(),
+        summaryJson: { error: err.message },
+      });
+    });
+  } catch (err) {
+    log.error('insertion:resume', { error: err.message });
+    sendError(res, 500, 'INSERTION_RESUME_FAILED', err.message);
   }
 });
 

@@ -514,6 +514,63 @@ const sections = [
         group: 'Assignment Setup',
         rows: 3,
       }),
+      // --- AMC fields (Transmittal section of 1004) ---
+      textField('assignment_amc_name', 'AMC Name', 'workspace1004.assignment.amc.name', {
+        page: 2,
+        group: 'AMC',
+        width: 'half',
+      }),
+      textField('assignment_amc_address', 'AMC Address', 'workspace1004.assignment.amc.address', {
+        page: 2,
+        group: 'AMC',
+        width: 'half',
+      }),
+      textField('assignment_amc_contact_name', 'AMC Contact Name', 'workspace1004.assignment.amc.contactName', {
+        page: 2,
+        group: 'AMC',
+        width: 'third',
+      }),
+      textField('assignment_amc_contact_phone', 'AMC Contact Phone', 'workspace1004.assignment.amc.contactPhone', {
+        page: 2,
+        group: 'AMC',
+        width: 'third',
+      }),
+      textField('assignment_amc_contact_email', 'AMC Contact Email', 'workspace1004.assignment.amc.contactEmail', {
+        page: 2,
+        group: 'AMC',
+        width: 'third',
+      }),
+      // --- Appraiser signature fields on the Transmittal page ---
+      textField('assignment_transmittal_appraiser_name', 'Transmittal: Appraiser Name', 'workspace1004.assignment.transmittal.appraiserName', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_appraiser_state_license', 'Transmittal: Appraiser State License #', 'workspace1004.assignment.transmittal.appraiserStateLicense', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_appraiser_company', 'Transmittal: Appraiser Company Name', 'workspace1004.assignment.transmittal.appraiserCompany', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_supervisory_name', 'Transmittal: Supervisory Appraiser Name', 'workspace1004.assignment.transmittal.supervisoryName', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_supervisory_state_license', 'Transmittal: Supervisory State License #', 'workspace1004.assignment.transmittal.supervisoryStateLicense', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_supervisory_company', 'Transmittal: Supervisory Company Name', 'workspace1004.assignment.transmittal.supervisoryCompany', {
+        page: 2,
+        group: 'Transmittal Signature',
+        width: 'half',
+      }),
     ],
   },
   {
@@ -664,6 +721,11 @@ const sections = [
         width: 'third',
       }),
       textField('subject_data_source_sale_price', 'Data Source(s) for Sale Price', 'workspace1004.subject.dataSources', {
+        page: 1,
+        group: 'Identity',
+        width: 'third',
+      }),
+      textField('subject_data_source_ownership', 'Data Source(s) for Owner of Record', 'workspace1004.subject.dataSourceOwnership', {
         page: 1,
         group: 'Identity',
         width: 'third',
@@ -1231,6 +1293,16 @@ const sections = [
         group: 'Rooms',
         width: 'quarter',
       }),
+      textField('improvements_sqft_above_grade', 'Square Feet of Above Grade', 'workspace1004.improvements.sqftAboveGrade', {
+        page: 1,
+        group: 'Rooms',
+        width: 'quarter',
+      }),
+      textField('improvements_sqft_below_grade', 'Square Feet of Below Grade', 'workspace1004.improvements.sqftBelowGrade', {
+        page: 1,
+        group: 'Rooms',
+        width: 'quarter',
+      }),
       selectField('improvements_attic_none', 'Attic: None', 'workspace1004.improvements.attic.none', yesNoUnknown, {
         page: 1,
         group: 'Amenities',
@@ -1421,6 +1493,37 @@ const sections = [
         group: 'Utility',
         rows: 3,
       }),
+      // --- Accessory Unit fields ---
+      selectField('improvements_accessory_unit_present', 'Accessory Unit Present?', 'workspace1004.improvements.accessoryUnit.present', yesNoUnknown, {
+        page: 1,
+        group: 'Accessory Unit',
+        width: 'third',
+      }),
+      textField('improvements_accessory_unit_rooms', 'Accessory Unit Room Count', 'workspace1004.improvements.accessoryUnit.roomCount', {
+        page: 1,
+        group: 'Accessory Unit',
+        width: 'third',
+      }),
+      textField('improvements_accessory_unit_bedrooms', 'Accessory Unit Bedrooms', 'workspace1004.improvements.accessoryUnit.bedrooms', {
+        page: 1,
+        group: 'Accessory Unit',
+        width: 'third',
+      }),
+      textField('improvements_accessory_unit_bathrooms', 'Accessory Unit Bath(s)', 'workspace1004.improvements.accessoryUnit.bathrooms', {
+        page: 1,
+        group: 'Accessory Unit',
+        width: 'third',
+      }),
+      textField('improvements_accessory_unit_sqft', 'Accessory Unit Sq. Ft.', 'workspace1004.improvements.accessoryUnit.squareFeet', {
+        page: 1,
+        group: 'Accessory Unit',
+        width: 'third',
+      }),
+      textareaField('improvements_accessory_unit_description', 'Accessory Unit Description', 'workspace1004.improvements.accessoryUnit.description', {
+        page: 1,
+        group: 'Accessory Unit',
+        rows: 3,
+      }),
     ],
   },
   {
@@ -1486,6 +1589,27 @@ const sections = [
       textField('sales_comp_gross_adjustment_percent', 'Gross Adjustment %', 'workspace1004.salesComparison.grossAdjustmentPercent', {
         page: 2,
         group: 'Narrative',
+        width: 'quarter',
+      }),
+      // --- Days on Market fields ---
+      textField('sales_comp_dom_subject', 'Subject Days on Market', 'workspace1004.salesComparison.dom.subject', {
+        page: 2,
+        group: 'Days on Market',
+        width: 'quarter',
+      }),
+      textField('sales_comp_dom_comp1', 'Comp 1 Days on Market', 'workspace1004.salesComparison.dom.comp1', {
+        page: 2,
+        group: 'Days on Market',
+        width: 'quarter',
+      }),
+      textField('sales_comp_dom_comp2', 'Comp 2 Days on Market', 'workspace1004.salesComparison.dom.comp2', {
+        page: 2,
+        group: 'Days on Market',
+        width: 'quarter',
+      }),
+      textField('sales_comp_dom_comp3', 'Comp 3 Days on Market', 'workspace1004.salesComparison.dom.comp3', {
+        page: 2,
+        group: 'Days on Market',
         width: 'quarter',
       }),
     ],
@@ -1903,6 +2027,52 @@ const sections = [
         group: 'Final Opinion',
         rows: 5,
       }),
+      // --- Appraiser signature and date fields on the reconciliation page ---
+      textField('reconciliation_appraiser_name', 'Appraiser Name', 'workspace1004.reconciliation.appraiserName', {
+        page: 2,
+        group: 'Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_appraiser_state_cert', 'State Certification #', 'workspace1004.reconciliation.appraiserStateCert', {
+        page: 2,
+        group: 'Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_appraiser_state', 'State', 'workspace1004.reconciliation.appraiserState', {
+        page: 2,
+        group: 'Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_inspection_date', 'Date of Inspection', 'workspace1004.reconciliation.inspectionDate', {
+        page: 2,
+        group: 'Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_report_date', 'Date of Report', 'workspace1004.reconciliation.reportDate', {
+        page: 2,
+        group: 'Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_supervisory_appraiser_name', 'Supervisory Appraiser Name', 'workspace1004.reconciliation.supervisoryAppraiserName', {
+        page: 2,
+        group: 'Supervisory Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_supervisory_state_cert', 'Supervisory State Certification #', 'workspace1004.reconciliation.supervisoryStateCert', {
+        page: 2,
+        group: 'Supervisory Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_supervisory_state', 'Supervisory State', 'workspace1004.reconciliation.supervisoryState', {
+        page: 2,
+        group: 'Supervisory Appraiser Signature',
+        width: 'third',
+      }),
+      textField('reconciliation_supervisory_date_signed', 'Supervisory Date Signed', 'workspace1004.reconciliation.supervisoryDateSigned', {
+        page: 2,
+        group: 'Supervisory Appraiser Signature',
+        width: 'third',
+      }),
     ],
   },
   {
@@ -2148,6 +2318,16 @@ const sections = [
         group: 'Supervisory Appraiser',
         width: 'third',
       }),
+      textField('uspap_supervisory_other_description', 'Supervisory Other (Describe)', 'workspace1004.uspap.supervisoryAppraiser.otherDescription', {
+        page: 11,
+        group: 'Supervisory Appraiser',
+        width: 'third',
+      }),
+      textField('uspap_supervisory_state_number', 'Supervisory State #', 'workspace1004.uspap.supervisoryAppraiser.stateNumber', {
+        page: 11,
+        group: 'Supervisory Appraiser',
+        width: 'third',
+      }),
       selectField('uspap_supervisory_inspection_level', 'Supervisory Inspection of Subject Property', 'workspace1004.uspap.supervisoryAppraiser.inspectionLevel', inspectionLevelChoices, {
         page: 11,
         group: 'Supervisory Appraiser',
@@ -2357,6 +2537,21 @@ const sections = [
         group: 'Photos',
         width: 'third',
       }),
+      textField('photo_front_date', 'Front View Photo Date', 'workspace1004.photoAddendum.frontPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
+      textField('photo_rear_date', 'Rear View Photo Date', 'workspace1004.photoAddendum.rearPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
+      textField('photo_street_date', 'Street Scene Photo Date', 'workspace1004.photoAddendum.streetPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
       textareaField('photo_notes', 'Photo Addendum Notes', 'workspace1004.photoAddendum.notes', {
         page: 14,
         group: 'Photos',
@@ -2409,4 +2604,75 @@ export const workspace1004Definition = {
 
 export function get1004WorkspaceDefinition() {
   return workspace1004Definition;
+}
+
+/**
+ * fieldCompletenessAudit
+ * ---------------------
+ * Returns a structured report of all sections, their field counts,
+ * total field count, and any intentionally deferred fields with rationale.
+ */
+export function fieldCompletenessAudit() {
+  const sectionSummaries = sections.map((section) => ({
+    sectionId: section.id,
+    sectionLabel: section.label,
+    fieldCount: section.fields.length,
+    fieldIds: section.fields.map((f) => f.fieldId),
+  }));
+
+  const totalFields = sectionSummaries.reduce((sum, s) => sum + s.fieldCount, 0);
+
+  const deferredFields = [
+    {
+      fieldId: 'assignment_transmittal_appraiser_digital_signature',
+      section: 'assignment',
+      rationale: 'Digital signature capture requires integration with e-signature service; field structure deferred until signing workflow is implemented.',
+    },
+    {
+      fieldId: 'improvements_floor_plan_sketch',
+      section: 'improvements',
+      rationale: 'Floor plan sketch is a graphical element handled by the sketch addendum / measurement tool, not a fillable text field.',
+    },
+    {
+      fieldId: 'photo_addendum_image_binary',
+      section: 'photo_addendum',
+      rationale: 'Photo binary data is managed by the document/photo upload pipeline, not the workspace text field layer.',
+    },
+    {
+      fieldId: 'sales_comp_location_map',
+      section: 'sales_comparison',
+      rationale: 'Comparable location map is a graphical element generated from GIS data; not a fillable workspace field.',
+    },
+    {
+      fieldId: 'dimension_building_sketch_image',
+      section: 'dimension_addendum',
+      rationale: 'Building sketch image is handled by the sketch rendering pipeline, not the workspace field layer.',
+    },
+  ];
+
+  return {
+    formType: '1004',
+    auditDate: new Date().toISOString().slice(0, 10),
+    totalFields,
+    sectionSummaries,
+    deferredFields,
+    deferredCount: deferredFields.length,
+    coverage: {
+      assignment: 'Complete - includes cover sheet, transmittal, AMC, appraiser signature fields',
+      subject: 'Complete - includes identity, legal, market reference, occupancy, assignment type, data source for ownership',
+      contract: 'Complete - offering history, analysis, concessions',
+      neighborhood: 'Complete - trends, housing stock, land use, boundaries, market conditions',
+      site: 'Complete - physical, zoning (specific classification), utilities, flood (including FEMA map date), adverse conditions',
+      improvements: 'Complete - general description, foundation, basement, exterior, interior, rooms, above/below grade sqft, amenities, car storage, appliances, accessory unit, condition, utility',
+      sales_comparison: 'Complete - market snapshot, comparable grid, DOM fields, narrative, adjustment percentages',
+      prior_sales: 'Complete - research status, transfer history grid, analysis',
+      cost_approach: 'Complete - site value, cost data, cost calculation, depreciation',
+      income_approach: 'Complete - income inputs, rent comparables, PUD information',
+      reconciliation: 'Complete - value indications, conditions, final opinion, appraiser signature, supervisory signature, inspection/report dates',
+      uspap_addendum: 'Complete - header, reporting option, prior services, certifications, appraiser signature (name/license/state/expiration), supervisory appraiser (name/license/state/expiration/other/state#), inspection levels',
+      dimension_addendum: 'Complete - header, area summary grid, measurement worksheet grid, notes',
+      photo_addendum: 'Complete - header, photo captions, photo dates, notes',
+      qc_review: 'Complete - QC review notes, issue resolution notes',
+    },
+  };
 }
