@@ -299,6 +299,34 @@ await test('PATCH /api/cases/:caseId/status sets status', async () => {
   assertOk(body, 'PATCH /api/cases/:caseId/status');
 });
 
+await test('PATCH /api/cases/:caseId/status blocks submitted status when QC run is missing', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/status`, {
+    status: 'submitted',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
+await test('PATCH /api/cases/:caseId/pipeline blocks approval stage when QC run is missing', async () => {
+  const stepGenerating = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'generating',
+  });
+  assert(stepGenerating.status === 200, `Expected 200 for generating stage, got ${stepGenerating.status}`);
+
+  const stepReview = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'review',
+  });
+  assert(stepReview.status === 200, `Expected 200 for review stage, got ${stepReview.status}`);
+
+  const blocked = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'approved',
+  });
+  assert(blocked.status === 409, `Expected 409, got ${blocked.status}`);
+  assert(blocked.body?.ok === false, 'ok should be false');
+  assert(blocked.body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
 await test('PATCH /api/cases/:caseId/workflow-status sets workflow status', async () => {
   const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
     workflowStatus: 'facts_incomplete',

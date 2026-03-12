@@ -60,10 +60,13 @@ import { PIPELINE_STAGES, evaluatePipelineTransition } from '../caseRecord/workf
 import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue, resolveFactDecision } from '../factIntegrity/factDecisionQueue.js';
+import { evaluateCaseApprovalGate } from '../qc/caseApprovalGate.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
 const CASE_STATUSES = ['active', 'submitted', 'archived'];
+const QC_GATED_CASE_STATUSES = new Set(['submitted']);
+const QC_GATED_PIPELINE_STAGES = new Set(['approved', 'inserting', 'complete']);
 
 const createCaseSchema = z.object({
   address: z.string().max(240).optional(),
@@ -576,6 +579,18 @@ router.patch('/:caseId/status', (req, res) => {
     const projection = getCaseProjection(req.params.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
+    if (QC_GATED_CASE_STATUSES.has(nextStatus) && nextStatus !== (meta.status || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          status: nextStatus,
+          qcGate: gate,
+        });
+      }
+    }
     meta.status    = nextStatus;
     meta.updatedAt = new Date().toISOString();
     const updated = saveCaseProjection({
@@ -617,6 +632,19 @@ router.patch('/:caseId/pipeline', (req, res) => {
         toStage: transition.toStage,
         allowedNextStages: transition.allowedNextStages,
       });
+    }
+    if (QC_GATED_PIPELINE_STAGES.has(stage) && stage !== (meta.pipelineStage || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          fromStage: meta.pipelineStage || 'intake',
+          toStage: stage,
+          qcGate: gate,
+        });
+      }
     }
 
     meta.pipelineStage = stage;
