@@ -144,6 +144,8 @@ async function apiForm(path, formData) {
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 let latestIngestJobId = null;
+let smokeQueueBatchId = null;
+let smokeQueueJobId = null;
 
 // ── Test suites ───────────────────────────────────────────────────────────────
 
@@ -914,8 +916,47 @@ await test('POST /api/workflow/ingest-pdf without file returns 400 or 503', asyn
   assert(body.ok === false, 'ok should be false');
 });
 
-// ── 9. Voice Examples ─────────────────────────────────────────────────────────
-console.log('\n10. Voice Examples');
+// ── 10. Queue Endpoints ───────────────────────────────────────────────────────
+console.log('\n10. Queue Endpoints');
+
+await test('POST /api/reports/queue rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/reports/queue enqueues jobs', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: [{ caseId: testCaseId, formType: '1004' }],
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.batchId === 'string' && body.batchId.length > 10, 'batchId should be present');
+  assert(Array.isArray(body?.jobs) && body.jobs.length === 1, 'jobs should contain one entry');
+  assert(typeof body.jobs[0]?.jobId === 'string', 'jobId should be present');
+  smokeQueueBatchId = body.batchId;
+  smokeQueueJobId = body.jobs[0].jobId;
+});
+
+await test('GET /api/reports/queue/batch/:batchId returns batch status', async () => {
+  const { status, body } = await api('GET', `/api/reports/queue/batch/${smokeQueueBatchId}`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(Array.isArray(body?.jobs), 'jobs should be an array');
+  assert(body?.jobs?.length >= 1, 'batch should include at least one job');
+});
+
+await test('GET /api/reports/queue/job/:jobId returns job status', async () => {
+  const { status, body } = await api('GET', `/api/reports/queue/job/${smokeQueueJobId}`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.jobId === 'string', 'jobId should be present');
+  assert(typeof body?.status === 'string', 'job status should be a string');
+});
+
+// ── 11. Voice Examples ────────────────────────────────────────────────────────
+console.log('\n11. Voice Examples');
 
 await test('GET /api/voice/examples returns voice data', async () => {
   const { status, body } = await api('GET', '/api/voice/examples');
@@ -932,8 +973,8 @@ await test('GET /api/voice/folder-status returns folder info', async () => {
   assert(typeof body.folderExists === 'boolean', 'folderExists should be boolean');
 });
 
-// ── 10. Cleanup ───────────────────────────────────────────────────────────────
-console.log('\n11. Cleanup');
+// ── 12. Cleanup ───────────────────────────────────────────────────────────────
+console.log('\n12. Cleanup');
 
 await test('DELETE /api/cases/:caseId removes test case', async () => {
   const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`);

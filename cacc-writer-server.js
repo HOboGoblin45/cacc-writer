@@ -35,6 +35,7 @@ import phase6MemoryRouter from './server/api/phase6Routes.js';
 import qcRouter from './server/api/qcRoutes.js';
 import insertionRouter from './server/api/insertionRoutes.js';
 import operationsRouter from './server/api/operationsRoutes.js';
+import queueRouter from './server/api/queueRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -88,6 +89,7 @@ app.use('/api/memory', phase6MemoryRouter);
 app.use('/api', qcRouter);
 app.use('/api', insertionRouter);
 app.use('/api', operationsRouter);
+app.use('/api', queueRouter);
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);
