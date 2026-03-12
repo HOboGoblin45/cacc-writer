@@ -708,6 +708,7 @@ await test('POST /api/cases/:caseId/sections/:fieldId/insert rejects invalid pay
   });
   assert(status === 400, `Expected 400, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
@@ -740,6 +741,7 @@ await test('POST /api/cases/:caseId/insert-all rejects invalid payload type', as
   });
   assert(status === 400, `Expected 400, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
