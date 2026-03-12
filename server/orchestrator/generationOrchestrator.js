@@ -631,10 +631,12 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
         totalDurationMs: phase6Pack.totalDurationMs,
       });
     } catch (err) {
-      log('info', 'phase6-retrieval-skipped', runId, {
+      log('warn', 'phase6-retrieval-failed', runId, {
         reason: err.message,
+        stack: err.stack?.split('\n').slice(0, 3).join(' | '),
+        impact: 'Voice hints, disallowed phrases, and scored memory ranking unavailable. Falling back to Phase 3 retrieval.',
       });
-      // Non-fatal: Phase 3 pack is the fallback
+      // Non-fatal: Phase 3 pack is the fallback, but memory quality will be reduced
     }
 
     phaseMs.retrievalMs = Date.now() - t5;

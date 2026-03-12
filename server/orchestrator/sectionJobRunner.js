@@ -172,8 +172,14 @@ function buildExamplesFromPack(sectionId, retrievalPack, phase6Pack) {
  * @param {string[]} disallowedPhrases — phrases to avoid
  * @returns {string|null}
  */
-function buildVoiceContextBlock(voiceHints, disallowedPhrases) {
-  if (!voiceHints && (!disallowedPhrases || disallowedPhrases.length === 0)) return null;
+function buildVoiceContextBlock(voiceHints, disallowedPhrases, profileHint) {
+  // If no voice hints and no disallowed phrases, try to inject at least the profile hint
+  if (!voiceHints && (!disallowedPhrases || disallowedPhrases.length === 0)) {
+    if (profileHint) {
+      return `WRITING STYLE GUIDANCE:\n- ${profileHint}`;
+    }
+    return null;
+  }
 
   const lines = ['WRITING STYLE GUIDANCE (from appraiser voice profile):'];
 
@@ -218,10 +224,12 @@ function buildVoiceContextBlock(voiceHints, disallowedPhrases) {
 function buildCompCommentaryBlock(compCommentary, sectionId) {
   if (!compCommentary || compCommentary.length === 0) return null;
 
-  // Only inject comp commentary for relevant sections
+  // Only inject comp commentary for sections that benefit from comparable context
   const compSections = [
     'sales_comparison_summary', 'reconciliation', 'comp_analysis',
     'market_conditions', 'sales_comparison_approach',
+    'sales_comparison', 'sales_comparison_commentary',
+    'sca_summary', 'cost_approach_summary', 'income_approach_summary',
   ];
   if (!compSections.includes(sectionId)) return null;
 
@@ -449,8 +457,27 @@ export async function runSectionJob({
   const assignmentMeta = buildAssignmentMetaFromContext(context);
 
   // ── Build Phase 6 voice/style context blocks ──────────────────────────────
-  const voiceContextBlock = buildVoiceContextBlock(voiceHints, disallowedPhrases);
+  const voiceContextBlock = buildVoiceContextBlock(voiceHints, disallowedPhrases, profile.systemHint);
   const compCommentaryBlock = buildCompCommentaryBlock(compCommentary, sectionId);
+
+  // ── Memory injection audit ──────────────────────────────────────────────
+  const memoryInjectionTrace = {
+    voiceExampleCount: voiceExamples.length,
+    otherExampleCount: otherExamples.length,
+    sourceIdCount: sourceIds.length,
+    voiceHintsAvailable: Boolean(voiceHints),
+    disallowedPhrasesCount: disallowedPhrases.length,
+    compCommentaryCount: compCommentary.length,
+    voiceContextInjected: Boolean(voiceContextBlock),
+    compCommentaryInjected: Boolean(compCommentaryBlock),
+    analysisContextInjected: Boolean(analysisContext),
+    priorSectionsInjected: Boolean(priorSectionsContext),
+    phase6Available: Boolean(phase6Pack?.packs?.[sectionId]),
+    droppedBlocks: [],
+  };
+  if (voiceHints && !voiceContextBlock) memoryInjectionTrace.droppedBlocks.push('voiceContext');
+  if (compCommentary.length > 0 && !compCommentaryBlock) memoryInjectionTrace.droppedBlocks.push('compCommentary_section_gated');
+  if (phase6Pack && !phase6Pack.packs?.[sectionId]) memoryInjectionTrace.droppedBlocks.push('phase6_section_missing');
 
   // ── Build prompt messages ──────────────────────────────────────────────────
   const promptMessages = buildPromptMessages({
@@ -541,6 +568,7 @@ export async function runSectionJob({
             voiceContext: Boolean(voiceContextBlock),
             compCommentaryContext: Boolean(compCommentaryBlock),
           },
+          memoryInjectionTrace,
         },
         qualityScore: quality.score,
         qualityMetadata: quality.metadata,
