@@ -55,6 +55,7 @@ const suites = [
   'generationOrchestrator.test.mjs',
   'sectionPolicyService.test.mjs',
   'sectionFactoryPolicy.test.mjs',
+  'sectionFreshness.test.mjs',
   'generationRegenerateRoutes.test.mjs',
   'reportQueue.test.mjs',
   'contradictionResolution.test.mjs',

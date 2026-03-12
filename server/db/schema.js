@@ -35,6 +35,7 @@ import { initPhase6Schema } from '../migration/phase6Schema.js';
 import { initPhase7Schema } from '../migration/phase7Schema.js';
 import { initPhase9Schema } from '../migration/phase9Schema.js';
 import { initPhase10Schema } from '../migration/phase10Schema.js';
+import { initPhase11Schema } from '../migration/phase11Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -779,6 +780,13 @@ export function initSchema(db) {
     initPhase10Schema(db);
   } catch (err) {
     log.error('schema:phase10-init', { error: err.message });
+  }
+
+  // Run Phase 11 schema additions (learning/memory system)
+  try {
+    initPhase11Schema(db);
+  } catch (err) {
+    log.error('schema:phase11-init', { error: err.message });
   }
 }
 
