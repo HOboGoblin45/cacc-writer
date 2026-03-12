@@ -79,6 +79,7 @@ const exportBundleSchema = z.object({
   includeAllLogs: z.boolean().optional(),
   zip: z.boolean().optional(),
 }).passthrough();
+const emptyMutationSchema = z.object({}).strict();
 const createNeighborhoodTemplateSchema = z.object({
   name: z.string().min(1).max(120),
   boundaries: z.string().max(600).optional(),
@@ -365,6 +366,8 @@ router.post('/templates/neighborhood', (req, res) => {
 
 // ── DELETE /templates/neighborhood/:id ────────────────────────────────────────
 router.delete('/templates/neighborhood/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const templates = readJSON(TEMPLATES_FILE, []).filter(t => t.id !== req.params.id);
     writeJSON(TEMPLATES_FILE, templates);

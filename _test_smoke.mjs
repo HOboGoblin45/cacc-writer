@@ -882,6 +882,15 @@ await test('GET /api/templates/neighborhood returns templates', async () => {
   assert(Array.isArray(body.templates), 'templates should be an array');
 });
 
+await test('DELETE /api/templates/neighborhood/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/templates/neighborhood/smoke-template-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/templates/neighborhood rejects invalid payload type', async () => {
   const { status, body } = await api('POST', '/api/templates/neighborhood', {
     name: 123,
@@ -1438,6 +1447,24 @@ await test('GET /api/voice/examples returns voice data', async () => {
   assert(Array.isArray(body.imports), 'imports should be an array');
 });
 
+await test('DELETE /api/voice/examples/import/:importId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/voice/examples/import/smoke-import-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('DELETE /api/voice/examples/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/voice/examples/smoke-example-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('GET /api/voice/folder-status returns folder info', async () => {
   const { status, body } = await api('GET', '/api/voice/folder-status?formType=1004');
   assert(status === 200, `Expected 200, got ${status}`);
@@ -1458,6 +1485,15 @@ await test('POST /api/voice/import-folder rejects invalid payload type', async (
 
 // ── 13. Cleanup ───────────────────────────────────────────────────────────────
 console.log('\n13. Cleanup');
+
+await test('DELETE /api/cases/:caseId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`, {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
 
 await test('DELETE /api/cases/:caseId removes test case', async () => {
   const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`);
