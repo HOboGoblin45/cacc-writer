@@ -397,20 +397,12 @@ await test('resumeInsertionRun resumes a partial run and skips verified items', 
     text: 'Second field for resume test.',
   });
 
-  // First run: first item succeeds, second fails
-  // Track which field is being inserted to differentiate behavior
-  let insertedFieldKeys = [];
+  // Run all items successfully first
   global.fetch = async (url, options = {}) => {
     if (String(url).endsWith('/health')) return jsonResponse({ ok: true });
     if (String(url).endsWith('/insert')) {
       const body = JSON.parse(options.body);
-      insertedFieldKeys.push(body.field);
-      // First unique field succeeds; subsequent fields fail
-      if (insertedFieldKeys.filter(k => k === body.field).length === 1 && body.field === insertedFieldKeys[0]) {
-        return jsonResponse({ success: true, value: body.text });
-      }
-      // Fail with non-retryable so it doesn't clipboard fallback
-      return jsonResponse({ success: false, errorCode: 'insertion_rejected', message: 'Simulated failure' });
+      return jsonResponse({ success: true, value: body.text });
     }
     if (String(url).endsWith('/read-field')) {
       return jsonResponse({ success: true, value: 'First field for resume test.' });
@@ -418,22 +410,23 @@ await test('resumeInsertionRun resumes a partial run and skips verified items', 
     throw new Error(`Unhandled: ${url}`);
   };
 
-  const prepared = prepareInsertionRun({
-    caseId, formType: '1004',
-    config: { defaultFallback: 'retry', maxRetries: 1 },
-  });
-  const firstRun = await executeInsertionRun(prepared.run.id);
-  // Run may complete, be partial, or fail depending on fallback behavior
-  assert.ok(['failed', 'partial', 'completed'].includes(firstRun.status), `unexpected status: ${firstRun.status}`);
+  const prepared = prepareInsertionRun({ caseId, formType: '1004' });
+  await executeInsertionRun(prepared.run.id);
 
-  // Check item states
+  // Manually set run to 'partial' and second item to 'failed' to simulate
+  // a run that was interrupted midway
   const itemsAfterFirst = getInsertionRunItems(prepared.run.id);
-  const verifiedItems = itemsAfterFirst.filter(i => ['verified', 'inserted'].includes(i.status));
-  const failedItems = itemsAfterFirst.filter(i => i.status === 'failed');
-  // At least some items should exist
-  assert.ok(itemsAfterFirst.length >= 1, 'should have items');
+  assert.ok(itemsAfterFirst.length >= 2, 'should have at least 2 items');
+  const secondItem = itemsAfterFirst[1];
+  updateInsertionRunItem(secondItem.id, {
+    status: 'failed',
+    errorCode: 'agent_timeout',
+    errorText: 'Simulated timeout for resume test',
+    verificationStatus: 'pending',
+  });
+  updateInsertionRun(prepared.run.id, { status: 'partial' });
 
-  // Now set up successful agent and resume
+  // Set up successful agent and resume
   global.fetch = async (url, options = {}) => {
     if (String(url).endsWith('/health')) return jsonResponse({ ok: true });
     if (String(url).endsWith('/insert')) {
@@ -446,22 +439,16 @@ await test('resumeInsertionRun resumes a partial run and skips verified items', 
     throw new Error(`Unhandled: ${url}`);
   };
 
-  if (['failed', 'partial'].includes(firstRun.status)) {
-    // Run has resumable items
-    const resumed = await resumeInsertionRun(prepared.run.id);
-    assert.equal(resumed.status, 'completed');
-    assert.ok(resumed.summary.resumed, 'summary should indicate this was a resume');
+  const resumed = await resumeInsertionRun(prepared.run.id);
 
-    const finalItems = getInsertionRunItems(prepared.run.id);
-    const stillFailed = finalItems.filter(i => i.status === 'failed');
-    assert.equal(stillFailed.length, 0, 'no items should remain failed after resume');
-  } else {
-    // Run already completed — resume should throw
-    await assert.rejects(
-      () => resumeInsertionRun(prepared.run.id),
-      /Cannot resume run in status/,
-    );
-  }
+  assert.equal(resumed.status, 'completed');
+  assert.ok(resumed.summary.resumed, 'summary should indicate this was a resume');
+  assert.equal(resumed.summary.resumedItemCount, 1, 'should have resumed exactly 1 item');
+
+  // Verify all items are now done
+  const finalItems = getInsertionRunItems(prepared.run.id);
+  const stillFailed = finalItems.filter(i => i.status === 'failed');
+  assert.equal(stillFailed.length, 0, 'no items should remain failed after resume');
 });
 
 await test('resumeInsertionRun throws for completed runs', async () => {
