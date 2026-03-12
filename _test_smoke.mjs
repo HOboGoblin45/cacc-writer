@@ -791,6 +791,16 @@ await test('POST /api/generation/full-draft rejects invalid payload type', async
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+await test('POST /api/generation/full-draft rejects forceGateBypass when disabled', async () => {
+  const { status, body } = await api('POST', '/api/generation/full-draft', {
+    caseId: testCaseId,
+    forceGateBypass: true,
+  });
+  assert(status === 403, `Expected 403, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'PRE_DRAFT_GATE_BYPASS_DISABLED', 'code should be PRE_DRAFT_GATE_BYPASS_DISABLED');
+});
+
 await test('POST /api/generation/regenerate-section rejects invalid payload type', async () => {
   const { status, body } = await api('POST', '/api/generation/regenerate-section', {
     runId: 123,
