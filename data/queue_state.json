@@ -1,23 +1,5 @@
 {
-  "queue": [
-    {
-      "jobId": "647ef51c-9fcd-4d57-8816-0a76e9c4d222",
-      "batchId": "e9b60671-54b6-4c48-b14a-42936a1f5a7a",
-      "caseId": "test-case-1",
-      "formType": null,
-      "status": "failed",
-      "runId": "ac74af23-74fe-481b-81e1-3918861d9a22",
-      "error": "Case directory not found: test-case-1",
-      "durationMs": 317,
-      "queuedAt": "2026-03-11T13:38:54.024Z",
-      "startedAt": "2026-03-11T13:38:54.025Z",
-      "completedAt": "2026-03-11T13:38:54.342Z",
-      "retryAttempt": 0,
-      "sectionsTotal": null,
-      "sectionsCompleted": null,
-      "sectionsFailed": null
-    }
-  ],
+  "queue": [],
   "batches": {
     "723f37a2-80ea-4b47-b961-507a7012106e": "[\"ee1d0869-b952-4fc3-9fd6-c571e7c67d0f\",\"586917cd-2162-4cf1-b103-6f24597357ec\"]",
     "9c1a9033-7409-40d1-8030-63bd5d0b7a3b": "[\"e6c23cab-3d68-4c34-a3c4-c6dad030f3e7\"]",
@@ -36,6 +18,12 @@
     "75c49dd8-38f9-4eef-a8ad-dbef1344ea5c": "[\"4c139473-a8d2-4dd7-b53e-db23c4550f16\"]",
     "734236f0-3a73-40d9-8baa-e3d775f09212": "[\"e0739b22-a522-4c20-a9af-dffa05a9cefe\"]",
     "cd1f6872-0f8c-45d9-a332-f83f0c4aaf30": "[\"9ef730c5-f832-446e-bd61-74083ab819e7\"]",
-    "03aa5ec5-5c64-4ac2-a764-aadb34b14517": "[\"1e378fff-cfcb-46cd-a874-dbb86a4bb924\",\"55ab19b8-6099-4279-8b01-0921935c5720\"]"
+    "03aa5ec5-5c64-4ac2-a764-aadb34b14517": "[\"1e378fff-cfcb-46cd-a874-dbb86a4bb924\",\"55ab19b8-6099-4279-8b01-0921935c5720\"]",
+    "21c35e5d-da82-48a9-b2c5-0a59144a84ef": "[\"a85870cd-8b21-4386-9392-dc49db9faa91\",\"d0d19461-8ae5-4743-bfe8-a541afc67b7f\"]",
+    "563e7ffe-1ad2-4a9c-bc20-a85ff268e7b1": "[\"e372c5fa-b28d-4397-9552-9ecaf5773021\"]",
+    "13992eef-a81e-4e92-a115-58166d2c168f": "[\"b8a182c9-457b-491a-bdc8-56adce5b229d\"]",
+    "548c66b6-4306-4eca-a46b-6266c7213de6": "[\"79d18b0c-c5b7-4bf7-9c41-01b430df8285\"]",
+    "363664c3-3f7d-42e0-8ff6-ccc2f34ae218": "[\"8d22aff9-5416-406c-a94e-aa8cb9e4da7e\"]",
+    "0ff9cf67-aae6-49b8-ae58-201bb33b38b4": "[\"430dea0e-6c6c-4e88-8f0a-884b083984a7\",\"b2fa044f-bc61-44d1-af7b-09920c68ebd4\"]"
   }
 }
