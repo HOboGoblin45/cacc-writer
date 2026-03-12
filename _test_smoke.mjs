@@ -936,10 +936,30 @@ await test('POST /api/workflow/run without caseId returns 400 or 503', async () 
   assert(body.ok === false, 'ok should be false');
 });
 
+await test('POST /api/workflow/run rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run', {
+    caseId: 12345,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
 await test('POST /api/workflow/run-batch with empty cases returns 400 or 503', async () => {
   const { status, body } = await api('POST', '/api/workflow/run-batch', { cases: [] });
   assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
   assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/workflow/run-batch rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run-batch', { cases: 'not-array' });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
 });
 
 await test('POST /api/workflow/ingest-pdf without file returns 400 or 503', async () => {
