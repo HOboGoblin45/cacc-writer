@@ -288,14 +288,16 @@ function deleteVoiceExamplesBy(field, rawValue, res) {
 }
 
 // ── DELETE /voice/examples/import/:importId ───────────────────────────────────
-router.delete('/voice/examples/import/:importId', (req, res) =>
-  deleteVoiceExamplesBy('importId', req.params.importId, res),
-);
+router.delete('/voice/examples/import/:importId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+  deleteVoiceExamplesBy('importId', req.params.importId, res);
+});
 
 // ── DELETE /voice/examples/:id ────────────────────────────────────────────────
-router.delete('/voice/examples/:id', (req, res) =>
-  deleteVoiceExamplesBy('id', req.params.id, res),
-);
+router.delete('/voice/examples/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+  deleteVoiceExamplesBy('id', req.params.id, res);
+});
 
 // ── POST /voice/import-folder ─────────────────────────────────────────────────
 router.post('/voice/import-folder', ensureAI, async (req, res) => {

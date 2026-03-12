@@ -138,6 +138,7 @@ const geocodeSchema = z.object({
 const missingFactsBatchSchema = z.object({
   fieldIds: z.array(z.string().max(80)).max(200).optional(),
 }).passthrough();
+const emptyMutationSchema = z.object({}).strict();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -552,6 +553,8 @@ router.patch('/:caseId', (req, res) => {
 
 // ── DELETE /:caseId — Delete case ─────────────────────────────────────────────
 router.delete('/:caseId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
