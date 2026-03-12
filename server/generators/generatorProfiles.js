@@ -124,6 +124,68 @@ export const GENERATOR_PROFILES = {
     sections: ['sales_comparison_summary'],
   },
 
+  // ── valuation-approach ──────────────────────────────────────────────────────
+  // For cost approach and income approach narratives that must accurately
+  // describe computation methodology and the resulting value indication.
+  'valuation-approach': {
+    id:              'valuation-approach',
+    label:           'Valuation-Approach',
+    description:     'For cost and income approach narrative summaries',
+    temperature:     0.30,
+    maxTokens:       600,
+    retrievalWeight: 0.3,
+    templateWeight:  0.7,
+    systemHint: [
+      'Describe the valuation approach methodology accurately.',
+      'State all dollar amounts, rates, and multipliers exactly as provided in the facts.',
+      'Do not invent or estimate values not present in the input data.',
+      'Follow the standard URAR form structure for the approach being described.',
+      'If data is insufficient, state that the approach was considered but not developed.',
+    ].join(' '),
+    sections: [
+      'cost_approach_summary',
+      'income_approach_summary',
+    ],
+  },
+
+  // ── prior-transaction ─────────────────────────────────────────────────────
+  // For prior sales/transfer history and offering history sections that
+  // require factual recounting of transaction events.
+  'prior-transaction': {
+    id:              'prior-transaction',
+    label:           'Prior-Transaction',
+    description:     'For prior sales history and offering history',
+    temperature:     0.20,
+    maxTokens:       400,
+    retrievalWeight: 0.15,
+    templateWeight:  0.85,
+    systemHint: [
+      'Report the prior sale history and offering history of the subject property factually.',
+      'Include dates, prices, and any concessions exactly as provided.',
+      'If no prior sales exist within the required period, state that clearly.',
+      'Do not speculate about market conditions affecting prior transactions.',
+    ].join(' '),
+    sections: ['prior_sales', 'offering_history'],
+  },
+
+  // ── exposure-time ─────────────────────────────────────────────────────────
+  // For exposure/marketing time estimates based on market data.
+  'exposure-time': {
+    id:              'exposure-time',
+    label:           'Exposure-Time',
+    description:     'For exposure and marketing time estimates',
+    temperature:     0.25,
+    maxTokens:       300,
+    retrievalWeight: 0.25,
+    templateWeight:  0.75,
+    systemHint: [
+      'State the estimated exposure time based on market data provided.',
+      'Reference the typical DOM and market trend from the facts.',
+      'Keep the narrative concise and directly supported by data.',
+    ].join(' '),
+    sections: ['exposure_time'],
+  },
+
   // ── synthesis ───────────────────────────────────────────────────────────────
   // For reconciliation and conclusions where the narrative must
   // synthesize all prior sections into a coherent final statement.

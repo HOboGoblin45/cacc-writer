@@ -22,12 +22,15 @@ import { resolveProfileForSection } from '../generators/generatorProfiles.js';
 // Bump version when the prompt template changes materially.
 
 const PROMPT_VERSIONS = {
-  'template-heavy':     '1.0.0',
-  'retrieval-guided':   '1.0.0',
-  'data-driven':        '1.0.0',
-  'logic-template':     '1.0.0',
+  'template-heavy':      '1.0.0',
+  'retrieval-guided':    '1.0.0',
+  'data-driven':         '1.0.0',
+  'logic-template':      '1.0.0',
   'analysis-narrative':  '1.0.0',
   'synthesis':           '1.0.0',
+  'valuation-approach':  '1.0.0',
+  'prior-transaction':   '1.0.0',
+  'exposure-time':       '1.0.0',
 };
 
 /**
