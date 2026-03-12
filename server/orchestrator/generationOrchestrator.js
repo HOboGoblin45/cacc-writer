@@ -43,6 +43,8 @@ import { buildRetrievalPackBundle as buildPhase6RetrievalBundle } from '../memor
 import { runSectionJob } from './sectionJobRunner.js';
 import { assembleDraftPackage } from './draftAssembler.js';
 import { buildIntelligenceForOrchestrator } from '../intelligence/index.js';
+import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 import {
   RUN_STATUS,
   JOB_STATUS,
@@ -63,6 +65,8 @@ import {
 } from '../db/repositories/generationRepo.js';
 
 const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
+const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 
 // ── Structured logger ─────────────────────────────────────────────────────────
 
@@ -74,6 +78,44 @@ function log(level, phase, runId, data = {}) {
   } else {
     serverLog.info(tag, entry);
   }
+}
+
+function evaluateOrchestratorPreDraftGate({ caseId, formType = null, options = {} }) {
+  const forceGateBypass = Boolean(options?.forceGateBypass);
+
+  if (forceGateBypass && !ALLOW_FORCE_GATE_BYPASS) {
+    return {
+      ok: false,
+      code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+      error: 'forceGateBypass is disabled in this environment',
+    };
+  }
+
+  if (forceGateBypass) {
+    return { ok: true, bypassed: true };
+  }
+
+  const gate = evaluatePreDraftGate({ caseId, formType: formType || null });
+  if (!gate) {
+    return {
+      ok: false,
+      code: 'CASE_NOT_FOUND',
+      error: `Case not found: ${caseId}`,
+    };
+  }
+  if (gate.ok) {
+    return { ok: true, bypassed: false };
+  }
+
+  const queue = buildFactDecisionQueue(caseId);
+  return {
+    ok: false,
+    code: 'PRE_DRAFT_GATE_BLOCKED',
+    error: 'Pre-draft integrity gate blocked orchestrator run',
+    gate,
+    factReviewQueuePath: `/api/cases/${caseId}/fact-review-queue`,
+    factReviewQueueSummary: queue?.summary || null,
+  };
 }
 
 // ── Pre-create section job records ────────────────────────────────────────────
@@ -434,6 +476,35 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
   // ── 1. Create generation run record (status: queued) ───────────────────────
   createRun({ runId, caseId, formType: formType || 'unknown', assignmentId: null });
+
+  const gateCheck = evaluateOrchestratorPreDraftGate({ caseId, formType, options });
+  if (!gateCheck.ok) {
+    const totalMs = Date.now() - tTotal;
+    failRun(runId, `${gateCheck.code}: ${gateCheck.error}`, totalMs);
+    log('info', 'pre-draft-gate-blocked', runId, {
+      caseId,
+      code: gateCheck.code,
+      gateSummary: gateCheck.gate?.summary || null,
+      totalMs,
+    });
+    return {
+      ok: false,
+      runId,
+      code: gateCheck.code,
+      error: gateCheck.error,
+      gate: gateCheck.gate || null,
+      factReviewQueuePath: gateCheck.factReviewQueuePath || null,
+      factReviewQueueSummary: gateCheck.factReviewQueueSummary || null,
+      draftPackage: null,
+      metrics: { totalDurationMs: totalMs },
+    };
+  }
+  if (gateCheck.bypassed) {
+    log('info', 'pre-draft-gate-bypassed', runId, {
+      caseId,
+      reason: 'forceGateBypass=true',
+    });
+  }
 
   try {
     // ── 2. Transition to preparing — build assignment context ────────────────
