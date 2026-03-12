@@ -159,11 +159,14 @@ function buildIntelligenceDiagnostics(caseId, projection, resolvedFormType) {
 function collectMissingRequiredFacts(facts, sectionIds) {
   const bySection = [];
   const allRequiredPaths = [];
+  const allRecommendedPaths = [];
 
   for (const sectionId of sectionIds) {
     const deps = getSectionDependencies(sectionId);
     const required = Array.isArray(deps.required) ? deps.required : [];
+    const recommended = Array.isArray(deps.recommended) ? deps.recommended : [];
     allRequiredPaths.push(...required);
+    allRecommendedPaths.push(...recommended);
 
     const missingPaths = required.filter(path => !hasFactValue(facts, path));
     if (!missingPaths.length) continue;
@@ -181,11 +184,13 @@ function collectMissingRequiredFacts(facts, sectionIds) {
     uniqueMissingPaths,
     missingCount: uniqueMissingPaths.length,
     requiredPaths: unique(allRequiredPaths),
+    recommendedPaths: unique(allRecommendedPaths),
   };
 }
 
-function collectProvenanceFindings(facts, provenance = {}, requiredPaths = []) {
-  const consideredPaths = unique([...requiredPaths, ...CRITICAL_PROVENANCE_PATHS]);
+function collectProvenanceFindings(facts, provenance = {}, requiredPaths = [], recommendedPaths = []) {
+  const keyPaths = unique([...requiredPaths, ...recommendedPaths]);
+  const consideredPaths = unique([...keyPaths, ...CRITICAL_PROVENANCE_PATHS]);
   const gaps = [];
   const blockerGaps = [];
   const warningGaps = [];
@@ -345,6 +350,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
     projection.facts || {},
     projection.provenance || {},
     missing.requiredPaths,
+    missing.recommendedPaths,
   );
   const pendingReview = collectPendingReviewQueue(caseId);
   const blockerPendingFactPaths = collectBlockingPendingFactPaths(
