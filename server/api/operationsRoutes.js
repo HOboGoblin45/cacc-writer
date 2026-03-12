@@ -34,6 +34,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import {
   queryAuditEvents,
   countAuditEvents,
@@ -61,6 +62,26 @@ import { buildDashboard, buildLightDashboard } from '../operations/dashboardBuil
 import log from '../logger.js';
 
 const router = Router();
+
+const emptyMutationSchema = z.object({}).strict();
+const metricsDailySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be in YYYY-MM-DD format').optional(),
+}).strict();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ── Audit Events ──────────────────────────────────────────────────────────────
 
@@ -172,6 +193,8 @@ router.get('/operations/metrics', (req, res) => {
 });
 
 router.post('/operations/metrics/compute', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const results = computeAllMetrics();
     res.json({ ok: true, results });
@@ -182,8 +205,11 @@ router.post('/operations/metrics/compute', (req, res) => {
 });
 
 router.post('/operations/metrics/daily', (req, res) => {
+  const payload = parsePayload(metricsDailySchema, req.body || {}, res);
+  if (!payload) return;
+
   try {
-    const date = req.body?.date || undefined;
+    const date = payload.date || undefined;
     const summary = computeDailySummary(date);
     res.json({ ok: true, summary });
   } catch (err) {
@@ -216,6 +242,8 @@ router.get('/operations/health/quick', async (req, res) => {
 // ── Archival / Retention ──────────────────────────────────────────────────────
 
 router.post('/operations/archive/:caseId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const result = archiveCase(req.params.caseId);
     res.json(result);
@@ -226,6 +254,8 @@ router.post('/operations/archive/:caseId', (req, res) => {
 });
 
 router.post('/operations/restore/:caseId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const result = restoreCase(req.params.caseId);
     res.json(result);
@@ -255,6 +285,8 @@ router.get('/operations/retention', (req, res) => {
 });
 
 router.post('/operations/cleanup', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const result = runTransientCleanup();
     res.json({ ok: true, result });
