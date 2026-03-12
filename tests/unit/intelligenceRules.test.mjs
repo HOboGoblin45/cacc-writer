@@ -100,6 +100,29 @@ await test('hard compliance rules pass with no blockers for baseline 1004 scenar
   assert.equal(Array.isArray(scenario.complianceChecks.blockers), true);
 });
 
+await test('hard compliance rules warn when intended user is missing from assignment context', () => {
+  const scenario = buildScenario({
+    meta: { formType: '1004' },
+  });
+
+  const warning = scenario.complianceChecks.warnings.find(b => b.ruleId === 'rule.assignment.intended_user');
+  assert.ok(warning, 'expected intended-user warning when intended user is missing');
+  assert.equal(warning.reasonCode, 'intended_user_missing');
+});
+
+await test('hard compliance rules pass intended user check when intended user is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      intendedUser: 'First National Bank',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.assignment.intended_user');
+  assert.ok(check, 'expected intended-user compliance check');
+  assert.equal(check.passed, true, 'expected intended-user check to pass when intended user exists');
+});
+
 await test('hard compliance rules block when a manifest-required section is excluded', () => {
   const scenario = buildScenario({
     meta: { formType: '1004' },
