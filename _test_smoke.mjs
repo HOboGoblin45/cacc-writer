@@ -820,6 +820,15 @@ await test('POST /api/insertion/run does not bypass missing fresh QC with skipQc
   assert(body?.qcGate?.reason === 'missing_fresh_generation_qc', 'qcGate.reason should match');
 });
 
+await test('POST /api/insertion/execute/:runId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/execute/irun_missing', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/insertion/execute/:runId returns coded 404 for unknown run', async () => {
   const { status, body } = await api('POST', '/api/insertion/execute/irun_missing');
   assert(status === 404, `Expected 404, got ${status}`);
@@ -827,11 +836,29 @@ await test('POST /api/insertion/execute/:runId returns coded 404 for unknown run
   assert(body?.code === 'INSERTION_RUN_NOT_FOUND', 'code should be INSERTION_RUN_NOT_FOUND');
 });
 
+await test('POST /api/insertion/retry/:itemId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/retry/iitem_missing', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item', async () => {
   const { status, body } = await api('POST', '/api/insertion/retry/iitem_missing');
   assert(status === 404, `Expected 404, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
   assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
+});
+
+await test('POST /api/insertion/run/:runId/cancel rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/run/irun_missing/cancel', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 await test('PUT /api/insertion/profile/:id rejects invalid payload type', async () => {
