@@ -37,6 +37,7 @@ function normalizeExtractionFixtures(input) {
   if (!Array.isArray(input)) return [];
   return input.map((fixture, idx) => ({
     id: asText(fixture?.id) || `extraction-${idx + 1}`,
+    lane: asText(fixture?.lane) || 'unspecified',
     docType: asText(fixture?.docType),
     text: asText(fixture?.text),
     expectedFacts: Array.isArray(fixture?.expectedFacts) ? fixture.expectedFacts : [],
@@ -47,9 +48,13 @@ function normalizeGateFixtures(input) {
   if (!Array.isArray(input)) return [];
   return input.map((fixture, idx) => ({
     id: asText(fixture?.id) || `gate-${idx + 1}`,
+    lane: asText(fixture?.lane) || 'unspecified',
     expectedOk: fixture?.expectedOk !== false,
     expectedBlockerTypes: Array.isArray(fixture?.expectedBlockerTypes)
       ? fixture.expectedBlockerTypes
+      : [],
+    expectedComplianceRuleIds: Array.isArray(fixture?.expectedComplianceRuleIds)
+      ? fixture.expectedComplianceRuleIds
       : [],
     gateResult: fixture?.gateResult && typeof fixture.gateResult === 'object'
       ? fixture.gateResult
@@ -99,18 +104,21 @@ export async function runPhaseCBenchmarkSuite(fixtures) {
         expectedFacts: fixture.expectedFacts,
         extractedFacts,
       }),
+      lane: fixture.lane,
       docType: fixture.docType,
     });
   }
 
-  const gateRuns = gateFixtures.map(fixture => (
-    scoreGateFixture({
+  const gateRuns = gateFixtures.map(fixture => ({
+    ...scoreGateFixture({
       fixtureId: fixture.id,
       expectedOk: fixture.expectedOk,
       expectedBlockerTypes: fixture.expectedBlockerTypes,
+      expectedComplianceRuleIds: fixture.expectedComplianceRuleIds,
       gateResult: fixture.gateResult,
-    })
-  ));
+    }),
+    lane: fixture.lane,
+  }));
 
   const summary = summarizeBenchmarkSuite({
     extractionRuns,
@@ -172,4 +180,3 @@ export function readPhaseCBenchmarkResults(
   if (!fs.existsSync(outputPath)) return null;
   return readJSON(outputPath);
 }
-

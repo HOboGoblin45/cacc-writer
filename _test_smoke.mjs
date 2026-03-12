@@ -1,4 +1,4 @@
-/**
+﻿/**
  * _test_smoke.mjs
  * ---------------
  * Smoke tests for CACC Writer production server.
@@ -35,6 +35,7 @@ process.env.CACC_LOGS_DIR = process.env.CACC_LOGS_DIR
 process.env.CACC_DB_PATH = process.env.CACC_DB_PATH || smokeDbPath;
 process.env.CACC_DISABLE_FILE_LOGGER = process.env.CACC_DISABLE_FILE_LOGGER || '1';
 process.env.CACC_DISABLE_KB_WRITES = process.env.CACC_DISABLE_KB_WRITES || '1';
+process.env.CACC_ALLOW_FORCE_GATE_BYPASS = process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '0';
 
 const defaultSmokePort = 5600 + Math.floor(Math.random() * 2000);
 const REQUESTED_BASE = process.env.TEST_BASE_URL || `http://127.0.0.1:${defaultSmokePort}`;
@@ -141,9 +142,30 @@ async function apiForm(path, formData) {
   }
 }
 
+async function waitForQueueJobTerminal(jobId, { timeoutMs = 5000, intervalMs = 120 } = {}) {
+  const started = Date.now();
+  let lastBody = null;
+
+  while (Date.now() - started < timeoutMs) {
+    const { status, body } = await api('GET', `/api/reports/queue/job/${jobId}`);
+    if (status === 200 && body && typeof body === 'object') {
+      lastBody = body;
+      if (body.status !== 'queued' && body.status !== 'running') {
+        return body;
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+  }
+
+  return lastBody;
+}
+
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 let latestIngestJobId = null;
+let latestDocumentId = null;
+let smokeQueueBatchId = null;
+let smokeQueueJobId = null;
 
 // ── Test suites ───────────────────────────────────────────────────────────────
 
@@ -277,6 +299,61 @@ await test('PATCH /api/cases/:caseId/status sets status', async () => {
   assertOk(body, 'PATCH /api/cases/:caseId/status');
 });
 
+await test('PATCH /api/cases/:caseId/status blocks submitted status when QC run is missing', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/status`, {
+    status: 'submitted',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
+await test('PATCH /api/cases/:caseId/pipeline blocks approval stage when QC run is missing', async () => {
+  const stepGenerating = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'generating',
+  });
+  assert(stepGenerating.status === 200, `Expected 200 for generating stage, got ${stepGenerating.status}`);
+
+  const stepReview = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'review',
+  });
+  assert(stepReview.status === 200, `Expected 200 for review stage, got ${stepReview.status}`);
+
+  const blocked = await api('PATCH', `/api/cases/${testCaseId}/pipeline`, {
+    stage: 'approved',
+  });
+  assert(blocked.status === 409, `Expected 409, got ${blocked.status}`);
+  assert(blocked.body?.ok === false, 'ok should be false');
+  assert(blocked.body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
+await test('PATCH /api/cases/:caseId/workflow-status sets workflow status', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'facts_incomplete',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(body?.workflowStatus === 'facts_incomplete', 'workflowStatus should be updated');
+});
+
+await test('PATCH /api/cases/:caseId/workflow-status blocks automation_ready when QC run is missing', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'automation_ready',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
+await test('PATCH /api/cases/:caseId/workflow-status rejects invalid workflow status', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'not_a_real_status',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_WORKFLOW_STATUS', 'code should be INVALID_WORKFLOW_STATUS');
+});
+
 // ── 4. Facts ──────────────────────────────────────────────────────────────────
 console.log('\n4. Facts');
 
@@ -287,6 +364,14 @@ await test('PUT /api/cases/:caseId/facts saves facts', async () => {
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'PUT /api/cases/:caseId/facts');
   assert(body.facts?.subject?.address?.value === '123 Test St', 'fact should be saved');
+});
+
+await test('PUT /api/cases/:caseId/facts rejects non-object payload', async () => {
+  const { status, body } = await api('PUT', `/api/cases/${testCaseId}/facts`, ['bad-payload']);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 await test('GET /api/cases/:caseId/record returns canonical case record', async () => {
@@ -321,8 +406,39 @@ await test('PUT /api/cases/:caseId/fact-sources saves source links', async () =>
   assert(body.sources?.['subject.address']?.sourceId === 'order_sheet.pdf', 'source link should be saved');
 });
 
+await test('POST /api/cases/:caseId/geocode rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/geocode`, {
+    subjectAddress: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/cases/:caseId/missing-facts rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/missing-facts`, {
+    fieldIds: 'neighborhood_description',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 // —— 4b. Document Intake & Classification ——————————————————————————————
 console.log('\n4b. Document Intake');
+
+await test('POST /api/cases/:caseId/upload rejects invalid docType payload', async () => {
+  const pseudoPdf = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<<>>\n%%EOF`;
+  const form = new FormData();
+  form.append('file', new Blob([pseudoPdf], { type: 'application/pdf' }), 'legacy-upload-smoke.pdf');
+  form.append('docType', 'x'.repeat(120));
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/upload`, form);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
 
 await test('POST /api/cases/:caseId/documents/upload rejects unsupported file types', async () => {
   const form = new FormData();
@@ -344,6 +460,7 @@ await test('POST /api/cases/:caseId/documents/upload accepts PDF upload', async 
   assert(typeof body?.ingestJob?.id === 'string', 'ingestJob.id should be present');
   assert(typeof body?.ingestJob?.status === 'string', 'ingestJob.status should be present');
   latestIngestJobId = body.ingestJob.id;
+  latestDocumentId = body.documentId;
 });
 
 await test('POST /api/cases/:caseId/documents/upload flags duplicate PDF by hash', async () => {
@@ -370,6 +487,34 @@ await test('POST /api/cases/:caseId/documents/upload accepts image upload', asyn
   assert(typeof body?.extractionMethod === 'string', 'extractionMethod should be string');
 });
 
+await test('POST /api/cases/:caseId/documents/:docId/extract rejects unexpected payload fields', async () => {
+  const docId = latestDocumentId || 'smoke-doc-id';
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/documents/${docId}/extract`, {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-sections/:id/approve rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-sections/smoke-section-id/approve`, {
+    reviewer: 'smoke',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-sections/:id/reject rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-sections/smoke-section-id/reject`, {
+    reason: 'smoke',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('GET /api/cases/:caseId/extraction-summary includes quality metrics', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/extraction-summary`);
   assert(status === 200, `Expected 200, got ${status}`);
@@ -381,6 +526,91 @@ await test('GET /api/cases/:caseId/extraction-summary includes quality metrics',
   assert(typeof body.quality?.warningCount === 'number', 'warningCount should be number');
   assert(Array.isArray(body.quality?.flaggedDocuments), 'flaggedDocuments should be an array');
   assert(body.quality.duplicateCount >= 1, 'duplicateCount should reflect duplicate upload');
+});
+
+// —— 4c. Phase6 Memory API Contracts ————————————————————————————————
+console.log('\n4c. Memory API Contracts');
+
+await test('POST /api/memory/approved rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/approved', {
+    text: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('PATCH /api/memory/approved/:id rejects invalid payload type', async () => {
+  const { status, body } = await api('PATCH', '/api/memory/approved/smoke-approved-id', [
+    { bad: 'payload' },
+  ]);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('DELETE /api/memory/approved/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/memory/approved/smoke-approved-id', {
+    reason: 'cleanup',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/staging rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/staging', {
+    text: 123,
+    candidateSource: 'generated_section',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/staging/batch-approve rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/staging/batch-approve', {
+    ids: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/voice/profiles rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/voice/profiles', [
+    'not-an-object',
+  ]);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/retrieval/preview rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/retrieval/preview', {
+    canonicalFieldId: 1004,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/retrieval/rank rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/retrieval/rank', {
+    canonicalFieldId: 1004,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/memory/comp-commentary rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/memory/comp-commentary', {
+    text: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 // ── 5. Feedback & KB ──────────────────────────────────────────────────────────
@@ -410,6 +640,16 @@ await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects non-failed 
   assert(status === 409, `Expected 409, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
   assert(body?.code === 'INGEST_STEP_NOT_FAILED', 'code should be INGEST_STEP_NOT_FAILED');
+});
+
+await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects invalid payload type', async () => {
+  assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
+    step: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry returns coded 404 for unknown job', async () => {
@@ -460,6 +700,25 @@ await test('POST /api/cases/:caseId/fact-review-queue/resolve rejects missing se
   assert(body?.ok === false, 'ok should be false');
 });
 
+await test('POST /api/cases/:caseId/extracted-facts/review rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-facts/review`, {
+    factId: 123,
+    action: 'accepted',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-facts/merge rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-facts/merge`, {
+    factIds: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/pre-draft-check`);
   assert(status === 200, `Expected 200, got ${status}`);
@@ -469,6 +728,15 @@ await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async 
   assert(Array.isArray(body.gate.blockers), 'gate.blockers should be an array');
   assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be a string');
   assert(typeof body.decisionQueueSummary === 'object', 'decisionQueueSummary should be an object');
+});
+
+await test('GET /api/cases/:caseId/qc-approval-gate returns QC approval gate details', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/qc-approval-gate`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/qc-approval-gate');
+  assert(typeof body.gate === 'object', 'gate should be an object');
+  assert(body.gate.ok === false, 'gate.ok should be false without a QC run');
+  assert(body.gate.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
 });
 
 await test('GET /api/cases/:caseId/intelligence/requirements returns deterministic section matrix', async () => {
@@ -496,8 +764,20 @@ await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot'
   assert(typeof body.cached === 'boolean', 'cached should be boolean');
   assert(typeof body.results === 'object', 'results should be an object');
   assert(typeof body.results.summary === 'object', 'results.summary should be an object');
+  assert(typeof body.results.summary.extraction?.byLane === 'object', 'extraction.byLane should be an object');
+  assert(typeof body.results.summary.gate?.byLane === 'object', 'gate.byLane should be an object');
+  assert(typeof body.results.summary.extraction?.byLane?.commercial?.fixtureCount === 'number', 'commercial extraction lane count should be numeric');
+  assert(typeof body.results.summary.gate?.byLane?.commercial?.fixtureCount === 'number', 'commercial gate lane count should be numeric');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
   assert(typeof body.qualityGate.ok === 'boolean', 'qualityGate.ok should be boolean');
+  assert(Array.isArray(body.qualityGate.checks), 'qualityGate.checks should be an array');
+  assert(
+    body.qualityGate.checks.some(c => c.id === 'extraction.lane.commercial.fixture_count'),
+    'qualityGate should include commercial extraction lane coverage check',
+  );
+  assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
+  assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');
+  assert(body.thresholdSource === 'default', 'thresholdSource should be default');
 });
 
 await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run', async () => {
@@ -507,7 +787,50 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
   assert(body.persisted === false, 'persisted should be false when persist=false');
   assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
   assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
+  assert(typeof body.results?.summary?.extraction?.byLane?.residential?.fixtureCount === 'number', 'residential extraction lane count should be numeric');
+  assert(typeof body.results?.summary?.gate?.byLane?.commercial?.fixtureCount === 'number', 'commercial gate lane count should be numeric');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
+  assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
+  assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');
+  assert(body.thresholdSource === 'default', 'thresholdSource should be default');
+});
+
+await test('POST /api/intelligence/benchmarks/phase-c/run accepts threshold overrides', async () => {
+  const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {
+    thresholds: {
+      extraction: {
+        minFixtureCount: 1,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 1,
+        },
+      },
+      gate: {
+        minFixtureCount: 1,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 1,
+        },
+      },
+    },
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/intelligence/benchmarks/phase-c/run threshold overrides');
+  assert(body.thresholdSource === 'request', 'thresholdSource should be request');
+  assert(typeof body.qualityGate?.ok === 'boolean', 'qualityGate.ok should be boolean');
+  assert(
+    body.qualityGate?.checks?.some(c => c.id === 'gate.lane.commercial.fixture_count'),
+    'qualityGate should include commercial gate lane check under threshold overrides',
+  );
+});
+
+await test('POST /api/intelligence/benchmarks/phase-c/run rejects invalid threshold payload type', async () => {
+  const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {
+    thresholds: 'invalid-thresholds',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
@@ -517,6 +840,67 @@ await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate
   assert(body.code === 'PRE_DRAFT_GATE_BLOCKED', 'should return pre-draft gate code');
   assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be returned when gate blocks');
   assert(typeof body.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned when gate blocks');
+});
+
+await test('POST /api/cases/:caseId/generate-full-draft rejects forceGateBypass when disabled', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {
+    forceGateBypass: true,
+  });
+  assert(status === 403, `Expected 403, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'PRE_DRAFT_GATE_BYPASS_DISABLED', 'code should be PRE_DRAFT_GATE_BYPASS_DISABLED');
+});
+
+await test('POST /api/cases/:caseId/generate-full-draft rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {
+    options: { forceGateBypass: 'yes' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/generation/full-draft rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/generation/full-draft', {
+    caseId: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/generation/full-draft rejects forceGateBypass when disabled', async () => {
+  const { status, body } = await api('POST', '/api/generation/full-draft', {
+    caseId: testCaseId,
+    forceGateBypass: true,
+  });
+  assert(status === 403, `Expected 403, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'PRE_DRAFT_GATE_BYPASS_DISABLED', 'code should be PRE_DRAFT_GATE_BYPASS_DISABLED');
+});
+
+await test('POST /api/generation/regenerate-section rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/generation/regenerate-section', {
+    runId: 123,
+    sectionId: 'neighborhood_description',
+    caseId: testCaseId,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/similar-examples rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/similar-examples', {
+    limit: { bad: true },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {
@@ -556,6 +940,42 @@ await test('POST /api/kb/reindex runs without error', async () => {
   assert(typeof body.total === 'number', 'total should be a number');
 });
 
+await test('POST /api/kb/reindex rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/reindex', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/kb/migrate-voice rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/migrate-voice', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/kb/ingest-to-pinecone rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/ingest-to-pinecone', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/db/migrate-legacy-kb rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/db/migrate-legacy-kb', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 // ── 6. History & Templates ────────────────────────────────────────────────────
 console.log('\n6. History & Templates');
 
@@ -571,6 +991,35 @@ await test('GET /api/templates/neighborhood returns templates', async () => {
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'GET /api/templates/neighborhood');
   assert(Array.isArray(body.templates), 'templates should be an array');
+});
+
+await test('DELETE /api/templates/neighborhood/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/templates/neighborhood/smoke-template-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/templates/neighborhood rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/templates/neighborhood', {
+    name: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/export/bundle rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/export/bundle', {
+    includeAllLogs: 'yes',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 // ── 6b. Canonical Migration ───────────────────────────────────────────────────
@@ -607,6 +1056,28 @@ await test('GET /api/agents/status returns agent health', async () => {
   assertOk(body, 'GET /api/agents/status');
   assert(typeof body.aci === 'boolean', 'aci should be boolean');
   assert(typeof body.rq === 'boolean', 'rq should be boolean');
+});
+
+await test('POST /api/insert-aci rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/insert-aci', {
+    fieldId: 123,
+    text: 'Smoke text',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/insert-rq rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/insert-rq', {
+    fieldId: 'market_analysis',
+    text: false,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 // -- 7b. Insertion Gate --------------------------------------------------------
@@ -659,6 +1130,15 @@ await test('POST /api/insertion/run does not bypass missing fresh QC with skipQc
   assert(body?.qcGate?.reason === 'missing_fresh_generation_qc', 'qcGate.reason should match');
 });
 
+await test('POST /api/insertion/execute/:runId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/execute/irun_missing', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/insertion/execute/:runId returns coded 404 for unknown run', async () => {
   const { status, body } = await api('POST', '/api/insertion/execute/irun_missing');
   assert(status === 404, `Expected 404, got ${status}`);
@@ -666,11 +1146,156 @@ await test('POST /api/insertion/execute/:runId returns coded 404 for unknown run
   assert(body?.code === 'INSERTION_RUN_NOT_FOUND', 'code should be INSERTION_RUN_NOT_FOUND');
 });
 
+await test('POST /api/insertion/retry/:itemId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/retry/iitem_missing', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item', async () => {
   const { status, body } = await api('POST', '/api/insertion/retry/iitem_missing');
   assert(status === 404, `Expected 404, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
   assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
+});
+
+await test('POST /api/insertion/run/:runId/cancel rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/insertion/run/irun_missing/cancel', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('PUT /api/insertion/profile/:id rejects invalid payload type', async () => {
+  const { status, body } = await api('PUT', '/api/insertion/profile/iprofile_missing', {
+    active: 'yes',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/insert blocks when QC run is missing', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/insert`, {
+    text: 'Smoke section insert payload',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_GATE_BLOCKED', 'code should be QC_GATE_BLOCKED');
+  assert(body?.qcGate?.reason === 'missing_qc_run', 'qcGate reason should indicate missing QC run');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/insert rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/insert`, {
+    skipQcBlockers: 'true',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/copy saves explicit text payload', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/copy`, {
+    text: 'Smoke copy payload text',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/cases/:caseId/sections/:fieldId/copy');
+  assert(body?.fieldId === 'neighborhood_description', 'fieldId should match route parameter');
+  assert(body?.text === 'Smoke copy payload text', 'text should echo payload');
+  assert(body?.status === 'copied', 'status should be copied');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/copy rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/copy`, {
+    text: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/cases/:caseId/insert-all blocks approved insertion when QC run is missing', async () => {
+  const fieldId = 'neighborhood_description';
+
+  const patch = await api('PATCH', `/api/cases/${testCaseId}/outputs/${fieldId}`, {
+    text: 'Approved smoke narrative for insert-all QC gate check.',
+  });
+  assert(patch.status === 200, `Expected 200, got ${patch.status}`);
+  assertOk(patch.body, 'PATCH /api/cases/:caseId/outputs/:fieldId');
+
+  const approve = await api('PATCH', `/api/cases/${testCaseId}/sections/${fieldId}/status`, {
+    status: 'approved',
+  });
+  assert(approve.status === 200, `Expected 200, got ${approve.status}`);
+  assertOk(approve.body, 'PATCH /api/cases/:caseId/sections/:fieldId/status');
+
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`, {});
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_GATE_BLOCKED', 'code should be QC_GATE_BLOCKED');
+  assert(typeof body?.qcGate === 'object', 'qcGate should be an object');
+  assert(body?.qcGate?.reason === 'missing_qc_run', 'qcGate reason should indicate missing QC run');
+});
+
+await test('POST /api/cases/:caseId/insert-all rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`, {
+    skipQcBlockers: 'true',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+// -- 7c. QC API ---------------------------------------------------------------
+console.log('\n7c. QC API');
+
+await test('POST /api/qc/run rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/run', {
+    caseId: 12345,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/qc/findings/:findingId/dismiss rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/dismiss', {
+    note: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/qc/findings/:findingId/resolve rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/resolve', {
+    note: false,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/qc/findings/:findingId/reopen rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/reopen', {
+    note: { bad: 'payload' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 console.log('\n8. AI Endpoints (error handling)');
@@ -696,9 +1321,9 @@ await test('POST /api/cases/:caseId/review-section without draftText returns 400
   assert(body.ok === false, 'ok should be false');
 });
 
-await test('POST /api/cases/:caseId/insert-all with no approved sections returns 400', async () => {
+await test('POST /api/cases/:caseId/insert-all enforces insertion preconditions', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`);
-  assert(status === 400, `Expected 400, got ${status}`);
+  assert(status === 400 || status === 409, `Expected 400 or 409, got ${status}`);
   assert(body.ok === false, 'ok should be false');
 });
 
@@ -718,10 +1343,85 @@ await test('POST /api/workflow/run without caseId returns 400 or 503', async () 
   assert(body.ok === false, 'ok should be false');
 });
 
+await test('POST /api/cases/:caseId/generate-core rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-core`, {
+    fields: 'neighborhood_description',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/generate-comp-commentary rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-comp-commentary`, {
+    compFocus: true,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/generate-all rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-all`, {
+    forceGateBypass: 'yes',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/extract-facts rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extract-facts`, {
+    answers: 'not-an-object',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/questionnaire rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/questionnaire`, {
+    includeHints: true,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/workflow/run rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run', {
+    caseId: 12345,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
 await test('POST /api/workflow/run-batch with empty cases returns 400 or 503', async () => {
   const { status, body } = await api('POST', '/api/workflow/run-batch', { cases: [] });
   assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
   assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/workflow/run-batch rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/workflow/run-batch', { cases: 'not-array' });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
 });
 
 await test('POST /api/workflow/ingest-pdf without file returns 400 or 503', async () => {
@@ -730,8 +1430,144 @@ await test('POST /api/workflow/ingest-pdf without file returns 400 or 503', asyn
   assert(body.ok === false, 'ok should be false');
 });
 
-// ── 9. Voice Examples ─────────────────────────────────────────────────────────
-console.log('\n10. Voice Examples');
+// ── 10. Queue Endpoints ───────────────────────────────────────────────────────
+console.log('\n10. Queue Endpoints');
+
+await test('POST /api/reports/queue rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/reports/queue rejects invalid forceGateBypass payload type', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: [{ caseId: testCaseId, formType: '1004', forceGateBypass: 'true' }],
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/reports/queue/cancel rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue/cancel', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/reports/queue/clear rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue/clear', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/reports/queue enqueues jobs', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: [{ caseId: testCaseId, formType: '1004' }],
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.batchId === 'string' && body.batchId.length > 10, 'batchId should be present');
+  assert(Array.isArray(body?.jobs) && body.jobs.length === 1, 'jobs should contain one entry');
+  assert(typeof body.jobs[0]?.jobId === 'string', 'jobId should be present');
+  smokeQueueBatchId = body.batchId;
+  smokeQueueJobId = body.jobs[0].jobId;
+});
+
+await test('GET /api/reports/queue/batch/:batchId returns batch status', async () => {
+  const { status, body } = await api('GET', `/api/reports/queue/batch/${smokeQueueBatchId}`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(Array.isArray(body?.jobs), 'jobs should be an array');
+  assert(body?.jobs?.length >= 1, 'batch should include at least one job');
+});
+
+await test('GET /api/reports/queue/job/:jobId returns job status', async () => {
+  const { status, body } = await api('GET', `/api/reports/queue/job/${smokeQueueJobId}`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.jobId === 'string', 'jobId should be present');
+  assert(typeof body?.status === 'string', 'job status should be a string');
+});
+
+await test('queued generation honors pre-draft gate and returns gate metadata', async () => {
+  const job = await waitForQueueJobTerminal(smokeQueueJobId, { timeoutMs: 6000, intervalMs: 150 });
+  assert(job && typeof job === 'object', 'job status payload should be present');
+  assert(job.status === 'failed', `Expected failed job status, got ${job?.status}`);
+  assert(job.errorCode === 'PRE_DRAFT_GATE_BLOCKED', `Expected PRE_DRAFT_GATE_BLOCKED, got ${job?.errorCode}`);
+  assert(job.preDraftGate?.ok === false, 'preDraftGate.ok should be false');
+  assert(Number(job.preDraftGate?.blockerCount || 0) > 0, 'preDraftGate.blockerCount should be > 0');
+  assert(typeof job.preDraftGate?.factReviewQueuePath === 'string', 'factReviewQueuePath should be present');
+});
+
+// ── 11. Operations Endpoints ──────────────────────────────────────────────────
+console.log('\n11. Operations Endpoints');
+
+await test('POST /api/operations/metrics/daily rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/daily', {
+    date: 20260311,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/operations/metrics/daily computes daily summary', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/daily', {
+    date: '2026-03-11',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(typeof body?.summary === 'object', 'summary should be an object');
+  assert(body?.summary?.date === '2026-03-11', 'summary.date should match payload date');
+});
+
+await test('POST /api/operations/metrics/compute rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/compute', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/operations/archive/:caseId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/operations/archive/${testCaseId}`, {
+    reason: 'test',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/operations/archive/:caseId archives and restore unarchives', async () => {
+  const archived = await api('POST', `/api/operations/archive/${testCaseId}`, {});
+  assert(archived.status === 200, `Expected 200, got ${archived.status}`);
+  assert(archived.body?.success === true, 'archive success should be true');
+
+  const restored = await api('POST', `/api/operations/restore/${testCaseId}`, {});
+  assert(restored.status === 200, `Expected 200, got ${restored.status}`);
+  assert(restored.body?.success === true, 'restore success should be true');
+});
+
+await test('POST /api/operations/cleanup rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/operations/cleanup', {
+    purge: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+// ── 12. Voice Examples ────────────────────────────────────────────────────────
+console.log('\n12. Voice Examples');
 
 await test('GET /api/voice/examples returns voice data', async () => {
   const { status, body } = await api('GET', '/api/voice/examples');
@@ -741,6 +1577,24 @@ await test('GET /api/voice/examples returns voice data', async () => {
   assert(Array.isArray(body.imports), 'imports should be an array');
 });
 
+await test('DELETE /api/voice/examples/import/:importId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/voice/examples/import/smoke-import-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('DELETE /api/voice/examples/:id rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', '/api/voice/examples/smoke-example-id', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('GET /api/voice/folder-status returns folder info', async () => {
   const { status, body } = await api('GET', '/api/voice/folder-status?formType=1004');
   assert(status === 200, `Expected 200, got ${status}`);
@@ -748,8 +1602,28 @@ await test('GET /api/voice/folder-status returns folder info', async () => {
   assert(typeof body.folderExists === 'boolean', 'folderExists should be boolean');
 });
 
-// ── 10. Cleanup ───────────────────────────────────────────────────────────────
-console.log('\n11. Cleanup');
+await test('POST /api/voice/import-folder rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/voice/import-folder', {
+    formType: 1004,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+// ── 13. Cleanup ───────────────────────────────────────────────────────────────
+console.log('\n13. Cleanup');
+
+await test('DELETE /api/cases/:caseId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`, {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
 
 await test('DELETE /api/cases/:caseId removes test case', async () => {
   const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`);

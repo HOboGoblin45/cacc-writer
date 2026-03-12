@@ -400,6 +400,10 @@ await test('evaluatePreDraftGate treats non-critical pending facts as warning-on
         siteSize: { value: '7500', confidence: 'high' },
       },
     },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.siteSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
+    },
   });
 
   addExtractedFact(caseId, {
@@ -422,7 +426,7 @@ await test('evaluatePreDraftGate treats non-critical pending facts as warning-on
   assert.ok(gate.warnings.some(w => w.type === 'pending_fact_reviews_non_blocking'));
 });
 
-await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance warnings', () => {
+await test('evaluatePreDraftGate blocks when required alias fact path is missing provenance', () => {
   const { caseId } = createFilesystemCase({
     facts: {
       subject: {
@@ -442,7 +446,62 @@ await test('evaluatePreDraftGate accepts alias fact path and surfaces provenance
   });
 
   assert.ok(gate, 'expected gate result');
-  assert.equal(gate.ok, true, 'alias should satisfy required section facts');
+  assert.equal(gate.ok, false, 'required alias fact should block when provenance is missing');
+  assert.ok(gate.blockers.some(b => b.type === 'missing_required_provenance'));
+  assert.ok(gate.summary.missingRequiredProvenance >= 1, 'expected missing required provenance summary');
+});
+
+await test('evaluatePreDraftGate accepts provenance on alias path for required fact', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '889 Alias Source Rd', confidence: 'high' },
+        lotSize: { value: '9100', confidence: 'medium' }, // alias for subject.siteSize
+      },
+    },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.lotSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
+    },
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'alias provenance should satisfy required provenance check');
+  assert.equal(gate.summary.missingRequiredProvenance, 0, 'no required provenance blockers expected');
+});
+
+await test('evaluatePreDraftGate keeps non-required provenance gaps as warnings', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '777 Warning Ln', confidence: 'high' },
+        siteSize: { value: '8200', confidence: 'high' },
+      },
+      contract: {
+        contractDate: { value: '2026-01-10', confidence: 'medium' },
+      },
+    },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.siteSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
+    },
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'non-required provenance gaps should remain warning-only');
+  assert.equal(gate.summary.missingRequiredProvenance, 0, 'no required provenance blockers expected');
   assert.ok(gate.summary.provenanceCoveragePct < 100, 'expected provenance gap warning');
   assert.ok(gate.warnings.some(w => w.type === 'provenance_gaps'));
 });
@@ -454,6 +513,10 @@ await test('evaluatePreDraftGate reports pending extracted sections as warnings 
         address: { value: '120 Section Ave', confidence: 'high' },
         siteSize: { value: '10200', confidence: 'high' },
       },
+    },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.siteSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
     },
   });
 

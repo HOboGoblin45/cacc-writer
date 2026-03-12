@@ -16,6 +16,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import {
@@ -35,15 +36,144 @@ import {
   evaluatePhaseCBenchmarkThresholds,
   DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
 } from '../factIntegrity/benchmarkThresholds.js';
+import { summarizeBenchmarkSuite } from '../factIntegrity/accuracyBenchmarks.js';
 import log from '../logger.js';
 
 const router = Router();
+const benchmarkThresholdOverrideSchema = z.object({
+  extraction: z.object({
+    minFixtureCount: z.number().finite().optional(),
+    minAvgPrecision: z.number().finite().optional(),
+    minAvgRecall: z.number().finite().optional(),
+    minAvgF1: z.number().finite().optional(),
+    minLaneFixtureCounts: z.record(z.number().finite()).optional(),
+  }).partial().optional(),
+  gate: z.object({
+    minFixtureCount: z.number().finite().optional(),
+    minPassRate: z.number().finite().optional(),
+    minLaneFixtureCounts: z.record(z.number().finite()).optional(),
+  }).partial().optional(),
+}).partial();
+
+const runBenchmarksSchema = z.object({
+  thresholds: benchmarkThresholdOverrideSchema.optional(),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 async function loadOrBuildBundle(caseId) {
   let bundle = getIntelligenceBundle(caseId);
   if (bundle) return { bundle, rebuilt: false };
   bundle = await buildIntelligenceBundle(caseId);
   return { bundle, rebuilt: true };
+}
+
+function normalizeThresholdOverrides(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  return raw;
+}
+
+function buildBenchmarkGateEnvelope(results, thresholds, thresholdSource) {
+  const qualityGate = evaluatePhaseCBenchmarkThresholds(results, thresholds);
+  return {
+    qualityGate,
+    qualityGateSummary: qualityGate?.summary || null,
+    qualityGateFailures: (qualityGate?.checks || [])
+      .filter(check => check && check.passed === false)
+      .map(check => check.id)
+      .filter(Boolean),
+    thresholdSource,
+  };
+}
+
+function hasLaneSummary(summary) {
+  const extractionByLane = summary?.extraction?.byLane;
+  const gateByLane = summary?.gate?.byLane;
+  return (
+    extractionByLane
+    && typeof extractionByLane === 'object'
+    && !Array.isArray(extractionByLane)
+    && gateByLane
+    && typeof gateByLane === 'object'
+    && !Array.isArray(gateByLane)
+  );
+}
+
+function normalizeBenchmarkResults(results) {
+  if (!results || typeof results !== 'object') return results;
+
+  const extractionRuns = Array.isArray(results.extractionRuns) ? results.extractionRuns : [];
+  const gateRuns = Array.isArray(results.gateRuns) ? results.gateRuns : [];
+  const derivedSummary = summarizeBenchmarkSuite({ extractionRuns, gateRuns });
+  const existingSummary = results.summary && typeof results.summary === 'object'
+    ? results.summary
+    : {};
+  const existingExtraction = existingSummary.extraction && typeof existingSummary.extraction === 'object'
+    ? existingSummary.extraction
+    : {};
+  const existingGate = existingSummary.gate && typeof existingSummary.gate === 'object'
+    ? existingSummary.gate
+    : {};
+  const extractionByLane = {
+    ...derivedSummary.extraction.byLane,
+  };
+  for (const lane of Object.keys(
+    DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.extraction.minLaneFixtureCounts || {},
+  )) {
+    if (!extractionByLane[lane] || typeof extractionByLane[lane] !== 'object') {
+      extractionByLane[lane] = {
+        fixtureCount: 0,
+        avgPrecision: null,
+        avgRecall: null,
+        avgF1: null,
+      };
+    }
+  }
+  const gateByLane = {
+    ...derivedSummary.gate.byLane,
+  };
+  for (const lane of Object.keys(
+    DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minLaneFixtureCounts || {},
+  )) {
+    if (!gateByLane[lane] || typeof gateByLane[lane] !== 'object') {
+      gateByLane[lane] = {
+        fixtureCount: 0,
+        passedCount: 0,
+        passRate: null,
+      };
+    }
+  }
+
+  return {
+    ...results,
+    summary: {
+      ...derivedSummary,
+      ...existingSummary,
+      extraction: {
+        ...derivedSummary.extraction,
+        ...existingExtraction,
+        byLane: extractionByLane,
+      },
+      gate: {
+        ...derivedSummary.gate,
+        ...existingGate,
+        byLane: gateByLane,
+      },
+    },
+  };
 }
 
 // ── param: caseId validation ────────────────────────────────────────────────
@@ -197,32 +327,49 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
   try {
     const cached = readPhaseCBenchmarkResults();
     if (cached) {
-      const qualityGate = evaluatePhaseCBenchmarkThresholds(
-        cached,
+      const normalizedResults = normalizeBenchmarkResults(cached);
+      const wasLegacySummary = !hasLaneSummary(cached.summary);
+      if (wasLegacySummary) {
+        try {
+          writePhaseCBenchmarkResults(normalizedResults);
+        } catch (persistErr) {
+          log.warn('[intelligence] Unable to persist normalized benchmark snapshot', {
+            error: persistErr?.message || String(persistErr),
+          });
+        }
+      }
+      const gateEnvelope = buildBenchmarkGateEnvelope(
+        normalizedResults,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+        'default',
       );
       return res.json({
         ok: true,
         cached: true,
-        results: cached,
-        qualityGate,
+        results: normalizedResults,
+        ...gateEnvelope,
       });
     }
 
     const run = await runPhaseCBenchmarksFromFile();
-    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+    const gateEnvelope = buildBenchmarkGateEnvelope(
       run.results,
       DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      'default',
     );
 
     res.json({
       ok: true,
       cached: false,
       results: run.results,
-      qualityGate,
+      ...gateEnvelope,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      ok: false,
+      code: 'PHASE_C_BENCHMARK_READ_FAILED',
+      error: err.message,
+    });
   }
 });
 
@@ -232,12 +379,18 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
  * Query param: ?persist=false to skip file write.
  */
 router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
+  const body = parsePayload(runBenchmarksSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
+    const thresholdOverrides = normalizeThresholdOverrides(body.thresholds);
+    const thresholdSource = thresholdOverrides ? 'request' : 'default';
     const run = await runPhaseCBenchmarksFromFile();
-    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+    const gateEnvelope = buildBenchmarkGateEnvelope(
       run.results,
-      DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      thresholdOverrides || DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      thresholdSource,
     );
     if (persist) writePhaseCBenchmarkResults(run.results);
 
@@ -245,10 +398,14 @@ router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
       ok: true,
       persisted: persist,
       results: run.results,
-      qualityGate,
+      ...gateEnvelope,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      ok: false,
+      code: 'PHASE_C_BENCHMARK_RUN_FAILED',
+      error: err.message,
+    });
   }
 });
 

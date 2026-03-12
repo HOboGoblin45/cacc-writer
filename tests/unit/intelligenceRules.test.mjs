@@ -100,6 +100,55 @@ await test('hard compliance rules pass with no blockers for baseline 1004 scenar
   assert.equal(Array.isArray(scenario.complianceChecks.blockers), true);
 });
 
+await test('hard compliance rules warn when intended user is missing from assignment context', () => {
+  const scenario = buildScenario({
+    meta: { formType: '1004' },
+  });
+
+  const warning = scenario.complianceChecks.warnings.find(b => b.ruleId === 'rule.assignment.intended_user');
+  assert.ok(warning, 'expected intended-user warning when intended user is missing');
+  assert.equal(warning.reasonCode, 'intended_user_missing');
+});
+
+await test('hard compliance rules pass intended user check when intended user is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      intendedUser: 'First National Bank',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.assignment.intended_user');
+  assert.ok(check, 'expected intended-user compliance check');
+  assert.equal(check.passed, true, 'expected intended-user check to pass when intended user exists');
+});
+
+await test('hard compliance rules block when a manifest-required section is excluded', () => {
+  const scenario = buildScenario({
+    meta: { formType: '1004' },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const neighborhood = matrix.sections.find(s => s.sectionId === 'neighborhood_description');
+  assert.ok(neighborhood, 'expected neighborhood_description section in matrix');
+  neighborhood.status = 'excluded';
+  neighborhood.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.manifest_required_sections.active');
+  assert.ok(blocker, 'expected manifest-required sections blocker');
+  assert.ok(
+    blocker.evidence?.missingSectionIds?.includes('neighborhood_description'),
+    'expected excluded manifest-required section to be reported',
+  );
+});
+
 await test('hard compliance rules block when reconciliation section is missing', () => {
   const scenario = buildScenario({
     meta: { formType: '1004' },
@@ -250,6 +299,104 @@ await test('hard compliance rules block USDA assignment when site eligibility se
   assert.ok(blocker, 'expected USDA site eligibility blocker when section is excluded');
 });
 
+await test('hard compliance rules warn when condo project analysis is excluded for condo assignment', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1073',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const condo = matrix.sections.find(s => s.sectionId === 'condo_project_analysis');
+  assert.ok(condo, 'expected condo_project_analysis section in matrix');
+  condo.status = 'excluded';
+  condo.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const warning = checks.warnings.find(b => b.ruleId === 'rule.condo.project_analysis');
+  assert.ok(warning, 'expected condo project analysis warning when section is excluded');
+});
+
+await test('hard compliance rules block manufactured-home assignment when manufactured section is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004c',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const manufactured = matrix.sections.find(s => s.sectionId === 'manufactured_home_comments');
+  assert.ok(manufactured, 'expected manufactured_home_comments section in matrix');
+  manufactured.status = 'excluded';
+  manufactured.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.manufactured_home.comments');
+  assert.ok(blocker, 'expected manufactured-home blocker when section is excluded');
+});
+
+await test('hard compliance rules block mixed-use assignment when mixed-use commentary is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      propertyType: 'mixed_use',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const mixedUse = matrix.sections.find(s => s.sectionId === 'mixed_use_comment');
+  assert.ok(mixedUse, 'expected mixed_use_comment section in matrix');
+  mixedUse.status = 'excluded';
+  mixedUse.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.mixed_use.commentary');
+  assert.ok(blocker, 'expected mixed-use blocker when section is excluded');
+});
+
+await test('hard compliance rules warn when ADU commentary is excluded for ADU assignment', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      adu: true,
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const adu = matrix.sections.find(s => s.sectionId === 'adu_comment');
+  assert.ok(adu, 'expected adu_comment section in matrix');
+  adu.status = 'excluded';
+  adu.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const warning = checks.warnings.find(b => b.ruleId === 'rule.adu.commentary');
+  assert.ok(warning, 'expected ADU commentary warning when section is excluded');
+});
+
 await test('hard compliance rules block government loan in high-risk flood zone when flood comment is excluded', () => {
   const scenario = buildScenario({
     meta: {
@@ -278,6 +425,97 @@ await test('hard compliance rules block government loan in high-risk flood zone 
 
   const blocker = checks.blockers.find(b => b.ruleId === 'rule.flood.high_risk_government_loan');
   assert.ok(blocker, 'expected high-risk flood blocker for government-backed loan when flood section is excluded');
+});
+
+await test('hard compliance rules block prospective value assignment when certification addendum is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const cert = matrix.sections.find(s => s.sectionId === 'certification_addendum_comment');
+  assert.ok(cert, 'expected certification_addendum_comment section in matrix');
+  cert.status = 'excluded';
+  cert.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.assignment_condition.certification_addendum');
+  assert.ok(blocker, 'expected assignment condition certification blocker when addendum section is excluded');
+});
+
+await test('hard compliance rules pass assignment-condition certification check when addendum is active', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.assignment_condition.certification_addendum');
+  assert.ok(check, 'expected assignment condition certification check');
+  assert.equal(check.passed, true, 'expected assignment condition certification check to pass when section is active');
+});
+
+await test('hard compliance rules block prospective/retrospective values with missing effective date', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'retrospective',
+    },
+  });
+
+  const blocker = scenario.complianceChecks.blockers.find(b => b.ruleId === 'rule.value_condition.effective_date');
+  assert.ok(blocker, 'expected effective date blocker for retrospective assignment without effective date');
+});
+
+await test('hard compliance rules pass value-condition effective date check when date is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+      effectiveDate: '2026-02-10',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.value_condition.effective_date');
+  assert.ok(check, 'expected value condition effective date check');
+  assert.equal(check.passed, true, 'expected effective date check to pass when date exists');
+});
+
+await test('hard compliance rules warn when Illinois county disclosure is missing', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      state: 'IL',
+    },
+  });
+
+  const warning = scenario.complianceChecks.warnings.find(b => b.ruleId === 'rule.illinois.county_disclosure');
+  assert.ok(warning, 'expected Illinois county disclosure warning when county is missing');
+  assert.equal(warning.reasonCode, 'county_missing');
+});
+
+await test('hard compliance rules pass Illinois county disclosure when county is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      state: 'IL',
+      county: 'Cook',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.illinois.county_disclosure');
+  assert.ok(check, 'expected Illinois county disclosure check');
+  assert.equal(check.passed, true, 'expected Illinois county disclosure check to pass when county exists');
 });
 
 console.log('\n' + '-'.repeat(60));

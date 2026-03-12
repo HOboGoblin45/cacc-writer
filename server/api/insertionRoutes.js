@@ -48,6 +48,22 @@ const prepareInsertionSchema = z.object({
 });
 
 const runInsertionSchema = prepareInsertionSchema;
+const emptyMutationSchema = z.object({}).strict();
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  baseUrl: z.string().trim().min(1).max(600).optional(),
+  active: z.boolean().optional(),
+  supportsReadback: z.boolean().optional(),
+  supportsRichText: z.boolean().optional(),
+  supportsPartialRetry: z.boolean().optional(),
+  supportsAppendMode: z.boolean().optional(),
+  requiresFocusTarget: z.boolean().optional(),
+  config: z.union([z.string(), z.record(z.unknown())]).optional(),
+  configJson: z.union([z.string(), z.record(z.unknown())]).optional(),
+}).passthrough().refine(
+  payload => Object.keys(payload || {}).length > 0,
+  { message: 'At least one profile field is required' },
+);
 
 function sendError(res, status, code, error, extra = {}) {
   res.status(status).json({
@@ -101,6 +117,7 @@ router.post('/insertion/prepare', (req, res) => {
 
 router.post('/insertion/execute/:runId', async (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { runId } = req.params;
     const run = getInsertionRun(runId);
 
@@ -215,6 +232,7 @@ router.get('/insertion/run/:runId/items', (req, res) => {
 
 router.post('/insertion/run/:runId/cancel', (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const run = getInsertionRun(req.params.runId);
     if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
 
@@ -242,6 +260,7 @@ router.post('/insertion/run/:runId/cancel', (req, res) => {
 
 router.post('/insertion/retry/:itemId', async (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { itemId } = req.params;
     const item = getInsertionRunItem(itemId);
     if (!item) {
@@ -344,7 +363,14 @@ router.get('/insertion/profile/:id', (req, res) => {
 
 router.put('/insertion/profile/:id', (req, res) => {
   try {
-    updateDestinationProfile(req.params.id, req.body);
+    const body = parsePayload(updateProfileSchema, req.body || {}, res);
+    if (!body) return;
+    const updates = { ...body };
+    if (updates.config !== undefined && updates.configJson === undefined) {
+      updates.configJson = updates.config;
+    }
+    delete updates.config;
+    updateDestinationProfile(req.params.id, updates);
     const profile = getDestinationProfile(req.params.id);
     if (!profile) return sendError(res, 404, 'INSERTION_PROFILE_NOT_FOUND', 'Profile not found');
     res.json({ profile });

@@ -76,7 +76,11 @@ export function prepareInsertionRun({
   });
 
   // Check QC gate
-  const qcGate = checkQcGate(caseId, generationRunId, mergedConfig);
+  const qcGate = evaluateInsertionQcGate({
+    caseId,
+    generationRunId,
+    config: mergedConfig,
+  });
   mergedConfig.qcOverrideAllowed = qcGate.overrideAllowed !== false;
 
   // Create the run
@@ -541,6 +545,28 @@ function gatherFieldTexts(caseId, formType, generationRunId = null) {
 }
 
 /**
+ * Evaluate QC gate for insertion without creating a run record.
+ *
+ * @param {Object} params
+ * @param {string} params.caseId
+ * @param {string|null} [params.generationRunId]
+ * @param {Object} [params.config]
+ * @returns {import('./types.js').QCGateResult}
+ */
+export function evaluateInsertionQcGate({
+  caseId,
+  generationRunId = null,
+  config = {},
+}) {
+  const mergedConfig = {
+    requireQcRun: false,
+    requireFreshQcForGeneration: true,
+    ...config,
+  };
+  return checkQcGate(caseId, generationRunId, mergedConfig);
+}
+
+/**
  * Check QC gate for a case.
  * Returns whether insertion should proceed based on QC findings.
  *
@@ -563,7 +589,7 @@ function checkQcGate(caseId, generationRunId, config) {
         FROM qc_runs
         WHERE case_id = ?
           AND generation_run_id = ?
-          AND status = 'completed'
+          AND status IN ('complete', 'completed', 'partial_complete')
         ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
         LIMIT 1
       `).get(caseId, generationRunId);
@@ -572,7 +598,7 @@ function checkQcGate(caseId, generationRunId, config) {
         SELECT *
         FROM qc_runs
         WHERE case_id = ?
-          AND status = 'completed'
+          AND status IN ('complete', 'completed', 'partial_complete')
         ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
         LIMIT 1
       `).get(caseId);

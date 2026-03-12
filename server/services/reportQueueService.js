@@ -26,12 +26,15 @@ import {
   runFullDraftOrchestrator,
   getRunStatus,
 } from '../orchestrator/generationOrchestrator.js';
-import { RUN_STATUS } from '../db/repositories/generationRepo.js';
+import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const MAX_QUEUE_SIZE   = 50;
 const MAX_SECTION_RETRY = 1;  // retry failed sections once per report
+const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const QUEUE_STATE_FILE = process.env.CACC_QUEUE_STATE_FILE
@@ -151,7 +154,7 @@ export function enqueueReports({ cases }) {
   const batchId = uuidv4();
   const jobs = [];
 
-  for (const { caseId, formType } of cases) {
+  for (const { caseId, formType, forceGateBypass } of cases) {
     if (!caseId) continue;
 
     const job = {
@@ -162,11 +165,14 @@ export function enqueueReports({ cases }) {
       status:       'queued',
       runId:        null,
       error:        null,
+      errorCode:    null,
       durationMs:   null,
       queuedAt:     new Date().toISOString(),
       startedAt:    null,
       completedAt:  null,
       retryAttempt: 0,
+      forceGateBypass: Boolean(forceGateBypass),
+      preDraftGate: null,
       sectionsTotal:     null,
       sectionsCompleted: null,
       sectionsFailed:    null,
@@ -320,56 +326,76 @@ async function processJob(job) {
   const t0 = Date.now();
   job.status    = 'running';
   job.startedAt = new Date().toISOString();
+  job.errorCode = null;
+  job.preDraftGate = null;
 
   persistState();
   log.info('queue:job-start', { jobId: job.jobId, caseId: job.caseId, formType: job.formType });
 
   try {
-    const result = await runFullDraftOrchestrator({
-      caseId:   job.caseId,
-      formType: job.formType || undefined,
-    });
-
-    job.runId = result.runId;
-
-    if (result.ok) {
-      // Check for partial completion
-      const status = getRunStatus(result.runId);
-      job.sectionsTotal     = status?.sectionsTotal     || null;
-      job.sectionsCompleted = status?.sectionsCompleted || null;
-      job.sectionsFailed    = status?.sectionsFailed    || null;
-
-      if (status?.sectionsFailed > 0 && job.retryAttempt < MAX_SECTION_RETRY) {
-        // Auto-retry: re-run the orchestrator for partial failures
-        job.retryAttempt++;
-        log.info('queue:auto-retry', {
-          jobId:      job.jobId,
-          caseId:     job.caseId,
-          failedSections: status.sectionsFailed,
-          attempt:    job.retryAttempt,
-        });
-
-        const retryResult = await runFullDraftOrchestrator({
-          caseId:   job.caseId,
-          formType: job.formType || undefined,
-        });
-
-        job.runId = retryResult.runId;
-        const retryStatus = getRunStatus(retryResult.runId);
-        job.sectionsTotal     = retryStatus?.sectionsTotal     || job.sectionsTotal;
-        job.sectionsCompleted = retryStatus?.sectionsCompleted || job.sectionsCompleted;
-        job.sectionsFailed    = retryStatus?.sectionsFailed    || 0;
-
-        job.status = retryStatus?.sectionsFailed > 0 ? 'partial_complete' : 'complete';
-      } else {
-        job.status = status?.sectionsFailed > 0 ? 'partial_complete' : 'complete';
-      }
-    } else {
+    const gateCheck = evaluateQueuePreDraftGate(job);
+    if (!gateCheck.ok) {
       job.status = 'failed';
-      job.error  = result.error || 'Orchestrator returned ok=false';
+      job.errorCode = gateCheck.errorCode;
+      job.error = gateCheck.error;
+      job.preDraftGate = gateCheck.preDraftGate || null;
+      log.info('queue:job-blocked', {
+        jobId: job.jobId,
+        caseId: job.caseId,
+        errorCode: gateCheck.errorCode,
+        gateSummary: gateCheck.preDraftGate?.summary || null,
+      });
+    } else {
+      const result = await runFullDraftOrchestrator({
+        caseId:   job.caseId,
+        formType: job.formType || undefined,
+        options: gateCheck.options || {},
+      });
+
+      job.runId = result.runId;
+
+      if (result.ok) {
+        // Check for partial completion
+        const status = getRunStatus(result.runId);
+        job.sectionsTotal     = status?.sectionsTotal     || null;
+        job.sectionsCompleted = status?.sectionsCompleted || null;
+        job.sectionsFailed    = status?.sectionsFailed    || null;
+
+        if (status?.sectionsFailed > 0 && job.retryAttempt < MAX_SECTION_RETRY) {
+          // Auto-retry: re-run the orchestrator for partial failures
+          job.retryAttempt++;
+          log.info('queue:auto-retry', {
+            jobId:      job.jobId,
+            caseId:     job.caseId,
+            failedSections: status.sectionsFailed,
+            attempt:    job.retryAttempt,
+          });
+
+          const retryResult = await runFullDraftOrchestrator({
+            caseId:   job.caseId,
+            formType: job.formType || undefined,
+            options: gateCheck.options || {},
+          });
+
+          job.runId = retryResult.runId;
+          const retryStatus = getRunStatus(retryResult.runId);
+          job.sectionsTotal     = retryStatus?.sectionsTotal     || job.sectionsTotal;
+          job.sectionsCompleted = retryStatus?.sectionsCompleted || job.sectionsCompleted;
+          job.sectionsFailed    = retryStatus?.sectionsFailed    || 0;
+
+          job.status = retryStatus?.sectionsFailed > 0 ? 'partial_complete' : 'complete';
+        } else {
+          job.status = status?.sectionsFailed > 0 ? 'partial_complete' : 'complete';
+        }
+      } else {
+        job.status = 'failed';
+        job.errorCode = 'ORCHESTRATOR_RUN_FAILED';
+        job.error = result.error || 'Orchestrator returned ok=false';
+      }
     }
   } catch (err) {
     job.status = 'failed';
+    job.errorCode = 'QUEUE_JOB_EXCEPTION';
     job.error  = err.message;
     log.error('queue:job-failed', { jobId: job.jobId, caseId: job.caseId, error: err.message });
   }
@@ -384,11 +410,60 @@ async function processJob(job) {
     status:     job.status,
     durationMs: job.durationMs,
     runId:      job.runId,
+    errorCode:  job.errorCode,
     sections:   { total: job.sectionsTotal, completed: job.sectionsCompleted, failed: job.sectionsFailed },
   });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function evaluateQueuePreDraftGate(job) {
+  const forceGateBypass = Boolean(job?.forceGateBypass);
+
+  if (forceGateBypass && !ALLOW_FORCE_GATE_BYPASS) {
+    return {
+      ok: false,
+      errorCode: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+      error: 'forceGateBypass is disabled in this environment',
+      preDraftGate: null,
+    };
+  }
+
+  if (forceGateBypass) {
+    return { ok: true, options: { forceGateBypass: true } };
+  }
+
+  const gate = evaluatePreDraftGate({
+    caseId: job.caseId,
+    formType: job.formType || null,
+  });
+  if (!gate) {
+    return {
+      ok: false,
+      errorCode: 'CASE_NOT_FOUND',
+      error: `Case not found: ${job.caseId}`,
+      preDraftGate: null,
+    };
+  }
+  if (gate.ok) {
+    return { ok: true, options: {} };
+  }
+
+  const queue = buildFactDecisionQueue(job.caseId);
+  return {
+    ok: false,
+    errorCode: 'PRE_DRAFT_GATE_BLOCKED',
+    error: 'Pre-draft integrity gate blocked queued generation',
+    preDraftGate: {
+      ok: false,
+      summary: gate.summary || null,
+      blockerCount: Array.isArray(gate.blockers) ? gate.blockers.length : 0,
+      warningCount: Array.isArray(gate.warnings) ? gate.warnings.length : 0,
+      factReviewQueuePath: `/api/cases/${job.caseId}/fact-review-queue`,
+      factReviewQueueSummary: queue?.summary || null,
+    },
+  };
+}
 
 function summarizeJob(job) {
   return {
@@ -399,11 +474,14 @@ function summarizeJob(job) {
     status:            job.status,
     runId:             job.runId,
     error:             job.error,
+    errorCode:         job.errorCode || null,
+    preDraftGate:      job.preDraftGate || null,
     durationMs:        job.durationMs,
     queuedAt:          job.queuedAt,
     startedAt:         job.startedAt,
     completedAt:       job.completedAt,
     retryAttempt:      job.retryAttempt,
+    forceGateBypass:   Boolean(job.forceGateBypass),
     sectionsTotal:     job.sectionsTotal,
     sectionsCompleted: job.sectionsCompleted,
     sectionsFailed:    job.sectionsFailed,

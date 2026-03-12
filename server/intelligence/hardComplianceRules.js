@@ -23,6 +23,10 @@ function hasAnyActiveSection(sectionRequirements, sectionIds = []) {
   return sectionIds.some(sectionId => hasActiveSection(sectionRequirements, sectionId));
 }
 
+function unique(values = []) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 function buildCheck({
   ruleId,
   severity,
@@ -58,6 +62,9 @@ export function evaluateHardComplianceRules({
   sectionRequirements = {},
 }) {
   const checks = [];
+  const effectiveDate = asText(context?.assignment?.effectiveDate);
+  const intendedUser = asText(context?.assignment?.intendedUser || context?.intendedUser);
+  const subjectState = asText(context?.subject?.state).toUpperCase();
 
   checks.push(buildCheck({
     ruleId: 'rule.uspap.applicable',
@@ -79,6 +86,46 @@ export function evaluateHardComplianceRules({
     message: Array.isArray(sectionRequirements.sections) && sectionRequirements.sections.length > 0
       ? 'Section requirement matrix is available.'
       : 'Section requirement matrix is missing.',
+  }));
+
+  checks.push(buildCheck({
+    ruleId: 'rule.assignment.intended_user',
+    severity: 'warning',
+    passed: Boolean(intendedUser),
+    reasonCode: intendedUser ? 'intended_user_present' : 'intended_user_missing',
+    message: intendedUser
+      ? 'Intended user is present in the assignment context.'
+      : 'Intended user is missing from the assignment context.',
+    evidence: {
+      intendedUser: intendedUser || null,
+    },
+  }));
+
+  const baselineRequiredSectionIds = unique(
+    (sectionRequirements.sections || [])
+      .filter(section => (
+        section?.reasonCode === 'manifest_required'
+        || section?.reasonCode === 'manifest_condition_met'
+      ))
+      .map(section => section.sectionId),
+  );
+  const missingBaselineRequiredSectionIds = baselineRequiredSectionIds.filter(
+    sectionId => !hasActiveSection(sectionRequirements, sectionId),
+  );
+  checks.push(buildCheck({
+    ruleId: 'rule.manifest_required_sections.active',
+    severity: 'blocker',
+    passed: missingBaselineRequiredSectionIds.length === 0,
+    reasonCode: missingBaselineRequiredSectionIds.length === 0
+      ? 'manifest_required_sections_active'
+      : 'manifest_required_sections_missing',
+    message: missingBaselineRequiredSectionIds.length === 0
+      ? 'All manifest-required sections are active in the section matrix.'
+      : 'One or more manifest-required sections are not active in the section matrix.',
+    evidence: {
+      expectedSectionIds: baselineRequiredSectionIds,
+      missingSectionIds: missingBaselineRequiredSectionIds,
+    },
   }));
 
   checks.push(buildCheck({
@@ -243,6 +290,42 @@ export function evaluateHardComplianceRules({
     }));
   }
 
+  if (flags.subject_to_any || flags.retrospective_value || flags.prospective_value) {
+    const passed = hasActiveSection(sectionRequirements, 'certification_addendum_comment');
+    const assignmentCondition = flags.subject_to_any
+      ? 'subject_to'
+      : (flags.retrospective_value ? 'retrospective_value' : 'prospective_value');
+    checks.push(buildCheck({
+      ruleId: 'rule.assignment_condition.certification_addendum',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'assignment_condition_addendum_present' : 'assignment_condition_addendum_missing',
+      message: passed
+        ? 'Certification addendum commentary is present for assignment-condition reporting.'
+        : 'Assignment condition requires certification addendum commentary, but section is missing.',
+      evidence: {
+        expectedSectionId: 'certification_addendum_comment',
+        assignmentCondition,
+      },
+    }));
+  }
+
+  if (flags.retrospective_value || flags.prospective_value) {
+    checks.push(buildCheck({
+      ruleId: 'rule.value_condition.effective_date',
+      severity: 'blocker',
+      passed: Boolean(effectiveDate),
+      reasonCode: effectiveDate ? 'effective_date_present' : 'effective_date_missing',
+      message: effectiveDate
+        ? 'Effective date is present for non-as-is value condition.'
+        : 'Prospective/retrospective value condition requires an explicit effective date.',
+      evidence: {
+        valueCondition: flags.retrospective_value ? 'retrospective' : 'prospective',
+        effectiveDate: effectiveDate || null,
+      },
+    }));
+  }
+
   if (flags.flood_commentary_required) {
     const passed = hasActiveSection(sectionRequirements, 'flood_comment');
     checks.push(buildCheck({
@@ -314,6 +397,80 @@ export function evaluateHardComplianceRules({
         ? 'USDA eligibility commentary section is present.'
         : 'USDA assignment detected, but site eligibility commentary section is missing.',
       evidence: { expectedSectionId: 'usda_site_eligibility_comment' },
+    }));
+  }
+
+  if (flags.condo) {
+    const passed = hasActiveSection(sectionRequirements, 'condo_project_analysis');
+    checks.push(buildCheck({
+      ruleId: 'rule.condo.project_analysis',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'condo_project_section_present' : 'condo_project_section_missing',
+      message: passed
+        ? 'Condo project analysis section is present.'
+        : 'Condo assignment detected, but condo project analysis section is missing.',
+      evidence: { expectedSectionId: 'condo_project_analysis' },
+    }));
+  }
+
+  if (flags.manufactured_home) {
+    const passed = hasActiveSection(sectionRequirements, 'manufactured_home_comments');
+    checks.push(buildCheck({
+      ruleId: 'rule.manufactured_home.comments',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'manufactured_home_section_present' : 'manufactured_home_section_missing',
+      message: passed
+        ? 'Manufactured home commentary section is present.'
+        : 'Manufactured-home assignment requires manufactured home commentary section.',
+      evidence: { expectedSectionId: 'manufactured_home_comments' },
+    }));
+  }
+
+  if (flags.mixed_use) {
+    const passed = hasActiveSection(sectionRequirements, 'mixed_use_comment');
+    checks.push(buildCheck({
+      ruleId: 'rule.mixed_use.commentary',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'mixed_use_comment_present' : 'mixed_use_comment_missing',
+      message: passed
+        ? 'Mixed-use commentary section is present.'
+        : 'Mixed-use assignment detected, but mixed-use commentary section is missing.',
+      evidence: { expectedSectionId: 'mixed_use_comment' },
+    }));
+  }
+
+  if (flags.adu_present) {
+    const passed = hasActiveSection(sectionRequirements, 'adu_comment');
+    checks.push(buildCheck({
+      ruleId: 'rule.adu.commentary',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'adu_comment_present' : 'adu_comment_missing',
+      message: passed
+        ? 'ADU commentary section is present.'
+        : 'ADU indicator detected, but ADU commentary section is missing.',
+      evidence: { expectedSectionId: 'adu_comment' },
+    }));
+  }
+
+  if (subjectState === 'IL' || subjectState === 'ILLINOIS') {
+    const county = asText(context?.subject?.county);
+    const passed = Boolean(county);
+    checks.push(buildCheck({
+      ruleId: 'rule.illinois.county_disclosure',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'county_present' : 'county_missing',
+      message: passed
+        ? 'Illinois assignment includes county disclosure in the subject context.'
+        : 'Illinois assignment is missing subject county in the normalized context.',
+      evidence: {
+        state: subjectState,
+        county: county || null,
+      },
     }));
   }
 

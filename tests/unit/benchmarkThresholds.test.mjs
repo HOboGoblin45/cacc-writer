@@ -38,10 +38,20 @@ function makeResults({
         avgPrecision: extraction.avgPrecision ?? 0.94,
         avgRecall: extraction.avgRecall ?? 0.91,
         avgF1: extraction.avgF1 ?? 0.92,
+        byLane: extraction.byLane ?? {
+          residential: { fixtureCount: 5 },
+          commercial: { fixtureCount: 1 },
+        },
       },
       gate: {
         fixtureCount: gate.fixtureCount ?? 4,
         passRate: gate.passRate ?? 1,
+        complianceExpectationFixtureCount: gate.complianceExpectationFixtureCount ?? 1,
+        complianceExpectationPassRate: gate.complianceExpectationPassRate ?? 1,
+        byLane: gate.byLane ?? {
+          residential: { fixtureCount: 3 },
+          commercial: { fixtureCount: 1 },
+        },
       },
     },
   };
@@ -57,7 +67,7 @@ await test('passes when benchmark summary exceeds default thresholds', () => {
 
   assert.equal(evaluation.ok, true);
   assert.equal(evaluation.summary.failedChecks, 0);
-  assert.equal(evaluation.checks.length, 6);
+  assert.equal(evaluation.checks.length, 12);
 });
 
 await test('fails and surfaces failed check IDs when extraction quality drops', () => {
@@ -72,6 +82,8 @@ await test('fails and surfaces failed check IDs when extraction quality drops', 
       gate: {
         fixtureCount: 4,
         passRate: 1,
+        complianceExpectationFixtureCount: 1,
+        complianceExpectationPassRate: 1,
       },
     }),
   );
@@ -80,6 +92,29 @@ await test('fails and surfaces failed check IDs when extraction quality drops', 
   assert.ok(evaluation.failedCheckIds.includes('extraction.avg_precision'));
   assert.ok(evaluation.failedCheckIds.includes('extraction.avg_recall'));
   assert.ok(evaluation.failedCheckIds.includes('extraction.avg_f1'));
+});
+
+await test('fails lane coverage checks when commercial fixtures are missing', () => {
+  const evaluation = evaluatePhaseCBenchmarkThresholds(
+    makeResults({
+      extraction: {
+        byLane: {
+          residential: { fixtureCount: 6 },
+          commercial: { fixtureCount: 0 },
+        },
+      },
+      gate: {
+        byLane: {
+          residential: { fixtureCount: 4 },
+          commercial: { fixtureCount: 0 },
+        },
+      },
+    }),
+  );
+
+  assert.equal(evaluation.ok, false);
+  assert.ok(evaluation.failedCheckIds.includes('extraction.lane.commercial.fixture_count'));
+  assert.ok(evaluation.failedCheckIds.includes('gate.lane.commercial.fixture_count'));
 });
 
 await test('honors threshold overrides', () => {
@@ -94,6 +129,8 @@ await test('honors threshold overrides', () => {
       gate: {
         fixtureCount: 1,
         passRate: 0.9,
+        complianceExpectationFixtureCount: 0,
+        complianceExpectationPassRate: 0,
       },
     }),
     {
@@ -102,16 +139,43 @@ await test('honors threshold overrides', () => {
         minAvgPrecision: 0.8,
         minAvgRecall: 0.8,
         minAvgF1: 0.8,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 0,
+        },
       },
       gate: {
         minFixtureCount: 1,
         minPassRate: 0.9,
+        minComplianceExpectationFixtureCount: 0,
+        minComplianceExpectationPassRate: 0,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 0,
+        },
       },
     },
   );
 
   assert.equal(evaluation.ok, true);
   assert.equal(evaluation.summary.failedChecks, 0);
+});
+
+await test('fails when compliance expectation fixture coverage is missing', () => {
+  const evaluation = evaluatePhaseCBenchmarkThresholds(
+    makeResults({
+      gate: {
+        fixtureCount: 4,
+        passRate: 1,
+        complianceExpectationFixtureCount: 0,
+        complianceExpectationPassRate: 0,
+      },
+    }),
+  );
+
+  assert.equal(evaluation.ok, false);
+  assert.ok(evaluation.failedCheckIds.includes('gate.compliance_expectation.fixture_count'));
+  assert.ok(evaluation.failedCheckIds.includes('gate.compliance_expectation.pass_rate'));
 });
 
 console.log('\n' + '-'.repeat(60));
@@ -125,4 +189,3 @@ if (failures.length) {
 }
 console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);
-
