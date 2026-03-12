@@ -19,12 +19,38 @@ export const DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS = Object.freeze({
     minAvgPrecision: 0.85,
     minAvgRecall: 0.8,
     minAvgF1: 0.82,
+    minLaneFixtureCounts: Object.freeze({
+      residential: 3,
+      commercial: 1,
+    }),
   }),
   gate: Object.freeze({
     minFixtureCount: 2,
     minPassRate: 1,
+    minLaneFixtureCounts: Object.freeze({
+      residential: 1,
+      commercial: 1,
+    }),
   }),
 });
+
+function normalizeLaneThresholdMap(input, fallback) {
+  const result = {};
+  const source = input && typeof input === 'object' ? input : {};
+  const defaults = fallback && typeof fallback === 'object' ? fallback : {};
+  const lanes = new Set([
+    ...Object.keys(defaults),
+    ...Object.keys(source),
+  ]);
+
+  for (const lane of lanes) {
+    result[String(lane).toLowerCase()] = Math.max(0, Math.floor(toFiniteNumber(
+      source[lane],
+      defaults[lane] ?? 0,
+    )));
+  }
+  return result;
+}
 
 function normalizeThresholds(input = {}) {
   return {
@@ -45,6 +71,10 @@ function normalizeThresholds(input = {}) {
         input?.extraction?.minAvgF1,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.extraction.minAvgF1,
       ),
+      minLaneFixtureCounts: normalizeLaneThresholdMap(
+        input?.extraction?.minLaneFixtureCounts,
+        DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.extraction.minLaneFixtureCounts,
+      ),
     },
     gate: {
       minFixtureCount: Math.max(0, Math.floor(toFiniteNumber(
@@ -54,6 +84,10 @@ function normalizeThresholds(input = {}) {
       minPassRate: toFiniteNumber(
         input?.gate?.minPassRate,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minPassRate,
+      ),
+      minLaneFixtureCounts: normalizeLaneThresholdMap(
+        input?.gate?.minLaneFixtureCounts,
+        DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minLaneFixtureCounts,
       ),
     },
   };
@@ -85,9 +119,15 @@ export function evaluatePhaseCBenchmarkThresholds(results, thresholds = {}) {
   const extractionAvgPrecision = toFiniteNumber(extractionSummary.avgPrecision, 0);
   const extractionAvgRecall = toFiniteNumber(extractionSummary.avgRecall, 0);
   const extractionAvgF1 = toFiniteNumber(extractionSummary.avgF1, 0);
+  const extractionByLane = extractionSummary?.byLane && typeof extractionSummary.byLane === 'object'
+    ? extractionSummary.byLane
+    : {};
 
   const gateFixtureCount = toFiniteNumber(gateSummary.fixtureCount, 0);
   const gatePassRate = toFiniteNumber(gateSummary.passRate, 0);
+  const gateByLane = gateSummary?.byLane && typeof gateSummary.byLane === 'object'
+    ? gateSummary.byLane
+    : {};
 
   const checks = [
     makeCheck({
@@ -134,6 +174,28 @@ export function evaluatePhaseCBenchmarkThresholds(results, thresholds = {}) {
     }),
   ];
 
+  for (const [lane, threshold] of Object.entries(normalized.extraction.minLaneFixtureCounts)) {
+    const actual = toFiniteNumber(extractionByLane?.[lane]?.fixtureCount, 0);
+    checks.push(makeCheck({
+      id: `extraction.lane.${lane}.fixture_count`,
+      label: `Extraction fixture count (${lane})`,
+      actual,
+      target: threshold,
+      passed: actual >= threshold,
+    }));
+  }
+
+  for (const [lane, threshold] of Object.entries(normalized.gate.minLaneFixtureCounts)) {
+    const actual = toFiniteNumber(gateByLane?.[lane]?.fixtureCount, 0);
+    checks.push(makeCheck({
+      id: `gate.lane.${lane}.fixture_count`,
+      label: `Gate fixture count (${lane})`,
+      actual,
+      target: threshold,
+      passed: actual >= threshold,
+    }));
+  }
+
   const failedChecks = checks.filter(check => !check.passed);
 
   return {
@@ -149,4 +211,3 @@ export function evaluatePhaseCBenchmarkThresholds(results, thresholds = {}) {
     failedCheckIds: failedChecks.map(check => check.id),
   };
 }
-
