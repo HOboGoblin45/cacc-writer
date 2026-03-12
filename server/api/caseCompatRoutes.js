@@ -85,6 +85,10 @@ const insertSectionSchema = z.object({
   skipQcBlockers: z.boolean().optional(),
 }).passthrough();
 
+const copySectionSchema = z.object({
+  text: z.string().max(16000).optional(),
+}).passthrough();
+
 const insertAllSchema = z.object({
   generationRunId: z.string().max(80).optional(),
   skipQcBlockers: z.boolean().optional(),
@@ -467,13 +471,16 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
 });
 
 router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
+  const body = parsePayload(copySectionSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
+    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to copy for field: ' + fieldId });
 
     const now = new Date().toISOString();

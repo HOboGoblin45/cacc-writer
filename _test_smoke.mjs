@@ -712,6 +712,27 @@ await test('POST /api/cases/:caseId/sections/:fieldId/insert rejects invalid pay
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+await test('POST /api/cases/:caseId/sections/:fieldId/copy saves explicit text payload', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/copy`, {
+    text: 'Smoke copy payload text',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/cases/:caseId/sections/:fieldId/copy');
+  assert(body?.fieldId === 'neighborhood_description', 'fieldId should match route parameter');
+  assert(body?.text === 'Smoke copy payload text', 'text should echo payload');
+  assert(body?.status === 'copied', 'status should be copied');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/copy rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/copy`, {
+    text: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('POST /api/cases/:caseId/insert-all blocks approved insertion when QC run is missing', async () => {
   const fieldId = 'neighborhood_description';
 
