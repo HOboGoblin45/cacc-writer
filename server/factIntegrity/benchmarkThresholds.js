@@ -27,6 +27,8 @@ export const DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS = Object.freeze({
   gate: Object.freeze({
     minFixtureCount: 2,
     minPassRate: 1,
+    minComplianceExpectationFixtureCount: 1,
+    minComplianceExpectationPassRate: 1,
     minLaneFixtureCounts: Object.freeze({
       residential: 1,
       commercial: 1,
@@ -85,6 +87,14 @@ function normalizeThresholds(input = {}) {
         input?.gate?.minPassRate,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minPassRate,
       ),
+      minComplianceExpectationFixtureCount: Math.max(0, Math.floor(toFiniteNumber(
+        input?.gate?.minComplianceExpectationFixtureCount,
+        DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minComplianceExpectationFixtureCount,
+      ))),
+      minComplianceExpectationPassRate: toFiniteNumber(
+        input?.gate?.minComplianceExpectationPassRate,
+        DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minComplianceExpectationPassRate,
+      ),
       minLaneFixtureCounts: normalizeLaneThresholdMap(
         input?.gate?.minLaneFixtureCounts,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minLaneFixtureCounts,
@@ -125,6 +135,8 @@ export function evaluatePhaseCBenchmarkThresholds(results, thresholds = {}) {
 
   const gateFixtureCount = toFiniteNumber(gateSummary.fixtureCount, 0);
   const gatePassRate = toFiniteNumber(gateSummary.passRate, 0);
+  const gateComplianceFixtureCount = toFiniteNumber(gateSummary.complianceExpectationFixtureCount, 0);
+  const gateCompliancePassRate = toFiniteNumber(gateSummary.complianceExpectationPassRate, 0);
   const gateByLane = gateSummary?.byLane && typeof gateSummary.byLane === 'object'
     ? gateSummary.byLane
     : {};
@@ -171,6 +183,20 @@ export function evaluatePhaseCBenchmarkThresholds(results, thresholds = {}) {
       actual: gatePassRate,
       target: normalized.gate.minPassRate,
       passed: gatePassRate >= normalized.gate.minPassRate,
+    }),
+    makeCheck({
+      id: 'gate.compliance_expectation.fixture_count',
+      label: 'Gate compliance expectation fixture count',
+      actual: gateComplianceFixtureCount,
+      target: normalized.gate.minComplianceExpectationFixtureCount,
+      passed: gateComplianceFixtureCount >= normalized.gate.minComplianceExpectationFixtureCount,
+    }),
+    makeCheck({
+      id: 'gate.compliance_expectation.pass_rate',
+      label: 'Gate compliance expectation pass rate',
+      actual: gateCompliancePassRate,
+      target: normalized.gate.minComplianceExpectationPassRate,
+      passed: gateCompliancePassRate >= normalized.gate.minComplianceExpectationPassRate,
     }),
   ];
 

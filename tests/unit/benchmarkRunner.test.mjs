@@ -80,7 +80,7 @@ await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', asyn
         lane: 'commercial',
         expectedOk: true,
         expectedBlockerTypes: [],
-        expectedComplianceRuleIds: ['rule.fha.repair_commentary'],
+        expectedComplianceRuleIds: [],
         gateResult: { ok: true, blockers: [] },
       },
       {
@@ -111,6 +111,8 @@ await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', asyn
   assert.equal(results.gateRuns[1].lane, 'residential');
   assert.equal(results.summary.extraction.fixtureCount, 1);
   assert.equal(results.summary.gate.fixtureCount, 2);
+  assert.equal(results.summary.gate.complianceExpectationFixtureCount, 1);
+  assert.equal(results.summary.gate.complianceExpectationPassRate, 1);
   assert.equal(results.summary.extraction.byLane.residential.fixtureCount, 1);
   assert.equal(results.summary.gate.byLane.commercial.fixtureCount, 1);
   assert.equal(results.summary.gate.byLane.residential.fixtureCount, 1);

@@ -145,9 +145,9 @@ test('summarizeBenchmarkSuite aggregates extraction and gate metrics', () => {
       { lane: 'commercial', precision: 0.5, recall: 1, f1: 0.6667 },
     ],
     gateRuns: [
-      { lane: 'residential', passed: true },
-      { lane: 'commercial', passed: false },
-      { lane: 'residential', passed: true },
+      { lane: 'residential', passed: true, expectedComplianceRuleIds: ['rule.a'] },
+      { lane: 'commercial', passed: false, expectedComplianceRuleIds: ['rule.b'] },
+      { lane: 'residential', passed: true, expectedComplianceRuleIds: [] },
     ],
   });
 
@@ -157,10 +157,15 @@ test('summarizeBenchmarkSuite aggregates extraction and gate metrics', () => {
   assert.equal(summary.gate.fixtureCount, 3);
   assert.equal(summary.gate.passedCount, 2);
   assert.equal(summary.gate.passRate, 0.6667);
+  assert.equal(summary.gate.complianceExpectationFixtureCount, 2);
+  assert.equal(summary.gate.complianceExpectationPassedCount, 1);
+  assert.equal(summary.gate.complianceExpectationPassRate, 0.5);
   assert.equal(summary.extraction.byLane.residential.fixtureCount, 1);
   assert.equal(summary.extraction.byLane.commercial.fixtureCount, 1);
   assert.equal(summary.gate.byLane.residential.passedCount, 2);
   assert.equal(summary.gate.byLane.commercial.passedCount, 0);
+  assert.equal(summary.gate.byLane.residential.complianceExpectationFixtureCount, 1);
+  assert.equal(summary.gate.byLane.commercial.complianceExpectationFixtureCount, 1);
 });
 
 console.log('\n' + '-'.repeat(60));
