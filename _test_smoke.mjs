@@ -684,6 +684,26 @@ await test('GET /api/templates/neighborhood returns templates', async () => {
   assert(Array.isArray(body.templates), 'templates should be an array');
 });
 
+await test('POST /api/templates/neighborhood rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/templates/neighborhood', {
+    name: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/export/bundle rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/export/bundle', {
+    includeAllLogs: 'yes',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 // ── 6b. Canonical Migration ───────────────────────────────────────────────────
 console.log('\n6b. Canonical Migration');
 
