@@ -44,6 +44,14 @@ function runMigrations(db) {
     `ALTER TABLE section_jobs ADD COLUMN retrieval_source_ids_json TEXT DEFAULT '[]'`,
     // Phase 3 — optional cost tracking per section job
     `ALTER TABLE section_jobs ADD COLUMN estimated_cost_usd REAL`,
+    // Phase D — deterministic section policy + prompt version pinning
+    `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
+    `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT DEFAULT '{}'`,
+    `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT DEFAULT '{}'`,
+    // Phase D — section audit + quality metadata
+    `ALTER TABLE generated_sections ADD COLUMN audit_metadata_json TEXT DEFAULT '{}'`,
+    `ALTER TABLE generated_sections ADD COLUMN quality_score REAL`,
+    `ALTER TABLE generated_sections ADD COLUMN quality_metadata_json TEXT DEFAULT '{}'`,
     // Phase C document intake hardening — duplicate linkage
     `ALTER TABLE case_documents ADD COLUMN duplicate_of_document_id TEXT`,
     // Phase C document intake hardening — ingestion warning note
@@ -186,7 +194,10 @@ export function initSchema(db) {
       -- status values: pending | running | completed | failed | skipped
 
       generator_profile  TEXT,
+      prompt_version     TEXT,
       dependencies_json  TEXT DEFAULT '[]',
+      section_policy_json TEXT DEFAULT '{}',
+      dependency_snapshot_json TEXT DEFAULT '{}',
 
       attempt_count      INTEGER DEFAULT 0,
       started_at         TEXT,
@@ -225,6 +236,9 @@ export function initSchema(db) {
       draft_text    TEXT,
       reviewed_text TEXT,
       final_text    TEXT,
+      audit_metadata_json TEXT DEFAULT '{}',
+      quality_score REAL,
+      quality_metadata_json TEXT DEFAULT '{}',
 
       examples_used INTEGER DEFAULT 0,
       approved      INTEGER DEFAULT 0,
