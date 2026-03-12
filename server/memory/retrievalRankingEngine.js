@@ -33,6 +33,7 @@ import {
   getApprovedMemoryForRetrieval,
   getCompCommentaryForRetrieval,
 } from '../db/repositories/memoryRepo.js';
+import { getLearningBoostForItem } from '../learning/learningBoostProvider.js';
 
 // ── Scoring Weights ─────────────────────────────────────────────────────────
 // These are the Phase 6 retrieval weights.
@@ -333,6 +334,13 @@ function scoreItem(item, query) {
   }
   total += tagOverlapScore;
 
+  // ── Learning boost (Phase 11) ────────────────────────────────────────
+  const learningBoost = computeLearningBoost(item, query);
+  if (learningBoost.score !== 0) {
+    matchReasons.push(...learningBoost.reasons);
+  }
+  total += learningBoost.score;
+
   return {
     totalScore: total,
     dimensionScores,
@@ -341,6 +349,8 @@ function scoreItem(item, query) {
     recencyBonus,
     pinnedBonus,
     tagOverlapScore,
+    learningBoost: learningBoost.score,
+    learningBoostReasons: learningBoost.reasons,
     textSimilarityScore: 0, // reserved for future text similarity
     matchReasons,
   };
@@ -491,11 +501,37 @@ function inferSectionGroup(canonicalFieldId) {
   return groupMap[canonicalFieldId] || null;
 }
 
+// ── Learning Boost (Phase 11) ────────────────────────────────────────────────
+
+const LEARNING_BOOST_MAX = 20;
+
+/**
+ * Compute learning boost for a memory item based on prior appraiser patterns.
+ * If the appraiser previously accepted similar items, boost the score.
+ * If the appraiser previously rejected similar items, lower the score.
+ * All boosts are transparent and explainable.
+ *
+ * @param {Object} item — memory item being scored
+ * @param {Object} query — retrieval query
+ * @returns {{ score: number, reasons: string[] }}
+ */
+function computeLearningBoost(item, query) {
+  try {
+    const boost = getLearningBoostForItem(item, query);
+    return boost || { score: 0, reasons: [] };
+  } catch {
+    // Learning system is optional — if it fails, return zero boost
+    return { score: 0, reasons: [] };
+  }
+}
+
 // ── Exports ─────────────────────────────────────────────────────────────────
 
 export {
   DIMENSION_WEIGHTS,
   SOURCE_TRUST_BONUS,
+  LEARNING_BOOST_MAX,
   scoreItem as _scoreItem,           // exported for testing
   scoreCompCommentary as _scoreComp, // exported for testing
+  computeLearningBoost as _computeLearningBoost, // exported for testing
 };

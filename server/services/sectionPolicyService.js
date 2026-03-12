@@ -268,7 +268,8 @@ export function computeQualityScore({ sectionId, facts, generatedText, reviewPas
 
   // Factor 5: Placeholder detection (0-10 points)
   const placeholderResult = detectPlaceholders(text);
-  const placeholderScore = placeholderResult.count === 0 ? 10
+  const placeholderScore = text.length === 0 ? 0
+    : placeholderResult.count === 0 ? 10
     : placeholderResult.count <= 2 ? 5
     : 0;
   score += placeholderScore;
@@ -342,7 +343,8 @@ export function detectPlaceholders(text) {
  * Checks if numeric values, addresses, etc. in the text match fact values.
  */
 function checkConsistency(text, facts, sectionId) {
-  if (!text || !facts) return { score: 8, detail: 'No text or facts to check' };
+  if (!text || text.trim().length === 0) return { score: 0, detail: 'No text to check' };
+  if (!facts) return { score: 8, detail: 'No facts to check against' };
 
   const deps = getSectionDependencies(sectionId);
   const allPaths = [...(deps.required || []), ...(deps.recommended || [])];
@@ -391,7 +393,8 @@ function checkConsistency(text, facts, sectionId) {
  * Measure what percentage of available facts are actually referenced in the text.
  */
 function measureCompleteness(text, facts, sectionId) {
-  if (!text || !facts) return { score: 3, detail: 'No text or facts to measure' };
+  if (!text || text.trim().length === 0) return { score: 0, detail: 'No text to measure' };
+  if (!facts) return { score: 3, detail: 'No facts to measure against' };
 
   const deps = getSectionDependencies(sectionId);
   const allPaths = [...(deps.required || []), ...(deps.recommended || [])];
