@@ -109,7 +109,7 @@ const workflowStatusSchema = z.object({
   workflowStatus: z.string().min(1).max(40),
 });
 
-const factsSchema = z.record(z.unknown());
+const factsSchema = z.object({}).passthrough();
 const resolveFactDecisionSchema = z.object({
   factPath: z.string().min(1).max(180),
   selectedValue: z.string().min(1).max(4000),
@@ -684,12 +684,7 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
 router.put('/:caseId/facts', (req, res) => {
   const body = parsePayload(factsSchema, req.body || {}, res);
-  if (!body || Array.isArray(body)) {
-    if (!res.headersSent) {
-      res.status(400).json({ ok: false, error: 'Facts payload must be a JSON object' });
-    }
-    return;
-  }
+  if (!body) return;
 
   try {
     const projection = getCaseProjection(req.params.caseId);

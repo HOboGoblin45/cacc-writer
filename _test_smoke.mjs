@@ -291,6 +291,14 @@ await test('PUT /api/cases/:caseId/facts saves facts', async () => {
   assert(body.facts?.subject?.address?.value === '123 Test St', 'fact should be saved');
 });
 
+await test('PUT /api/cases/:caseId/facts rejects non-object payload', async () => {
+  const { status, body } = await api('PUT', `/api/cases/${testCaseId}/facts`, ['bad-payload']);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('GET /api/cases/:caseId/record returns canonical case record', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/record`);
   assert(status === 200, `Expected 200, got ${status}`);
@@ -1059,8 +1067,68 @@ await test('GET /api/reports/queue/job/:jobId returns job status', async () => {
   assert(typeof body?.status === 'string', 'job status should be a string');
 });
 
-// ── 11. Voice Examples ────────────────────────────────────────────────────────
-console.log('\n11. Voice Examples');
+// ── 11. Operations Endpoints ──────────────────────────────────────────────────
+console.log('\n11. Operations Endpoints');
+
+await test('POST /api/operations/metrics/daily rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/daily', {
+    date: 20260311,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/operations/metrics/daily computes daily summary', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/daily', {
+    date: '2026-03-11',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(typeof body?.summary === 'object', 'summary should be an object');
+  assert(body?.summary?.date === '2026-03-11', 'summary.date should match payload date');
+});
+
+await test('POST /api/operations/metrics/compute rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/operations/metrics/compute', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/operations/archive/:caseId rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', `/api/operations/archive/${testCaseId}`, {
+    reason: 'test',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/operations/archive/:caseId archives and restore unarchives', async () => {
+  const archived = await api('POST', `/api/operations/archive/${testCaseId}`, {});
+  assert(archived.status === 200, `Expected 200, got ${archived.status}`);
+  assert(archived.body?.success === true, 'archive success should be true');
+
+  const restored = await api('POST', `/api/operations/restore/${testCaseId}`, {});
+  assert(restored.status === 200, `Expected 200, got ${restored.status}`);
+  assert(restored.body?.success === true, 'restore success should be true');
+});
+
+await test('POST /api/operations/cleanup rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/operations/cleanup', {
+    purge: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+// ── 12. Voice Examples ────────────────────────────────────────────────────────
+console.log('\n12. Voice Examples');
 
 await test('GET /api/voice/examples returns voice data', async () => {
   const { status, body } = await api('GET', '/api/voice/examples');
@@ -1077,8 +1145,8 @@ await test('GET /api/voice/folder-status returns folder info', async () => {
   assert(typeof body.folderExists === 'boolean', 'folderExists should be boolean');
 });
 
-// ── 12. Cleanup ───────────────────────────────────────────────────────────────
-console.log('\n12. Cleanup');
+// ── 13. Cleanup ───────────────────────────────────────────────────────────────
+console.log('\n13. Cleanup');
 
 await test('DELETE /api/cases/:caseId removes test case', async () => {
   const { status, body } = await api('DELETE', `/api/cases/${testCaseId}`);
