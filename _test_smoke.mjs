@@ -336,6 +336,15 @@ await test('PATCH /api/cases/:caseId/workflow-status sets workflow status', asyn
   assert(body?.workflowStatus === 'facts_incomplete', 'workflowStatus should be updated');
 });
 
+await test('PATCH /api/cases/:caseId/workflow-status blocks automation_ready when QC run is missing', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'automation_ready',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
 await test('PATCH /api/cases/:caseId/workflow-status rejects invalid workflow status', async () => {
   const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
     workflowStatus: 'not_a_real_status',

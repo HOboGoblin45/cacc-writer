@@ -111,6 +111,7 @@ const pipelineSchema = z.object({
 const workflowStatusSchema = z.object({
   workflowStatus: z.string().min(1).max(40),
 });
+const QC_GATED_WORKFLOW_STATUSES = new Set(['automation_ready']);
 
 const factsSchema = z.object({}).passthrough();
 const resolveFactDecisionSchema = z.object({
@@ -692,6 +693,18 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     const projection = getCaseProjection(req.params.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
+    if (QC_GATED_WORKFLOW_STATUSES.has(status) && status !== (meta.workflowStatus || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          workflowStatus: status,
+          qcGate: gate,
+        });
+      }
+    }
     meta.workflowStatus = status;
     meta.updatedAt      = new Date().toISOString();
     const updated = saveCaseProjection({
