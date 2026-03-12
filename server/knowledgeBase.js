@@ -57,6 +57,10 @@ function writeJSON(filePath, data) {
   fs.renameSync(tmp, filePath);
 }
 
+function kbWritesDisabled() {
+  return process.env.CACC_DISABLE_KB_WRITES === '1';
+}
+
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
@@ -109,7 +113,9 @@ export function indexExamples() {
     examples,
   };
 
-  writeJSON(INDEX_FILE, index);
+  if (!kbWritesDisabled()) {
+    writeJSON(INDEX_FILE, index);
+  }
   return index;
 }
 
@@ -146,6 +152,10 @@ export function addExample(data) {
   };
 
   if (!example.text) throw new Error('addExample: text is required');
+
+  if (kbWritesDisabled()) {
+    return example;
+  }
 
   // Determine storage path based on sourceType
   let filePath;
@@ -289,6 +299,10 @@ export function addApprovedNarrative(data) {
 
   if (!entry.text)        throw new Error('addApprovedNarrative: text is required');
   if (!entry.sectionType) throw new Error('addApprovedNarrative: sectionType (or fieldId) is required');
+
+  if (kbWritesDisabled()) {
+    return entry;
+  }
 
   // Save individual entry file (includes text)
   writeJSON(path.join(APPROVED_NARR_DIR, `${id}.json`), entry);
