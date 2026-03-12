@@ -506,6 +506,37 @@ await test('evaluatePreDraftGate keeps non-required provenance gaps as warnings'
   assert.ok(gate.warnings.some(w => w.type === 'provenance_gaps'));
 });
 
+await test('evaluatePreDraftGate warns when recommended dependency facts lack provenance', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '515 Dependency Ave', confidence: 'high' },
+        siteSize: { value: '9050', confidence: 'high' },
+        zoning: { value: 'R-1', confidence: 'medium' },
+      },
+    },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.siteSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
+    },
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'recommended provenance gaps should remain warning-only');
+  const provenanceWarning = gate.warnings.find(w => w.type === 'provenance_gaps');
+  assert.ok(provenanceWarning, 'expected provenance_gaps warning');
+  assert.ok(
+    provenanceWarning.paths?.some(path => path === 'subject.zoning'),
+    'expected recommended dependency path to appear in provenance warning paths',
+  );
+});
+
 await test('evaluatePreDraftGate reports pending extracted sections as warnings only', () => {
   const { caseId } = createFilesystemCase({
     facts: {
