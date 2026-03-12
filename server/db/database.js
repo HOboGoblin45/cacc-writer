@@ -199,6 +199,10 @@ export function getTableCounts() {
     'assignment_archives',
     'learned_patterns',
     'pattern_applications',
+    'fee_quotes',
+    'engagement_records',
+    'invoices',
+    'pipeline_entries',
   ];
 
   const counts = {};
