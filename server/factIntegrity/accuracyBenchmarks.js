@@ -61,6 +61,11 @@ function round4(value) {
   return Math.round(value * 10000) / 10000;
 }
 
+function normalizeLane(value) {
+  const lane = asText(value).toLowerCase();
+  return lane || 'unspecified';
+}
+
 /**
  * Score extraction accuracy for one benchmark fixture.
  *
@@ -164,19 +169,43 @@ export function summarizeBenchmarkSuite({
     return round4(total / values.length);
   };
 
-  const extractionSummary = {
-    fixtureCount: extraction.length,
-    avgPrecision: avg(extraction.map(r => Number(r.precision || 0))),
-    avgRecall: avg(extraction.map(r => Number(r.recall || 0))),
-    avgF1: avg(extraction.map(r => Number(r.f1 || 0))),
+  const summarizeExtraction = (runs) => ({
+    fixtureCount: runs.length,
+    avgPrecision: avg(runs.map(r => Number(r.precision || 0))),
+    avgRecall: avg(runs.map(r => Number(r.recall || 0))),
+    avgF1: avg(runs.map(r => Number(r.f1 || 0))),
+  });
+
+  const summarizeGate = (runs) => {
+    const passed = runs.filter(r => r.passed === true).length;
+    return {
+      fixtureCount: runs.length,
+      passedCount: passed,
+      passRate: runs.length > 0 ? round4(passed / runs.length) : null,
+    };
   };
 
-  const gatePassed = gate.filter(r => r.passed === true).length;
-  const gateSummary = {
-    fixtureCount: gate.length,
-    passedCount: gatePassed,
-    passRate: gate.length > 0 ? round4(gatePassed / gate.length) : null,
-  };
+  const extractionSummary = summarizeExtraction(extraction);
+  const extractionByLane = {};
+  for (const run of extraction) {
+    const lane = normalizeLane(run?.lane);
+    if (!extractionByLane[lane]) extractionByLane[lane] = [];
+    extractionByLane[lane].push(run);
+  }
+  extractionSummary.byLane = Object.fromEntries(
+    Object.entries(extractionByLane).map(([lane, runs]) => [lane, summarizeExtraction(runs)]),
+  );
+
+  const gateSummary = summarizeGate(gate);
+  const gateByLane = {};
+  for (const run of gate) {
+    const lane = normalizeLane(run?.lane);
+    if (!gateByLane[lane]) gateByLane[lane] = [];
+    gateByLane[lane].push(run);
+  }
+  gateSummary.byLane = Object.fromEntries(
+    Object.entries(gateByLane).map(([lane, runs]) => [lane, summarizeGate(runs)]),
+  );
 
   return {
     generatedAt: new Date().toISOString(),
@@ -184,4 +213,3 @@ export function summarizeBenchmarkSuite({
     gate: gateSummary,
   };
 }
-

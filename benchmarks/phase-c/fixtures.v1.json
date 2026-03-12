@@ -3,6 +3,7 @@
   "extractionFixtures": [
     {
       "id": "extract-contract-basic",
+      "lane": "residential",
       "docType": "contract",
       "text": "Purchase Contract\nContract Date: 01/02/2026\nPurchase Price: $525,000\nClosing Date: 02/14/2026",
       "expectedFacts": [
@@ -13,6 +14,7 @@
     },
     {
       "id": "extract-mls-core",
+      "lane": "residential",
       "docType": "mls_sheet",
       "text": "MLS Listing Sheet\nAddress: 101 Market St\nList Price: $410,000\nDOM: 9\nGLA: 1820\nYear Built: 2004",
       "expectedFacts": [
@@ -24,6 +26,7 @@
     },
     {
       "id": "extract-zoning-legal-nc",
+      "lane": "residential",
       "docType": "zoning_document",
       "text": "Zoning Classification: R-3\nPermitted Use: Residential\nThe subject is a legal nonconforming use under current ordinance.",
       "expectedFacts": [
@@ -33,6 +36,7 @@
     },
     {
       "id": "extract-assessor-core",
+      "lane": "residential",
       "docType": "assessor_record",
       "text": "County Assessor Record\nParcel # 01-01-100-123\nAssessed Value: $312,400\nYear Built: 1998\nLiving Area: 1540\nLot Size: 8,200 sf\nTax Year: 2025",
       "expectedFacts": [
@@ -44,6 +48,7 @@
     },
     {
       "id": "extract-flood-core",
+      "lane": "residential",
       "docType": "flood_document",
       "text": "Flood Determination\nFlood Zone: AE\nPanel Number: 17031C0123F\nMap Date: 08/02/2019\nCommunity Number: 170310",
       "expectedFacts": [
@@ -55,6 +60,7 @@
     },
     {
       "id": "extract-order-sheet-basic",
+      "lane": "residential",
       "docType": "order_sheet",
       "text": "Order Sheet\nBorrower: Jordan Smith\nSubject Address: 255 Lake Dr, Aurora, IL\nLender: First Horizon Bank\nLoan Program: FHA\nDue Date: 03/15/2026",
       "expectedFacts": [
@@ -64,11 +70,25 @@
         { "factPath": "assignment.loanProgram", "value": "FHA" },
         { "factPath": "assignment.dueDate", "value": "2026-03-15" }
       ]
+    },
+    {
+      "id": "extract-comp-commercial-basic",
+      "lane": "commercial",
+      "docType": "comp_sheet",
+      "text": "Commercial Comp Sheet\nAddress: 900 Commerce Blvd\nSale Price: $1,250,000\nSale Date: 01/11/2026\nGLA: 12800\nYear Built: 2001",
+      "expectedFacts": [
+        { "factPath": "comp.address", "value": "900 Commerce Blvd" },
+        { "factPath": "comp.salePrice", "value": "1250000" },
+        { "factPath": "comp.saleDate", "value": "2026-01-11" },
+        { "factPath": "comp.gla", "value": "12800" },
+        { "factPath": "comp.yearBuilt", "value": "2001" }
+      ]
     }
   ],
   "gateFixtures": [
     {
       "id": "gate-pass-clean",
+      "lane": "residential",
       "expectedOk": true,
       "expectedBlockerTypes": [],
       "gateResult": {
@@ -78,6 +98,7 @@
     },
     {
       "id": "gate-block-pending-facts",
+      "lane": "residential",
       "expectedOk": false,
       "expectedBlockerTypes": ["pending_fact_reviews"],
       "gateResult": {
@@ -89,6 +110,7 @@
     },
     {
       "id": "gate-block-conflict",
+      "lane": "residential",
       "expectedOk": false,
       "expectedBlockerTypes": ["blocker_fact_conflicts"],
       "gateResult": {
@@ -100,6 +122,7 @@
     },
     {
       "id": "gate-block-compliance",
+      "lane": "commercial",
       "expectedOk": false,
       "expectedBlockerTypes": ["compliance_hard_rules"],
       "gateResult": {
@@ -111,6 +134,7 @@
     },
     {
       "id": "gate-block-missing-required-facts",
+      "lane": "residential",
       "expectedOk": false,
       "expectedBlockerTypes": ["missing_required_facts"],
       "gateResult": {
@@ -122,6 +146,7 @@
     },
     {
       "id": "gate-block-missing-required-provenance",
+      "lane": "residential",
       "expectedOk": false,
       "expectedBlockerTypes": ["missing_required_provenance"],
       "gateResult": {
