@@ -667,6 +667,16 @@ await test('POST /api/generation/regenerate-section rejects invalid payload type
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+await test('POST /api/similar-examples rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/similar-examples', {
+    limit: { bad: true },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/feedback`, {
     fieldId: 'neighborhood_description',
@@ -724,6 +734,15 @@ await test('POST /api/kb/migrate-voice rejects unexpected payload fields', async
 
 await test('POST /api/kb/ingest-to-pinecone rejects unexpected payload fields', async () => {
   const { status, body } = await api('POST', '/api/kb/ingest-to-pinecone', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/db/migrate-legacy-kb rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/db/migrate-legacy-kb', {
     force: true,
   });
   assert(status === 400, `Expected 400, got ${status}`);
@@ -1087,6 +1106,39 @@ await test('POST /api/workflow/run without caseId returns 400 or 503', async () 
   const { status, body } = await api('POST', '/api/workflow/run', {});
   assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
   assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/cases/:caseId/generate-core rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-core`, {
+    fields: 'neighborhood_description',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/generate-comp-commentary rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-comp-commentary`, {
+    compFocus: true,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/generate-all rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-all`, {
+    forceGateBypass: 'yes',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
 });
 
 await test('POST /api/cases/:caseId/extract-facts rejects invalid payload type', async () => {
