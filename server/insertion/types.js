@@ -111,6 +111,7 @@
  * @property {boolean} [requireFreshQcForGeneration=true] - When generationRunId is provided, require completed QC tied to the same generation run
  * @property {boolean} [qcOverrideAllowed=true] - Internal snapshot set at prepare-time; if false, skipQcBlockers cannot bypass the gate
  * @property {boolean} [forceReinsert=false] - Re-insert already-verified fields
+ * @property {boolean} [rollbackOnVerificationFailure=true] - Restore the previous field value when read-back verification fails
  * @property {number} [maxRetries=3] - Max retry attempts per field
  * @property {FallbackStrategy} [defaultFallback='retry_then_clipboard']
  * @property {string[]} [fieldIds] - Specific fields to insert (null = all eligible)
@@ -137,6 +138,7 @@
  * @property {boolean} qcGatePassed
  * @property {InsertionRunConfig} config
  * @property {InsertionRunSummary} summary
+ * @property {InsertionReplayPackage} [replayPackage]
  * @property {string} [startedAt]
  * @property {string} [completedAt]
  * @property {number} [durationMs]
@@ -153,6 +155,7 @@
  * @property {number} failed
  * @property {number} skipped
  * @property {number} fallbackUsed
+ * @property {number} rollbackFields
  * @property {number} durationMs
  * @property {string[]} failedFieldIds
  * @property {string[]} mismatchFieldIds
@@ -180,10 +183,19 @@
  * @property {VerificationStatus} verificationStatus
  * @property {string} [verificationRaw] - Raw value from agent /read-field
  * @property {string} [verificationNormalized] - Normalized comparison value
+ * @property {string} [verificationExpected] - Normalized expected text used in verification
+ * @property {string} [preinsertRaw] - Raw field value before insertion
+ * @property {string} [preinsertNormalized] - Normalized field value before insertion
  * @property {number} attemptCount
  * @property {number} maxAttempts
+ * @property {string} [retryClass] - transport | destination | verification | mapping | data | unknown
  * @property {FallbackStrategy} [fallbackStrategy]
  * @property {boolean} fallbackUsed
+ * @property {Object[]} attemptLog
+ * @property {boolean} rollbackAttempted
+ * @property {string} [rollbackStatus] - restored | failed | skipped
+ * @property {string} [rollbackText]
+ * @property {string} [rollbackErrorText]
  * @property {Object} [agentResponse] - Raw agent response
  * @property {InsertionErrorCode} [errorCode]
  * @property {string} [errorText]
@@ -300,6 +312,32 @@
  * @property {number} fieldsWithoutText
  * @property {number} alreadyVerified
  * @property {QCGateResult} [qcGate]
+ */
+
+/**
+ * Replay package for deterministic re-run or manual remediation.
+ *
+ * @typedef {Object} InsertionReplayPackage
+ * @property {string} runId
+ * @property {string} caseId
+ * @property {string} formType
+ * @property {TargetSoftware} targetSoftware
+ * @property {string} generatedAt
+ * @property {{ failedCount: number, mismatchCount: number, rollbackCount: number }} summary
+ * @property {Array<{
+ *   fieldId: string,
+ *   destinationKey: string,
+ *   status: string,
+ *   verificationStatus: string,
+ *   retryClass: string,
+ *   formattedText: string,
+ *   preinsertRaw?: string,
+ *   verificationRaw?: string,
+ *   rollbackStatus?: string,
+ *   errorCode?: string,
+ *   errorText?: string,
+ *   attemptLog?: Object[],
+ * }>} items
  */
 
 export default {};
