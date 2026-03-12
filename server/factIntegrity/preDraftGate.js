@@ -184,9 +184,11 @@ function collectMissingRequiredFacts(facts, sectionIds) {
   };
 }
 
-function collectProvenanceWarnings(facts, provenance = {}, requiredPaths = []) {
+function collectProvenanceFindings(facts, provenance = {}, requiredPaths = []) {
   const consideredPaths = unique([...requiredPaths, ...CRITICAL_PROVENANCE_PATHS]);
   const gaps = [];
+  const blockerGaps = [];
+  const warningGaps = [];
   let presentCount = 0;
   let withProvenanceCount = 0;
 
@@ -198,6 +200,9 @@ function collectProvenanceWarnings(facts, provenance = {}, requiredPaths = []) {
       continue;
     }
     gaps.push(path);
+    const isRequired = requiredPaths.some(requiredPath => arePathsEquivalent(requiredPath, path));
+    if (isRequired) blockerGaps.push(path);
+    else warningGaps.push(path);
   }
 
   const coveragePct = presentCount > 0
@@ -205,7 +210,9 @@ function collectProvenanceWarnings(facts, provenance = {}, requiredPaths = []) {
     : 100;
 
   return {
-    gaps,
+    gaps: unique(gaps),
+    blockerGaps: unique(blockerGaps),
+    warningGaps: unique(warningGaps),
     presentCount,
     withProvenanceCount,
     coveragePct,
@@ -334,7 +341,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
   const blockerConflicts = conflictReport.conflicts.filter(conflict => conflict.severity === 'blocker');
   const highConflicts = conflictReport.conflicts.filter(conflict => conflict.severity === 'high');
 
-  const provenance = collectProvenanceWarnings(
+  const provenance = collectProvenanceFindings(
     projection.facts || {},
     projection.provenance || {},
     missing.requiredPaths,
@@ -374,6 +381,14 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       findings: intelligence.complianceChecks.blockers,
     });
   }
+  if (provenance.blockerGaps.length) {
+    blockers.push({
+      type: 'missing_required_provenance',
+      message: 'Required drafting facts are present but missing provenance links.',
+      count: provenance.blockerGaps.length,
+      paths: provenance.blockerGaps,
+    });
+  }
   if (blockerPendingFactPaths.length > 0) {
     blockers.push({
       type: 'pending_fact_reviews',
@@ -395,12 +410,12 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       conflicts: highConflicts,
     });
   }
-  if (provenance.gaps.length) {
+  if (provenance.warningGaps.length) {
     warnings.push({
       type: 'provenance_gaps',
       message: 'Some key fact values are present without provenance links.',
-      count: provenance.gaps.length,
-      paths: provenance.gaps,
+      count: provenance.warningGaps.length,
+      paths: provenance.warningGaps,
     });
   }
   if (unresolvedIssues.length) {
@@ -450,6 +465,7 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
       missingRequiredFacts: missing.missingCount,
       blockerConflicts: blockerConflicts.length,
       complianceBlockers: intelligence.complianceChecks?.summary?.blockerCount || 0,
+      missingRequiredProvenance: provenance.blockerGaps.length,
       pendingFactReviews: pendingReview.pendingFactsCount,
       blockerPendingFactPathCount: blockerPendingFactPaths.length,
       pendingSectionReviews: pendingReview.pendingSectionsCount,
@@ -467,6 +483,8 @@ export function evaluatePreDraftGate({ caseId, formType = null, sectionIds = nul
         checkedFactCount: provenance.presentCount,
         withProvenanceCount: provenance.withProvenanceCount,
         missingPaths: provenance.gaps,
+        blockerMissingPaths: provenance.blockerGaps,
+        warningMissingPaths: provenance.warningGaps,
         coveragePct: provenance.coveragePct,
       },
       pendingReview,
