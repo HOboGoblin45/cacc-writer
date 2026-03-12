@@ -63,6 +63,7 @@ export function evaluateHardComplianceRules({
 }) {
   const checks = [];
   const effectiveDate = asText(context?.assignment?.effectiveDate);
+  const subjectState = asText(context?.subject?.state).toUpperCase();
 
   checks.push(buildCheck({
     ruleId: 'rule.uspap.applicable',
@@ -382,6 +383,24 @@ export function evaluateHardComplianceRules({
         ? 'USDA eligibility commentary section is present.'
         : 'USDA assignment detected, but site eligibility commentary section is missing.',
       evidence: { expectedSectionId: 'usda_site_eligibility_comment' },
+    }));
+  }
+
+  if (subjectState === 'IL' || subjectState === 'ILLINOIS') {
+    const county = asText(context?.subject?.county);
+    const passed = Boolean(county);
+    checks.push(buildCheck({
+      ruleId: 'rule.illinois.county_disclosure',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'county_present' : 'county_missing',
+      message: passed
+        ? 'Illinois assignment includes county disclosure in the subject context.'
+        : 'Illinois assignment is missing subject county in the normalized context.',
+      evidence: {
+        state: subjectState,
+        county: county || null,
+      },
     }));
   }
 

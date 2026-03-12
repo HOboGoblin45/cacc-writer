@@ -114,6 +114,17 @@ await test('marks USDA overlay and site eligibility obligations', () => {
   assert.ok(profile.likely_qc_categories.includes('usda_site_eligibility'));
 });
 
+await test('adds Illinois QC category for Illinois assignments', () => {
+  const { profile } = buildProfile({
+    meta: {
+      formType: '1004',
+      state: 'IL',
+    },
+  });
+
+  assert.ok(profile.likely_qc_categories.includes('illinois_state_scope'));
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`complianceProfile: ${passed} passed, ${failed} failed`);
 if (failures.length) {
