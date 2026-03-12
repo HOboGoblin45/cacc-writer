@@ -46,6 +46,24 @@ async function loadOrBuildBundle(caseId) {
   return { bundle, rebuilt: true };
 }
 
+function normalizeThresholdOverrides(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  return raw;
+}
+
+function buildBenchmarkGateEnvelope(results, thresholds, thresholdSource) {
+  const qualityGate = evaluatePhaseCBenchmarkThresholds(results, thresholds);
+  return {
+    qualityGate,
+    qualityGateSummary: qualityGate?.summary || null,
+    qualityGateFailures: (qualityGate?.checks || [])
+      .filter(check => check && check.passed === false)
+      .map(check => check.id)
+      .filter(Boolean),
+    thresholdSource,
+  };
+}
+
 // ── param: caseId validation ────────────────────────────────────────────────
 
 router.param('caseId', (req, res, next, caseId) => {
@@ -197,32 +215,38 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
   try {
     const cached = readPhaseCBenchmarkResults();
     if (cached) {
-      const qualityGate = evaluatePhaseCBenchmarkThresholds(
+      const gateEnvelope = buildBenchmarkGateEnvelope(
         cached,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+        'default',
       );
       return res.json({
         ok: true,
         cached: true,
         results: cached,
-        qualityGate,
+        ...gateEnvelope,
       });
     }
 
     const run = await runPhaseCBenchmarksFromFile();
-    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+    const gateEnvelope = buildBenchmarkGateEnvelope(
       run.results,
       DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      'default',
     );
 
     res.json({
       ok: true,
       cached: false,
       results: run.results,
-      qualityGate,
+      ...gateEnvelope,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      ok: false,
+      code: 'PHASE_C_BENCHMARK_READ_FAILED',
+      error: err.message,
+    });
   }
 });
 
@@ -234,10 +258,13 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
 router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
   try {
     const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
+    const thresholdOverrides = normalizeThresholdOverrides(req.body?.thresholds);
+    const thresholdSource = thresholdOverrides ? 'request' : 'default';
     const run = await runPhaseCBenchmarksFromFile();
-    const qualityGate = evaluatePhaseCBenchmarkThresholds(
+    const gateEnvelope = buildBenchmarkGateEnvelope(
       run.results,
-      DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      thresholdOverrides || DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+      thresholdSource,
     );
     if (persist) writePhaseCBenchmarkResults(run.results);
 
@@ -245,10 +272,14 @@ router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
       ok: true,
       persisted: persist,
       results: run.results,
-      qualityGate,
+      ...gateEnvelope,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      ok: false,
+      code: 'PHASE_C_BENCHMARK_RUN_FAILED',
+      error: err.message,
+    });
   }
 });
 

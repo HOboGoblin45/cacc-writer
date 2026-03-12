@@ -498,6 +498,9 @@ await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot'
   assert(typeof body.results.summary === 'object', 'results.summary should be an object');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
   assert(typeof body.qualityGate.ok === 'boolean', 'qualityGate.ok should be boolean');
+  assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
+  assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');
+  assert(body.thresholdSource === 'default', 'thresholdSource should be default');
 });
 
 await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run', async () => {
@@ -508,6 +511,22 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
   assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
   assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
+  assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
+  assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');
+  assert(body.thresholdSource === 'default', 'thresholdSource should be default');
+});
+
+await test('POST /api/intelligence/benchmarks/phase-c/run accepts threshold overrides', async () => {
+  const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {
+    thresholds: {
+      extraction: { minFixtureCount: 1 },
+      gate: { minFixtureCount: 1 },
+    },
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/intelligence/benchmarks/phase-c/run threshold overrides');
+  assert(body.thresholdSource === 'request', 'thresholdSource should be request');
+  assert(typeof body.qualityGate?.ok === 'boolean', 'qualityGate.ok should be boolean');
 });
 
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
