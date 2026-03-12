@@ -100,6 +100,32 @@ await test('hard compliance rules pass with no blockers for baseline 1004 scenar
   assert.equal(Array.isArray(scenario.complianceChecks.blockers), true);
 });
 
+await test('hard compliance rules block when a manifest-required section is excluded', () => {
+  const scenario = buildScenario({
+    meta: { formType: '1004' },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const neighborhood = matrix.sections.find(s => s.sectionId === 'neighborhood_description');
+  assert.ok(neighborhood, 'expected neighborhood_description section in matrix');
+  neighborhood.status = 'excluded';
+  neighborhood.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.manifest_required_sections.active');
+  assert.ok(blocker, 'expected manifest-required sections blocker');
+  assert.ok(
+    blocker.evidence?.missingSectionIds?.includes('neighborhood_description'),
+    'expected excluded manifest-required section to be reported',
+  );
+});
+
 await test('hard compliance rules block when reconciliation section is missing', () => {
   const scenario = buildScenario({
     meta: { formType: '1004' },
