@@ -30,6 +30,7 @@ test('returns CASE_ID_REQUIRED when caseId is blank', () => {
   const gate = evaluateCaseApprovalGate('', {
     listQcRuns: () => [],
     getFindings: () => [],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, false);
   assert.equal(gate.code, 'CASE_ID_REQUIRED');
@@ -39,6 +40,7 @@ test('returns QC_REQUIRED_BEFORE_APPROVAL when no QC runs exist', () => {
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [],
     getFindings: () => [],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, false);
   assert.equal(gate.code, 'QC_REQUIRED_BEFORE_APPROVAL');
@@ -48,6 +50,7 @@ test('returns QC_IN_PROGRESS when latest QC run is running', () => {
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [{ id: 'run-1', status: 'running', draft_readiness: 'unknown', created_at: '2026-03-12T00:00:00Z' }],
     getFindings: () => [],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, false);
   assert.equal(gate.code, 'QC_IN_PROGRESS');
@@ -58,6 +61,7 @@ test('returns QC_BLOCKERS_OPEN when latest completed run has open blocker findin
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [{ id: 'run-2', status: 'complete', draft_readiness: 'not_ready', created_at: '2026-03-12T00:00:00Z' }],
     getFindings: () => [{ id: 'finding-1' }],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, false);
   assert.equal(gate.code, 'QC_BLOCKERS_OPEN');
@@ -68,6 +72,7 @@ test('returns QC_NOT_READY when latest completed run has no blockers but not_rea
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [{ id: 'run-3', status: 'complete', draft_readiness: 'not_ready', created_at: '2026-03-12T00:00:00Z' }],
     getFindings: () => [],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, false);
   assert.equal(gate.code, 'QC_NOT_READY');
@@ -77,10 +82,22 @@ test('returns OK when latest completed run has no open blocker findings', () => 
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [{ id: 'run-4', status: 'complete', draft_readiness: 'ready', created_at: '2026-03-12T00:00:00Z' }],
     getFindings: () => [],
+    listGenerationRuns: () => [],
   });
   assert.equal(gate.ok, true);
   assert.equal(gate.code, 'OK');
   assert.equal(gate.latestQcRun?.qcRunId, 'run-4');
+});
+
+test('returns QC_STALE_FOR_CURRENT_DRAFT when generation run is newer than latest QC run', () => {
+  const gate = evaluateCaseApprovalGate('abc12345', {
+    listQcRuns: () => [{ id: 'run-5', status: 'complete', draft_readiness: 'ready', created_at: '2026-03-12T00:00:00Z' }],
+    listGenerationRuns: () => [{ id: 'gen-1', status: 'complete', created_at: '2026-03-12T01:00:00Z' }],
+    getFindings: () => [],
+  });
+  assert.equal(gate.ok, false);
+  assert.equal(gate.code, 'QC_STALE_FOR_CURRENT_DRAFT');
+  assert.equal(gate.latestGenerationRun?.runId, 'gen-1');
 });
 
 console.log('\n' + '-'.repeat(60));

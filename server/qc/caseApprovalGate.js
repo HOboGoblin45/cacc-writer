@@ -6,6 +6,7 @@
  */
 
 import { listQcRuns, getFindings } from './qcRepo.js';
+import { getRunsForCase as getGenerationRunsForCase } from '../db/repositories/generationRepo.js';
 
 function asText(value) {
   if (value === null || value === undefined) return '';
@@ -23,6 +24,26 @@ function summarizeRun(run) {
   };
 }
 
+function summarizeGenerationRun(run) {
+  if (!run || typeof run !== 'object') return null;
+  return {
+    runId: asText(run.id),
+    status: asText(run.status) || 'unknown',
+    createdAt: asText(run.created_at) || null,
+    completedAt: asText(run.completed_at) || null,
+  };
+}
+
+function toEpoch(value) {
+  const text = asText(value);
+  if (!text) return null;
+  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(text)
+    ? text.replace(' ', 'T') + 'Z'
+    : text;
+  const ts = Date.parse(normalized);
+  return Number.isNaN(ts) ? null : ts;
+}
+
 /**
  * Evaluate whether a case is allowed to enter approval/finalization states.
  *
@@ -30,6 +51,7 @@ function summarizeRun(run) {
  * @param {object} [deps]
  * @param {(caseId:string, opts?:object)=>object[]} [deps.listQcRuns]
  * @param {(qcRunId:string, filters?:object)=>object[]} [deps.getFindings]
+ * @param {(caseId:string)=>object[]} [deps.listGenerationRuns]
  * @returns {object}
  */
 export function evaluateCaseApprovalGate(caseId, deps = {}) {
@@ -45,6 +67,7 @@ export function evaluateCaseApprovalGate(caseId, deps = {}) {
 
   const listRuns = deps.listQcRuns || listQcRuns;
   const listFindings = deps.getFindings || getFindings;
+  const listGenerationRuns = deps.listGenerationRuns || getGenerationRunsForCase;
   const fetchedRuns = listRuns(normalizedCaseId, { limit: 25 });
   const runs = Array.isArray(fetchedRuns) ? fetchedRuns : [];
 
@@ -69,6 +92,29 @@ export function evaluateCaseApprovalGate(caseId, deps = {}) {
         ? 'QC is still running for this case. Wait for completion before approval/finalization.'
         : 'Latest QC run is not complete. Re-run QC before approval/finalization.',
       latestQcRun: latestSummary,
+    };
+  }
+
+  const generationRuns = Array.isArray(listGenerationRuns(normalizedCaseId))
+    ? listGenerationRuns(normalizedCaseId)
+    : [];
+  const latestCompletedGenerationRun = generationRuns.find(run => (
+    run?.status === 'complete' || run?.status === 'partial_complete'
+  ));
+  const latestQcCreatedAt = toEpoch(latestRun.created_at);
+  const latestGenerationCreatedAt = toEpoch(latestCompletedGenerationRun?.created_at);
+  if (
+    latestCompletedGenerationRun
+    && latestQcCreatedAt !== null
+    && latestGenerationCreatedAt !== null
+    && latestQcCreatedAt < latestGenerationCreatedAt
+  ) {
+    return {
+      ok: false,
+      code: 'QC_STALE_FOR_CURRENT_DRAFT',
+      message: 'Latest completed draft is newer than the latest QC run. Re-run QC before approval/finalization.',
+      latestQcRun: latestSummary,
+      latestGenerationRun: summarizeGenerationRun(latestCompletedGenerationRun),
     };
   }
 
