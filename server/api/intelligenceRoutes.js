@@ -16,6 +16,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import {
@@ -38,6 +39,37 @@ import {
 import log from '../logger.js';
 
 const router = Router();
+const benchmarkThresholdOverrideSchema = z.object({
+  extraction: z.object({
+    minFixtureCount: z.number().finite().optional(),
+    minAvgPrecision: z.number().finite().optional(),
+    minAvgRecall: z.number().finite().optional(),
+    minAvgF1: z.number().finite().optional(),
+  }).partial().optional(),
+  gate: z.object({
+    minFixtureCount: z.number().finite().optional(),
+    minPassRate: z.number().finite().optional(),
+  }).partial().optional(),
+}).partial();
+
+const runBenchmarksSchema = z.object({
+  thresholds: benchmarkThresholdOverrideSchema.optional(),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 async function loadOrBuildBundle(caseId) {
   let bundle = getIntelligenceBundle(caseId);
@@ -256,9 +288,12 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
  * Query param: ?persist=false to skip file write.
  */
 router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
+  const body = parsePayload(runBenchmarksSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
-    const thresholdOverrides = normalizeThresholdOverrides(req.body?.thresholds);
+    const thresholdOverrides = normalizeThresholdOverrides(body.thresholds);
     const thresholdSource = thresholdOverrides ? 'request' : 'default';
     const run = await runPhaseCBenchmarksFromFile();
     const gateEnvelope = buildBenchmarkGateEnvelope(
