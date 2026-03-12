@@ -79,6 +79,11 @@ const patchOutputSchema = z.object({
   text: z.string().max(16000),
 });
 
+const insertAllSchema = z.object({
+  generationRunId: z.string().max(80).optional(),
+  skipQcBlockers: z.boolean().optional(),
+}).passthrough();
+
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
@@ -639,6 +644,9 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
 });
 
 router.post('/:caseId/insert-all', (req, res) => {
+  const body = parsePayload(insertAllSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -664,8 +672,8 @@ router.post('/:caseId/insert-all', (req, res) => {
     const hasApproved = coreSections.some(sec => outputs[sec.id]?.sectionStatus === 'approved');
     if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
 
-    const generationRunId = trimText(req.body?.generationRunId, 80) || null;
-    const skipQcBlockers = Boolean(req.body?.skipQcBlockers);
+    const generationRunId = trimText(body.generationRunId, 80) || null;
+    const skipQcBlockers = Boolean(body.skipQcBlockers);
     const qcGate = evaluateInsertionQcGate({
       caseId: req.params.caseId,
       generationRunId,

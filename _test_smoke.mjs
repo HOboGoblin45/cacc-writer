@@ -715,6 +715,15 @@ await test('POST /api/cases/:caseId/insert-all blocks approved insertion when QC
   assert(body?.qcGate?.reason === 'missing_qc_run', 'qcGate reason should indicate missing QC run');
 });
 
+await test('POST /api/cases/:caseId/insert-all rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`, {
+    skipQcBlockers: 'true',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
