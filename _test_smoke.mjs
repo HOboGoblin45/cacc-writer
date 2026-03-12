@@ -699,8 +699,17 @@ await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot'
   assert(typeof body.cached === 'boolean', 'cached should be boolean');
   assert(typeof body.results === 'object', 'results should be an object');
   assert(typeof body.results.summary === 'object', 'results.summary should be an object');
+  assert(typeof body.results.summary.extraction?.byLane === 'object', 'extraction.byLane should be an object');
+  assert(typeof body.results.summary.gate?.byLane === 'object', 'gate.byLane should be an object');
+  assert(typeof body.results.summary.extraction?.byLane?.commercial?.fixtureCount === 'number', 'commercial extraction lane count should be numeric');
+  assert(typeof body.results.summary.gate?.byLane?.commercial?.fixtureCount === 'number', 'commercial gate lane count should be numeric');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
   assert(typeof body.qualityGate.ok === 'boolean', 'qualityGate.ok should be boolean');
+  assert(Array.isArray(body.qualityGate.checks), 'qualityGate.checks should be an array');
+  assert(
+    body.qualityGate.checks.some(c => c.id === 'extraction.lane.commercial.fixture_count'),
+    'qualityGate should include commercial extraction lane coverage check',
+  );
   assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
   assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');
   assert(body.thresholdSource === 'default', 'thresholdSource should be default');
@@ -713,6 +722,8 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
   assert(body.persisted === false, 'persisted should be false when persist=false');
   assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
   assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
+  assert(typeof body.results?.summary?.extraction?.byLane?.residential?.fixtureCount === 'number', 'residential extraction lane count should be numeric');
+  assert(typeof body.results?.summary?.gate?.byLane?.commercial?.fixtureCount === 'number', 'commercial gate lane count should be numeric');
   assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
   assert(typeof body.qualityGateSummary === 'object', 'qualityGateSummary should be an object');
   assert(Array.isArray(body.qualityGateFailures), 'qualityGateFailures should be an array');

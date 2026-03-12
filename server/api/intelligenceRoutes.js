@@ -36,6 +36,7 @@ import {
   evaluatePhaseCBenchmarkThresholds,
   DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
 } from '../factIntegrity/benchmarkThresholds.js';
+import { summarizeBenchmarkSuite } from '../factIntegrity/accuracyBenchmarks.js';
 import log from '../logger.js';
 
 const router = Router();
@@ -93,6 +94,83 @@ function buildBenchmarkGateEnvelope(results, thresholds, thresholdSource) {
       .map(check => check.id)
       .filter(Boolean),
     thresholdSource,
+  };
+}
+
+function hasLaneSummary(summary) {
+  const extractionByLane = summary?.extraction?.byLane;
+  const gateByLane = summary?.gate?.byLane;
+  return (
+    extractionByLane
+    && typeof extractionByLane === 'object'
+    && !Array.isArray(extractionByLane)
+    && gateByLane
+    && typeof gateByLane === 'object'
+    && !Array.isArray(gateByLane)
+  );
+}
+
+function normalizeBenchmarkResults(results) {
+  if (!results || typeof results !== 'object') return results;
+
+  const extractionRuns = Array.isArray(results.extractionRuns) ? results.extractionRuns : [];
+  const gateRuns = Array.isArray(results.gateRuns) ? results.gateRuns : [];
+  const derivedSummary = summarizeBenchmarkSuite({ extractionRuns, gateRuns });
+  const existingSummary = results.summary && typeof results.summary === 'object'
+    ? results.summary
+    : {};
+  const existingExtraction = existingSummary.extraction && typeof existingSummary.extraction === 'object'
+    ? existingSummary.extraction
+    : {};
+  const existingGate = existingSummary.gate && typeof existingSummary.gate === 'object'
+    ? existingSummary.gate
+    : {};
+  const extractionByLane = {
+    ...derivedSummary.extraction.byLane,
+  };
+  for (const lane of Object.keys(
+    DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.extraction.minLaneFixtureCounts || {},
+  )) {
+    if (!extractionByLane[lane] || typeof extractionByLane[lane] !== 'object') {
+      extractionByLane[lane] = {
+        fixtureCount: 0,
+        avgPrecision: null,
+        avgRecall: null,
+        avgF1: null,
+      };
+    }
+  }
+  const gateByLane = {
+    ...derivedSummary.gate.byLane,
+  };
+  for (const lane of Object.keys(
+    DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS.gate.minLaneFixtureCounts || {},
+  )) {
+    if (!gateByLane[lane] || typeof gateByLane[lane] !== 'object') {
+      gateByLane[lane] = {
+        fixtureCount: 0,
+        passedCount: 0,
+        passRate: null,
+      };
+    }
+  }
+
+  return {
+    ...results,
+    summary: {
+      ...derivedSummary,
+      ...existingSummary,
+      extraction: {
+        ...derivedSummary.extraction,
+        ...existingExtraction,
+        byLane: extractionByLane,
+      },
+      gate: {
+        ...derivedSummary.gate,
+        ...existingGate,
+        byLane: gateByLane,
+      },
+    },
   };
 }
 
@@ -247,15 +325,26 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
   try {
     const cached = readPhaseCBenchmarkResults();
     if (cached) {
+      const normalizedResults = normalizeBenchmarkResults(cached);
+      const wasLegacySummary = !hasLaneSummary(cached.summary);
+      if (wasLegacySummary) {
+        try {
+          writePhaseCBenchmarkResults(normalizedResults);
+        } catch (persistErr) {
+          log.warn('[intelligence] Unable to persist normalized benchmark snapshot', {
+            error: persistErr?.message || String(persistErr),
+          });
+        }
+      }
       const gateEnvelope = buildBenchmarkGateEnvelope(
-        cached,
+        normalizedResults,
         DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
         'default',
       );
       return res.json({
         ok: true,
         cached: true,
-        results: cached,
+        results: normalizedResults,
         ...gateEnvelope,
       });
     }
