@@ -68,6 +68,49 @@ const MAX_BATCH_FIELDS = 20;
 const fullDraftOptionsSchema = z.object({
   forceGateBypass: z.boolean().optional(),
 }).passthrough();
+const generateSchema = z.object({
+  fieldId: z.string().max(80).optional(),
+  formType: z.string().max(40).optional(),
+  caseId: z.string().max(80).optional(),
+  facts: z.record(z.unknown()).optional(),
+  prompt: z.string().max(24000).optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
+}).passthrough();
+const generateBatchFieldSchema = z.union([
+  z.string().max(80),
+  z.object({
+    id: z.string().max(80).optional(),
+    title: z.string().max(200).optional(),
+  }).passthrough(),
+]);
+const generateBatchSchema = z.object({
+  fields: z.array(generateBatchFieldSchema).min(1).max(MAX_BATCH_FIELDS),
+  caseId: z.string().max(80).optional(),
+  twoPass: z.boolean().optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
+}).passthrough();
+const similarExamplesSchema = z.object({
+  fieldId: z.string().max(80).optional(),
+  limit: z.union([z.number(), z.string()]).optional(),
+  formType: z.string().max(40).optional(),
+}).passthrough();
+const generateCoreSchema = z.object({
+  fields: z.array(z.string().max(80)).max(200).optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
+}).passthrough();
+const generateCompCommentarySchema = z.object({
+  comps: z.array(z.unknown()).max(200).optional(),
+  compFocus: z.string().max(40).optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
+}).passthrough();
+const generateAllSchema = z.object({
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
+}).passthrough();
 const generateFullDraftSchema = z.object({
   formType: z.string().max(40).optional(),
   options: fullDraftOptionsSchema.optional(),
@@ -81,6 +124,7 @@ const regenerateSectionSchema = z.object({
   sectionId: z.string().min(1).max(80),
   caseId: z.string().min(1).max(80),
 }).passthrough();
+const emptyMutationSchema = z.object({}).strict();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -229,9 +273,13 @@ router.param('caseId', (req, res, next, caseId) => {
 
 // ── POST /generate (legacy compat, now modular) ──────────────────────────────
 router.post('/generate', ensureAI, async (req, res) => {
+  const body = parsePayload(generateSchema, req.body || {}, res);
+  if (!body) return;
+  req.body = body;
+
   try {
-    const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
-    const prompt = trimText(req.body?.prompt, 24000);
+    const { fieldId, formType, caseId, facts: bodyFacts } = body;
+    const prompt = trimText(body.prompt, 24000);
     const requestedFt = String(formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
       logDeferredAccess(requestedFt, 'POST /api/generate', log);
@@ -307,14 +355,12 @@ router.post('/generate', ensureAI, async (req, res) => {
 
 // ── POST /generate-batch (legacy compat, now modular) ────────────────────────
 router.post('/generate-batch', ensureAI, async (req, res) => {
+  const body = parsePayload(generateBatchSchema, req.body || {}, res);
+  if (!body) return;
+  req.body = body;
+
   try {
-    const { fields, caseId, twoPass = false } = req.body;
-    if (!Array.isArray(fields) || !fields.length) {
-      return res.status(400).json({ ok: false, error: 'fields must be a non-empty array' });
-    }
-    if (fields.length > MAX_BATCH_FIELDS) {
-      return res.status(400).json({ ok: false, error: 'fields must be <= ' + MAX_BATCH_FIELDS });
-    }
+    const { fields, caseId, twoPass = false } = body;
     const requestedSectionIds = toSectionIds(fields);
 
     let caseFacts = {};
@@ -420,8 +466,11 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
 
 // ── POST /similar-examples (legacy compat, now modular) ──────────────────────
 router.post('/similar-examples', (req, res) => {
+  const body = parsePayload(similarExamplesSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { fieldId, limit = 3, formType } = req.body;
+    const { fieldId, limit = 3, formType } = body;
     const safeLimit = Math.max(1, Math.min(Number(limit) || 3, 10));
     const normalized = formType ? normalizeFormType(formType) : null;
     res.json({
@@ -434,6 +483,10 @@ router.post('/similar-examples', (req, res) => {
 });
 
 router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
+  const body = parsePayload(generateCoreSchema, req.body || {}, res);
+  if (!body) return;
+  req.body = body;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -459,7 +512,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
       }
     }
 
-    const requestedFields = asArray(req.body?.fields);
+    const requestedFields = asArray(body.fields);
     const coreSections = formConfig.workflowFields || CORE_SECTIONS[formType] || [];
     const targetFields = requestedFields.length
       ? coreSections.filter(section => requestedFields.includes(section.id))
@@ -540,6 +593,10 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
 });
 
 router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
+  const body = parsePayload(generateCompCommentarySchema, req.body || {}, res);
+  if (!body) return;
+  req.body = body;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -561,7 +618,7 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       formType,
       sectionIds: ['sca_summary'],
     })) return;
-    const comps = asArray(req.body?.comps || facts?.comps || []);
+    const comps = asArray(body.comps || facts?.comps || []);
     if (!comps.length) return res.status(400).json({ ok: false, error: 'No comparables provided' });
 
     const results = [];
@@ -596,7 +653,7 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       }
     }
 
-    const compFocus = trimText(req.body?.compFocus, 40) || 'all';
+    const compFocus = trimText(body.compFocus, 40) || 'all';
     const combinedText = results.map(result => result.compLabel + ': ' + result.text).join('\n\n');
     if (results.length) {
       const generatedAt = new Date().toISOString();
@@ -633,6 +690,10 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
 });
 
 router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
+  const body = parsePayload(generateAllSchema, req.body || {}, res);
+  if (!body) return;
+  req.body = body;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -1108,7 +1169,9 @@ router.post('/generation/regenerate-section', async (req, res) => {
  *
  * Returns: { ok, imported, skipped, upgraded, errors, sources, durationMs }
  */
-router.post('/db/migrate-legacy-kb', async (_req, res) => {
+router.post('/db/migrate-legacy-kb', async (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     log.info('[db] Starting legacy KB migration...');
     const result = await runLegacyKbImport();
