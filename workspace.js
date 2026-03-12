@@ -8,6 +8,7 @@ const WORKSPACE_STATE = {
   loading: false,
   caseId: null,
   lastSavedAt: null,
+  dragComparableCandidateId: null,
 };
 
 function ws$(id) {
@@ -121,6 +122,10 @@ function workspaceContradictionGraph() {
   return WORKSPACE_STATE.payload?.contradictionGraph || null;
 }
 
+function workspaceInsertionReliability() {
+  return WORKSPACE_STATE.payload?.insertionReliability || null;
+}
+
 function workspaceSectionContradictions(sectionId) {
   const items = Array.isArray(workspaceContradictionGraph()?.items)
     ? workspaceContradictionGraph().items
@@ -206,8 +211,107 @@ function workspaceComparableTierTone(tier) {
   return '';
 }
 
+function workspaceInsertionStatusTone(status) {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'completed' || normalized === 'verified') return 'ok';
+  if (normalized === 'partial' || normalized === 'queued' || normalized === 'running') return 'warn';
+  if (normalized === 'failed' || normalized === 'cancelled' || normalized === 'mismatch') return 'err';
+  return '';
+}
+
+function workspaceRetryClassLabel(value) {
+  return String(value || '')
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ') || 'Unknown';
+}
+
+function workspaceRenderInsertionReliabilityPanel(sectionId, options = {}) {
+  const reliability = workspaceInsertionReliability();
+  const latestRun = reliability?.latestRun || null;
+  const recentRuns = Array.isArray(reliability?.recentRuns) ? reliability.recentRuns : [];
+  const detailed = Boolean(options.detailed);
+  const previewLimit = Number.isInteger(options.previewLimit) ? options.previewLimit : 3;
+
+  if (!latestRun) {
+    return (
+      `<div class="workspace-assistant-section">` +
+        `<h4>Insertion Reliability</h4>` +
+        `<div class="hint">No insertion runs are recorded for this case yet.</div>` +
+      `</div>`
+    );
+  }
+
+  const previewItems = Array.isArray(latestRun.replayPreview)
+    ? latestRun.replayPreview.slice(0, previewLimit)
+    : [];
+  const actionable = latestRun.failedFields > 0 || latestRun.issueFieldCount > 0 || latestRun.rollbackFields > 0;
+  const showRecentRuns = detailed || sectionId === 'qc_review';
+
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Insertion Reliability</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Latest Run:</strong> ${esc(latestRun.id)}</div>` +
+        `<div><strong>Target:</strong> ${esc(latestRun.targetSoftware || latestRun.formType || 'Unknown')}</div>` +
+        `<div><strong>Status:</strong> <span class="chip ${workspaceInsertionStatusTone(latestRun.status)}">${esc(workspaceReviewLabel(latestRun.status))}</span></div>` +
+        `<div><strong>Readiness:</strong> ${esc(latestRun.readinessSignal || 'n/a')}</div>` +
+        `<div><strong>QC Gate:</strong> ${esc(latestRun.qcGatePassed ? 'Pass' : `Blocked (${latestRun.qcBlockerCount || 0})`)}</div>` +
+        `<div><strong>Fields:</strong> ${esc(`${latestRun.completedFields || 0}/${latestRun.totalFields || 0} inserted`)}</div>` +
+        `<div><strong>Verified:</strong> ${esc(String(latestRun.verifiedFields || 0))}</div>` +
+        `<div><strong>Failed:</strong> ${esc(String(latestRun.failedFields || 0))}</div>` +
+        `<div><strong>Rollbacks:</strong> ${esc(String(latestRun.rollbackFields || 0))}</div>` +
+        `<div><strong>Replay Items:</strong> ${esc(String(latestRun.issueFieldCount || 0))}</div>` +
+        `<div><strong>Started:</strong> ${esc(latestRun.startedAt ? new Date(latestRun.startedAt).toLocaleString() : (latestRun.createdAt ? new Date(latestRun.createdAt).toLocaleString() : '-'))}</div>` +
+      `</div>` +
+      (actionable
+        ? (
+          previewItems.length
+            ? previewItems.map((item) => (
+              `<div class="workspace-history-item">` +
+                `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
+                  `<div class="workspace-qc-item"><strong>${esc(item.fieldId || item.destinationKey || 'Field')}</strong></div>` +
+                  `<span class="chip ${workspaceInsertionStatusTone(item.status || item.verificationStatus)}">${esc(workspaceReviewLabel(item.status || item.verificationStatus || 'issue'))}</span>` +
+                `</div>` +
+                `<div class="workspace-meta-list">` +
+                  `${item.destinationKey ? `<div><strong>Destination:</strong> ${esc(item.destinationKey)}</div>` : ''}` +
+                  `${item.retryClass ? `<div><strong>Retry Class:</strong> ${esc(workspaceRetryClassLabel(item.retryClass))}</div>` : ''}` +
+                  `${item.rollbackStatus ? `<div><strong>Rollback:</strong> ${esc(workspaceReviewLabel(item.rollbackStatus))}</div>` : ''}` +
+                  `${item.errorCode ? `<div><strong>Error:</strong> ${esc(item.errorCode)}</div>` : ''}` +
+                  `${item.errorText ? `<div><strong>Detail:</strong> ${esc(item.errorText)}</div>` : ''}` +
+                `</div>` +
+              `</div>`
+            )).join('')
+            : '<div class="hint">Replay package is recorded for this run, but no preview items were included in the workspace payload.</div>'
+        )
+        : '<div class="hint">Latest insertion run completed without replayable issues.</div>') +
+      (showRecentRuns && recentRuns.length > 1
+        ? (
+          `<div class="workspace-history-item">` +
+            `<div class="workspace-field-hint">Recent runs</div>` +
+            recentRuns.slice(1, 5).map((run) => (
+              `<div class="workspace-meta-list" style="padding:6px 0;border-top:1px solid rgba(255,255,255,.06);">` +
+                `<div><strong>${esc(run.id)}</strong></div>` +
+                `<div>${esc(run.targetSoftware || run.formType || 'Unknown')}</div>` +
+                `<div><span class="chip ${workspaceInsertionStatusTone(run.status)}">${esc(workspaceReviewLabel(run.status))}</span></div>` +
+                `<div>${esc(`${run.failedFields || 0} failed / ${run.rollbackFields || 0} rollback`)}</div>` +
+              `</div>`
+            )).join('') +
+          `</div>`
+        )
+        : '') +
+    `</div>`
+  );
+}
+
 function workspaceComparableRejectSelectId(candidateId) {
   return `workspaceCompRejectReason-${candidateId}`;
+}
+
+function workspaceGridSlotLabel(gridSlot) {
+  const match = String(gridSlot || '').match(/^comp(\d)$/i);
+  return match ? `Comp ${match[1]}` : String(gridSlot || 'Comp');
 }
 
 function workspaceSupportTypeLabel(value) {
@@ -243,6 +347,22 @@ function workspaceStrengthTone(status) {
   return '';
 }
 
+function workspaceWeightTone(label) {
+  const normalized = String(label || '').toLowerCase();
+  if (normalized === 'primary') return 'ok';
+  if (normalized === 'secondary') return 'warn';
+  if (normalized === 'context') return 'err';
+  return '';
+}
+
+function workspaceCurrency(value) {
+  if (value == null || value === '') return 'n/a';
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return 'n/a';
+  const rounded = Math.round(amount);
+  return `${rounded < 0 ? '-' : ''}$${Math.abs(rounded).toLocaleString()}`;
+}
+
 function workspaceRenderAcceptedComparableSlots(intelligence) {
   const acceptedSlots = Array.isArray(intelligence?.acceptedSlots) ? intelligence.acceptedSlots : [];
   if (!acceptedSlots.length) {
@@ -273,14 +393,25 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
               `<span class="chip ${workspaceDecisionTone(slot.burdenMetrics?.overallStabilityScore >= 0.75 ? 'accepted' : slot.burdenMetrics?.overallStabilityScore >= 0.55 ? 'modified' : 'rejected')}">Stability ${esc(workspaceComparableScore(slot.burdenMetrics?.overallStabilityScore || 0))}</span>` +
               `<span class="chip">Gross ${esc(`${slot.burdenMetrics?.grossAdjustmentPercent || 0}%`)}</span>` +
               `<span class="chip">Net ${esc(`${slot.burdenMetrics?.netAdjustmentPercent || 0}%`)}</span>` +
+              `<span class="chip ${workspaceWeightTone(slot.valuationMetrics?.suggestedWeightLabel)}">${esc(slot.valuationMetrics?.suggestedWeightLabel || 'Context')}</span>` +
             `</div>` +
           `</div>` +
           `<div class="workspace-meta-list">` +
+            `<div><strong>Adjusted sale price:</strong> ${esc(workspaceCurrency(slot.valuationMetrics?.adjustedSalePrice))}</div>` +
+            `<div><strong>Net adjustment:</strong> ${esc(workspaceCurrency(slot.valuationMetrics?.netAdjustmentAmount))}</div>` +
             `<div><strong>Major mismatches:</strong> ${esc(String(slot.burdenMetrics?.majorMismatchCount || 0))}</div>` +
             `<div><strong>Data confidence:</strong> ${esc(workspaceComparableScore(slot.burdenMetrics?.dataConfidenceScore || 0))}</div>` +
             `<div><strong>Date relevance:</strong> ${esc(workspaceComparableScore(slot.burdenMetrics?.dateRelevanceScore || 0))}</div>` +
             `<div><strong>Location confidence:</strong> ${esc(workspaceComparableScore(slot.burdenMetrics?.locationConfidenceScore || 0))}</div>` +
+            `<div><strong>Weight score:</strong> ${esc(workspaceComparableScore(slot.valuationMetrics?.suggestedWeightScore || 0))}</div>` +
           `</div>` +
+          ((slot.valuationMetrics?.weightReasoning || []).length
+            ? `<div class="workspace-meta-list">` +
+                (slot.valuationMetrics.weightReasoning || []).map((reason) =>
+                  `<div class="workspace-qc-item">${esc(reason)}</div>`
+                ).join('') +
+              `</div>`
+            : '') +
           ((slot.contradictions || []).length
             ? `<div class="workspace-meta-list">` +
                 (slot.contradictions || []).map((flag) =>
@@ -315,6 +446,62 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
           )).join('') +
         `</div>`
       )).join('') +
+    `</div>`
+  );
+}
+
+function workspaceRenderReconciliationSupportPanel() {
+  const support = workspaceComparableIntelligence()?.reconciliationSupport || null;
+  if (!support || !support.summary?.consideredCompCount) {
+    return (
+      `<div class="workspace-assistant-section">` +
+        `<h4>Reconciliation Support</h4>` +
+        `<div class="hint">Load and evaluate accepted comp slots to generate reconciliation support.</div>` +
+      `</div>`
+    );
+  }
+
+  const weightingCards = (support.weighting || []).map((slot) => (
+    `<div class="workspace-history-item">` +
+      `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
+        `<div>` +
+          `<div class="workspace-history-value">${esc(slot.gridSlotLabel)}: ${esc(slot.address || 'Comparable')}</div>` +
+          `<div class="workspace-field-hint">${esc(workspaceCurrency(slot.adjustedSalePrice))} adjusted | ${esc(slot.contributionPercent)}% contribution</div>` +
+        `</div>` +
+        `<span class="chip ${workspaceWeightTone(slot.suggestedWeightLabel)}">${esc(slot.suggestedWeightLabel)}</span>` +
+      `</div>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Weight score:</strong> ${esc(workspaceComparableScore(slot.suggestedWeightScore || 0))}</div>` +
+        `<div><strong>Gross adjustment:</strong> ${esc(`${slot.grossAdjustmentPercent || 0}%`)}</div>` +
+        `<div><strong>Net adjustment:</strong> ${esc(`${slot.netAdjustmentPercent || 0}%`)}</div>` +
+        `<div><strong>Flags:</strong> ${esc(String(slot.contradictionCount || 0))}</div>` +
+      `</div>` +
+      ((slot.reasons || []).length
+        ? `<div class="workspace-meta-list">` +
+            slot.reasons.map((reason) => `<div class="workspace-qc-item">${esc(reason)}</div>`).join('') +
+          `</div>`
+        : '') +
+    `</div>`
+  )).join('');
+
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Reconciliation Support</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Adjusted range:</strong> ${esc(workspaceCurrency(support.summary.indicatedRangeLow))} to ${esc(workspaceCurrency(support.summary.indicatedRangeHigh))}</div>` +
+        `<div><strong>Weighted indication:</strong> ${esc(workspaceCurrency(support.summary.weightedIndication))}</div>` +
+        `<div><strong>Accepted comps:</strong> ${esc(String(support.summary.consideredCompCount || 0))}</div>` +
+        `<div><strong>Most reliable:</strong> ${esc((support.mostReliable || []).map((slot) => slot.gridSlotLabel).join(', ') || 'n/a')}</div>` +
+      `</div>` +
+      `<div class="btnrow">` +
+        `<button class="sec sm" onclick="workspaceApplyReconciliationNarrative()">Write Narrative Draft</button>` +
+        `<button class="sm" onclick="workspaceApplyWeightedIndicationToOpinion()">Use Weighted Indication as Opinion Draft</button>` +
+      `</div>` +
+      `${weightingCards}` +
+      `<div class="workspace-history-item">` +
+        `<div class="workspace-field-hint">Draft reconciliation language</div>` +
+        `<div class="workspace-history-value">${esc(support.draftNarrative || 'No reconciliation narrative available.')}</div>` +
+      `</div>` +
     `</div>`
   );
 }
@@ -354,7 +541,7 @@ function workspaceRenderComparablePanel() {
       : '<div class="hint">No current ranking warnings.</div>';
 
     return (
-      `<div class="workspace-history-item">` +
+      `<div class="workspace-history-item workspace-comp-candidate-card" draggable="true" data-comparable-candidate-id="${esc(candidate.id)}">` +
         `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
           `<div>` +
             `<div class="workspace-history-value">${esc(candidate.candidate?.address || 'Unnamed candidate')}</div>` +
@@ -433,6 +620,7 @@ function workspaceReset() {
   WORKSPACE_STATE.fieldId = null;
   WORKSPACE_STATE.dirtyFieldIds.clear();
   WORKSPACE_STATE.caseId = null;
+  WORKSPACE_STATE.dragComparableCandidateId = null;
   if (WORKSPACE_STATE.saveTimer) {
     clearTimeout(WORKSPACE_STATE.saveTimer);
     WORKSPACE_STATE.saveTimer = null;
@@ -629,10 +817,21 @@ function workspaceRenderField(field) {
 
 function workspaceRenderGridField(field, entry) {
   const rows = Array.isArray(entry.value) && entry.value.length ? entry.value : (field.defaultValue || []);
+  const isComparableGrid = field.fieldId === 'sales_comp_grid';
   return (
     `<div class="workspace-grid-wrap">` +
       `<table class="workspace-grid">` +
-        `<thead><tr>${(field.columns || []).map((column) => `<th>${esc(column.label)}</th>`).join('')}</tr></thead>` +
+        `<thead><tr>${(field.columns || []).map((column) => {
+          if (isComparableGrid && ['comp1', 'comp2', 'comp3'].includes(column.key)) {
+            return (
+              `<th class="workspace-grid-slot-target" data-grid-slot-drop="${column.key}">` +
+                `<div>${esc(column.label)}</div>` +
+                `<div class="workspace-grid-slot-hint">Drop candidate here</div>` +
+              `</th>`
+            );
+          }
+          return `<th>${esc(column.label)}</th>`;
+        }).join('')}</tr></thead>` +
         `<tbody>` +
           rows.map((row, rowIndex) => {
             return '<tr>' + (field.columns || []).map((column, columnIndex) => {
@@ -656,9 +855,21 @@ function workspaceRenderAssistant() {
   const definition = workspaceDefinition();
   const field = WORKSPACE_STATE.fieldId ? definition?.fieldIndex?.[WORKSPACE_STATE.fieldId] : null;
   const currentSection = workspaceCurrentSection();
-  const salesComparisonPanel = currentSection?.id === 'sales_comparison'
-    ? `${workspaceRenderComparablePanel()}${workspaceRenderAcceptedComparableSlots(workspaceComparableIntelligence())}`
+  const comparableWorkspacePanel = ['sales_comparison', 'reconciliation'].includes(currentSection?.id)
+    ? `${workspaceRenderComparablePanel()}${workspaceRenderAcceptedComparableSlots(workspaceComparableIntelligence())}${workspaceRenderReconciliationSupportPanel()}`
     : '';
+  const insertionReliability = workspaceInsertionReliability();
+  const insertionPanel = workspaceRenderInsertionReliabilityPanel(currentSection?.id, {
+    detailed: currentSection?.id === 'qc_review' || !field,
+    previewLimit: currentSection?.id === 'qc_review' ? 5 : 3,
+  });
+  const showInsertionPanel = !field
+    || currentSection?.id === 'qc_review'
+    || Boolean(insertionReliability?.latestRun && (
+      insertionReliability.latestRun.failedFields > 0
+      || insertionReliability.latestRun.issueFieldCount > 0
+      || insertionReliability.latestRun.rollbackFields > 0
+    ));
   if (!assistantTitle || !body) return;
 
   if (!definition) {
@@ -671,14 +882,18 @@ function workspaceRenderAssistant() {
   if (!field) {
     assistantTitle.textContent = 'Section Summary';
     body.innerHTML =
-      salesComparisonPanel +
+      comparableWorkspacePanel +
       workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
+      insertionPanel +
       `<div class="workspace-assistant-section">` +
         `<h4>Quality Control</h4>` +
         `<div class="workspace-meta-list">` +
           `<div><strong>Conflicts:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
           `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
           `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
+          `<div><strong>Insertion:</strong> ${esc(qc.latestInsertionStatus || 'Not run')}</div>` +
+          `<div><strong>Insertion Issues:</strong> ${esc(String(qc.latestInsertionIssueCount || 0))}</div>` +
+          `<div><strong>Insertion Rollbacks:</strong> ${esc(String(qc.latestInsertionRollbackCount || 0))}</div>` +
           `<div><strong>Workflow Status:</strong> ${esc(WORKSPACE_STATE.payload.meta?.workflowStatus || '-')}</div>` +
         `</div>` +
       `</div>`;
@@ -689,7 +904,7 @@ function workspaceRenderAssistant() {
   assistantTitle.textContent = field.label;
 
   const sections = [];
-  if (salesComparisonPanel) sections.push(salesComparisonPanel);
+  if (comparableWorkspacePanel) sections.push(comparableWorkspacePanel);
   sections.push(
     `<div class="workspace-assistant-section">` +
       `<h4>Current Value</h4>` +
@@ -817,6 +1032,7 @@ function workspaceRenderAssistant() {
   );
 
   sections.push(workspaceRenderContradictionGraphPanel(field.sectionId, 4));
+  if (showInsertionPanel) sections.push(insertionPanel);
 
   sections.push(
     `<div class="workspace-assistant-section">` +
@@ -825,6 +1041,9 @@ function workspaceRenderAssistant() {
         `<div><strong>Conflict Count:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
         `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
         `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
+        `<div><strong>Insertion:</strong> ${esc(qc.latestInsertionStatus || 'Not run')}</div>` +
+        `<div><strong>Insertion Issues:</strong> ${esc(String(qc.latestInsertionIssueCount || 0))}</div>` +
+        `<div><strong>Insertion Rollbacks:</strong> ${esc(String(qc.latestInsertionRollbackCount || 0))}</div>` +
         `<div><strong>Field Conflicts:</strong> ${esc(String(conflicts.length || 0))}</div>` +
         `<div><strong>Pending Candidates:</strong> ${esc(String(entry.pendingReviewCount || 0))}</div>` +
         `<div><strong>Fact Review Queue:</strong> ${esc(qc.factReviewQueueSummary?.preDraftBlocked ? 'Blocked' : 'Clear')}</div>` +
@@ -852,10 +1071,120 @@ function workspaceHandleFocus(target) {
   workspaceRenderAssistant();
 }
 
+function workspaceHandleDragStart(event) {
+  const card = event.target?.closest?.('[data-comparable-candidate-id]');
+  if (!card) return;
+  const candidateId = card.getAttribute('data-comparable-candidate-id');
+  if (!candidateId) return;
+  workspaceStartComparableDrag(candidateId);
+  card.classList.add('is-dragging');
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', candidateId);
+  }
+  document.querySelectorAll('[data-grid-slot-drop]').forEach((el) => {
+    el.classList.add('is-drop-active');
+  });
+}
+
+function workspaceHandleDragEnd(event) {
+  const card = event.target?.closest?.('[data-comparable-candidate-id]');
+  if (card) card.classList.remove('is-dragging');
+  workspaceEndComparableDrag();
+}
+
+function workspaceHandleDragOver(event) {
+  const target = event.target?.closest?.('[data-grid-slot-drop]');
+  if (!target || !WORKSPACE_STATE.dragComparableCandidateId) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+  target.classList.add('is-drop-hover');
+}
+
+function workspaceHandleDragLeave(event) {
+  const target = event.target?.closest?.('[data-grid-slot-drop]');
+  if (!target) return;
+  target.classList.remove('is-drop-hover');
+}
+
+async function workspaceHandleDrop(event) {
+  const target = event.target?.closest?.('[data-grid-slot-drop]');
+  if (!target) return;
+  const gridSlot = target.getAttribute('data-grid-slot-drop');
+  const candidateId = event.dataTransfer?.getData('text/plain') || WORKSPACE_STATE.dragComparableCandidateId;
+  target.classList.remove('is-drop-hover');
+  if (!gridSlot || !candidateId) return;
+  event.preventDefault();
+  await workspaceDropComparableCandidate(gridSlot, candidateId);
+}
+
 function workspaceUpdateEntryValue(fieldId, nextValue) {
   const entry = workspaceEntry(fieldId);
   if (!entry) return;
   entry.value = nextValue;
+}
+
+function workspaceSetFieldValue(fieldId, nextValue, { provenance = null, focus = true, immediate = true } = {}) {
+  const entry = workspaceEntry(fieldId);
+  if (!entry) return false;
+  entry.value = JSON.parse(JSON.stringify(nextValue));
+  if (provenance) entry._pendingProvenance = provenance;
+  else delete entry._pendingProvenance;
+  if (focus) WORKSPACE_STATE.fieldId = fieldId;
+  WORKSPACE_STATE.dirtyFieldIds.add(fieldId);
+  workspaceSetSaveState('Unsaved');
+  workspaceRender();
+  workspaceScheduleSave(immediate);
+  return true;
+}
+
+function workspaceApplyReconciliationNarrative() {
+  const support = workspaceComparableIntelligence()?.reconciliationSupport || null;
+  if (!support?.draftNarrative) return;
+  const applied = workspaceSetFieldValue('reconciliation_narrative', support.draftNarrative, {
+    immediate: true,
+  });
+  if (!applied) return;
+  workspaceSetBanner('Reconciliation draft written into the narrative field.', 'info');
+}
+
+function workspaceApplyWeightedIndicationToOpinion() {
+  const support = workspaceComparableIntelligence()?.reconciliationSupport || null;
+  const weightedIndication = support?.summary?.weightedIndication;
+  if (weightedIndication == null) return;
+  const draftValue = workspaceCurrency(weightedIndication);
+  const confirmed = window.confirm(
+    `Write ${draftValue} into Opinion of Market Value as an appraiser draft? This remains manually editable.`,
+  );
+  if (!confirmed) return;
+  const applied = workspaceSetFieldValue('reconciliation_market_value', draftValue, {
+    immediate: true,
+  });
+  if (!applied) return;
+  workspaceSetBanner('Weighted indication copied into the market value opinion field as a draft.', 'info');
+}
+
+function workspaceStartComparableDrag(candidateId) {
+  WORKSPACE_STATE.dragComparableCandidateId = candidateId || null;
+}
+
+function workspaceEndComparableDrag() {
+  WORKSPACE_STATE.dragComparableCandidateId = null;
+  document.querySelectorAll('[data-grid-slot-drop]').forEach((el) => {
+    el.classList.remove('is-drop-active');
+  });
+}
+
+function workspaceGridDropTarget(slot) {
+  if (!slot) return null;
+  return document.querySelector(`[data-grid-slot-drop="${slot}"]`);
+}
+
+async function workspaceDropComparableCandidate(gridSlot, candidateId = null) {
+  const resolvedCandidateId = candidateId || WORKSPACE_STATE.dragComparableCandidateId;
+  if (!gridSlot || !resolvedCandidateId) return;
+  await workspaceAcceptComparableCandidate(resolvedCandidateId, gridSlot);
+  workspaceEndComparableDrag();
 }
 
 function workspaceHandleInput(event) {
@@ -1229,9 +1558,22 @@ function workspaceOnTabOpen() {
 const workspaceRoot = ws$('tab-workspace');
 if (workspaceRoot) {
   const sectionContent = ws$('workspaceSectionContent');
+  const assistantBody = ws$('workspaceAssistantBody');
   if (sectionContent) {
     sectionContent.addEventListener('input', workspaceHandleInput);
     sectionContent.addEventListener('change', workspaceHandleInput);
     sectionContent.addEventListener('focusin', (event) => workspaceHandleFocus(event.target));
+    sectionContent.addEventListener('dragover', workspaceHandleDragOver);
+    sectionContent.addEventListener('dragleave', workspaceHandleDragLeave);
+    sectionContent.addEventListener('drop', (event) => {
+      workspaceHandleDrop(event).catch((err) => {
+        workspaceSetBanner(err.message || 'Failed to load comparable candidate.', 'error');
+        workspaceSetSaveState('Error');
+      });
+    });
+  }
+  if (assistantBody) {
+    assistantBody.addEventListener('dragstart', workspaceHandleDragStart);
+    assistantBody.addEventListener('dragend', workspaceHandleDragEnd);
   }
 }

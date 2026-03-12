@@ -95,6 +95,13 @@ import {
   evaluateRegeneratePolicy,
   FRESHNESS,
 } from '../services/sectionPolicyService.js';
+import {
+  listInsertionRuns,
+  getInsertionRun,
+  getInsertionRunItems,
+  getLatestInsertionRun,
+} from '../insertion/insertionRepo.js';
+import { getInsertionReplayPackage } from '../insertion/insertionRunEngine.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -312,6 +319,89 @@ function sanitizeFactSources(raw) {
   return out;
 }
 
+function summarizeInsertionRun(run, { hydrateReplayPackage = false } = {}) {
+  if (!run) return null;
+  const replayPackage = hydrateReplayPackage
+    ? (getInsertionReplayPackage(run.id) || run.replayPackage || null)
+    : (run.replayPackage || null);
+  const replayItems = Array.isArray(replayPackage?.items) ? replayPackage.items : [];
+  const summary = run.summary || {};
+
+  return {
+    id: run.id,
+    caseId: run.caseId,
+    formType: run.formType,
+    targetSoftware: run.targetSoftware,
+    status: run.status,
+    readinessSignal: summary.readinessSignal || null,
+    totalFields: Number(run.totalFields || summary.totalFields || 0),
+    completedFields: Number(run.completedFields || summary.inserted || 0),
+    failedFields: Number(run.failedFields || summary.failed || 0),
+    skippedFields: Number(run.skippedFields || summary.skipped || 0),
+    verifiedFields: Number(run.verifiedFields || summary.verified || 0),
+    rollbackFields: Number(run.rollbackFields || summary.rollbackFields || 0),
+    fallbackUsedCount: Number(summary.fallbackUsed || 0),
+    qcGatePassed: Boolean(run.qcGatePassed),
+    qcBlockerCount: Number(run.qcBlockerCount || 0),
+    issueFieldCount: replayItems.length,
+    mismatchCount: Number(replayPackage?.summary?.mismatchCount || summary?.mismatchFieldIds?.length || 0),
+    replayReady: Array.isArray(replayPackage?.items),
+    replayPreview: replayItems.slice(0, 3).map((item) => ({
+      fieldId: item.fieldId,
+      destinationKey: item.destinationKey,
+      status: item.status,
+      verificationStatus: item.verificationStatus || null,
+      retryClass: item.retryClass || null,
+      rollbackStatus: item.rollbackStatus || null,
+      errorCode: item.errorCode || null,
+      errorText: item.errorText || null,
+    })),
+    createdAt: run.createdAt,
+    startedAt: run.startedAt,
+    completedAt: run.completedAt,
+    durationMs: run.durationMs || summary.durationMs || null,
+  };
+}
+
+function buildInsertionWorkspaceSummary(caseId, { limit = 5 } = {}) {
+  const runs = listInsertionRuns(caseId, { limit });
+  const latestRun = runs[0] || getLatestInsertionRun(caseId);
+  const latestSummary = latestRun
+    ? summarizeInsertionRun(latestRun, { hydrateReplayPackage: true })
+    : null;
+  const recentRuns = runs.map((run, index) => (
+    index === 0 && latestSummary ? latestSummary : summarizeInsertionRun(run)
+  ));
+
+  return {
+    summary: {
+      totalRuns: recentRuns.length,
+      latestStatus: latestSummary?.status || null,
+      latestIssueFieldCount: latestSummary?.issueFieldCount || 0,
+      latestRollbackCount: latestSummary?.rollbackFields || 0,
+      hasActionableFailures: Boolean(
+        latestSummary && (
+          latestSummary.failedFields > 0 ||
+          latestSummary.issueFieldCount > 0 ||
+          latestSummary.rollbackFields > 0
+        )
+      ),
+    },
+    latestRun: latestSummary,
+    recentRuns,
+  };
+}
+
+function buildInsertionRunDetail(run) {
+  if (!run) return null;
+  const replayPackage = getInsertionReplayPackage(run.id) || run.replayPackage || { items: [], summary: {} };
+  return {
+    run: summarizeInsertionRun(run, { hydrateReplayPackage: true }),
+    items: getInsertionRunItems(run.id),
+    replayPackage,
+  };
+}
+
 const router = Router();
 
 /**
@@ -474,6 +564,7 @@ router.get('/:caseId/workspace', (req, res) => {
     const approvalGate = evaluateCaseApprovalGate(req.params.caseId);
     const extractedFacts = getExtractedFacts(req.params.caseId);
     const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
+    const insertionReliability = buildInsertionWorkspaceSummary(req.params.caseId);
     const contradictionGraph = buildContradictionGraph(req.params.caseId, {
       projection,
       factConflictReport: conflictReport,
@@ -496,10 +587,14 @@ router.get('/:caseId/workspace', (req, res) => {
         contradictionGraphSummary: contradictionGraph?.summary || null,
         approvalGate,
         extractedFactCount: Array.isArray(extractedFacts) ? extractedFacts.length : 0,
+        latestInsertionStatus: insertionReliability?.latestRun?.status || null,
+        latestInsertionIssueCount: insertionReliability?.latestRun?.issueFieldCount || 0,
+        latestInsertionRollbackCount: insertionReliability?.latestRun?.rollbackFields || 0,
       },
     });
     workspace.comparableIntelligence = comparableIntelligence;
     workspace.contradictionGraph = contradictionGraph;
+    workspace.insertionReliability = insertionReliability;
 
     // Phase D — section audit metadata for UI consumption
     const sectionPolicySummary = {};
@@ -525,6 +620,69 @@ router.get('/:caseId/workspace', (req, res) => {
       caseId: req.params.caseId,
       formType,
       workspace,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/insertion-runs', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const parsedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 50) : 10;
+    const insertionReliability = buildInsertionWorkspaceSummary(req.params.caseId, { limit });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      summary: insertionReliability.summary,
+      latestRun: insertionReliability.latestRun,
+      runs: insertionReliability.recentRuns,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/insertion-runs/:runId', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const run = getInsertionRun(req.params.runId);
+    if (!run || run.caseId !== req.params.caseId) {
+      return res.status(404).json({ ok: false, error: 'Insertion run not found for this case' });
+    }
+
+    const detail = buildInsertionRunDetail(run);
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      ...detail,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/insertion-runs/:runId/replay-package', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const run = getInsertionRun(req.params.runId);
+    if (!run || run.caseId !== req.params.caseId) {
+      return res.status(404).json({ ok: false, error: 'Insertion run not found for this case' });
+    }
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      run: summarizeInsertionRun(run, { hydrateReplayPackage: true }),
+      replayPackage: getInsertionReplayPackage(run.id) || { items: [], summary: {} },
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
