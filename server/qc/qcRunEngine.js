@@ -35,6 +35,7 @@ import './checkers/requiredCoverageChecker.js';
 import './checkers/crossSectionConsistencyChecker.js';
 import './checkers/placeholderGenericityChecker.js';
 import './checkers/complianceSignalChecker.js';
+import './checkers/comparableIntelligenceChecker.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

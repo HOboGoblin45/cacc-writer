@@ -558,3 +558,116 @@ export function replaceCompBurdenMetrics(caseId, metrics = []) {
 
   tx();
 }
+
+export function upsertPairedSalesLibraryRecord(record = {}) {
+  const id = record.id || uuidv4();
+  const now = new Date().toISOString();
+
+  getDb().prepare(`
+    INSERT INTO paired_sales_library_records (
+      id, market_area, property_type, date_range_start, date_range_end,
+      variable_analyzed, support_method, sample_size, conclusion, confidence,
+      narrative_summary, linked_assignments_json, linked_comp_sets_json,
+      creator, reviewer, approval_status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      market_area = excluded.market_area,
+      property_type = excluded.property_type,
+      date_range_start = excluded.date_range_start,
+      date_range_end = excluded.date_range_end,
+      variable_analyzed = excluded.variable_analyzed,
+      support_method = excluded.support_method,
+      sample_size = excluded.sample_size,
+      conclusion = excluded.conclusion,
+      confidence = excluded.confidence,
+      narrative_summary = excluded.narrative_summary,
+      linked_assignments_json = excluded.linked_assignments_json,
+      linked_comp_sets_json = excluded.linked_comp_sets_json,
+      creator = excluded.creator,
+      reviewer = excluded.reviewer,
+      approval_status = excluded.approval_status,
+      updated_at = excluded.updated_at
+  `).run(
+    id,
+    record.marketArea || '',
+    record.propertyType || '',
+    record.dateRangeStart || null,
+    record.dateRangeEnd || null,
+    record.variableAnalyzed || '',
+    record.supportMethod || 'appraiser_judgment_with_explanation',
+    record.sampleSize ?? null,
+    record.conclusion || '',
+    record.confidence || 'medium',
+    record.narrativeSummary || '',
+    toJSON(record.linkedAssignments || [], []),
+    toJSON(record.linkedCompSets || [], []),
+    record.creator || '',
+    record.reviewer || '',
+    record.approvalStatus || 'draft',
+    record.createdAt || now,
+    now,
+  );
+
+  return id;
+}
+
+export function listPairedSalesLibraryRecords({
+  variableAnalyzed = null,
+  marketArea = null,
+  propertyType = null,
+  approvalStatus = null,
+  limit = 50,
+} = {}) {
+  const clauses = [];
+  const params = [];
+
+  if (variableAnalyzed) {
+    clauses.push('variable_analyzed = ?');
+    params.push(variableAnalyzed);
+  }
+  if (marketArea) {
+    clauses.push('(market_area = ? OR market_area = \'\')');
+    params.push(marketArea);
+  }
+  if (propertyType) {
+    clauses.push('(property_type = ? OR property_type = \'\')');
+    params.push(propertyType);
+  }
+  if (approvalStatus) {
+    clauses.push('approval_status = ?');
+    params.push(approvalStatus);
+  }
+
+  params.push(Math.max(1, Math.min(limit || 50, 500)));
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const rows = getDb().prepare(`
+    SELECT *
+      FROM paired_sales_library_records
+      ${where}
+     ORDER BY
+       CASE approval_status WHEN 'approved' THEN 0 WHEN 'reviewed' THEN 1 ELSE 2 END,
+       datetime(updated_at) DESC
+     LIMIT ?
+  `).all(...params);
+
+  return rows.map((row) => ({
+    id: row.id,
+    marketArea: row.market_area || '',
+    propertyType: row.property_type || '',
+    dateRangeStart: row.date_range_start || null,
+    dateRangeEnd: row.date_range_end || null,
+    variableAnalyzed: row.variable_analyzed,
+    supportMethod: row.support_method,
+    sampleSize: row.sample_size ?? null,
+    conclusion: row.conclusion || '',
+    confidence: row.confidence || 'medium',
+    narrativeSummary: row.narrative_summary || '',
+    linkedAssignments: parseJSON(row.linked_assignments_json, []),
+    linkedCompSets: parseJSON(row.linked_comp_sets_json, []),
+    creator: row.creator || '',
+    reviewer: row.reviewer || '',
+    approvalStatus: row.approval_status || 'draft',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+}

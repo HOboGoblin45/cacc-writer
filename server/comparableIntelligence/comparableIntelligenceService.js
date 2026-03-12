@@ -19,6 +19,8 @@ import {
   updateAdjustmentSupportDecision,
   replaceAdjustmentRecommendations,
   replaceCompBurdenMetrics,
+  upsertPairedSalesLibraryRecord,
+  listPairedSalesLibraryRecords,
   markComparableCandidatesInactive,
   recordComparableAcceptanceEvent,
   recordComparableRejectionEvent,
@@ -499,6 +501,23 @@ function cleanObject(value = {}) {
   );
 }
 
+function normalizeAddressKey(value) {
+  return normalizeText(value)
+    .replace(/\bstreet\b/g, 'st')
+    .replace(/\bavenue\b/g, 'ave')
+    .replace(/\broad\b/g, 'rd')
+    .replace(/\bdrive\b/g, 'dr');
+}
+
+function valuesDiffer(left, right) {
+  const aNum = asNumber(left);
+  const bNum = asNumber(right);
+  if (aNum != null && bNum != null) {
+    return Math.abs(aNum - bNum) > 0.01;
+  }
+  return normalizeText(left) !== normalizeText(right);
+}
+
 function scoreStrength(score) {
   if (score >= 0.85) return 'high';
   if (score >= 0.65) return 'medium';
@@ -712,6 +731,196 @@ function buildAdjustmentRecommendation(config, values, candidateRecord, subject)
   };
 }
 
+function buildLibraryMatches({
+  caseId,
+  category,
+  marketArea,
+  propertyType,
+}) {
+  const records = listPairedSalesLibraryRecords({
+    variableAnalyzed: category,
+    marketArea,
+    propertyType,
+    approvalStatus: 'approved',
+    limit: 5,
+  });
+
+  return records
+    .filter((record) => !Array.isArray(record.linkedAssignments) || !record.linkedAssignments.includes(caseId))
+    .slice(0, 3)
+    .map((record) => ({
+      id: record.id,
+      supportMethod: record.supportMethod,
+      conclusion: record.conclusion,
+      confidence: record.confidence,
+      narrativeSummary: record.narrativeSummary,
+      sampleSize: record.sampleSize,
+      marketArea: record.marketArea,
+      propertyType: record.propertyType,
+    }));
+}
+
+function syncPairedSalesLibraryRecords(caseId, subject, acceptedSlots = []) {
+  let approvedRecordCount = 0;
+
+  for (const slot of acceptedSlots) {
+    for (const record of slot.adjustmentSupport || []) {
+      if (!['accepted', 'modified'].includes(record.decisionStatus)) continue;
+      const selectedAmount = selectedAmountForRecord(record);
+      const conclusion = selectedAmount
+        ? `${record.label || record.adjustmentCategory}: ${selectedAmount > 0 ? '+' : ''}$${Math.abs(selectedAmount).toLocaleString()}`
+        : `${record.label || record.adjustmentCategory}: no adjustment warranted`;
+
+      upsertPairedSalesLibraryRecord({
+        id: `${caseId}:${slot.gridSlot}:${record.adjustmentCategory}`,
+        marketArea: subject.marketArea || '',
+        propertyType: subject.propertyType || '',
+        dateRangeStart: subject.effectiveDate || null,
+        dateRangeEnd: subject.effectiveDate || null,
+        variableAnalyzed: record.adjustmentCategory,
+        supportMethod: record.supportType || 'appraiser_judgment_with_explanation',
+        sampleSize: 1,
+        conclusion,
+        confidence: record.supportStrength || 'medium',
+        narrativeSummary: record.rationaleNote || '',
+        linkedAssignments: [caseId],
+        linkedCompSets: [slot.candidateId],
+        creator: 'appraiser',
+        reviewer: 'appraiser',
+        approvalStatus: 'approved',
+      });
+      approvedRecordCount++;
+    }
+  }
+
+  const allRelevant = ADJUSTMENT_CATEGORY_CONFIG.map((config) => config.category);
+  const scoped = allRelevant.flatMap((category) => listPairedSalesLibraryRecords({
+    variableAnalyzed: category,
+    marketArea: subject.marketArea || '',
+    propertyType: subject.propertyType || '',
+    approvalStatus: 'approved',
+    limit: 50,
+  }));
+  const uniqueScoped = new Map(scoped.map((record) => [record.id, record]));
+
+  return {
+    approvedRecordCount,
+    scopedRecordCount: uniqueScoped.size,
+  };
+}
+
+function buildComparableContradictions({ projection, acceptedSlots = [], rankedCandidates = [] }) {
+  const contradictions = [];
+  const duplicateGroups = new Map();
+
+  for (const candidate of rankedCandidates) {
+    const addressKey = normalizeAddressKey(candidate.candidate?.address);
+    if (!addressKey) continue;
+    if (!duplicateGroups.has(addressKey)) duplicateGroups.set(addressKey, []);
+    duplicateGroups.get(addressKey).push(candidate);
+  }
+
+  const duplicateConflicts = new Map();
+  for (const [addressKey, group] of duplicateGroups.entries()) {
+    if (group.length < 2) continue;
+    const first = group[0].candidate || {};
+    const hasConflict = group.slice(1).some((candidate) => {
+      const current = candidate.candidate || {};
+      return valuesDiffer(first.salePrice, current.salePrice)
+        || valuesDiffer(first.saleDate, current.saleDate)
+        || valuesDiffer(first.gla, current.gla)
+        || valuesDiffer(first.condition, current.condition);
+    });
+    if (hasConflict) duplicateConflicts.set(addressKey, group.map((candidate) => candidate.id));
+  }
+
+  const gridRows = getNestedValue(projection.facts || {}, 'workspace1004.salesComparison.grid')?.value || [];
+  const rowIndex = buildGridRowIndex(gridRows);
+
+  for (const slot of acceptedSlots) {
+    const slotContradictions = [];
+    const candidate = rankedCandidates.find((entry) => entry.id === slot.candidateId);
+    const candidateData = candidate?.candidate || {};
+    const preview = candidate?.gridPreview || {};
+    const addressKey = normalizeAddressKey(candidateData.address);
+
+    const rowPairs = [
+      { feature: 'Address', code: 'address_mismatch' },
+      { feature: 'Sale Price', code: 'sale_price_mismatch' },
+      { feature: 'Date of Sale / Time', code: 'sale_date_mismatch' },
+      { feature: 'Gross Living Area', code: 'gla_mismatch' },
+      { feature: 'Condition', code: 'condition_mismatch' },
+    ];
+
+    for (const pair of rowPairs) {
+      const rowValue = asText(rowIndex.get(pair.feature)?.[slot.gridSlot]);
+      const previewValue = asText(preview[pair.feature]);
+      if (rowValue && previewValue && valuesDiffer(rowValue, previewValue)) {
+        slotContradictions.push({
+          code: pair.code,
+          severity: 'high',
+          message: `${slot.gridSlotLabel} ${pair.feature} differs from the accepted candidate source.`,
+          expectedValue: previewValue,
+          actualValue: rowValue,
+        });
+      }
+    }
+
+    if (candidate?.sourceStrength === 'low') {
+      slotContradictions.push({
+        code: 'weak_verification_source',
+        severity: 'medium',
+        message: `${slot.gridSlotLabel} relies on weak verification data.`,
+      });
+    }
+
+    const concessionsGrid = asText(rowIndex.get('Sale or Financing Concessions')?.[slot.gridSlot]);
+    if (concessionsGrid && !asText(candidateData.concessions)) {
+      slotContradictions.push({
+        code: 'unsupported_concessions',
+        severity: 'medium',
+        message: `${slot.gridSlotLabel} concessions are populated in the grid without matching candidate support.`,
+        actualValue: concessionsGrid,
+      });
+    }
+
+    if ((slot.burdenMetrics?.grossAdjustmentPercent || 0) > 25) {
+      slotContradictions.push({
+        code: 'outlier_adjustment_burden',
+        severity: 'high',
+        message: `${slot.gridSlotLabel} gross adjustment burden exceeds 25%.`,
+        actualValue: String(slot.burdenMetrics.grossAdjustmentPercent),
+      });
+    }
+
+    if ((slot.burdenMetrics?.overallStabilityScore || 0) < 0.55) {
+      slotContradictions.push({
+        code: 'low_stability_score',
+        severity: 'medium',
+        message: `${slot.gridSlotLabel} stability score is low and may weaken reconciliation weight.`,
+        actualValue: String(slot.burdenMetrics.overallStabilityScore),
+      });
+    }
+
+    if (addressKey && duplicateConflicts.has(addressKey)) {
+      slotContradictions.push({
+        code: 'duplicate_source_conflict',
+        severity: 'high',
+        message: `${slot.gridSlotLabel} shares an address with conflicting candidate records.`,
+      });
+    }
+
+    slot.contradictions = slotContradictions;
+    contradictions.push(...slotContradictions.map((entry) => ({
+      ...entry,
+      gridSlot: slot.gridSlot,
+      candidateId: slot.candidateId,
+    })));
+  }
+
+  return contradictions;
+}
+
 function latestAcceptanceEventByGridSlot(caseId) {
   const latest = new Map();
   for (const event of listComparableAcceptanceEvents(caseId)) {
@@ -737,6 +946,12 @@ function mergeAdjustmentSupportRecords({
   for (const config of ADJUSTMENT_CATEGORY_CONFIG) {
     const values = deriveSupportValues(config, rowIndex, gridSlot, subject, candidateRecord.candidate || {});
     const derived = buildAdjustmentRecommendation(config, values, candidateRecord, subject);
+    const libraryMatches = buildLibraryMatches({
+      caseId,
+      category: config.category,
+      marketArea: subject.marketArea,
+      propertyType: subject.propertyType,
+    });
     const existing = existingByCategory.get(config.category);
     const preserveDecision = existing && existing.compCandidateId === candidateRecord.id;
     const record = {
@@ -753,13 +968,23 @@ function mergeAdjustmentSupportRecords({
       suggestedRange: derived.suggestedRange,
       finalAmount: preserveDecision ? (existing.finalAmount ?? null) : null,
       finalRange: preserveDecision ? (existing.finalRange || {}) : {},
-      supportEvidence: derived.supportEvidence,
+      supportEvidence: [
+        ...derived.supportEvidence,
+        ...libraryMatches.map((match) => cleanObject({
+          kind: 'paired_sales_library_match',
+          libraryRecordId: match.id,
+          supportMethod: match.supportMethod,
+          conclusion: match.conclusion,
+          confidence: match.confidence,
+        })),
+      ],
       rationaleNote: preserveDecision ? (existing.rationaleNote || derived.recommendation.why) : derived.recommendation.why,
       decisionStatus: preserveDecision ? (existing.decisionStatus || 'pending') : 'pending',
       recommendationSource: 'heuristic_seed',
       gridSlotLabel,
       label: config.label,
       requiresAdjustment: derived.requiresAdjustment,
+      libraryMatches,
     };
     records.push(record);
     recommendations.push({
@@ -881,8 +1106,18 @@ function buildAcceptedSlotSupport(caseId, projection, rankedCandidates, subject)
   replaceAdjustmentSupportRecords(caseId, persistedRecords);
   replaceAdjustmentRecommendations(caseId, persistedRecommendations);
   replaceCompBurdenMetrics(caseId, persistedMetrics);
+  const contradictions = buildComparableContradictions({
+    projection,
+    acceptedSlots,
+    rankedCandidates,
+  });
+  const librarySummary = syncPairedSalesLibraryRecords(caseId, subject, acceptedSlots);
 
-  return acceptedSlots;
+  return {
+    acceptedSlots,
+    contradictions,
+    librarySummary,
+  };
 }
 
 function mergeWeights(meta = {}) {
@@ -985,7 +1220,10 @@ export function buildComparableIntelligence(caseId) {
     };
   }).sort((left, right) => right.relevanceScore - left.relevanceScore);
 
-  const acceptedSlots = buildAcceptedSlotSupport(caseId, projection, rankedCandidates, subject);
+  const supportBundle = buildAcceptedSlotSupport(caseId, projection, rankedCandidates, subject);
+  const acceptedSlots = supportBundle.acceptedSlots;
+  const contradictions = supportBundle.contradictions;
+  const librarySummary = supportBundle.librarySummary;
 
   return {
     caseId,
@@ -998,9 +1236,12 @@ export function buildComparableIntelligence(caseId) {
       rejectedCount: rankedCandidates.filter((candidate) => candidate.reviewStatus === 'rejected').length,
       acceptedSlotCount: acceptedSlots.length,
       adjustmentSupportCount: acceptedSlots.reduce((sum, slot) => sum + slot.adjustmentSupport.length, 0),
+      contradictionCount: contradictions.length,
     },
     candidates: rankedCandidates,
     acceptedSlots,
+    contradictions,
+    librarySummary,
   };
 }
 
