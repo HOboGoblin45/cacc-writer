@@ -824,6 +824,39 @@ await test('POST /api/cases/:caseId/insert-all rejects invalid payload type', as
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+// -- 7c. QC API ---------------------------------------------------------------
+console.log('\n7c. QC API');
+
+await test('POST /api/qc/run rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/run', {
+    caseId: 12345,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/qc/findings/:findingId/dismiss rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/dismiss', {
+    note: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/qc/findings/:findingId/resolve rejects invalid note payload type', async () => {
+  const { status, body } = await api('POST', '/api/qc/findings/smoke-finding-id/resolve', {
+    note: false,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
