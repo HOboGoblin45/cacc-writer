@@ -386,6 +386,62 @@ export function evaluateHardComplianceRules({
     }));
   }
 
+  if (flags.condo) {
+    const passed = hasActiveSection(sectionRequirements, 'condo_project_analysis');
+    checks.push(buildCheck({
+      ruleId: 'rule.condo.project_analysis',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'condo_project_section_present' : 'condo_project_section_missing',
+      message: passed
+        ? 'Condo project analysis section is present.'
+        : 'Condo assignment detected, but condo project analysis section is missing.',
+      evidence: { expectedSectionId: 'condo_project_analysis' },
+    }));
+  }
+
+  if (flags.manufactured_home) {
+    const passed = hasActiveSection(sectionRequirements, 'manufactured_home_comments');
+    checks.push(buildCheck({
+      ruleId: 'rule.manufactured_home.comments',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'manufactured_home_section_present' : 'manufactured_home_section_missing',
+      message: passed
+        ? 'Manufactured home commentary section is present.'
+        : 'Manufactured-home assignment requires manufactured home commentary section.',
+      evidence: { expectedSectionId: 'manufactured_home_comments' },
+    }));
+  }
+
+  if (flags.mixed_use) {
+    const passed = hasActiveSection(sectionRequirements, 'mixed_use_comment');
+    checks.push(buildCheck({
+      ruleId: 'rule.mixed_use.commentary',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'mixed_use_comment_present' : 'mixed_use_comment_missing',
+      message: passed
+        ? 'Mixed-use commentary section is present.'
+        : 'Mixed-use assignment detected, but mixed-use commentary section is missing.',
+      evidence: { expectedSectionId: 'mixed_use_comment' },
+    }));
+  }
+
+  if (flags.adu_present) {
+    const passed = hasActiveSection(sectionRequirements, 'adu_comment');
+    checks.push(buildCheck({
+      ruleId: 'rule.adu.commentary',
+      severity: 'warning',
+      passed,
+      reasonCode: passed ? 'adu_comment_present' : 'adu_comment_missing',
+      message: passed
+        ? 'ADU commentary section is present.'
+        : 'ADU indicator detected, but ADU commentary section is missing.',
+      evidence: { expectedSectionId: 'adu_comment' },
+    }));
+  }
+
   if (subjectState === 'IL' || subjectState === 'ILLINOIS') {
     const county = asText(context?.subject?.county);
     const passed = Boolean(county);
