@@ -208,6 +208,11 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
   return (
     `<div class="workspace-assistant-section">` +
       `<h4>Adjustment Support</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Library Records:</strong> ${esc(String(intelligence?.librarySummary?.scopedRecordCount || 0))}</div>` +
+        `<div><strong>Current Case Contributions:</strong> ${esc(String(intelligence?.librarySummary?.approvedRecordCount || 0))}</div>` +
+        `<div><strong>Comparable Flags:</strong> ${esc(String((intelligence?.contradictions || []).length))}</div>` +
+      `</div>` +
       acceptedSlots.map((slot) => (
         `<div class="workspace-history-item">` +
           `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
@@ -227,6 +232,13 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
             `<div><strong>Date relevance:</strong> ${esc(workspaceComparableScore(slot.burdenMetrics?.dateRelevanceScore || 0))}</div>` +
             `<div><strong>Location confidence:</strong> ${esc(workspaceComparableScore(slot.burdenMetrics?.locationConfidenceScore || 0))}</div>` +
           `</div>` +
+          ((slot.contradictions || []).length
+            ? `<div class="workspace-meta-list">` +
+                (slot.contradictions || []).map((flag) =>
+                  `<div class="workspace-qc-item"><strong>${esc(flag.code)}</strong>: ${esc(flag.message)}</div>`
+                ).join('') +
+              `</div>`
+            : '') +
           (slot.adjustmentSupport || []).map((record) => (
             `<div class="workspace-qc-item" style="border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02);">` +
               `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
@@ -243,6 +255,7 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
                 `<div><strong>Support:</strong> ${esc(workspaceSupportTypeLabel(record.supportType))}</div>` +
                 `<div><strong>Adjustment:</strong> ${esc(workspaceAdjustmentAmountLabel(record))}</div>` +
                 `<div><strong>Rationale:</strong> ${esc(record.rationaleNote || 'No rationale saved.')}</div>` +
+                `${(record.libraryMatches || []).length ? `<div><strong>Library:</strong> ${esc(record.libraryMatches.map((match) => `${match.supportMethod} (${match.confidence})`).join('; '))}</div>` : ''}` +
               `</div>` +
               `<div class="btnrow">` +
                 `<button class="sec sm" onclick="workspaceSaveAdjustmentSupportDecision('${slot.gridSlot}', '${record.adjustmentCategory}', 'accepted')">Accept</button>` +
@@ -347,6 +360,7 @@ function workspaceRenderComparablePanel() {
         `<div><strong>Held:</strong> ${esc(String(summary.heldCount || 0))}</div>` +
         `<div><strong>Rejected:</strong> ${esc(String(summary.rejectedCount || 0))}</div>` +
         `<div><strong>Loaded Slots:</strong> ${esc(String(summary.acceptedSlotCount || 0))}</div>` +
+        `<div><strong>Comp Flags:</strong> ${esc(String(summary.contradictionCount || 0))}</div>` +
       `</div>` +
       `${candidateCards || '<div class="hint">No candidate comparables are available yet.</div>'}` +
     `</div>`

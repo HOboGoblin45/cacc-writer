@@ -377,6 +377,106 @@ await test('saveAdjustmentSupportDecision persists modified support decisions ac
   assert.equal(rebuilt.acceptedSlots[0].burdenMetrics.burdenByCategory.gla, 5400);
 });
 
+await test('paired sales library supports later similar assignments', () => {
+  const first = createFilesystemCase({});
+
+  addCompDocument(first.caseId, 'comp_1', {
+    'comp.address': '510 Library Seed Rd',
+    'comp.city': 'Bloomington',
+    'comp.state': 'IL',
+    'comp.saleDate': '2025-09-01',
+    'comp.salePrice': '250000',
+    'comp.style': 'Ranch',
+    'comp.condition': 'C4',
+    'comp.gla': '1700',
+    'comp.bedrooms': '3',
+    'comp.bathrooms': '2',
+  });
+
+  const firstCandidateId = buildComparableIntelligence(first.caseId).candidates[0].id;
+  acceptComparableCandidate({
+    caseId: first.caseId,
+    candidateId: firstCandidateId,
+    gridSlot: 'comp1',
+  });
+  saveAdjustmentSupportDecision({
+    caseId: first.caseId,
+    gridSlot: 'comp1',
+    adjustmentCategory: 'gla',
+    decisionStatus: 'accepted',
+    rationaleNote: 'Backed by prior paired-sales review in this market.',
+    finalAmount: 4500,
+    supportType: 'paired_sales_support',
+  });
+
+  const second = createFilesystemCase({});
+  addCompDocument(second.caseId, 'comp_1', {
+    'comp.address': '511 Library Use Rd',
+    'comp.city': 'Bloomington',
+    'comp.state': 'IL',
+    'comp.saleDate': '2025-10-01',
+    'comp.salePrice': '252000',
+    'comp.style': 'Ranch',
+    'comp.condition': 'C4',
+    'comp.gla': '1710',
+    'comp.bedrooms': '3',
+    'comp.bathrooms': '2',
+  });
+
+  const secondCandidateId = buildComparableIntelligence(second.caseId).candidates[0].id;
+  acceptComparableCandidate({
+    caseId: second.caseId,
+    candidateId: secondCandidateId,
+    gridSlot: 'comp1',
+  });
+
+  const secondIntelligence = buildComparableIntelligence(second.caseId);
+  const glaRecord = secondIntelligence.acceptedSlots[0].adjustmentSupport.find((record) => record.adjustmentCategory === 'gla');
+
+  assert.ok(secondIntelligence.librarySummary.scopedRecordCount >= 1, 'expected scoped library records');
+  assert.ok(glaRecord.libraryMatches.length >= 1, 'expected a paired sales library match on gla');
+  assert.ok(glaRecord.libraryMatches.some((match) => match.supportMethod === 'paired_sales_support'));
+});
+
+await test('accepted comparable flags outlier burden contradictions', () => {
+  const { caseId } = createFilesystemCase({});
+
+  addCompDocument(caseId, 'comp_1', {
+    'comp.address': '612 Contradiction Way',
+    'comp.city': 'Bloomington',
+    'comp.state': 'IL',
+    'comp.saleDate': '2025-08-01',
+    'comp.salePrice': '200000',
+    'comp.style': 'Ranch',
+    'comp.condition': 'C4',
+    'comp.gla': '1500',
+    'comp.bedrooms': '3',
+    'comp.bathrooms': '2',
+  });
+
+  const candidateId = buildComparableIntelligence(caseId).candidates[0].id;
+  acceptComparableCandidate({
+    caseId,
+    candidateId,
+    gridSlot: 'comp1',
+  });
+  saveAdjustmentSupportDecision({
+    caseId,
+    gridSlot: 'comp1',
+    adjustmentCategory: 'gla',
+    decisionStatus: 'modified',
+    rationaleNote: 'Extreme override for burden test.',
+    finalAmount: 80000,
+    supportType: 'appraiser_judgment_with_explanation',
+  });
+
+  const rebuilt = buildComparableIntelligence(caseId);
+  const contradictionCodes = rebuilt.contradictions.map((entry) => entry.code);
+
+  assert.ok(contradictionCodes.includes('outlier_adjustment_burden'));
+  assert.ok(rebuilt.summary.contradictionCount >= 1);
+});
+
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
 if (failed) {
   for (const failure of failures) {
