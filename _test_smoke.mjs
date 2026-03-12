@@ -20,19 +20,24 @@
  */
 
 import { ensureServerRunning } from './tests/helpers/serverHarness.mjs';
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
 
 const smokeRunId = crypto.randomUUID().slice(0, 8);
+const smokeTmpRoot = path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}`);
+const smokeDbPath = path.join(smokeTmpRoot, 'cacc-smoke.db');
 process.env.CACC_QUEUE_STATE_FILE = process.env.CACC_QUEUE_STATE_FILE
-  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-queue_state.json`);
+  || path.join(smokeTmpRoot, 'queue_state.json');
 process.env.CACC_LOGS_DIR = process.env.CACC_LOGS_DIR
-  || path.join(os.tmpdir(), `cacc-smoke-${smokeRunId}-logs`);
+  || path.join(smokeTmpRoot, 'logs');
+process.env.CACC_DB_PATH = process.env.CACC_DB_PATH || smokeDbPath;
 process.env.CACC_DISABLE_FILE_LOGGER = process.env.CACC_DISABLE_FILE_LOGGER || '1';
 process.env.CACC_DISABLE_KB_WRITES = process.env.CACC_DISABLE_KB_WRITES || '1';
 
-const REQUESTED_BASE = process.env.TEST_BASE_URL || 'http://localhost:5178';
+const defaultSmokePort = 5600 + Math.floor(Math.random() * 2000);
+const REQUESTED_BASE = process.env.TEST_BASE_URL || `http://127.0.0.1:${defaultSmokePort}`;
 const AUTO_START = process.env.SMOKE_AUTO_START !== '0';
 const serverHarness = await ensureServerRunning({
   baseUrl: REQUESTED_BASE,
@@ -41,6 +46,39 @@ const serverHarness = await ensureServerRunning({
 });
 const BASE = serverHarness.baseUrl;
 const TIMEOUT_MS = 8000;
+
+function cleanupSmokeArtifacts() {
+  const targets = [
+    process.env.CACC_QUEUE_STATE_FILE,
+    process.env.CACC_DB_PATH,
+    process.env.CACC_DB_PATH ? `${process.env.CACC_DB_PATH}-wal` : null,
+    process.env.CACC_DB_PATH ? `${process.env.CACC_DB_PATH}-shm` : null,
+  ];
+
+  for (const target of targets) {
+    if (!target) continue;
+    try {
+      if (fs.existsSync(target)) fs.rmSync(target, { force: true });
+    } catch {
+      // best effort cleanup
+    }
+  }
+
+  const logsDir = process.env.CACC_LOGS_DIR;
+  if (logsDir) {
+    try {
+      if (fs.existsSync(logsDir)) fs.rmSync(logsDir, { recursive: true, force: true });
+    } catch {
+      // best effort cleanup
+    }
+  }
+
+  try {
+    if (fs.existsSync(smokeTmpRoot)) fs.rmSync(smokeTmpRoot, { recursive: true, force: true });
+  } catch {
+    // best effort cleanup
+  }
+}
 
 // ── Test runner ───────────────────────────────────────────────────────────────
 
@@ -366,10 +404,21 @@ await test('GET /api/cases/:caseId/ingest-jobs/:jobId returns ingest job details
 
 await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects non-failed step retry', async () => {
   assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
-  const { status } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
     step: 'extract',
   });
   assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INGEST_STEP_NOT_FAILED', 'code should be INGEST_STEP_NOT_FAILED');
+});
+
+await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry returns coded 404 for unknown job', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/ingest_missing/retry`, {
+    step: 'extract',
+  });
+  assert(status === 404, `Expected 404, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INGEST_JOB_NOT_FOUND', 'code should be INGEST_JOB_NOT_FOUND');
 });
 console.log('\n5. Feedback & KB');
 
@@ -381,6 +430,36 @@ await test('GET /api/cases/:caseId/fact-conflicts returns conflict summary', asy
   assert(Array.isArray(body.conflicts), 'conflicts should be an array');
 });
 
+await test('GET /api/cases/:caseId/fact-review-queue returns decision queue', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/fact-review-queue`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/fact-review-queue');
+  assert(typeof body.queue === 'object', 'queue should be an object');
+  assert(typeof body.queue.summary === 'object', 'queue.summary should be an object');
+  assert(Array.isArray(body.queue.pendingFactGroups), 'queue.pendingFactGroups should be an array');
+});
+
+await test('POST /api/cases/:caseId/fact-review-queue/resolve accepts manual decision', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/fact-review-queue/resolve`, {
+    factPath: 'subject.address',
+    selectedValue: '123 Test St',
+    sourceType: 'manual',
+    note: 'Smoke test manual confirmation',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'POST /api/cases/:caseId/fact-review-queue/resolve');
+  assert(body.result?.factPath === 'subject.address', 'result.factPath should match request');
+  assert(body.result?.sourceType === 'manual', 'sourceType should be manual');
+});
+
+await test('POST /api/cases/:caseId/fact-review-queue/resolve rejects missing selectedValue', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/fact-review-queue/resolve`, {
+    factPath: 'subject.address',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+});
+
 await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/pre-draft-check`);
   assert(status === 200, `Expected 200, got ${status}`);
@@ -388,6 +467,8 @@ await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async 
   assert(typeof body.gate === 'object', 'gate should be an object');
   assert(typeof body.gate.ok === 'boolean', 'gate.ok should be boolean');
   assert(Array.isArray(body.gate.blockers), 'gate.blockers should be an array');
+  assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be a string');
+  assert(typeof body.decisionQueueSummary === 'object', 'decisionQueueSummary should be an object');
 });
 
 await test('GET /api/cases/:caseId/intelligence/requirements returns deterministic section matrix', async () => {
@@ -415,6 +496,8 @@ await test('GET /api/intelligence/benchmarks/phase-c returns benchmark snapshot'
   assert(typeof body.cached === 'boolean', 'cached should be boolean');
   assert(typeof body.results === 'object', 'results should be an object');
   assert(typeof body.results.summary === 'object', 'results.summary should be an object');
+  assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
+  assert(typeof body.qualityGate.ok === 'boolean', 'qualityGate.ok should be boolean');
 });
 
 await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run', async () => {
@@ -424,6 +507,7 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
   assert(body.persisted === false, 'persisted should be false when persist=false');
   assert(typeof body.results?.summary?.extraction === 'object', 'extraction summary should be present');
   assert(typeof body.results?.summary?.gate === 'object', 'gate summary should be present');
+  assert(typeof body.qualityGate === 'object', 'qualityGate should be an object');
 });
 
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
@@ -431,6 +515,8 @@ await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate
   assert(status === 409, `Expected 409, got ${status}`);
   assert(body.ok === false, 'ok should be false');
   assert(body.code === 'PRE_DRAFT_GATE_BLOCKED', 'should return pre-draft gate code');
+  assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be returned when gate blocks');
+  assert(typeof body.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned when gate blocks');
 });
 
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {
@@ -523,7 +609,70 @@ await test('GET /api/agents/status returns agent health', async () => {
   assert(typeof body.rq === 'boolean', 'rq should be boolean');
 });
 
-// ── 8. AI Endpoints (error handling when no key) ──────────────────────────────
+// -- 7b. Insertion Gate --------------------------------------------------------
+console.log('\n7b. Insertion Gate');
+
+await test('POST /api/insertion/prepare validates required params', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {});
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(typeof body?.error === 'string', 'error should be a string');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/insertion/prepare rejects invalid config shape', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {
+    caseId: testCaseId,
+    formType: '1004',
+    config: { maxRetries: 'not-a-number' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(Array.isArray(body?.issues), 'issues should be an array');
+});
+
+await test('POST /api/insertion/prepare blocks generation insertion when fresh QC is missing', async () => {
+  const { status, body } = await api('POST', '/api/insertion/prepare', {
+    caseId: testCaseId,
+    formType: '1004',
+    generationRunId: `smoke-gen-${Date.now()}`,
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(typeof body?.run?.id === 'string', 'run.id should be present');
+  assert(Array.isArray(body?.items), 'items should be an array');
+  assert(typeof body?.qcGate === 'object', 'qcGate should be an object');
+  assert(body.qcGate.passed === false, 'qcGate should fail when fresh QC is missing');
+  assert(body.qcGate.recommendation === 'blocked', 'recommendation should be blocked');
+  assert(body.qcGate.reason === 'missing_fresh_generation_qc', 'reason should indicate missing fresh QC');
+});
+
+await test('POST /api/insertion/run does not bypass missing fresh QC with skipQcBlockers', async () => {
+  const { status, body } = await api('POST', '/api/insertion/run', {
+    caseId: testCaseId,
+    formType: '1004',
+    generationRunId: `smoke-gen-${Date.now()}-run`,
+    config: { skipQcBlockers: true, dryRun: true },
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.blocked === true, 'blocked should be true');
+  assert(body?.overrideAllowed === false, 'overrideAllowed should be false');
+  assert(body?.qcGate?.reason === 'missing_fresh_generation_qc', 'qcGate.reason should match');
+});
+
+await test('POST /api/insertion/execute/:runId returns coded 404 for unknown run', async () => {
+  const { status, body } = await api('POST', '/api/insertion/execute/irun_missing');
+  assert(status === 404, `Expected 404, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INSERTION_RUN_NOT_FOUND', 'code should be INSERTION_RUN_NOT_FOUND');
+});
+
+await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item', async () => {
+  const { status, body } = await api('POST', '/api/insertion/retry/iitem_missing');
+  assert(status === 404, `Expected 404, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
@@ -624,6 +773,9 @@ if (failures.length) {
 console.log('══════════════════════════════════════════\n');
 
 await serverHarness.stop();
+cleanupSmokeArtifacts();
 process.exit(failed > 0 ? 1 : 0);
+
+
 
 

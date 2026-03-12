@@ -131,6 +131,7 @@ function readCanonicalFactCandidates(facts = {}) {
 function readExtractedFactCandidates(caseId) {
   const rows = getDb().prepare(`
     SELECT
+      ef.id AS fact_id,
       ef.fact_path,
       ef.fact_value,
       ef.confidence,
@@ -154,6 +155,7 @@ function readExtractedFactCandidates(caseId) {
 
     if (!byPath.has(factPath)) byPath.set(factPath, []);
     byPath.get(factPath).push({
+      factId: row.fact_id || null,
       sourceType: 'extracted',
       sourceId: row.document_id || null,
       docType: row.doc_type || null,
@@ -200,6 +202,7 @@ function summarizeValueBuckets(factPath, candidates) {
     const bucket = buckets.get(normalizedValue);
     bucket.maxConfidenceRank = Math.max(bucket.maxConfidenceRank, confidenceRank(candidate.confidence));
     bucket.sources.push({
+      factId: candidate.factId || null,
       sourceType: candidate.sourceType,
       sourceId: candidate.sourceId,
       docType: candidate.docType,

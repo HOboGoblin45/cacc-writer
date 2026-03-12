@@ -1,35 +1,25 @@
-/**
+﻿/**
  * server/api/insertionRoutes.js
- * -------------------------------
+ * --------------------------------
  * Phase 9: REST endpoints for Destination Automation.
- *
- * Routes:
- *   POST   /api/insertion/prepare          — Prepare an insertion run (preview + create)
- *   POST   /api/insertion/execute/:runId    — Execute a prepared insertion run
- *   POST   /api/insertion/run               — Prepare + execute in one call
- *   GET    /api/insertion/runs/:caseId      — List insertion runs for a case
- *   GET    /api/insertion/run/:runId        — Get insertion run details
- *   GET    /api/insertion/run/:runId/items  — Get items for a run
- *   POST   /api/insertion/run/:runId/cancel — Cancel a running insertion
- *   POST   /api/insertion/retry/:itemId     — Retry a single failed item
- *
- *   GET    /api/insertion/preview/:caseId   — Preview mapping for a case
- *   GET    /api/insertion/mappings/:formType — Get all mappings for a form type
- *
- *   GET    /api/insertion/profiles          — List destination profiles
- *   GET    /api/insertion/profile/:id       — Get a destination profile
- *   PUT    /api/insertion/profile/:id       — Update a destination profile
- *
- *   GET    /api/insertion/field-history/:caseId/:fieldId — Get insertion history for a field
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
 import {
-  getInsertionRun, listInsertionRuns, getInsertionRunItems,
-  updateInsertionRun, updateInsertionRunItem, bulkUpdateItemStatus,
-  listDestinationProfiles, getDestinationProfile, updateDestinationProfile,
-  getItemHistoryForField, getLatestInsertionRun,
+  getInsertionRun,
+  getInsertionRunItem,
+  listInsertionRuns,
+  getInsertionRunItems,
+  updateInsertionRun,
+  updateInsertionRunItem,
+  bulkUpdateItemStatus,
+  listDestinationProfiles,
+  getDestinationProfile,
+  updateDestinationProfile,
+  getItemHistoryForField,
+  getLatestInsertionRun,
 } from '../insertion/insertionRepo.js';
 import { prepareInsertionRun, executeInsertionRun } from '../insertion/insertionRunEngine.js';
 import { resolveAllMappings, buildMappingPreview, inferTargetSoftware } from '../insertion/destinationMapper.js';
@@ -37,15 +27,54 @@ import { getDb } from '../db/database.js';
 
 const router = Router();
 
-// ── Prepare Insertion Run ─────────────────────────────────────────────────────
+const insertionConfigSchema = z.object({
+  dryRun: z.boolean().optional(),
+  verifyAfter: z.boolean().optional(),
+  skipQcBlockers: z.boolean().optional(),
+  requireQcRun: z.boolean().optional(),
+  requireFreshQcForGeneration: z.boolean().optional(),
+  forceReinsert: z.boolean().optional(),
+  maxRetries: z.number().int().min(0).max(10).optional(),
+  defaultFallback: z.enum(['retry', 'clipboard', 'manual_prompt', 'retry_then_clipboard']).optional(),
+  fieldIds: z.array(z.string().min(1)).max(200).optional(),
+}).catchall(z.unknown());
+
+const prepareInsertionSchema = z.object({
+  caseId: z.string().trim().min(1, 'caseId is required'),
+  formType: z.string().trim().min(1, 'formType is required'),
+  targetSoftware: z.string().trim().min(1).optional(),
+  generationRunId: z.string().trim().min(1).optional(),
+  config: insertionConfigSchema.optional(),
+});
+
+const runInsertionSchema = prepareInsertionSchema;
+
+function sendError(res, status, code, error, extra = {}) {
+  res.status(status).json({
+    ok: false,
+    code,
+    error,
+    ...extra,
+  });
+  return null;
+}
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  return sendError(res, 400, 'INVALID_PAYLOAD', 'Invalid request payload', {
+    issues: parsed.error.issues.map(issue => ({
+      path: issue.path.join('.'),
+      message: issue.message,
+    })),
+  });
+}
 
 router.post('/insertion/prepare', (req, res) => {
   try {
-    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
-
-    if (!caseId || !formType) {
-      return res.status(400).json({ error: 'caseId and formType are required' });
-    }
+    const body = parsePayload(prepareInsertionSchema, req.body || {}, res);
+    if (!body) return;
+    const { caseId, formType, targetSoftware, generationRunId, config } = body;
 
     const result = prepareInsertionRun({
       caseId,
@@ -59,16 +88,16 @@ router.post('/insertion/prepare', (req, res) => {
       run: result.run,
       items: result.items,
       qcGate: result.qcGate,
+      blocked: !result.qcGate.passed,
+      overrideAllowed: result.qcGate.overrideAllowed !== false,
       profile: result.profile,
       totalFields: result.items.length,
     });
   } catch (err) {
     log.error('insertion:prepare', { error: err.message });
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_PREPARE_FAILED', err.message);
   }
 });
-
-// ── Execute Insertion Run ─────────────────────────────────────────────────────
 
 router.post('/insertion/execute/:runId', async (req, res) => {
   try {
@@ -76,20 +105,20 @@ router.post('/insertion/execute/:runId', async (req, res) => {
     const run = getInsertionRun(runId);
 
     if (!run) {
-      return res.status(404).json({ error: 'Insertion run not found' });
+      return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Insertion run not found');
     }
 
     if (run.status !== 'queued' && run.status !== 'preparing') {
-      return res.status(400).json({
-        error: `Cannot execute run in status '${run.status}' — must be 'queued'`,
-      });
+      return sendError(
+        res,
+        400,
+        'INSERTION_RUN_INVALID_STATUS',
+        `Cannot execute run in status '${run.status}' - must be 'queued' or 'preparing'`,
+      );
     }
 
-    // Execute asynchronously — return immediately with run ID
-    // Client polls for status
     res.json({ runId, status: 'started', message: 'Insertion run started' });
 
-    // Execute in background
     executeInsertionRun(runId).catch(err => {
       log.error('insertion:run-failed', { runId, error: err.message });
       updateInsertionRun(runId, {
@@ -100,19 +129,15 @@ router.post('/insertion/execute/:runId', async (req, res) => {
     });
   } catch (err) {
     log.error('insertion:execute', { error: err.message });
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_EXECUTE_FAILED', err.message);
   }
 });
 
-// ── Prepare + Execute in One Call ─────────────────────────────────────────────
-
 router.post('/insertion/run', async (req, res) => {
   try {
-    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
-
-    if (!caseId || !formType) {
-      return res.status(400).json({ error: 'caseId and formType are required' });
-    }
+    const body = parsePayload(runInsertionSchema, req.body || {}, res);
+    if (!body) return;
+    const { caseId, formType, targetSoftware, generationRunId, config } = body;
 
     const prepared = prepareInsertionRun({
       caseId,
@@ -122,17 +147,20 @@ router.post('/insertion/run', async (req, res) => {
       config: config || {},
     });
 
-    // If QC gate blocked and not overridden
-    if (!prepared.qcGate.passed && !(config || {}).skipQcBlockers) {
+    const canBypassQcGate = !!(config || {}).skipQcBlockers && prepared.qcGate.overrideAllowed !== false;
+
+    if (!prepared.qcGate.passed && !canBypassQcGate) {
       return res.json({
         run: prepared.run,
         qcGate: prepared.qcGate,
         blocked: true,
-        message: 'QC gate blocked insertion — resolve blockers or set skipQcBlockers',
+        overrideAllowed: prepared.qcGate.overrideAllowed !== false,
+        message: prepared.qcGate.overrideAllowed === false
+          ? 'QC gate blocked insertion - run QC for this generation before insertion'
+          : 'QC gate blocked insertion - review qcGate details or set skipQcBlockers',
       });
     }
 
-    // Return immediately, execute in background
     res.json({
       runId: prepared.run.id,
       status: 'started',
@@ -150,58 +178,55 @@ router.post('/insertion/run', async (req, res) => {
     });
   } catch (err) {
     log.error('insertion:run', { error: err.message });
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_EXECUTE_FAILED', err.message);
   }
 });
-
-// ── List Runs ─────────────────────────────────────────────────────────────────
 
 router.get('/insertion/runs/:caseId', (req, res) => {
   try {
     const { caseId } = req.params;
-    const limit = parseInt(req.query.limit) || 20;
+    const parsedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 20;
     const runs = listInsertionRuns(caseId, { limit });
     res.json({ runs });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_LIST_RUNS_FAILED', err.message);
   }
 });
-
-// ── Get Run Details ───────────────────────────────────────────────────────────
 
 router.get('/insertion/run/:runId', (req, res) => {
   try {
     const run = getInsertionRun(req.params.runId);
-    if (!run) return res.status(404).json({ error: 'Run not found' });
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
     res.json({ run });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_GET_RUN_FAILED', err.message);
   }
 });
-
-// ── Get Run Items ─────────────────────────────────────────────────────────────
 
 router.get('/insertion/run/:runId/items', (req, res) => {
   try {
     const items = getInsertionRunItems(req.params.runId);
     res.json({ items });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_GET_ITEMS_FAILED', err.message);
   }
 });
-
-// ── Cancel Run ────────────────────────────────────────────────────────────────
 
 router.post('/insertion/run/:runId/cancel', (req, res) => {
   try {
     const run = getInsertionRun(req.params.runId);
-    if (!run) return res.status(404).json({ error: 'Run not found' });
+    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
 
     if (run.status === 'completed' || run.status === 'failed' || run.status === 'cancelled') {
-      return res.status(400).json({ error: `Cannot cancel run in status '${run.status}'` });
+      return sendError(
+        res,
+        400,
+        'INSERTION_RUN_INVALID_STATUS',
+        `Cannot cancel run in status '${run.status}'`,
+      );
     }
 
-    // Cancel remaining queued items
     const cancelled = bulkUpdateItemStatus(run.id, 'queued', 'skipped');
 
     updateInsertionRun(run.id, {
@@ -211,17 +236,27 @@ router.post('/insertion/run/:runId/cancel', (req, res) => {
 
     res.json({ message: `Run cancelled. ${cancelled} queued items skipped.` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_CANCEL_FAILED', err.message);
   }
 });
-
-// ── Retry Single Item ─────────────────────────────────────────────────────────
 
 router.post('/insertion/retry/:itemId', async (req, res) => {
   try {
     const { itemId } = req.params;
-    // For now, reset the item status to queued and re-execute
-    // Full retry logic would re-run processItem
+    const item = getInsertionRunItem(itemId);
+    if (!item) {
+      return sendError(res, 404, 'INSERTION_ITEM_NOT_FOUND', 'Insertion run item not found');
+    }
+
+    if (item.status !== 'failed' && item.status !== 'skipped') {
+      return sendError(
+        res,
+        400,
+        'INSERTION_ITEM_NOT_RETRYABLE',
+        `Cannot retry item in status '${item.status}'`,
+      );
+    }
+
     updateInsertionRunItem(itemId, {
       status: 'queued',
       errorCode: null,
@@ -229,13 +264,12 @@ router.post('/insertion/retry/:itemId', async (req, res) => {
       attemptCount: 0,
       verificationStatus: 'pending',
     });
+
     res.json({ message: 'Item reset for retry', itemId });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_RETRY_FAILED', err.message);
   }
 });
-
-// ── Mapping Preview ───────────────────────────────────────────────────────────
 
 router.get('/insertion/preview/:caseId', (req, res) => {
   try {
@@ -243,7 +277,6 @@ router.get('/insertion/preview/:caseId', (req, res) => {
     const formType = req.query.formType || '1004';
     const targetSoftware = req.query.targetSoftware || inferTargetSoftware(formType);
 
-    // Gather field texts
     const db = getDb();
     const fieldTexts = new Map();
     const previousStatuses = new Map();
@@ -261,7 +294,6 @@ router.get('/insertion/preview/:caseId', (req, res) => {
       }
     }
 
-    // Get previous insertion statuses
     const latestRun = getLatestInsertionRun(caseId);
     if (latestRun) {
       const items = getInsertionRunItems(latestRun.id);
@@ -275,11 +307,9 @@ router.get('/insertion/preview/:caseId', (req, res) => {
 
     res.json({ preview });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_PREVIEW_FAILED', err.message);
   }
 });
-
-// ── Get All Mappings ──────────────────────────────────────────────────────────
 
 router.get('/insertion/mappings/:formType', (req, res) => {
   try {
@@ -288,11 +318,9 @@ router.get('/insertion/mappings/:formType', (req, res) => {
     const mappings = resolveAllMappings(formType, targetSoftware);
     res.json({ mappings, formType, targetSoftware });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_MAPPINGS_FAILED', err.message);
   }
 });
-
-// ── Destination Profiles ──────────────────────────────────────────────────────
 
 router.get('/insertion/profiles', (req, res) => {
   try {
@@ -300,17 +328,17 @@ router.get('/insertion/profiles', (req, res) => {
     const profiles = listDestinationProfiles({ activeOnly });
     res.json({ profiles });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_LIST_PROFILES_FAILED', err.message);
   }
 });
 
 router.get('/insertion/profile/:id', (req, res) => {
   try {
     const profile = getDestinationProfile(req.params.id);
-    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    if (!profile) return sendError(res, 404, 'INSERTION_PROFILE_NOT_FOUND', 'Profile not found');
     res.json({ profile });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_GET_PROFILE_FAILED', err.message);
   }
 });
 
@@ -318,22 +346,22 @@ router.put('/insertion/profile/:id', (req, res) => {
   try {
     updateDestinationProfile(req.params.id, req.body);
     const profile = getDestinationProfile(req.params.id);
+    if (!profile) return sendError(res, 404, 'INSERTION_PROFILE_NOT_FOUND', 'Profile not found');
     res.json({ profile });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_UPDATE_PROFILE_FAILED', err.message);
   }
 });
-
-// ── Field History ─────────────────────────────────────────────────────────────
 
 router.get('/insertion/field-history/:caseId/:fieldId', (req, res) => {
   try {
     const { caseId, fieldId } = req.params;
-    const limit = parseInt(req.query.limit) || 5;
+    const parsedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
     const history = getItemHistoryForField(caseId, fieldId, limit);
     res.json({ history });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendError(res, 500, 'INSERTION_FIELD_HISTORY_FAILED', err.message);
   }
 });
 

@@ -257,6 +257,24 @@ export function evaluateHardComplianceRules({
     }));
   }
 
+  if (flags.government_loan && flags.high_risk_flood_zone) {
+    const passed = hasActiveSection(sectionRequirements, 'flood_comment');
+    checks.push(buildCheck({
+      ruleId: 'rule.flood.high_risk_government_loan',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'high_risk_flood_comment_present' : 'high_risk_flood_comment_missing',
+      message: passed
+        ? 'High-risk flood commentary is present for government-backed assignment.'
+        : 'Government-backed assignment in high-risk flood zone requires flood commentary section.',
+      evidence: {
+        expectedSectionId: 'flood_comment',
+        floodZoneRisk: 'high',
+        loanType: flags.fha_assignment ? 'fha' : (flags.usda_assignment ? 'usda' : (flags.va_assignment ? 'va' : 'government')),
+      },
+    }));
+  }
+
   if (flags.zoning_commentary_required) {
     const passed = hasActiveSection(sectionRequirements, 'zoning_comment');
     checks.push(buildCheck({
@@ -289,7 +307,7 @@ export function evaluateHardComplianceRules({
     const passed = hasActiveSection(sectionRequirements, 'usda_site_eligibility_comment');
     checks.push(buildCheck({
       ruleId: 'rule.usda.site_eligibility',
-      severity: 'warning',
+      severity: 'blocker',
       passed,
       reasonCode: passed ? 'usda_eligibility_comment_present' : 'usda_eligibility_comment_missing',
       message: passed

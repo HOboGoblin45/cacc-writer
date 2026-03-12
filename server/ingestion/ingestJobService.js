@@ -381,6 +381,48 @@ export function isDocumentIngestStepFailed(job, step) {
   return status === 'failed';
 }
 
+export function getDocumentIngestRetryState(job, step) {
+  if (!job) {
+    return {
+      ok: false,
+      reason: 'job_not_found',
+      retryCount: 0,
+      maxRetries: 0,
+      remainingRetries: 0,
+    };
+  }
+
+  const retryCount = Number(job.retryCount || 0);
+  const maxRetries = Math.max(0, Number(job.maxRetries || 0));
+  if (!isDocumentIngestStepFailed(job, step)) {
+    return {
+      ok: false,
+      reason: 'step_not_failed',
+      retryCount,
+      maxRetries,
+      remainingRetries: Math.max(0, maxRetries - retryCount),
+    };
+  }
+
+  if (retryCount >= maxRetries) {
+    return {
+      ok: false,
+      reason: 'retry_limit_reached',
+      retryCount,
+      maxRetries,
+      remainingRetries: 0,
+    };
+  }
+
+  return {
+    ok: true,
+    reason: null,
+    retryCount,
+    maxRetries,
+    remainingRetries: Math.max(0, maxRetries - retryCount),
+  };
+}
+
 export function isValidDocumentIngestStatus(status) {
   return ALLOWED_JOB_STATUSES.has(asText(status).toLowerCase());
 }
@@ -388,4 +430,3 @@ export function isValidDocumentIngestStatus(status) {
 export function isValidDocumentIngestStepStatus(status) {
   return ALLOWED_STEP_STATUSES.has(asText(status).toLowerCase());
 }
-
