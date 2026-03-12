@@ -35,6 +35,9 @@ import { initPhase6Schema } from '../migration/phase6Schema.js';
 import { initPhase7Schema } from '../migration/phase7Schema.js';
 import { initPhase9Schema } from '../migration/phase9Schema.js';
 import { initPhase10Schema } from '../migration/phase10Schema.js';
+import { initPhase11Schema } from '../migration/phase11Schema.js';
+import { initPhase12Schema } from '../migration/phase12Schema.js';
+import { initPhase13Schema } from '../migration/phase13Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -67,6 +70,11 @@ function runMigrations(db) {
     `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT`,
+    // Priority 3 — section freshness tracking
+    `ALTER TABLE generated_sections ADD COLUMN freshness_status TEXT DEFAULT 'current'`,
+    `ALTER TABLE generated_sections ADD COLUMN stale_reason TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN stale_since TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN regeneration_count INTEGER DEFAULT 0`,
   ];
 
   for (const sql of migrations) {
@@ -774,6 +782,27 @@ export function initSchema(db) {
     initPhase10Schema(db);
   } catch (err) {
     log.error('schema:phase10-init', { error: err.message });
+  }
+
+  // Run Phase 11 schema additions (learning/memory system)
+  try {
+    initPhase11Schema(db);
+  } catch (err) {
+    log.error('schema:phase11-init', { error: err.message });
+  }
+
+  // Run Phase 12 schema additions (business operations: quotes, engagements, invoices, pipeline)
+  try {
+    initPhase12Schema(db);
+  } catch (err) {
+    log.error('schema:phase12-init', { error: err.message });
+  }
+
+  // Run Phase 13 schema additions (inspection workflow)
+  try {
+    initPhase13Schema(db);
+  } catch (err) {
+    log.error('schema:phase13-init', { error: err.message });
   }
 }
 

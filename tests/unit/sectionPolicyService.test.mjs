@@ -140,7 +140,7 @@ test('computeQualityScore produces score with factors', () => {
   assert.ok(result.score > 0);
   assert.ok(result.score <= 100);
   assert.ok(Array.isArray(result.factors));
-  assert.equal(result.factors.length, 4);
+  assert.equal(result.factors.length, 7);
 });
 
 test('computeQualityScore penalizes empty text', () => {

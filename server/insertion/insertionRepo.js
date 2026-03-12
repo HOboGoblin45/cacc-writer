@@ -95,6 +95,7 @@ export function updateInsertionRun(id, updates) {
     'skipped_fields', 'verified_fields', 'started_at', 'completed_at',
     'duration_ms', 'summary_json', 'replay_package_json', 'rollback_fields',
     'qc_run_id', 'qc_blocker_count', 'qc_gate_passed',
+    'original_run_id', 'run_type',
   ];
   const sets = [];
   const vals = [];
@@ -148,6 +149,8 @@ function hydrateRun(row) {
     summary: parseJsonCol(row.summary_json),
     replayPackage: parseJsonCol(row.replay_package_json),
     rollbackFields: row.rollback_fields || 0,
+    originalRunId: row.original_run_id || null,
+    runType: row.run_type || 'standard',
     startedAt: row.started_at,
     completedAt: row.completed_at,
     durationMs: row.duration_ms,
@@ -239,6 +242,7 @@ export function updateInsertionRunItem(id, updates) {
     'rollback_attempted', 'rollback_status', 'rollback_text', 'rollback_error_text',
     'agent_response_json', 'error_code', 'error_text', 'error_detail_json',
     'started_at', 'completed_at', 'duration_ms',
+    'diff_json', 'similarity_score',
   ];
   const sets = [];
   const vals = [];
@@ -330,6 +334,8 @@ function hydrateItem(row) {
     startedAt: row.started_at,
     completedAt: row.completed_at,
     durationMs: row.duration_ms,
+    diffJson: parseJsonCol(row.diff_json, null),
+    similarityScore: row.similarity_score ?? null,
     sortOrder: row.sort_order,
     createdAt: row.created_at,
   };

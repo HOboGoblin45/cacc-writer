@@ -196,6 +196,17 @@ export function getTableCounts() {
     'audit_events',
     'case_timeline_events',
     'operational_metrics',
+    'assignment_archives',
+    'learned_patterns',
+    'pattern_applications',
+    'fee_quotes',
+    'engagement_records',
+    'invoices',
+    'pipeline_entries',
+    'inspections',
+    'inspection_photos',
+    'inspection_measurements',
+    'inspection_conditions',
   ];
 
   const counts = {};

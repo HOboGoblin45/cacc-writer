@@ -271,6 +271,7 @@ export async function executeInsertionRun(runId) {
 
 /**
  * Process a single insertion item through the full lifecycle.
+ * Exported for reuse by replayEngine.
  *
  * @param {Object} item - Insertion run item
  * @param {Object} run - Parent insertion run
@@ -278,7 +279,7 @@ export async function executeInsertionRun(runId) {
  * @param {string} agentBaseUrl
  * @returns {Promise<Object>} Updated item state
  */
-async function processItem(item, run, profile, agentBaseUrl) {
+export async function processItem(item, run, profile, agentBaseUrl) {
   const startTime = Date.now();
   const attemptLog = [];
   let retryClass = null;
@@ -553,12 +554,40 @@ function classifyRetryClass(errorCode = 'unknown') {
   if (normalized === 'verification_mismatch') return 'verification';
   if (normalized === 'field_not_found') return 'mapping';
   if (normalized === 'format_error' || normalized === 'no_text' || normalized === 'qc_blocked') return 'data';
+  if (normalized === 'auth_failed' || normalized === 'permission_denied' || normalized === 'unauthorized') return 'auth';
+  if (normalized === 'session_expired' || normalized === 'stale_session') return 'stale_session';
+  if (normalized === 'rate_limited' || normalized === 'throttled' || normalized === 'too_many_requests') return 'rate_limit';
   return 'unknown';
 }
 
+/**
+ * Retry delay recommendations per class.
+ * @type {Record<string, {baseDelayMs: number, maxRetries: number}>}
+ */
+const RETRY_CLASS_CONFIG = {
+  transport:     { baseDelayMs: 1200, maxRetries: 3 },
+  destination:   { baseDelayMs: 750,  maxRetries: 2 },
+  verification:  { baseDelayMs: 500,  maxRetries: 1 },
+  mapping:       { baseDelayMs: 0,    maxRetries: 0 },
+  data:          { baseDelayMs: 0,    maxRetries: 0 },
+  auth:          { baseDelayMs: 0,    maxRetries: 0 },
+  stale_session: { baseDelayMs: 2000, maxRetries: 1 },
+  rate_limit:    { baseDelayMs: 5000, maxRetries: 3 },
+  unknown:       { baseDelayMs: 1000, maxRetries: 2 },
+};
+
+/**
+ * Get retry configuration for a given class.
+ * @param {string} retryClass
+ * @returns {{baseDelayMs: number, maxRetries: number}}
+ */
+export function getRetryClassConfig(retryClass) {
+  return RETRY_CLASS_CONFIG[retryClass] || RETRY_CLASS_CONFIG.unknown;
+}
+
 function retryDelayMs(retryClass, attemptCount) {
-  const baseDelay = retryClass === 'transport' ? 1200 : 750;
-  return baseDelay * attemptCount;
+  const config = RETRY_CLASS_CONFIG[retryClass] || RETRY_CLASS_CONFIG.unknown;
+  return config.baseDelayMs * attemptCount;
 }
 
 function supportsReadback(profile, mapping) {
@@ -666,6 +695,275 @@ function buildInsertionReplayPackage({ run, items }) {
     },
     items: replayItems,
   };
+}
+
+/**
+ * Build a structured dry-run report showing what WOULD be inserted.
+ * Uses the items from a prepared run (run.config.dryRun should be true).
+ *
+ * @param {string} runId
+ * @returns {Object} Dry-run report with field previews and potential issues
+ */
+export function buildDryRunReport(runId) {
+  const run = getInsertionRun(runId);
+  if (!run) throw new Error(`Insertion run not found: ${runId}`);
+
+  const items = getInsertionRunItems(runId);
+  const fieldPreviews = [];
+  const potentialIssues = [];
+
+  for (const item of items) {
+    const mapping = resolveMapping(item.fieldId, item.formType, item.targetSoftware);
+
+    // Format the text to see what would be sent
+    const formatResult = formatForDestination({
+      canonicalText: item.canonicalText,
+      fieldId: item.fieldId,
+      formType: item.formType,
+      targetSoftware: item.targetSoftware,
+      formattingMode: mapping.formattingMode,
+      mapping,
+    });
+
+    const preview = {
+      fieldId: item.fieldId,
+      humanLabel: mapping.humanLabel,
+      destinationKey: item.destinationKey,
+      supported: mapping.supported,
+      calibrated: mapping.calibrated,
+      formattingMode: mapping.formattingMode,
+      tabName: mapping.tabName,
+      editorTarget: mapping.editorTarget,
+      verificationMode: mapping.verificationMode,
+      fallbackStrategy: mapping.fallbackStrategy || item.fallbackStrategy,
+      canonicalTextLength: (item.canonicalText || '').length,
+      canonicalTextPreview: (item.canonicalText || '').slice(0, 300),
+      formattedTextLength: formatResult.formattedLength,
+      formattedTextPreview: (formatResult.formattedText || '').slice(0, 300),
+      formatWarnings: formatResult.warnings || [],
+      truncated: formatResult.truncated || false,
+    };
+
+    fieldPreviews.push(preview);
+
+    // Flag potential issues
+    if (!mapping.supported) {
+      potentialIssues.push({
+        fieldId: item.fieldId,
+        severity: 'error',
+        issue: 'unsupported_field',
+        message: `Field "${mapping.humanLabel}" has no agent mapping for ${item.targetSoftware}`,
+      });
+    }
+    if (!mapping.calibrated && mapping.supported) {
+      potentialIssues.push({
+        fieldId: item.fieldId,
+        severity: 'warning',
+        issue: 'uncalibrated_field',
+        message: `Field "${mapping.humanLabel}" agent mapping is not calibrated/verified`,
+      });
+    }
+    if (formatResult.truncated) {
+      potentialIssues.push({
+        fieldId: item.fieldId,
+        severity: 'warning',
+        issue: 'text_truncated',
+        message: `Text for "${mapping.humanLabel}" was truncated from ${formatResult.originalLength} to ${formatResult.formattedLength} chars`,
+      });
+    }
+    if ((formatResult.warnings || []).length > 0) {
+      for (const w of formatResult.warnings) {
+        potentialIssues.push({
+          fieldId: item.fieldId,
+          severity: 'warning',
+          issue: 'format_warning',
+          message: `${mapping.humanLabel}: ${w}`,
+        });
+      }
+    }
+    if (!item.canonicalText || item.canonicalText.trim().length === 0) {
+      potentialIssues.push({
+        fieldId: item.fieldId,
+        severity: 'info',
+        issue: 'empty_text',
+        message: `Field "${mapping.humanLabel}" has no text to insert`,
+      });
+    }
+  }
+
+  return {
+    runId: run.id,
+    caseId: run.caseId,
+    formType: run.formType,
+    targetSoftware: run.targetSoftware,
+    isDryRun: true,
+    totalFields: fieldPreviews.length,
+    supportedFields: fieldPreviews.filter(f => f.supported).length,
+    unsupportedFields: fieldPreviews.filter(f => !f.supported).length,
+    fieldPreviews,
+    potentialIssues,
+    issuesBySevertiy: {
+      error: potentialIssues.filter(i => i.severity === 'error').length,
+      warning: potentialIssues.filter(i => i.severity === 'warning').length,
+      info: potentialIssues.filter(i => i.severity === 'info').length,
+    },
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Resume a failed or partial insertion run from where it stopped.
+ * Only processes items that are pending (queued) or failed.
+ * Skips already-verified items.
+ *
+ * @param {string} runId
+ * @returns {Promise<Object>} Final run state with summary
+ */
+export async function resumeInsertionRun(runId) {
+  const run = getInsertionRun(runId);
+  if (!run) throw new Error(`Insertion run not found: ${runId}`);
+
+  if (!['failed', 'partial', 'running'].includes(run.status)) {
+    throw new Error(`Cannot resume run in status '${run.status}' — must be 'failed', 'partial', or 'running'`);
+  }
+
+  const profile = getActiveProfile(run.targetSoftware, run.formType);
+  const agentBaseUrl = profile?.baseUrl || getDefaultAgentUrl(run.targetSoftware);
+
+  // Check agent health
+  const agentHealthy = await checkAgentHealth(agentBaseUrl);
+  if (!agentHealthy) {
+    throw new Error(`Agent unreachable at ${agentBaseUrl}`);
+  }
+
+  // Mark run as running again
+  updateInsertionRun(runId, {
+    status: 'running',
+    startedAt: run.startedAt || new Date().toISOString(),
+  });
+
+  const allItems = getInsertionRunItems(runId);
+
+  // Only process items that need work
+  const resumableStatuses = new Set(['queued', 'failed', 'formatting', 'inserting']);
+  const itemsToProcess = allItems.filter(item => resumableStatuses.has(item.status));
+  const alreadyDone = allItems.filter(item => !resumableStatuses.has(item.status));
+
+  // Count already completed items
+  let completed = alreadyDone.filter(i => ['verified', 'inserted', 'fallback_used'].includes(i.status)).length;
+  let failed = 0;
+  let skipped = alreadyDone.filter(i => i.status === 'skipped').length;
+  let verified = alreadyDone.filter(i => i.status === 'verified').length;
+  const failedFieldIds = [];
+  const mismatchFieldIds = [];
+
+  // Carry over mismatches from already-done items
+  for (const item of alreadyDone) {
+    if (item.verificationStatus === 'mismatch') {
+      mismatchFieldIds.push(item.fieldId);
+    }
+  }
+
+  // Process resumable items
+  for (const item of itemsToProcess) {
+    // Reset failed items to queued before reprocessing
+    if (item.status === 'failed') {
+      updateInsertionRunItem(item.id, {
+        status: 'queued',
+        errorCode: null,
+        errorText: null,
+        attemptCount: 0,
+        verificationStatus: 'pending',
+      });
+    }
+
+    try {
+      const result = await processItem(item, run, profile, agentBaseUrl);
+
+      if (result.status === 'verified') {
+        completed++;
+        verified++;
+      } else if (result.status === 'inserted') {
+        completed++;
+      } else if (result.status === 'skipped') {
+        skipped++;
+      } else if (result.status === 'failed' || result.status === 'fallback_used') {
+        if (result.status === 'failed') {
+          failed++;
+          failedFieldIds.push(item.fieldId);
+        } else {
+          completed++;
+        }
+      }
+
+      if (result.verificationStatus === 'mismatch') {
+        mismatchFieldIds.push(item.fieldId);
+      }
+
+      updateInsertionRun(runId, {
+        completedFields: completed,
+        failedFields: failed,
+        skippedFields: skipped,
+        verifiedFields: verified,
+      });
+    } catch (err) {
+      failed++;
+      failedFieldIds.push(item.fieldId);
+      updateInsertionRunItem(item.id, {
+        status: 'failed',
+        errorCode: 'unknown',
+        errorText: err.message,
+        completedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  const finalItems = getInsertionRunItems(runId);
+  const rollbackCount = finalItems.filter(e => e.rollbackStatus === 'restored').length;
+  const fallbackUsedCount = finalItems.filter(e => e.fallbackUsed).length;
+
+  const durationMs = Date.now() - new Date(run.startedAt || run.createdAt).getTime();
+  let readinessSignal = 'ready';
+  if (failed > 0 && completed === 0) readinessSignal = 'failed';
+  else if (failed > 0 || mismatchFieldIds.length > 0) readinessSignal = 'needs_review';
+  else if (skipped > allItems.length * 0.3) readinessSignal = 'incomplete';
+
+  const summary = {
+    totalFields: allItems.length,
+    inserted: completed,
+    verified,
+    failed,
+    skipped,
+    fallbackUsed: fallbackUsedCount,
+    rollbackFields: rollbackCount,
+    durationMs,
+    failedFieldIds,
+    mismatchFieldIds,
+    readinessSignal,
+    resumed: true,
+    resumedItemCount: itemsToProcess.length,
+  };
+
+  const replayPackage = buildInsertionReplayPackage({ run, items: finalItems });
+
+  const finalStatus = failed === 0 && skipped === 0 ? 'completed'
+    : failed === allItems.length ? 'failed'
+    : 'partial';
+
+  updateInsertionRun(runId, {
+    status: finalStatus,
+    completedFields: completed,
+    failedFields: failed,
+    skippedFields: skipped,
+    verifiedFields: verified,
+    rollbackFields: rollbackCount,
+    completedAt: new Date().toISOString(),
+    durationMs,
+    summaryJson: summary,
+    replayPackageJson: replayPackage,
+  });
+
+  return getInsertionRun(runId);
 }
 
 export function getInsertionReplayPackage(runId) {
