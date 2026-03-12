@@ -48,6 +48,8 @@ export function initPhase9Schema(db) {
 
       -- Summary
       summary_json        TEXT DEFAULT '{}',
+      replay_package_json TEXT DEFAULT '{}',
+      rollback_fields     INTEGER DEFAULT 0,
 
       started_at          TEXT,
       completed_at        TEXT,
@@ -97,13 +99,23 @@ export function initPhase9Schema(db) {
       -- verification_raw: raw value returned from agent /read-field
       verification_normalized TEXT,
       -- verification_normalized: normalized comparison value
+      verification_expected TEXT,
+      -- verification_expected: normalized expected text used in comparison
+      preinsert_raw       TEXT,
+      preinsert_normalized TEXT,
 
       -- Retry / fallback
       attempt_count       INTEGER DEFAULT 0,
       max_attempts        INTEGER DEFAULT 3,
+      retry_class         TEXT,
       fallback_strategy   TEXT,
       -- fallback_strategy: retry | clipboard | manual_prompt | retry_then_clipboard
       fallback_used       INTEGER DEFAULT 0,
+      attempt_log_json    TEXT DEFAULT '[]',
+      rollback_attempted  INTEGER DEFAULT 0,
+      rollback_status     TEXT,
+      rollback_text       TEXT,
+      rollback_error_text TEXT,
 
       -- Agent response
       agent_response_json TEXT DEFAULT '{}',
@@ -212,5 +224,27 @@ export function initPhase9Schema(db) {
       }),
       1
     );
+  }
+
+  const migrations = [
+    `ALTER TABLE insertion_runs ADD COLUMN replay_package_json TEXT DEFAULT '{}'`,
+    `ALTER TABLE insertion_runs ADD COLUMN rollback_fields INTEGER DEFAULT 0`,
+    `ALTER TABLE insertion_run_items ADD COLUMN verification_expected TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN preinsert_raw TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN preinsert_normalized TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN retry_class TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN attempt_log_json TEXT DEFAULT '[]'`,
+    `ALTER TABLE insertion_run_items ADD COLUMN rollback_attempted INTEGER DEFAULT 0`,
+    `ALTER TABLE insertion_run_items ADD COLUMN rollback_status TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN rollback_text TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN rollback_error_text TEXT`,
+  ];
+
+  for (const sql of migrations) {
+    try {
+      db.exec(sql);
+    } catch {
+      // Column already exists.
+    }
   }
 }
