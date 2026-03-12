@@ -693,6 +693,33 @@ await test('POST /api/kb/reindex runs without error', async () => {
   assert(typeof body.total === 'number', 'total should be a number');
 });
 
+await test('POST /api/kb/reindex rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/reindex', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/kb/migrate-voice rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/migrate-voice', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/kb/ingest-to-pinecone rejects unexpected payload fields', async () => {
+  const { status, body } = await api('POST', '/api/kb/ingest-to-pinecone', {
+    force: true,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 // ── 6. History & Templates ────────────────────────────────────────────────────
 console.log('\n6. History & Templates');
 
@@ -1216,6 +1243,17 @@ await test('GET /api/voice/folder-status returns folder info', async () => {
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'GET /api/voice/folder-status');
   assert(typeof body.folderExists === 'boolean', 'folderExists should be boolean');
+});
+
+await test('POST /api/voice/import-folder rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/voice/import-folder', {
+    formType: 1004,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
 });
 
 // ── 13. Cleanup ───────────────────────────────────────────────────────────────
