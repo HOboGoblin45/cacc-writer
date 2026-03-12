@@ -65,6 +65,8 @@ import log from '../logger.js';
 const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
 const MAX_BATCH_FIELDS = 20;
+const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 const fullDraftOptionsSchema = z.object({
   forceGateBypass: z.boolean().optional(),
 }).passthrough();
@@ -161,11 +163,25 @@ function toSectionIds(fields) {
   return ids;
 }
 
-function shouldBypassPreDraftGate(req) {
+function requestedGateBypass(req) {
   return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
 }
 
+function shouldBypassPreDraftGate(req) {
+  return requestedGateBypass(req) && ALLOW_FORCE_GATE_BYPASS;
+}
+
 function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) {
+  if (requestedGateBypass(req) && !ALLOW_FORCE_GATE_BYPASS) {
+    res.status(403).json({
+      ok: false,
+      code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+      error: 'forceGateBypass is disabled in this environment',
+      hint: 'Set CACC_ALLOW_FORCE_GATE_BYPASS=true to allow explicit pre-draft gate bypass.',
+    });
+    return false;
+  }
+
   if (shouldBypassPreDraftGate(req)) return true;
 
   const gate = evaluatePreDraftGate({ caseId, formType, sectionIds });
@@ -185,7 +201,9 @@ function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) 
     gate,
     factReviewQueuePath,
     factReviewQueueSummary: queue?.summary || null,
-    hint: `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check), or pass forceGateBypass=true.`,
+    hint: ALLOW_FORCE_GATE_BYPASS
+      ? `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check), or pass forceGateBypass=true.`
+      : `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check).`,
   });
   return false;
 }
