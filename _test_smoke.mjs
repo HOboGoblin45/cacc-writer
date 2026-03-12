@@ -432,6 +432,16 @@ await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects non-failed 
   assert(body?.code === 'INGEST_STEP_NOT_FAILED', 'code should be INGEST_STEP_NOT_FAILED');
 });
 
+await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects invalid payload type', async () => {
+  assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
+    step: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry returns coded 404 for unknown job', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/ingest_missing/retry`, {
     step: 'extract',
@@ -478,6 +488,25 @@ await test('POST /api/cases/:caseId/fact-review-queue/resolve rejects missing se
   });
   assert(status === 400, `Expected 400, got ${status}`);
   assert(body?.ok === false, 'ok should be false');
+});
+
+await test('POST /api/cases/:caseId/extracted-facts/review rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-facts/review`, {
+    factId: 123,
+    action: 'accepted',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
+await test('POST /api/cases/:caseId/extracted-facts/merge rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extracted-facts/merge`, {
+    factIds: 'not-an-array',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
 });
 
 await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async () => {
