@@ -15,6 +15,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 
 // ── Repository layer ──────────────────────────────────────────────────────────
 import {
@@ -61,6 +62,85 @@ import { buildRetrievalPack } from '../memory/retrievalPackBuilder.js';
 import { rankApprovedMemory, rankCompCommentary } from '../memory/retrievalRankingEngine.js';
 
 const router = Router();
+const objectMutationSchema = z.object({}).passthrough();
+const emptyMutationSchema = z.object({}).strict();
+const approvedCreateSchema = z.object({
+  text: z.string().min(10).max(50000),
+  bucket: z.string().max(80).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  formType: z.string().max(40).optional(),
+  reportFamily: z.string().max(60).optional(),
+  propertyType: z.string().max(80).optional(),
+  assignmentType: z.string().max(80).optional(),
+  styleTags: z.array(z.string().max(80)).max(200).optional(),
+  issueTags: z.array(z.string().max(80)).max(200).optional(),
+  qualityScore: z.number().min(0).max(100).optional(),
+  notes: z.string().max(2000).optional(),
+}).passthrough();
+const stagingCreateSchema = z.object({
+  text: z.string().min(10).max(50000),
+  candidateSource: z.string().max(60).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  formType: z.string().max(40).optional(),
+  reportFamily: z.string().max(60).optional(),
+  caseId: z.string().max(80).optional(),
+  sourceDocumentId: z.string().max(80).optional(),
+  sourceRunId: z.string().max(80).optional(),
+  qualityScore: z.number().min(0).max(100).optional(),
+  commentaryType: z.string().max(80).optional(),
+}).passthrough();
+const stagingRejectSchema = z.object({
+  reason: z.string().max(500).optional(),
+  reviewedBy: z.string().max(120).optional(),
+}).passthrough();
+const batchApproveSchema = z.object({
+  ids: z.array(z.string().max(80)).min(1).max(500),
+  overrides: objectMutationSchema.optional(),
+}).passthrough();
+const batchRejectSchema = z.object({
+  ids: z.array(z.string().max(80)).min(1).max(500),
+  reason: z.string().max(500).optional(),
+  reviewedBy: z.string().max(120).optional(),
+}).passthrough();
+const compCommentaryCreateSchema = z.object({
+  text: z.string().min(10).max(50000),
+  commentaryType: z.string().max(80).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  formType: z.string().max(40).optional(),
+  reportFamily: z.string().max(60).optional(),
+  subjectPropertyType: z.string().max(80).optional(),
+  compPropertyType: z.string().max(80).optional(),
+  marketDensity: z.string().max(80).optional(),
+  urbanSuburbanRural: z.string().max(80).optional(),
+  issueTags: z.array(z.string().max(80)).max(200).optional(),
+  adjustmentCategories: z.array(z.string().max(80)).max(200).optional(),
+  qualityScore: z.number().min(0).max(100).optional(),
+}).passthrough();
+const retrievalPreviewSchema = z.object({
+  assignmentContext: z.record(z.any()).optional(),
+  canonicalFieldId: z.string().max(120),
+  reportFamily: z.string().max(60).optional(),
+  formType: z.string().max(40).optional(),
+  options: z.record(z.any()).optional(),
+}).passthrough();
+const retrievalRankSchema = z.object({
+  canonicalFieldId: z.string().max(120),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // APPROVED MEMORY
@@ -115,9 +195,12 @@ router.get('/approved/:id', (req, res) => {
  * Create a new approved memory item directly (manual curation).
  */
 router.post('/approved', (req, res) => {
+  const body = parsePayload(approvedCreateSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const { text, bucket, canonicalFieldId, formType, reportFamily, propertyType,
-            assignmentType, styleTags, issueTags, qualityScore, notes } = req.body;
+            assignmentType, styleTags, issueTags, qualityScore, notes } = body;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -151,11 +234,14 @@ router.post('/approved', (req, res) => {
  * Update an approved memory item.
  */
 router.patch('/approved/:id', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const item = getApprovedMemoryById(req.params.id);
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
 
-    updateApprovedMemory(req.params.id, req.body);
+    updateApprovedMemory(req.params.id, body);
     const updated = getApprovedMemoryById(req.params.id);
     res.json({ ok: true, item: updated });
   } catch (err) {
@@ -168,6 +254,8 @@ router.patch('/approved/:id', (req, res) => {
  * Soft-delete (deactivate) an approved memory item.
  */
 router.delete('/approved/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     deactivateApprovedMemory(req.params.id);
     res.json({ ok: true });
@@ -238,9 +326,12 @@ router.get('/staging/:id', (req, res) => {
  * Stage a new candidate. Body must include: text, candidateSource, and metadata.
  */
 router.post('/staging', (req, res) => {
+  const body = parsePayload(stagingCreateSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const { text, candidateSource, canonicalFieldId, formType, reportFamily,
-            caseId, sourceDocumentId, sourceRunId, qualityScore, commentaryType } = req.body;
+            caseId, sourceDocumentId, sourceRunId, qualityScore, commentaryType } = body;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -282,8 +373,11 @@ router.post('/staging', (req, res) => {
  * Approve a staging candidate and promote to approved memory.
  */
 router.post('/staging/:id/approve', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const overrides = req.body || {};
+    const overrides = body;
     const result = approveCandidate(req.params.id, overrides);
 
     if (result.error) {
@@ -301,10 +395,13 @@ router.post('/staging/:id/approve', (req, res) => {
  * Reject a staging candidate.
  */
 router.post('/staging/:id/reject', (req, res) => {
+  const body = parsePayload(stagingRejectSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const result = rejectCandidate(req.params.id, {
-      reason: req.body?.reason,
-      reviewedBy: req.body?.reviewedBy,
+      reason: body.reason,
+      reviewedBy: body.reviewedBy,
     });
 
     if (result.error) {
@@ -322,11 +419,11 @@ router.post('/staging/:id/reject', (req, res) => {
  * Batch approve multiple candidates.
  */
 router.post('/staging/batch-approve', (req, res) => {
+  const body = parsePayload(batchApproveSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { ids, overrides } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ ok: false, error: 'ids array is required' });
-    }
+    const { ids, overrides } = body;
 
     const result = batchApprove(ids, overrides || {});
     res.json({ ok: true, ...result });
@@ -340,11 +437,11 @@ router.post('/staging/batch-approve', (req, res) => {
  * Batch reject multiple candidates.
  */
 router.post('/staging/batch-reject', (req, res) => {
+  const body = parsePayload(batchRejectSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { ids, reason, reviewedBy } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ ok: false, error: 'ids array is required' });
-    }
+    const { ids, reason, reviewedBy } = body;
 
     const result = batchReject(ids, { reason, reviewedBy });
     res.json({ ok: true, ...result });
@@ -394,8 +491,11 @@ router.get('/voice/profiles/:id', (req, res) => {
  * Create a new voice profile.
  */
 router.post('/voice/profiles', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const id = createVoiceProfile(req.body);
+    const id = createVoiceProfile(body);
     const profile = getVoiceProfileById(id);
     res.json({ ok: true, id, profile });
   } catch (err) {
@@ -408,11 +508,14 @@ router.post('/voice/profiles', (req, res) => {
  * Update a voice profile.
  */
 router.patch('/voice/profiles/:id', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const existing = getVoiceProfileById(req.params.id);
     if (!existing) return res.status(404).json({ ok: false, error: 'Not found' });
 
-    updateVoiceProfile(req.params.id, req.body);
+    updateVoiceProfile(req.params.id, body);
     const updated = getVoiceProfileById(req.params.id);
     res.json({ ok: true, profile: updated });
   } catch (err) {
@@ -425,6 +528,8 @@ router.patch('/voice/profiles/:id', (req, res) => {
  * Soft-delete (deactivate) a voice profile.
  */
 router.delete('/voice/profiles/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const existing = getVoiceProfileById(req.params.id);
     if (!existing) return res.status(404).json({ ok: false, error: 'Not found' });
@@ -479,10 +584,13 @@ router.get('/voice/profiles/:id/rules', (req, res) => {
  * Create a voice rule for a profile.
  */
 router.post('/voice/profiles/:id/rules', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const ruleId = createVoiceRule({
       profileId: req.params.id,
-      ...req.body,
+      ...body,
     });
     res.json({ ok: true, id: ruleId });
   } catch (err) {
@@ -495,6 +603,8 @@ router.post('/voice/profiles/:id/rules', (req, res) => {
  * Delete (deactivate) a voice rule.
  */
 router.delete('/voice/rules/:ruleId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     deleteVoiceRule(req.params.ruleId);
     res.json({ ok: true });
@@ -533,10 +643,13 @@ router.get('/comp-commentary', (req, res) => {
  * Create a comp commentary item directly.
  */
 router.post('/comp-commentary', (req, res) => {
+  const body = parsePayload(compCommentaryCreateSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const { text, commentaryType, canonicalFieldId, formType, reportFamily,
             subjectPropertyType, compPropertyType, marketDensity, urbanSuburbanRural,
-            issueTags, adjustmentCategories, qualityScore } = req.body;
+            issueTags, adjustmentCategories, qualityScore } = body;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -570,8 +683,11 @@ router.post('/comp-commentary', (req, res) => {
  * Update a comp commentary item.
  */
 router.patch('/comp-commentary/:id', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    updateCompCommentary(req.params.id, req.body);
+    updateCompCommentary(req.params.id, body);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -583,6 +699,8 @@ router.patch('/comp-commentary/:id', (req, res) => {
  * Deactivate a comp commentary item.
  */
 router.delete('/comp-commentary/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     deactivateCompCommentary(req.params.id);
     res.json({ ok: true });
@@ -601,12 +719,11 @@ router.delete('/comp-commentary/:id', (req, res) => {
  * Useful for debugging and understanding what memory will be used.
  */
 router.post('/retrieval/preview', (req, res) => {
-  try {
-    const { assignmentContext, canonicalFieldId, reportFamily, formType, options } = req.body;
+  const body = parsePayload(retrievalPreviewSchema, req.body || {}, res);
+  if (!body) return;
 
-    if (!canonicalFieldId) {
-      return res.status(400).json({ ok: false, error: 'canonicalFieldId is required' });
-    }
+  try {
+    const { assignmentContext, canonicalFieldId, reportFamily, formType, options } = body;
 
     const pack = buildRetrievalPack({
       assignmentContext: assignmentContext || {},
@@ -628,12 +745,10 @@ router.post('/retrieval/preview', (req, res) => {
  * Returns scored candidates with full breakdowns.
  */
 router.post('/retrieval/rank', (req, res) => {
-  try {
-    const query = req.body;
-    if (!query.canonicalFieldId) {
-      return res.status(400).json({ ok: false, error: 'canonicalFieldId is required' });
-    }
+  const query = parsePayload(retrievalRankSchema, req.body || {}, res);
+  if (!query) return;
 
+  try {
     const result = rankApprovedMemory(query);
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -646,8 +761,11 @@ router.post('/retrieval/rank', (req, res) => {
  * Preview retrieval ranking for comp commentary.
  */
 router.post('/retrieval/rank-comp', (req, res) => {
+  const body = parsePayload(objectMutationSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const result = rankCompCommentary(req.body);
+    const result = rankCompCommentary(body);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
