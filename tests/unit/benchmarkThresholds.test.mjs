@@ -46,6 +46,8 @@ function makeResults({
       gate: {
         fixtureCount: gate.fixtureCount ?? 4,
         passRate: gate.passRate ?? 1,
+        complianceExpectationFixtureCount: gate.complianceExpectationFixtureCount ?? 1,
+        complianceExpectationPassRate: gate.complianceExpectationPassRate ?? 1,
         byLane: gate.byLane ?? {
           residential: { fixtureCount: 3 },
           commercial: { fixtureCount: 1 },
@@ -65,7 +67,7 @@ await test('passes when benchmark summary exceeds default thresholds', () => {
 
   assert.equal(evaluation.ok, true);
   assert.equal(evaluation.summary.failedChecks, 0);
-  assert.equal(evaluation.checks.length, 10);
+  assert.equal(evaluation.checks.length, 12);
 });
 
 await test('fails and surfaces failed check IDs when extraction quality drops', () => {
@@ -80,6 +82,8 @@ await test('fails and surfaces failed check IDs when extraction quality drops', 
       gate: {
         fixtureCount: 4,
         passRate: 1,
+        complianceExpectationFixtureCount: 1,
+        complianceExpectationPassRate: 1,
       },
     }),
   );
@@ -125,6 +129,8 @@ await test('honors threshold overrides', () => {
       gate: {
         fixtureCount: 1,
         passRate: 0.9,
+        complianceExpectationFixtureCount: 0,
+        complianceExpectationPassRate: 0,
       },
     }),
     {
@@ -141,6 +147,8 @@ await test('honors threshold overrides', () => {
       gate: {
         minFixtureCount: 1,
         minPassRate: 0.9,
+        minComplianceExpectationFixtureCount: 0,
+        minComplianceExpectationPassRate: 0,
         minLaneFixtureCounts: {
           residential: 1,
           commercial: 0,
@@ -151,6 +159,23 @@ await test('honors threshold overrides', () => {
 
   assert.equal(evaluation.ok, true);
   assert.equal(evaluation.summary.failedChecks, 0);
+});
+
+await test('fails when compliance expectation fixture coverage is missing', () => {
+  const evaluation = evaluatePhaseCBenchmarkThresholds(
+    makeResults({
+      gate: {
+        fixtureCount: 4,
+        passRate: 1,
+        complianceExpectationFixtureCount: 0,
+        complianceExpectationPassRate: 0,
+      },
+    }),
+  );
+
+  assert.equal(evaluation.ok, false);
+  assert.ok(evaluation.failedCheckIds.includes('gate.compliance_expectation.fixture_count'));
+  assert.ok(evaluation.failedCheckIds.includes('gate.compliance_expectation.pass_rate'));
 });
 
 console.log('\n' + '-'.repeat(60));

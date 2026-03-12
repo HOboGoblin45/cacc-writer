@@ -180,6 +180,7 @@ export function scoreGateFixture({
   return {
     fixtureId: asText(fixtureId),
     expectedOk: Boolean(expectedOk),
+    expectedComplianceRuleIds: [...expectedRuleSet],
     actualOk,
     okMatch,
     missingExpectedBlockers,
@@ -223,10 +224,19 @@ export function summarizeBenchmarkSuite({
 
   const summarizeGate = (runs) => {
     const passed = runs.filter(r => r.passed === true).length;
+    const complianceExpectationRuns = runs.filter(
+      r => Array.isArray(r.expectedComplianceRuleIds) && r.expectedComplianceRuleIds.length > 0,
+    );
+    const complianceExpectationPassed = complianceExpectationRuns.filter(r => r.passed === true).length;
     return {
       fixtureCount: runs.length,
       passedCount: passed,
       passRate: runs.length > 0 ? round4(passed / runs.length) : null,
+      complianceExpectationFixtureCount: complianceExpectationRuns.length,
+      complianceExpectationPassedCount: complianceExpectationPassed,
+      complianceExpectationPassRate: complianceExpectationRuns.length > 0
+        ? round4(complianceExpectationPassed / complianceExpectationRuns.length)
+        : null,
     };
   };
 
