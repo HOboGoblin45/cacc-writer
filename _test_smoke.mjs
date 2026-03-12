@@ -692,6 +692,29 @@ await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item
   assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
 });
 
+await test('POST /api/cases/:caseId/insert-all blocks approved insertion when QC run is missing', async () => {
+  const fieldId = 'neighborhood_description';
+
+  const patch = await api('PATCH', `/api/cases/${testCaseId}/outputs/${fieldId}`, {
+    text: 'Approved smoke narrative for insert-all QC gate check.',
+  });
+  assert(patch.status === 200, `Expected 200, got ${patch.status}`);
+  assertOk(patch.body, 'PATCH /api/cases/:caseId/outputs/:fieldId');
+
+  const approve = await api('PATCH', `/api/cases/${testCaseId}/sections/${fieldId}/status`, {
+    status: 'approved',
+  });
+  assert(approve.status === 200, `Expected 200, got ${approve.status}`);
+  assertOk(approve.body, 'PATCH /api/cases/:caseId/sections/:fieldId/status');
+
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`, {});
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_GATE_BLOCKED', 'code should be QC_GATE_BLOCKED');
+  assert(typeof body?.qcGate === 'object', 'qcGate should be an object');
+  assert(body?.qcGate?.reason === 'missing_qc_run', 'qcGate reason should indicate missing QC run');
+});
+
 console.log('\n8. AI Endpoints (error handling)');
 
 await test('POST /api/generate without fieldId or prompt returns 400', async () => {
@@ -715,9 +738,9 @@ await test('POST /api/cases/:caseId/review-section without draftText returns 400
   assert(body.ok === false, 'ok should be false');
 });
 
-await test('POST /api/cases/:caseId/insert-all with no approved sections returns 400', async () => {
+await test('POST /api/cases/:caseId/insert-all enforces insertion preconditions', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/insert-all`);
-  assert(status === 400, `Expected 400, got ${status}`);
+  assert(status === 400 || status === 409, `Expected 400 or 409, got ${status}`);
   assert(body.ok === false, 'ok should be false');
 });
 

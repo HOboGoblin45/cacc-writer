@@ -76,7 +76,11 @@ export function prepareInsertionRun({
   });
 
   // Check QC gate
-  const qcGate = checkQcGate(caseId, generationRunId, mergedConfig);
+  const qcGate = evaluateInsertionQcGate({
+    caseId,
+    generationRunId,
+    config: mergedConfig,
+  });
   mergedConfig.qcOverrideAllowed = qcGate.overrideAllowed !== false;
 
   // Create the run
@@ -538,6 +542,28 @@ function gatherFieldTexts(caseId, formType, generationRunId = null) {
   }
 
   return texts;
+}
+
+/**
+ * Evaluate QC gate for insertion without creating a run record.
+ *
+ * @param {Object} params
+ * @param {string} params.caseId
+ * @param {string|null} [params.generationRunId]
+ * @param {Object} [params.config]
+ * @returns {import('./types.js').QCGateResult}
+ */
+export function evaluateInsertionQcGate({
+  caseId,
+  generationRunId = null,
+  config = {},
+}) {
+  const mergedConfig = {
+    requireQcRun: false,
+    requireFreshQcForGeneration: true,
+    ...config,
+  };
+  return checkQcGate(caseId, generationRunId, mergedConfig);
 }
 
 /**
