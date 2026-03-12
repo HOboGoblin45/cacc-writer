@@ -598,6 +598,38 @@ await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate
   assert(typeof body.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned when gate blocks');
 });
 
+await test('POST /api/cases/:caseId/generate-full-draft rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {
+    options: { forceGateBypass: 'yes' },
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/generation/full-draft rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/generation/full-draft', {
+    caseId: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/generation/regenerate-section rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/generation/regenerate-section', {
+    runId: 123,
+    sectionId: 'neighborhood_description',
+    caseId: testCaseId,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('POST /api/cases/:caseId/feedback saves feedback', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/feedback`, {
     fieldId: 'neighborhood_description',
