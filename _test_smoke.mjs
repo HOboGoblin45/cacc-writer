@@ -730,6 +730,15 @@ await test('GET /api/cases/:caseId/pre-draft-check returns gate details', async 
   assert(typeof body.decisionQueueSummary === 'object', 'decisionQueueSummary should be an object');
 });
 
+await test('GET /api/cases/:caseId/qc-approval-gate returns QC approval gate details', async () => {
+  const { status, body } = await api('GET', `/api/cases/${testCaseId}/qc-approval-gate`);
+  assert(status === 200, `Expected 200, got ${status}`);
+  assertOk(body, 'GET /api/cases/:caseId/qc-approval-gate');
+  assert(typeof body.gate === 'object', 'gate should be an object');
+  assert(body.gate.ok === false, 'gate.ok should be false without a QC run');
+  assert(body.gate.code === 'QC_REQUIRED_BEFORE_APPROVAL', 'expected QC_REQUIRED_BEFORE_APPROVAL code');
+});
+
 await test('GET /api/cases/:caseId/intelligence/requirements returns deterministic section matrix', async () => {
   const { status, body } = await api('GET', `/api/cases/${testCaseId}/intelligence/requirements`);
   assert(status === 200, `Expected 200, got ${status}`);

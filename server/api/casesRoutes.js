@@ -15,6 +15,7 @@
  *   PATCH  /:caseId/pipeline              — advance pipeline stage
  *   PATCH  /:caseId/workflow-status       — set workflowStatus
  *   PUT    /:caseId/facts                 — save/merge facts
+ *   GET    /:caseId/qc-approval-gate      — evaluate QC gate for approval/finalization
  *   GET    /:caseId/history               — section version history
  *   GET    /:caseId/generation-runs       — list orchestrator runs for case
  *   POST   /:caseId/geocode               — geocode subject + comps
@@ -486,6 +487,21 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
       gate,
       factReviewQueuePath: `/api/cases/${req.params.caseId}/fact-review-queue`,
       decisionQueueSummary: decisionQueue?.summary || null,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/qc-approval-gate', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const gate = evaluateCaseApprovalGate(req.params.caseId);
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      gate,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
