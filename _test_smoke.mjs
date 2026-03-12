@@ -826,6 +826,16 @@ await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item
   assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
 });
 
+await test('PUT /api/insertion/profile/:id rejects invalid payload type', async () => {
+  const { status, body } = await api('PUT', '/api/insertion/profile/iprofile_missing', {
+    active: 'yes',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('POST /api/cases/:caseId/sections/:fieldId/insert blocks when QC run is missing', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/insert`, {
     text: 'Smoke section insert payload',
