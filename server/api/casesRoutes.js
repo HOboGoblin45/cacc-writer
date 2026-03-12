@@ -75,6 +75,7 @@ import {
   holdComparableCandidate,
   saveAdjustmentSupportDecision,
 } from '../comparableIntelligence/comparableIntelligenceService.js';
+import { buildContradictionGraph } from '../contradictionGraph/contradictionGraphService.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -454,6 +455,11 @@ router.get('/:caseId/workspace', (req, res) => {
     const approvalGate = evaluateCaseApprovalGate(req.params.caseId);
     const extractedFacts = getExtractedFacts(req.params.caseId);
     const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
+    const contradictionGraph = buildContradictionGraph(req.params.caseId, {
+      projection,
+      factConflictReport: conflictReport,
+      comparableIntelligence,
+    });
 
     const workspace = buildWorkspacePayload({
       formType,
@@ -467,17 +473,43 @@ router.get('/:caseId/workspace', (req, res) => {
       qc: {
         conflictCount: Array.isArray(conflictReport.conflicts) ? conflictReport.conflicts.length : 0,
         conflictSummary: conflictReport.summary || {},
+        contradictionGraphCount: contradictionGraph?.summary?.totalContradictions || 0,
+        contradictionGraphSummary: contradictionGraph?.summary || null,
         approvalGate,
         extractedFactCount: Array.isArray(extractedFacts) ? extractedFacts.length : 0,
       },
     });
     workspace.comparableIntelligence = comparableIntelligence;
+    workspace.contradictionGraph = contradictionGraph;
 
     res.json({
       ok: true,
       caseId: req.params.caseId,
       formType,
       workspace,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/contradiction-graph', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const conflictReport = detectFactConflicts(req.params.caseId) || { summary: {}, conflicts: [] };
+    const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
+    const contradictionGraph = buildContradictionGraph(req.params.caseId, {
+      projection,
+      factConflictReport: conflictReport,
+      comparableIntelligence,
+    });
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      contradictionGraph,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
