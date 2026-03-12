@@ -1,4 +1,4 @@
-/**
+﻿/**
  * _test_smoke.mjs
  * ---------------
  * Smoke tests for CACC Writer production server.
@@ -319,6 +319,26 @@ await test('PUT /api/cases/:caseId/fact-sources saves source links', async () =>
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'PUT /api/cases/:caseId/fact-sources');
   assert(body.sources?.['subject.address']?.sourceId === 'order_sheet.pdf', 'source link should be saved');
+});
+
+await test('POST /api/cases/:caseId/geocode rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/geocode`, {
+    subjectAddress: 123,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/cases/:caseId/missing-facts rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/missing-facts`, {
+    fieldIds: 'neighborhood_description',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
 });
 
 // —— 4b. Document Intake & Classification ——————————————————————————————
