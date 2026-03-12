@@ -131,11 +131,20 @@ const migrationBackfillSchema = z.object({
   limit: z.number().int().min(1).max(5000).optional(),
 }).passthrough();
 
+const geocodeSchema = z.object({
+  subjectAddress: z.string().max(240).optional(),
+}).passthrough();
+
+const missingFactsBatchSchema = z.object({
+  fieldIds: z.array(z.string().max(80)).max(200).optional(),
+}).passthrough();
+
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
   res.status(400).json({
     ok: false,
+    code: 'INVALID_PAYLOAD',
     error: 'Invalid request payload',
     details: parsed.error.issues.map(i => ({
       path: i.path.join('.') || '(root)',
@@ -728,6 +737,9 @@ router.get('/:caseId/generation-runs', (req, res) => {
 
 // ── POST /:caseId/geocode — Geocode subject + comps ───────────────────────────
 router.post('/:caseId/geocode', async (req, res) => {
+  const body = parsePayload(geocodeSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     const projection = getCaseProjection(req.params.caseId);
@@ -747,7 +759,7 @@ router.post('/:caseId/geocode', async (req, res) => {
         const zip   = fv('subject_zip');
         return [street, city, state, zip].filter(Boolean).join(', ');
       })() ||
-      (req.body?.subjectAddress ? String(req.body.subjectAddress).trim() : null);
+      (body.subjectAddress ? String(body.subjectAddress).trim() : null);
 
     if (!subjectAddress) {
       return res.status(400).json({
@@ -888,8 +900,11 @@ router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
 
 // ── POST /:caseId/missing-facts — Batch missing facts check ───────────────────
 router.post('/:caseId/missing-facts', (req, res) => {
+  const body = parsePayload(missingFactsBatchSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const fieldIds = Array.isArray(req.body?.fieldIds) ? req.body.fieldIds : [];
+    const fieldIds = Array.isArray(body.fieldIds) ? body.fieldIds : [];
     if (!fieldIds.length) return res.json({ ok: true, warnings: [] });
 
     const projection = getCaseProjection(req.params.caseId);
