@@ -125,10 +125,16 @@
       "lane": "commercial",
       "expectedOk": false,
       "expectedBlockerTypes": ["compliance_hard_rules"],
+      "expectedComplianceRuleIds": ["rule.mixed_use.commentary"],
       "gateResult": {
         "ok": false,
         "blockers": [
-          { "type": "compliance_hard_rules" }
+          {
+            "type": "compliance_hard_rules",
+            "findings": [
+              { "ruleId": "rule.mixed_use.commentary" }
+            ]
+          }
         ]
       }
     },
