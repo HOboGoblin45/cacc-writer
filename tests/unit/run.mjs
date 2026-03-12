@@ -53,6 +53,9 @@ const suites = [
   'generationService.test.mjs',
   'generationOrchestrator.test.mjs',
   'reportQueue.test.mjs',
+  'sectionPolicyService.test.mjs',
+  'contradictionResolution.test.mjs',
+  'valuationCalculator.test.mjs',
 ];
 
 let totalPassed = 0;

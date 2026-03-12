@@ -76,6 +76,25 @@ import {
   saveAdjustmentSupportDecision,
 } from '../comparableIntelligence/comparableIntelligenceService.js';
 import { buildContradictionGraph } from '../contradictionGraph/contradictionGraphService.js';
+import {
+  resolveContradiction,
+  dismissContradiction,
+  acknowledgeContradiction,
+  reopenContradiction,
+  mergeResolutionStatus,
+  buildResolutionSummary,
+  RESOLUTION_STATUS,
+} from '../contradictionGraph/contradictionResolutionService.js';
+import {
+  buildSectionPolicy,
+  buildDependencySnapshot,
+  detectStaleness,
+  computeQualityScore,
+  getPromptVersion,
+  findStaleDependentSections,
+  evaluateRegeneratePolicy,
+  FRESHNESS,
+} from '../services/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -482,6 +501,25 @@ router.get('/:caseId/workspace', (req, res) => {
     workspace.comparableIntelligence = comparableIntelligence;
     workspace.contradictionGraph = contradictionGraph;
 
+    // Phase D — section audit metadata for UI consumption
+    const sectionPolicySummary = {};
+    const narrativeSections = [
+      'offering_history', 'contract_analysis', 'neighborhood_description',
+      'market_conditions', 'site_description', 'improvements_description',
+      'sca_summary', 'reconciliation',
+    ];
+    for (const sid of narrativeSections) {
+      const pol = buildSectionPolicy(sid, projection.facts || {});
+      sectionPolicySummary[sid] = {
+        profileId: pol.profileId,
+        promptVersion: pol.promptVersion,
+        hasBlockers: pol.missingFacts.hasBlockers,
+        missingRequiredCount: pol.missingFacts.required.length,
+        missingRecommendedCount: pol.missingFacts.recommended.length,
+      };
+    }
+    workspace.sectionPolicySummary = sectionPolicySummary;
+
     res.json({
       ok: true,
       caseId: req.params.caseId,
@@ -506,11 +544,86 @@ router.get('/:caseId/contradiction-graph', (req, res) => {
       comparableIntelligence,
     });
 
+    // Phase E — merge resolution status into graph items
+    if (contradictionGraph) {
+      contradictionGraph.items = mergeResolutionStatus(req.params.caseId, contradictionGraph.items);
+      contradictionGraph.resolutionSummary = buildResolutionSummary(req.params.caseId, contradictionGraph.items);
+    }
+
     res.json({
       ok: true,
       caseId: req.params.caseId,
       contradictionGraph,
     });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Contradiction resolution endpoints ───────────────────────────────────────
+
+const contradictionResolutionSchema = z.object({
+  actor: z.string().min(1).max(120).optional().default('appraiser'),
+  note: z.string().max(500).optional().default(''),
+});
+
+const contradictionDismissSchema = z.object({
+  actor: z.string().min(1).max(120).optional().default('appraiser'),
+  reason: z.string().min(1).max(500),
+});
+
+const contradictionReopenSchema = z.object({
+  actor: z.string().min(1).max(120).optional().default('appraiser'),
+  reason: z.string().max(500).optional().default(''),
+});
+
+router.post('/:caseId/contradiction-graph/:contradictionId/resolve', (req, res) => {
+  const body = parsePayload(contradictionResolutionSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const record = resolveContradiction(req.params.caseId, req.params.contradictionId, body);
+    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/contradiction-graph/:contradictionId/dismiss', (req, res) => {
+  const body = parsePayload(contradictionDismissSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const record = dismissContradiction(req.params.caseId, req.params.contradictionId, body);
+    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/contradiction-graph/:contradictionId/acknowledge', (req, res) => {
+  const body = parsePayload(contradictionResolutionSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const record = acknowledgeContradiction(req.params.caseId, req.params.contradictionId, body);
+    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/contradiction-graph/:contradictionId/reopen', (req, res) => {
+  const body = parsePayload(contradictionReopenSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const record = reopenContradiction(req.params.caseId, req.params.contradictionId, body);
+    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -527,6 +640,185 @@ router.get('/:caseId/comparable-intelligence', (req, res) => {
       caseId: req.params.caseId,
       intelligence,
     });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Section audit / policy endpoints ──────────────────────────────────────────
+
+router.get('/:caseId/section-audit', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const facts = projection.facts || {};
+    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const definition = getWorkspaceDefinition(formType);
+    if (!definition) return res.status(404).json({ ok: false, error: 'Unknown form type' });
+
+    // Build section-level audit summaries
+    const sectionAudits = {};
+    const sectionIds = [
+      'offering_history', 'contract_analysis', 'concessions',
+      'neighborhood_boundaries', 'neighborhood_description', 'market_conditions',
+      'site_comments', 'site_description', 'improvements_condition', 'improvements_description',
+      'sca_summary', 'sales_comparison', 'sales_comparison_commentary',
+      'reconciliation', 'exposure_time', 'highest_best_use',
+      'income_approach_summary', 'cost_approach_summary',
+    ];
+
+    for (const sectionId of sectionIds) {
+      const policy = buildSectionPolicy(sectionId, facts);
+      const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts);
+      sectionAudits[sectionId] = {
+        policy,
+        regeneratePolicy,
+        promptVersion: getPromptVersion(sectionId),
+      };
+    }
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      formType,
+      sectionAudits,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/:caseId/section-audit/:sectionId', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const facts = projection.facts || {};
+    const { sectionId } = req.params;
+
+    const policy = buildSectionPolicy(sectionId, facts);
+    const snapshot = buildDependencySnapshot(sectionId, facts);
+    const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts);
+    const staleDependents = findStaleDependentSections(sectionId);
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      sectionId,
+      policy,
+      dependencySnapshot: snapshot,
+      regeneratePolicy,
+      staleDependentSections: staleDependents,
+      promptVersion: getPromptVersion(sectionId),
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Valuation calculator endpoints ────────────────────────────────────────────
+
+import {
+  computeCompAdjustments,
+  computeBurdenMetrics,
+  suggestCompWeighting,
+  computeWeightedIndication,
+  computeIncomeApproachValue,
+  deriveGRM,
+  computeCostApproachValue,
+  buildReconciliationSupport,
+} from '../services/valuationCalculatorService.js';
+
+const valuationComputeSchema = z.object({
+  comps: z.array(z.object({
+    salePrice: z.union([z.number(), z.string()]),
+    adjustments: z.record(z.union([z.number(), z.string()])).optional().default({}),
+  })).min(1).max(6),
+  weights: z.array(z.number()).optional(),
+});
+
+const incomeComputeSchema = z.object({
+  monthlyRent: z.union([z.number(), z.string()]),
+  grm: z.union([z.number(), z.string()]),
+});
+
+const costComputeSchema = z.object({
+  siteValue: z.union([z.number(), z.string()]),
+  dwellingCostNew: z.union([z.number(), z.string()]),
+  garageCarportCost: z.union([z.number(), z.string()]).optional(),
+  otherCosts: z.union([z.number(), z.string()]).optional(),
+  totalDepreciation: z.union([z.number(), z.string()]),
+  siteImprovementsValue: z.union([z.number(), z.string()]).optional(),
+});
+
+const reconciliationComputeSchema = z.object({
+  salesComparisonValue: z.union([z.number(), z.string()]).nullable().optional(),
+  costApproachValue: z.union([z.number(), z.string()]).nullable().optional(),
+  incomeApproachValue: z.union([z.number(), z.string()]).nullable().optional(),
+  weights: z.object({
+    salesComparison: z.number().optional().default(0),
+    costApproach: z.number().optional().default(0),
+    incomeApproach: z.number().optional().default(0),
+  }).optional().default({}),
+});
+
+router.post('/:caseId/valuation/sales-comparison', (req, res) => {
+  const body = parsePayload(valuationComputeSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const compMetrics = body.comps.map(c => computeCompAdjustments(c));
+    const burden = computeBurdenMetrics(compMetrics);
+    const suggestedWeights = suggestCompWeighting(compMetrics);
+
+    // Apply user weights if provided, else use suggested
+    const weightedComps = compMetrics.map((c, i) => ({
+      adjustedPrice: c.adjustedSalePrice,
+      weight: body.weights?.[i] ?? suggestedWeights[i]?.suggestedWeight ?? 0,
+    }));
+    const indication = computeWeightedIndication(weightedComps);
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      compMetrics,
+      burden,
+      suggestedWeights,
+      indication,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/valuation/income', (req, res) => {
+  const body = parsePayload(incomeComputeSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const result = computeIncomeApproachValue(body);
+    res.json({ ok: true, caseId: req.params.caseId, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/valuation/cost', (req, res) => {
+  const body = parsePayload(costComputeSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const result = computeCostApproachValue(body);
+    res.json({ ok: true, caseId: req.params.caseId, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/valuation/reconciliation', (req, res) => {
+  const body = parsePayload(reconciliationComputeSchema, req.body || {}, res);
+  if (!body) return;
+  try {
+    const result = buildReconciliationSupport(body);
+    res.json({ ok: true, caseId: req.params.caseId, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
