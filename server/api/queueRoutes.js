@@ -30,6 +30,7 @@ const router = Router();
 const queueCaseSchema = z.object({
   caseId: z.string().min(1).max(80),
   formType: z.string().max(20).optional(),
+  forceGateBypass: z.boolean().optional(),
 }).passthrough();
 const enqueueSchema = z.object({
   cases: z.array(queueCaseSchema).min(1).max(200),
