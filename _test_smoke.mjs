@@ -1397,6 +1397,15 @@ await test('POST /api/reports/queue rejects invalid payload type', async () => {
   assert(typeof body?.error === 'string', 'error should be a string');
 });
 
+await test('POST /api/reports/queue rejects invalid forceGateBypass payload type', async () => {
+  const { status, body } = await api('POST', '/api/reports/queue', {
+    cases: [{ caseId: testCaseId, formType: '1004', forceGateBypass: 'true' }],
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/reports/queue/cancel rejects unexpected payload fields', async () => {
   const { status, body } = await api('POST', '/api/reports/queue/cancel', {
     force: true,
