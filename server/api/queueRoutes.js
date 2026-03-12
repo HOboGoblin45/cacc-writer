@@ -34,6 +34,7 @@ const queueCaseSchema = z.object({
 const enqueueSchema = z.object({
   cases: z.array(queueCaseSchema).min(1).max(200),
 }).passthrough();
+const emptyMutationSchema = z.object({}).strict();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -104,6 +105,7 @@ router.get('/reports/queue/job/:jobId', (req, res) => {
 // Cancel all queued (not-yet-started) jobs.
 
 router.post('/reports/queue/cancel', (_req, res) => {
+  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
   const cancelled = cancelQueued();
   res.json({ cancelled });
 });
@@ -112,6 +114,7 @@ router.post('/reports/queue/cancel', (_req, res) => {
 // Remove completed/failed/cancelled jobs from the queue.
 
 router.post('/reports/queue/clear', (_req, res) => {
+  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
   const cleared = clearCompleted();
   res.json({ cleared });
 });
