@@ -16,7 +16,7 @@ import {
 } from './insertionRepo.js';
 import { resolveMapping, resolveAllMappings, inferTargetSoftware } from './destinationMapper.js';
 import { formatForDestination } from './formatters/index.js';
-import { verifyInsertion } from './verificationEngine.js';
+import { verifyInsertion, readInsertionField } from './verificationEngine.js';
 import { decideFallback, copyToClipboard } from './fallbackHandler.js';
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -51,6 +51,7 @@ export function prepareInsertionRun({
     requireQcRun: false,
     requireFreshQcForGeneration: true,
     forceReinsert: false,
+    rollbackOnVerificationFailure: true,
     maxRetries: 3,
     defaultFallback: 'retry_then_clipboard',
     ...(profile?.config || {}),
@@ -220,9 +221,12 @@ export async function executeInsertionRun(runId) {
     }
   }
 
+  const finalItems = getInsertionRunItems(runId);
+  const rollbackCount = finalItems.filter((entry) => entry.rollbackStatus === 'restored').length;
+  const fallbackUsedCount = finalItems.filter((entry) => entry.fallbackUsed).length;
+
   // Build summary
   const durationMs = Date.now() - new Date(run.startedAt || run.createdAt).getTime();
-  const totalProcessed = completed + failed + skipped;
   let readinessSignal = 'ready';
   if (failed > 0 && completed === 0) readinessSignal = 'failed';
   else if (failed > 0 || mismatchFieldIds.length > 0) readinessSignal = 'needs_review';
@@ -234,12 +238,14 @@ export async function executeInsertionRun(runId) {
     verified,
     failed,
     skipped,
-    fallbackUsed: items.filter(i => i.fallbackUsed).length,
+    fallbackUsed: fallbackUsedCount,
+    rollbackFields: rollbackCount,
     durationMs,
     failedFieldIds,
     mismatchFieldIds,
     readinessSignal,
   };
+  const replayPackage = buildInsertionReplayPackage({ run, items: finalItems });
 
   const finalStatus = failed === 0 && skipped === 0 ? 'completed'
     : failed === items.length ? 'failed'
@@ -251,9 +257,11 @@ export async function executeInsertionRun(runId) {
     failedFields: failed,
     skippedFields: skipped,
     verifiedFields: verified,
+    rollbackFields: rollbackCount,
     completedAt: new Date().toISOString(),
     durationMs,
     summaryJson: summary,
+    replayPackageJson: replayPackage,
   });
 
   return getInsertionRun(runId);
@@ -272,6 +280,8 @@ export async function executeInsertionRun(runId) {
  */
 async function processItem(item, run, profile, agentBaseUrl) {
   const startTime = Date.now();
+  const attemptLog = [];
+  let retryClass = null;
 
   updateInsertionRunItem(item.id, {
     status: 'formatting',
@@ -297,8 +307,11 @@ async function processItem(item, run, profile, agentBaseUrl) {
   });
 
   if (!formatResult.formattedText || formatResult.formattedText.trim().length === 0) {
+    retryClass = classifyRetryClass('no_text');
     updateInsertionRunItem(item.id, {
       status: 'skipped',
+      retryClass,
+      attemptLogJson: attemptLog,
       errorCode: 'no_text',
       errorText: 'Formatted text is empty',
       completedAt: new Date().toISOString(),
@@ -311,11 +324,32 @@ async function processItem(item, run, profile, agentBaseUrl) {
   if (run.config.dryRun) {
     updateInsertionRunItem(item.id, {
       status: 'skipped',
+      attemptLogJson: attemptLog,
       errorText: 'Dry run — insertion skipped',
       completedAt: new Date().toISOString(),
       durationMs: Date.now() - startTime,
     });
     return { status: 'skipped', verificationStatus: 'skipped' };
+  }
+
+  const readbackEnabled = supportsReadback(profile, mapping);
+  let preInsertSnapshot = {
+    status: 'not_supported',
+    rawValue: null,
+    normalizedValue: null,
+    message: null,
+  };
+  if (readbackEnabled) {
+    preInsertSnapshot = await readInsertionField({
+      agentFieldKey: mapping.agentFieldKey || item.fieldId,
+      targetSoftware: item.targetSoftware,
+      agentBaseUrl,
+      timeout: profile?.config?.timeout || 10000,
+    });
+    updateInsertionRunItem(item.id, {
+      preinsertRaw: preInsertSnapshot.rawValue,
+      preinsertNormalized: preInsertSnapshot.normalizedValue,
+    });
   }
 
   // 4. Insert via agent
@@ -336,7 +370,16 @@ async function processItem(item, run, profile, agentBaseUrl) {
         profile?.config?.timeout || 15000
       );
 
-      if (insertResult.success) break;
+      if (insertResult.success) {
+        attemptLog.push({
+          attemptCount,
+          phase: 'insert',
+          outcome: 'success',
+          retryClass,
+          at: new Date().toISOString(),
+        });
+        break;
+      }
 
       lastError = {
         code: insertResult.errorCode || 'insertion_rejected',
@@ -350,6 +393,17 @@ async function processItem(item, run, profile, agentBaseUrl) {
         detail: { stack: err.stack },
       };
     }
+
+    retryClass = classifyRetryClass(lastError.code);
+    attemptLog.push({
+      attemptCount,
+      phase: 'insert',
+      outcome: 'failed',
+      retryClass,
+      errorCode: lastError.code,
+      errorText: lastError.text,
+      at: new Date().toISOString(),
+    });
 
     // Check fallback
     const fallback = decideFallback({
@@ -367,6 +421,8 @@ async function processItem(item, run, profile, agentBaseUrl) {
         updateInsertionRunItem(item.id, {
           status: 'fallback_used',
           attemptCount,
+          retryClass,
+          attemptLogJson: attemptLog,
           fallbackUsed: true,
           errorCode: lastError.code,
           errorText: `${lastError.text} — clipboard fallback used`,
@@ -382,6 +438,8 @@ async function processItem(item, run, profile, agentBaseUrl) {
       updateInsertionRunItem(item.id, {
         status: 'failed',
         attemptCount,
+        retryClass,
+        attemptLogJson: attemptLog,
         errorCode: lastError.code,
         errorText: lastError.text,
         errorDetailJson: lastError.detail,
@@ -393,13 +451,15 @@ async function processItem(item, run, profile, agentBaseUrl) {
     }
 
     // Brief delay before retry
-    await sleep(1000 * attemptCount);
+    await sleep(retryDelayMs(retryClass, attemptCount));
   }
 
   // Insertion succeeded
   updateInsertionRunItem(item.id, {
     status: 'inserted',
     attemptCount,
+    retryClass,
+    attemptLogJson: attemptLog,
     agentResponseJson: insertResult || {},
   });
 
@@ -417,11 +477,21 @@ async function processItem(item, run, profile, agentBaseUrl) {
     });
 
     verificationStatus = verResult.status;
+    attemptLog.push({
+      attemptCount,
+      phase: 'verify',
+      outcome: verResult.status,
+      retryClass: classifyRetryClass('verification_mismatch'),
+      similarityScore: verResult.similarityScore ?? null,
+      at: new Date().toISOString(),
+    });
 
     updateInsertionRunItem(item.id, {
       verificationStatus: verResult.status,
       verificationRaw: verResult.rawValue,
       verificationNormalized: verResult.normalizedValue,
+      verificationExpected: verResult.expectedNormalized,
+      attemptLogJson: attemptLog,
     });
 
     if (verResult.status === 'passed') {
@@ -432,15 +502,177 @@ async function processItem(item, run, profile, agentBaseUrl) {
       });
       return { status: 'verified', verificationStatus: 'passed' };
     }
+
+    if (['mismatch', 'unreadable', 'failed'].includes(verResult.status)) {
+      retryClass = classifyRetryClass('verification_mismatch');
+      const rollbackResult = await rollbackInsertedField({
+        item,
+        run,
+        mapping,
+        profile,
+        agentBaseUrl,
+        preInsertSnapshot,
+      });
+
+      updateInsertionRunItem(item.id, {
+        status: 'failed',
+        retryClass,
+        attemptLogJson: attemptLog,
+        rollbackAttempted: rollbackResult.attempted,
+        rollbackStatus: rollbackResult.status,
+        rollbackText: rollbackResult.rollbackText,
+        rollbackErrorText: rollbackResult.errorText,
+        errorCode: 'verification_mismatch',
+        errorText: verResult.mismatchDetail || `Insertion verification ${verResult.status}`,
+        completedAt: new Date().toISOString(),
+        durationMs: Date.now() - startTime,
+      });
+
+      return {
+        status: 'failed',
+        verificationStatus,
+        rollbackStatus: rollbackResult.status,
+      };
+    }
   }
 
   // Mark as inserted (verification skipped or not passed but insertion succeeded)
   updateInsertionRunItem(item.id, {
+    attemptLogJson: attemptLog,
     completedAt: new Date().toISOString(),
     durationMs: Date.now() - startTime,
   });
 
   return { status: 'inserted', verificationStatus };
+}
+
+function classifyRetryClass(errorCode = 'unknown') {
+  const normalized = String(errorCode || 'unknown').toLowerCase();
+  if (normalized === 'agent_unreachable' || normalized === 'agent_timeout') return 'transport';
+  if (normalized === 'insertion_rejected') return 'destination';
+  if (normalized === 'verification_mismatch') return 'verification';
+  if (normalized === 'field_not_found') return 'mapping';
+  if (normalized === 'format_error' || normalized === 'no_text' || normalized === 'qc_blocked') return 'data';
+  return 'unknown';
+}
+
+function retryDelayMs(retryClass, attemptCount) {
+  const baseDelay = retryClass === 'transport' ? 1200 : 750;
+  return baseDelay * attemptCount;
+}
+
+function supportsReadback(profile, mapping) {
+  return Boolean(
+    mapping?.supported &&
+    mapping?.agentFieldKey &&
+    profile?.capabilities?.supportsReadback !== false
+  );
+}
+
+async function rollbackInsertedField({
+  item,
+  run,
+  mapping,
+  profile,
+  agentBaseUrl,
+  preInsertSnapshot,
+}) {
+  if (run.config.rollbackOnVerificationFailure === false) {
+    return {
+      attempted: false,
+      status: 'skipped',
+      rollbackText: null,
+      errorText: 'Rollback disabled by config',
+    };
+  }
+
+  if (!supportsReadback(profile, mapping) || preInsertSnapshot.status !== 'passed') {
+    return {
+      attempted: false,
+      status: 'skipped',
+      rollbackText: null,
+      errorText: 'No reliable pre-insert snapshot available',
+    };
+  }
+
+  try {
+    const rollbackText = preInsertSnapshot.rawValue || '';
+    const result = await callAgentInsert(
+      mapping.agentFieldKey || item.fieldId,
+      rollbackText,
+      item.targetSoftware,
+      agentBaseUrl,
+      profile?.config?.timeout || 15000
+    );
+
+    if (!result.success) {
+      return {
+        attempted: true,
+        status: 'failed',
+        rollbackText,
+        errorText: result.message || result.error || 'Rollback rejected by agent',
+      };
+    }
+
+    return {
+      attempted: true,
+      status: 'restored',
+      rollbackText,
+      errorText: null,
+    };
+  } catch (err) {
+    return {
+      attempted: true,
+      status: 'failed',
+      rollbackText: preInsertSnapshot.rawValue || '',
+      errorText: err.message,
+    };
+  }
+}
+
+function buildInsertionReplayPackage({ run, items }) {
+  const replayItems = items
+    .filter((item) => (
+      item.status === 'failed' ||
+      item.verificationStatus === 'mismatch' ||
+      item.fallbackUsed ||
+      item.rollbackAttempted
+    ))
+    .map((item) => ({
+      fieldId: item.fieldId,
+      destinationKey: item.destinationKey,
+      status: item.status,
+      verificationStatus: item.verificationStatus,
+      retryClass: item.retryClass || 'unknown',
+      formattedText: item.formattedText || '',
+      preinsertRaw: item.preinsertRaw || undefined,
+      verificationRaw: item.verificationRaw || undefined,
+      rollbackStatus: item.rollbackStatus || undefined,
+      errorCode: item.errorCode || undefined,
+      errorText: item.errorText || undefined,
+      attemptLog: Array.isArray(item.attemptLog) ? item.attemptLog : [],
+    }));
+
+  return {
+    runId: run.id,
+    caseId: run.caseId,
+    formType: run.formType,
+    targetSoftware: run.targetSoftware,
+    generatedAt: new Date().toISOString(),
+    summary: {
+      failedCount: replayItems.filter((item) => item.status === 'failed').length,
+      mismatchCount: replayItems.filter((item) => item.verificationStatus === 'mismatch').length,
+      rollbackCount: replayItems.filter((item) => item.rollbackStatus === 'restored').length,
+    },
+    items: replayItems,
+  };
+}
+
+export function getInsertionReplayPackage(runId) {
+  const run = getInsertionRun(runId);
+  if (!run) return null;
+  if (run.replayPackage && Array.isArray(run.replayPackage.items)) return run.replayPackage;
+  return buildInsertionReplayPackage({ run, items: getInsertionRunItems(runId) });
 }
 
 // ── Agent Communication ───────────────────────────────────────────────────────

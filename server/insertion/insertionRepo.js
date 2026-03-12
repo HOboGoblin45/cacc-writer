@@ -93,7 +93,8 @@ export function updateInsertionRun(id, updates) {
   const allowed = [
     'status', 'total_fields', 'completed_fields', 'failed_fields',
     'skipped_fields', 'verified_fields', 'started_at', 'completed_at',
-    'duration_ms', 'summary_json', 'qc_run_id', 'qc_blocker_count', 'qc_gate_passed',
+    'duration_ms', 'summary_json', 'replay_package_json', 'rollback_fields',
+    'qc_run_id', 'qc_blocker_count', 'qc_gate_passed',
   ];
   const sets = [];
   const vals = [];
@@ -101,7 +102,7 @@ export function updateInsertionRun(id, updates) {
     const col = toSnake(key);
     if (!allowed.includes(col)) continue;
     sets.push(`${col} = ?`);
-    if (col === 'summary_json') {
+    if (col === 'summary_json' || col === 'replay_package_json') {
       vals.push(typeof val === 'string' ? val : toJson(val));
     } else if (col === 'qc_gate_passed') {
       vals.push(val ? 1 : 0);
@@ -145,6 +146,8 @@ function hydrateRun(row) {
     qcGatePassed: !!row.qc_gate_passed,
     config: parseJsonCol(row.config_json),
     summary: parseJsonCol(row.summary_json),
+    replayPackage: parseJsonCol(row.replay_package_json),
+    rollbackFields: row.rollback_fields || 0,
     startedAt: row.started_at,
     completedAt: row.completed_at,
     durationMs: row.duration_ms,
@@ -229,8 +232,11 @@ export function updateInsertionRunItem(id, updates) {
   const db = getDb();
   const allowed = [
     'status', 'formatted_text', 'formatted_text_length',
-    'verification_status', 'verification_raw', 'verification_normalized',
+    'verification_status', 'verification_raw', 'verification_normalized', 'verification_expected',
+    'preinsert_raw', 'preinsert_normalized',
     'attempt_count', 'fallback_used', 'fallback_strategy',
+    'retry_class', 'attempt_log_json',
+    'rollback_attempted', 'rollback_status', 'rollback_text', 'rollback_error_text',
     'agent_response_json', 'error_code', 'error_text', 'error_detail_json',
     'started_at', 'completed_at', 'duration_ms',
   ];
@@ -242,7 +248,7 @@ export function updateInsertionRunItem(id, updates) {
     sets.push(`${col} = ?`);
     if (col.endsWith('_json')) {
       vals.push(typeof val === 'string' ? val : toJson(val));
-    } else if (col === 'fallback_used') {
+    } else if (col === 'fallback_used' || col === 'rollback_attempted') {
       vals.push(val ? 1 : 0);
     } else {
       vals.push(val);
@@ -304,10 +310,19 @@ function hydrateItem(row) {
     verificationStatus: row.verification_status,
     verificationRaw: row.verification_raw,
     verificationNormalized: row.verification_normalized,
+    verificationExpected: row.verification_expected,
+    preinsertRaw: row.preinsert_raw,
+    preinsertNormalized: row.preinsert_normalized,
     attemptCount: row.attempt_count,
     maxAttempts: row.max_attempts,
+    retryClass: row.retry_class,
     fallbackStrategy: row.fallback_strategy,
     fallbackUsed: !!row.fallback_used,
+    attemptLog: parseJsonCol(row.attempt_log_json, []),
+    rollbackAttempted: !!row.rollback_attempted,
+    rollbackStatus: row.rollback_status,
+    rollbackText: row.rollback_text,
+    rollbackErrorText: row.rollback_error_text,
     agentResponse: parseJsonCol(row.agent_response_json),
     errorCode: row.error_code,
     errorText: row.error_text,
