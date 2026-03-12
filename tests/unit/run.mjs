@@ -26,6 +26,7 @@ const suites = [
   'workflowStateMachine.test.mjs',
   'workspaceService.test.mjs',
   'comparableIntelligenceService.test.mjs',
+  'comparableQcChecker.test.mjs',
   'caseApprovalGate.test.mjs',
   'caseRecordService.test.mjs',
   'accuracyBenchmarks.test.mjs',
