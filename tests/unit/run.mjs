@@ -44,6 +44,7 @@ const suites = [
   'intelligenceRules.test.mjs',
   'insertionQcGate.test.mjs',
   'insertionReliability.test.mjs',
+  'casesInsertionRoutes.test.mjs',
   'envPrecedence.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
@@ -52,6 +53,8 @@ const suites = [
   'knowledgeBase.test.mjs',
   'generationService.test.mjs',
   'generationOrchestrator.test.mjs',
+  'sectionPolicyService.test.mjs',
+  'generationRegenerateRoutes.test.mjs',
   'reportQueue.test.mjs',
 ];
 

@@ -63,6 +63,7 @@ import {
   saveAnalysisArtifact,
   getGeneratedSectionsForRun,
 } from '../db/repositories/generationRepo.js';
+import { resolveSectionPolicy, buildDependencySnapshot } from '../sectionFactory/sectionPolicyService.js';
 
 const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
 const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
@@ -139,6 +140,10 @@ function preCreateSectionJobs(plan, runId) {
   for (const sectionDef of plan.sections) {
     const isDependent = sectionDef.dependsOn && sectionDef.dependsOn.length > 0;
     const initialStatus = isDependent ? JOB_STATUS.BLOCKED : JOB_STATUS.QUEUED;
+    const sectionPolicy = resolveSectionPolicy({
+      formType: plan.formType || '1004',
+      sectionDef,
+    });
 
     const jobId = createSectionJob({
       runId,
@@ -146,6 +151,12 @@ function preCreateSectionJobs(plan, runId) {
       status:     initialStatus,
       profileId:  sectionDef.generatorProfile || 'retrieval-guided',
       dependsOn:  sectionDef.dependsOn || [],
+      promptVersion: sectionPolicy.promptVersion,
+      sectionPolicy,
+      dependencySnapshot: buildDependencySnapshot({
+        sectionPolicy,
+        generatedSections: [],
+      }),
     });
 
     jobMap.set(sectionDef.id, jobId);
@@ -158,6 +169,14 @@ function preCreateSectionJobs(plan, runId) {
   });
 
   return jobMap;
+}
+
+function parseJsonSafe(raw, fallback) {
+  try {
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 // ── Analysis jobs ─────────────────────────────────────────────────────────────
@@ -859,6 +878,9 @@ export function getRunStatus(runId) {
       durationMs:   j.duration_ms,
       attemptCount: j.attempt_count,
       profile:      j.generator_profile,
+      promptVersion: j.prompt_version || null,
+      sectionPolicy: parseJsonSafe(j.section_policy_json, null),
+      dependencySnapshot: parseJsonSafe(j.dependency_snapshot_json, null),
       errorText:    j.error_text || null,
     })),
     phaseTimings: {
@@ -921,6 +943,9 @@ export function getRunResult(runId) {
       approvedAt:   s.approved_at,
       insertedAt:   s.inserted_at,
       examplesUsed: s.examples_used,
+      auditMetadata: parseJsonSafe(s.audit_metadata_json, {}),
+      qualityScore: typeof s.quality_score === 'number' ? s.quality_score : null,
+      qualityMetadata: parseJsonSafe(s.quality_metadata_json, {}),
     };
   }
 
