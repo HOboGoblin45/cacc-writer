@@ -44,6 +44,7 @@ const suites = [
   'promptBuilder.test.mjs',
   'knowledgeBase.test.mjs',
   'generationService.test.mjs',
+  'generationOrchestrator.test.mjs',
   'reportQueue.test.mjs',
 ];
 
