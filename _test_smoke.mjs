@@ -160,6 +160,18 @@ async function waitForQueueJobTerminal(jobId, { timeoutMs = 5000, intervalMs = 1
   return lastBody;
 }
 
+async function seedGenerationRun(caseId, { formType = '1004', status = 'complete' } = {}) {
+  const { getDb } = await import('./server/db/database.js');
+  const db = getDb();
+  const runId = `smoke-gen-${crypto.randomUUID().slice(0, 12)}`;
+  db.prepare(`
+    INSERT INTO generation_runs (
+      id, case_id, form_type, status, started_at, completed_at, created_at
+    ) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+  `).run(runId, caseId, formType, status);
+  return runId;
+}
+
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 let latestIngestJobId = null;
@@ -891,6 +903,36 @@ await test('POST /api/generation/regenerate-section rejects invalid payload type
   assert(body?.ok === false, 'ok should be false');
   assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
   assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/generation/regenerate-section rejects run/case mismatch', async () => {
+  const runId = await seedGenerationRun(testCaseId, { formType: '1004', status: 'complete' });
+  let mismatchCaseId = crypto.randomBytes(4).toString('hex');
+  if (mismatchCaseId === testCaseId) mismatchCaseId = crypto.randomBytes(4).toString('hex');
+
+  const { status, body } = await api('POST', '/api/generation/regenerate-section', {
+    runId,
+    sectionId: 'neighborhood_description',
+    caseId: mismatchCaseId,
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'RUN_CASE_MISMATCH', 'code should be RUN_CASE_MISMATCH');
+  assert(body?.runCaseId === testCaseId, 'runCaseId should match seeded run case');
+});
+
+await test('POST /api/generation/regenerate-section blocks on pre-draft gate', async () => {
+  const runId = await seedGenerationRun(testCaseId, { formType: '1004', status: 'complete' });
+  const { status, body } = await api('POST', '/api/generation/regenerate-section', {
+    runId,
+    sectionId: 'neighborhood_description',
+    caseId: testCaseId,
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'PRE_DRAFT_GATE_BLOCKED', 'code should be PRE_DRAFT_GATE_BLOCKED');
+  assert(typeof body?.factReviewQueuePath === 'string', 'factReviewQueuePath should be returned');
+  assert(typeof body?.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned');
 });
 
 await test('POST /api/similar-examples rejects invalid payload type', async () => {
