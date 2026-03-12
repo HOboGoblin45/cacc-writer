@@ -720,6 +720,28 @@ await test('GET /api/agents/status returns agent health', async () => {
   assert(typeof body.rq === 'boolean', 'rq should be boolean');
 });
 
+await test('POST /api/insert-aci rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/insert-aci', {
+    fieldId: 123,
+    text: 'Smoke text',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
+await test('POST /api/insert-rq rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', '/api/insert-rq', {
+    fieldId: 'market_analysis',
+    text: false,
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 // -- 7b. Insertion Gate --------------------------------------------------------
 console.log('\n7b. Insertion Gate');
 
