@@ -180,10 +180,14 @@ export const SECTION_DEPENDENCIES = {
   // DEFERRED — 1025 form type not in active production scope.
   // See SCOPE.md. Do not extend these until 1025 lane is activated.
 
+  prior_sales: {
+    required:    ['subject.address'],
+    recommended: ['contract.contractPrice', 'contract.contractDate', 'contract.offeringHistory'],
+  },
+
   income_approach: {
-    // DEFERRED (1025)
-    required:    [],
-    recommended: ['subject.gla', 'subject.condition'],
+    required:    ['subject.gla'],
+    recommended: ['subject.condition', 'income.grossRent', 'income.vacancyRate', 'income.capRate'],
   },
 
   // ── DEFERRED: 1073-specific sections ─────────────────────────────────────────
