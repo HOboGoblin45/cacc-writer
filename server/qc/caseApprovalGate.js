@@ -44,6 +44,11 @@ function toEpoch(value) {
   return Number.isNaN(ts) ? null : ts;
 }
 
+function isQcCompleteStatus(status) {
+  const normalized = asText(status).toLowerCase();
+  return normalized === 'complete' || normalized === 'completed';
+}
+
 /**
  * Evaluate whether a case is allowed to enter approval/finalization states.
  *
@@ -82,7 +87,7 @@ export function evaluateCaseApprovalGate(caseId, deps = {}) {
 
   const latestRun = runs[0];
   const latestSummary = summarizeRun(latestRun);
-  if (latestRun.status !== 'complete') {
+  if (!isQcCompleteStatus(latestRun.status)) {
     return {
       ok: false,
       code: latestRun.status === 'running'
