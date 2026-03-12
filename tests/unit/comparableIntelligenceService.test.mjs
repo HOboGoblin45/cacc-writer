@@ -375,6 +375,90 @@ await test('saveAdjustmentSupportDecision persists modified support decisions ac
   assert.equal(supportRecord.finalAmount, 5400);
   assert.equal(supportRecord.rationaleNote, 'Finalized using local sensitivity support.');
   assert.equal(rebuilt.acceptedSlots[0].burdenMetrics.burdenByCategory.gla, 5400);
+
+  const projection = getCaseProjection(caseId);
+  const gridLeaf = getNestedValue(projection.facts, 'workspace1004.salesComparison.grid');
+  const netAdjustmentRow = (gridLeaf?.value || []).find((row) => row.feature === 'Net Adjustment');
+  const adjustedPriceRow = (gridLeaf?.value || []).find((row) => row.feature === 'Adjusted Sale Price');
+  const indicatedValueLeaf = getNestedValue(projection.facts, 'workspace1004.salesComparison.indicatedValue');
+  const reconciliationSalesLeaf = getNestedValue(projection.facts, 'workspace1004.reconciliation.salesComparisonValue');
+
+  assert.ok(netAdjustmentRow?.comp1, 'expected computed net adjustment row value');
+  assert.ok(adjustedPriceRow?.comp1, 'expected computed adjusted sale price row value');
+  assert.ok(String(indicatedValueLeaf?.value || '').startsWith('$'), 'expected indicated value to sync into sales comparison');
+  assert.equal(indicatedValueLeaf?.value, reconciliationSalesLeaf?.value);
+});
+
+await test('buildComparableIntelligence generates reconciliation support from accepted comps', () => {
+  const { caseId } = createFilesystemCase({});
+
+  addCompDocument(caseId, 'comp_1', {
+    'comp.address': '701 Primary Weight Ln',
+    'comp.city': 'Bloomington',
+    'comp.state': 'IL',
+    'comp.saleDate': '2026-01-15',
+    'comp.salePrice': '255000',
+    'comp.style': 'Ranch',
+    'comp.condition': 'C3',
+    'comp.gla': '1810',
+    'comp.bedrooms': '3',
+    'comp.bathrooms': '2',
+    'comp.garage': '2 car',
+  });
+  addCompDocument(caseId, 'comp_2', {
+    'comp.address': '702 Secondary Weight Ln',
+    'comp.city': 'Bloomington',
+    'comp.state': 'IL',
+    'comp.saleDate': '2025-11-10',
+    'comp.salePrice': '248000',
+    'comp.style': 'Ranch',
+    'comp.condition': 'C4',
+    'comp.gla': '1730',
+    'comp.bedrooms': '3',
+    'comp.bathrooms': '2',
+    'comp.garage': '1 car',
+  });
+
+  const firstPass = buildComparableIntelligence(caseId);
+  acceptComparableCandidate({
+    caseId,
+    candidateId: firstPass.candidates[0].id,
+    gridSlot: 'comp1',
+  });
+  acceptComparableCandidate({
+    caseId,
+    candidateId: firstPass.candidates[1].id,
+    gridSlot: 'comp2',
+  });
+  saveAdjustmentSupportDecision({
+    caseId,
+    gridSlot: 'comp1',
+    adjustmentCategory: 'gla',
+    decisionStatus: 'accepted',
+    finalAmount: 1800,
+    rationaleNote: 'Comp 1 GLA support accepted.',
+    supportType: 'paired_sales_support',
+  });
+  saveAdjustmentSupportDecision({
+    caseId,
+    gridSlot: 'comp2',
+    adjustmentCategory: 'condition',
+    decisionStatus: 'modified',
+    finalAmount: 2500,
+    rationaleNote: 'Comp 2 condition support reduced after review.',
+    supportType: 'appraiser_judgment_with_explanation',
+  });
+
+  const rebuilt = buildComparableIntelligence(caseId);
+  assert.ok(rebuilt.reconciliationSupport, 'expected reconciliation support payload');
+  assert.equal(rebuilt.summary.acceptedSlotCount, 2);
+  assert.equal(rebuilt.reconciliationSupport.summary.consideredCompCount, 2);
+  assert.ok(rebuilt.reconciliationSupport.summary.weightedIndication > 0, 'expected weighted indication');
+  assert.ok(rebuilt.reconciliationSupport.summary.indicatedRangeHigh >= rebuilt.reconciliationSupport.summary.indicatedRangeLow);
+  assert.ok((rebuilt.reconciliationSupport.mostReliable || []).length >= 1, 'expected reliable comp ranking');
+  assert.ok((rebuilt.reconciliationSupport.weighting || []).every((slot) => slot.contributionPercent > 0), 'expected contribution percentages');
+  assert.match(rebuilt.reconciliationSupport.draftNarrative, /weighted indication/i);
+  assert.ok(rebuilt.acceptedSlots.every((slot) => slot.valuationMetrics?.adjustedSalePrice != null), 'expected slot valuation metrics');
 });
 
 await test('paired sales library supports later similar assignments', () => {

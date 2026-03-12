@@ -57,12 +57,16 @@ import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 import {
   buildSectionPolicy,
-  buildDependencySnapshot,
+  buildDependencySnapshot as buildFactDependencySnapshot,
   computeQualityScore,
   getPromptVersion,
   findStaleDependentSections,
-  evaluateRegeneratePolicy,
+  evaluateRegeneratePolicy as evaluateFactRegeneratePolicy,
 } from '../services/sectionPolicyService.js';
+import {
+  resolveSectionPolicy,
+  evaluateRegeneratePolicy as evaluateRunRegeneratePolicy,
+} from '../sectionFactory/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -1176,6 +1180,24 @@ router.post('/generation/regenerate-section', async (req, res) => {
 
     // Collect prior section results for synthesis sections
     const priorSections = getGeneratedSectionsForRun(runId);
+    const runSectionPolicy = resolveSectionPolicy({ formType, sectionDef });
+    const regenerateCheck = evaluateRunRegeneratePolicy({
+      runStatus,
+      sectionPolicy: runSectionPolicy,
+      generatedSections: priorSections,
+    });
+    if (!regenerateCheck.ok) {
+      return res.status(409).json({
+        ok: false,
+        code: regenerateCheck.code,
+        error: regenerateCheck.error,
+        sectionId,
+        promptVersion: runSectionPolicy.promptVersion,
+        dependencySnapshot: regenerateCheck.dependencySnapshot,
+        staleDependentSections: regenerateCheck.staleDependentSections,
+      });
+    }
+
     const priorResults  = {};
     for (const s of priorSections) {
       if (s.section_id !== sectionId) {
@@ -1183,10 +1205,10 @@ router.post('/generation/regenerate-section', async (req, res) => {
       }
     }
 
-    // Phase D — evaluate regenerate policy
+    // Phase D — evaluate fact-level regenerate policy
     const projection = getCaseProjection(caseId);
     const facts = projection?.facts || {};
-    const regenPolicy = evaluateRegeneratePolicy(sectionId, facts, priorResults);
+    const regenPolicy = evaluateFactRegeneratePolicy(sectionId, facts, priorResults);
     if (!regenPolicy.allowed && !body.forceGateBypass) {
       return res.status(409).json({
         ok: false,
@@ -1209,8 +1231,8 @@ router.post('/generation/regenerate-section', async (req, res) => {
 
     // Phase D — build audit metadata for the regenerated section
     const promptVersion = getPromptVersion(sectionId);
-    const dependencySnapshot = buildDependencySnapshot(sectionId, facts);
-    const sectionPolicy = buildSectionPolicy(sectionId, facts);
+    const dependencySnapshot = buildFactDependencySnapshot(sectionId, facts);
+    const factSectionPolicy = buildSectionPolicy(sectionId, facts);
     const staleDependents = findStaleDependentSections(sectionId);
     let qualityResult = null;
     if (result.ok && result.text) {
@@ -1230,9 +1252,9 @@ router.post('/generation/regenerate-section', async (req, res) => {
       metrics:   result.metrics,
       error:     result.error || null,
       // Phase D audit metadata
-      promptVersion,
+      promptVersion: result.promptVersion || promptVersion,
       dependencySnapshot,
-      sectionPolicy,
+      sectionPolicy: factSectionPolicy,
       staleDependentSections: staleDependents,
       qualityScore:   qualityResult?.score ?? null,
       qualityFactors: qualityResult?.factors ?? null,
