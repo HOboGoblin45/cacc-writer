@@ -238,6 +238,11 @@ export function initPhase9Schema(db) {
     `ALTER TABLE insertion_run_items ADD COLUMN rollback_status TEXT`,
     `ALTER TABLE insertion_run_items ADD COLUMN rollback_text TEXT`,
     `ALTER TABLE insertion_run_items ADD COLUMN rollback_error_text TEXT`,
+    // Priority 5: Insertion Reliability Completion
+    `ALTER TABLE insertion_runs ADD COLUMN original_run_id TEXT`,
+    `ALTER TABLE insertion_runs ADD COLUMN run_type TEXT DEFAULT 'standard'`,
+    `ALTER TABLE insertion_run_items ADD COLUMN diff_json TEXT`,
+    `ALTER TABLE insertion_run_items ADD COLUMN similarity_score REAL`,
   ];
 
   for (const sql of migrations) {

@@ -2318,6 +2318,16 @@ const sections = [
         group: 'Supervisory Appraiser',
         width: 'third',
       }),
+      textField('uspap_supervisory_other_description', 'Supervisory Other (Describe)', 'workspace1004.uspap.supervisoryAppraiser.otherDescription', {
+        page: 11,
+        group: 'Supervisory Appraiser',
+        width: 'third',
+      }),
+      textField('uspap_supervisory_state_number', 'Supervisory State #', 'workspace1004.uspap.supervisoryAppraiser.stateNumber', {
+        page: 11,
+        group: 'Supervisory Appraiser',
+        width: 'third',
+      }),
       selectField('uspap_supervisory_inspection_level', 'Supervisory Inspection of Subject Property', 'workspace1004.uspap.supervisoryAppraiser.inspectionLevel', inspectionLevelChoices, {
         page: 11,
         group: 'Supervisory Appraiser',
@@ -2527,6 +2537,21 @@ const sections = [
         group: 'Photos',
         width: 'third',
       }),
+      textField('photo_front_date', 'Front View Photo Date', 'workspace1004.photoAddendum.frontPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
+      textField('photo_rear_date', 'Rear View Photo Date', 'workspace1004.photoAddendum.rearPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
+      textField('photo_street_date', 'Street Scene Photo Date', 'workspace1004.photoAddendum.streetPhotoDate', {
+        page: 14,
+        group: 'Photos',
+        width: 'third',
+      }),
       textareaField('photo_notes', 'Photo Addendum Notes', 'workspace1004.photoAddendum.notes', {
         page: 14,
         group: 'Photos',
@@ -2579,4 +2604,75 @@ export const workspace1004Definition = {
 
 export function get1004WorkspaceDefinition() {
   return workspace1004Definition;
+}
+
+/**
+ * fieldCompletenessAudit
+ * ---------------------
+ * Returns a structured report of all sections, their field counts,
+ * total field count, and any intentionally deferred fields with rationale.
+ */
+export function fieldCompletenessAudit() {
+  const sectionSummaries = sections.map((section) => ({
+    sectionId: section.id,
+    sectionLabel: section.label,
+    fieldCount: section.fields.length,
+    fieldIds: section.fields.map((f) => f.fieldId),
+  }));
+
+  const totalFields = sectionSummaries.reduce((sum, s) => sum + s.fieldCount, 0);
+
+  const deferredFields = [
+    {
+      fieldId: 'assignment_transmittal_appraiser_digital_signature',
+      section: 'assignment',
+      rationale: 'Digital signature capture requires integration with e-signature service; field structure deferred until signing workflow is implemented.',
+    },
+    {
+      fieldId: 'improvements_floor_plan_sketch',
+      section: 'improvements',
+      rationale: 'Floor plan sketch is a graphical element handled by the sketch addendum / measurement tool, not a fillable text field.',
+    },
+    {
+      fieldId: 'photo_addendum_image_binary',
+      section: 'photo_addendum',
+      rationale: 'Photo binary data is managed by the document/photo upload pipeline, not the workspace text field layer.',
+    },
+    {
+      fieldId: 'sales_comp_location_map',
+      section: 'sales_comparison',
+      rationale: 'Comparable location map is a graphical element generated from GIS data; not a fillable workspace field.',
+    },
+    {
+      fieldId: 'dimension_building_sketch_image',
+      section: 'dimension_addendum',
+      rationale: 'Building sketch image is handled by the sketch rendering pipeline, not the workspace field layer.',
+    },
+  ];
+
+  return {
+    formType: '1004',
+    auditDate: new Date().toISOString().slice(0, 10),
+    totalFields,
+    sectionSummaries,
+    deferredFields,
+    deferredCount: deferredFields.length,
+    coverage: {
+      assignment: 'Complete - includes cover sheet, transmittal, AMC, appraiser signature fields',
+      subject: 'Complete - includes identity, legal, market reference, occupancy, assignment type, data source for ownership',
+      contract: 'Complete - offering history, analysis, concessions',
+      neighborhood: 'Complete - trends, housing stock, land use, boundaries, market conditions',
+      site: 'Complete - physical, zoning (specific classification), utilities, flood (including FEMA map date), adverse conditions',
+      improvements: 'Complete - general description, foundation, basement, exterior, interior, rooms, above/below grade sqft, amenities, car storage, appliances, accessory unit, condition, utility',
+      sales_comparison: 'Complete - market snapshot, comparable grid, DOM fields, narrative, adjustment percentages',
+      prior_sales: 'Complete - research status, transfer history grid, analysis',
+      cost_approach: 'Complete - site value, cost data, cost calculation, depreciation',
+      income_approach: 'Complete - income inputs, rent comparables, PUD information',
+      reconciliation: 'Complete - value indications, conditions, final opinion, appraiser signature, supervisory signature, inspection/report dates',
+      uspap_addendum: 'Complete - header, reporting option, prior services, certifications, appraiser signature (name/license/state/expiration), supervisory appraiser (name/license/state/expiration/other/state#), inspection levels',
+      dimension_addendum: 'Complete - header, area summary grid, measurement worksheet grid, notes',
+      photo_addendum: 'Complete - header, photo captions, photo dates, notes',
+      qc_review: 'Complete - QC review notes, issue resolution notes',
+    },
+  };
 }
