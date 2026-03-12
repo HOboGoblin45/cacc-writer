@@ -63,6 +63,7 @@ export function evaluateHardComplianceRules({
 }) {
   const checks = [];
   const effectiveDate = asText(context?.assignment?.effectiveDate);
+  const intendedUser = asText(context?.assignment?.intendedUser || context?.intendedUser);
   const subjectState = asText(context?.subject?.state).toUpperCase();
 
   checks.push(buildCheck({
@@ -85,6 +86,19 @@ export function evaluateHardComplianceRules({
     message: Array.isArray(sectionRequirements.sections) && sectionRequirements.sections.length > 0
       ? 'Section requirement matrix is available.'
       : 'Section requirement matrix is missing.',
+  }));
+
+  checks.push(buildCheck({
+    ruleId: 'rule.assignment.intended_user',
+    severity: 'warning',
+    passed: Boolean(intendedUser),
+    reasonCode: intendedUser ? 'intended_user_present' : 'intended_user_missing',
+    message: intendedUser
+      ? 'Intended user is present in the assignment context.'
+      : 'Intended user is missing from the assignment context.',
+    evidence: {
+      intendedUser: intendedUser || null,
+    },
   }));
 
   const baselineRequiredSectionIds = unique(
