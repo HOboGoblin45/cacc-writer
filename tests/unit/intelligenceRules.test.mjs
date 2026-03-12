@@ -280,6 +280,44 @@ await test('hard compliance rules block government loan in high-risk flood zone 
   assert.ok(blocker, 'expected high-risk flood blocker for government-backed loan when flood section is excluded');
 });
 
+await test('hard compliance rules block prospective value assignment when certification addendum is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const cert = matrix.sections.find(s => s.sectionId === 'certification_addendum_comment');
+  assert.ok(cert, 'expected certification_addendum_comment section in matrix');
+  cert.status = 'excluded';
+  cert.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.assignment_condition.certification_addendum');
+  assert.ok(blocker, 'expected assignment condition certification blocker when addendum section is excluded');
+});
+
+await test('hard compliance rules pass assignment-condition certification check when addendum is active', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.assignment_condition.certification_addendum');
+  assert.ok(check, 'expected assignment condition certification check');
+  assert.equal(check.passed, true, 'expected assignment condition certification check to pass when section is active');
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`intelligenceRules: ${passed} passed, ${failed} failed`);
 if (failures.length) {
