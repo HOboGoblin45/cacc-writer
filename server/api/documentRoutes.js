@@ -48,6 +48,7 @@ import {
   getDocumentIngestJob,
   listCaseDocumentIngestJobs,
   isDocumentIngestStepFailed,
+  getDocumentIngestRetryState,
 } from '../ingestion/ingestJobService.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { readJSON } from '../utils/fileUtils.js';
@@ -579,6 +580,15 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
     }
     if (!isDocumentIngestStepFailed(job, step)) {
       return res.status(409).json({ error: 'Requested step is not in failed state.' });
+    }
+    const retryState = getDocumentIngestRetryState(job, step);
+    if (!retryState.ok && retryState.reason === 'retry_limit_reached') {
+      return res.status(409).json({
+        error: `Retry limit reached for this ingest job (${retryState.retryCount}/${retryState.maxRetries}).`,
+        code: 'INGEST_RETRY_LIMIT_REACHED',
+        retryCount: retryState.retryCount,
+        maxRetries: retryState.maxRetries,
+      });
     }
     if (!job.documentId) {
       return res.status(400).json({ error: 'Ingest job has no linked document.' });

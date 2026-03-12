@@ -38,6 +38,7 @@ const {
   failDocumentIngestStep,
   finalizeDocumentIngestJob,
   isDocumentIngestStepFailed,
+  getDocumentIngestRetryState,
 } = await import('../../server/ingestion/ingestJobService.js');
 
 async function cleanup() {
@@ -158,6 +159,47 @@ await test('listCaseDocumentIngestJobs returns jobs by case', () => {
   assert.ok(jobs.every(j => j.caseId === 'abc12345'));
 });
 
+await test('getDocumentIngestRetryState returns step_not_failed when step is not failed', () => {
+  const job = createDocumentIngestJob({
+    caseId: 'retry-state-1',
+    originalFilename: 'state.pdf',
+    maxRetries: 2,
+  });
+
+  const state = getDocumentIngestRetryState(job, 'extract');
+  assert.equal(state.ok, false);
+  assert.equal(state.reason, 'step_not_failed');
+  assert.equal(state.maxRetries, 2);
+});
+
+await test('getDocumentIngestRetryState returns retry_limit_reached when retries are exhausted', async () => {
+  const job = createDocumentIngestJob({
+    caseId: 'retry-state-2',
+    originalFilename: 'limit.pdf',
+    maxRetries: 1,
+  });
+
+  const step = await runDocumentIngestStep(
+    job.id,
+    'extract',
+    { maxAttempts: 2, fatalOnFinalFailure: false },
+    async () => {
+      throw new Error('still failing');
+    },
+  );
+  assert.equal(step.ok, false);
+
+  const updated = getDocumentIngestJob(job.id);
+  assert.equal(updated.steps.extract.status, 'failed');
+
+  const state = getDocumentIngestRetryState(updated, 'extract');
+  assert.equal(state.ok, false);
+  assert.equal(state.reason, 'retry_limit_reached');
+  assert.equal(state.retryCount, 1);
+  assert.equal(state.maxRetries, 1);
+  assert.equal(state.remainingRetries, 0);
+});
+
 await cleanup();
 
 console.log('\n' + '-'.repeat(60));
@@ -171,4 +213,3 @@ if (failures.length) {
 }
 console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);
-
