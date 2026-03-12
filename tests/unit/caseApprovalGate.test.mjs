@@ -89,6 +89,17 @@ test('returns OK when latest completed run has no open blocker findings', () => 
   assert.equal(gate.latestQcRun?.qcRunId, 'run-4');
 });
 
+test('accepts legacy completed QC status as complete for gate evaluation', () => {
+  const gate = evaluateCaseApprovalGate('abc12345', {
+    listQcRuns: () => [{ id: 'run-legacy', status: 'completed', draft_readiness: 'ready', created_at: '2026-03-12T00:00:00Z' }],
+    getFindings: () => [],
+    listGenerationRuns: () => [],
+  });
+  assert.equal(gate.ok, true);
+  assert.equal(gate.code, 'OK');
+  assert.equal(gate.latestQcRun?.qcRunId, 'run-legacy');
+});
+
 test('returns QC_STALE_FOR_CURRENT_DRAFT when generation run is newer than latest QC run', () => {
   const gate = evaluateCaseApprovalGate('abc12345', {
     listQcRuns: () => [{ id: 'run-5', status: 'complete', draft_readiness: 'ready', created_at: '2026-03-12T00:00:00Z' }],
