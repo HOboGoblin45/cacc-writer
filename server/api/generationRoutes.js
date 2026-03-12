@@ -19,6 +19,7 @@
 
 import { Router } from 'express';
 import path from 'path';
+import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
@@ -64,6 +65,37 @@ import log from '../logger.js';
 const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
 const MAX_BATCH_FIELDS = 20;
+const fullDraftOptionsSchema = z.object({
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+const generateFullDraftSchema = z.object({
+  formType: z.string().max(40).optional(),
+  options: fullDraftOptionsSchema.optional(),
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+const fullDraftAliasSchema = generateFullDraftSchema.extend({
+  caseId: z.string().min(1).max(80),
+});
+const regenerateSectionSchema = z.object({
+  runId: z.string().min(1).max(80),
+  sectionId: z.string().min(1).max(80),
+  caseId: z.string().min(1).max(80),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 function _setRunResult(runId, result) {
   // Evict oldest entry if at capacity (Map preserves insertion order)
@@ -695,8 +727,10 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
-  const { caseId }           = req.params;
-  const { formType, options = {} } = req.body || {};
+  const { caseId } = req.params;
+  const body = parsePayload(generateFullDraftSchema, req.body || {}, res);
+  if (!body) return;
+  const { formType, options = {} } = body;
 
   // Scope enforcement — deferred forms blocked
   const resolvedFormType = formType || 'unknown';
@@ -788,11 +822,9 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/generation/full-draft', async (req, res) => {
-  const { caseId, formType, options = {} } = req.body || {};
-
-  if (!caseId) {
-    return res.status(400).json({ ok: false, error: 'caseId is required in request body' });
-  }
+  const body = parsePayload(fullDraftAliasSchema, req.body || {}, res);
+  if (!body) return;
+  const { caseId, formType, options = {} } = body;
 
   // Delegate to the canonical route handler by forwarding to the same logic
   req.params.caseId = caseId;
@@ -1017,11 +1049,9 @@ router.get('/generation/runs/:runId/result', (req, res) => {
  * Returns: { ok, sectionId, text, metrics }
  */
 router.post('/generation/regenerate-section', async (req, res) => {
-  const { runId, sectionId, caseId } = req.body || {};
-
-  if (!runId || !sectionId || !caseId) {
-    return res.status(400).json({ ok: false, error: 'runId, sectionId, and caseId are required' });
-  }
+  const body = parsePayload(regenerateSectionSchema, req.body || {}, res);
+  if (!body) return;
+  const { runId, sectionId, caseId } = body;
 
   try {
     const runStatus = getRunStatus(runId);
