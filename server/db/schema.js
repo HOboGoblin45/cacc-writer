@@ -707,6 +707,16 @@ export function initSchema(db) {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_comp_burden_case_slot
       ON comp_burden_metrics(case_id, grid_slot);
+
+    CREATE TABLE IF NOT EXISTS reconciliation_support_records (
+      id                  TEXT PRIMARY KEY,
+      case_id             TEXT NOT NULL UNIQUE,
+      support_json        TEXT NOT NULL DEFAULT '{}',
+      created_at          TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_reconciliation_support_case
+      ON reconciliation_support_records(case_id);
   `);
 
   // Run column migrations for Phase 3 additions
