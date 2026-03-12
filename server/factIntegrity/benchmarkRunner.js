@@ -53,6 +53,9 @@ function normalizeGateFixtures(input) {
     expectedBlockerTypes: Array.isArray(fixture?.expectedBlockerTypes)
       ? fixture.expectedBlockerTypes
       : [],
+    expectedComplianceRuleIds: Array.isArray(fixture?.expectedComplianceRuleIds)
+      ? fixture.expectedComplianceRuleIds
+      : [],
     gateResult: fixture?.gateResult && typeof fixture.gateResult === 'object'
       ? fixture.gateResult
       : { ok: true, blockers: [] },
@@ -111,6 +114,7 @@ export async function runPhaseCBenchmarkSuite(fixtures) {
       fixtureId: fixture.id,
       expectedOk: fixture.expectedOk,
       expectedBlockerTypes: fixture.expectedBlockerTypes,
+      expectedComplianceRuleIds: fixture.expectedComplianceRuleIds,
       gateResult: fixture.gateResult,
     }),
     lane: fixture.lane,

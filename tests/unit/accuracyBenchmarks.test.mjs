@@ -79,17 +79,24 @@ test('scoreGateFixture validates expected blockers and ok state', () => {
     fixtureId: 'gate-a',
     expectedOk: false,
     expectedBlockerTypes: ['pending_fact_reviews', 'missing_required_facts'],
+    expectedComplianceRuleIds: ['rule.fha.repair_commentary'],
     gateResult: {
       ok: false,
       blockers: [
         { type: 'missing_required_facts' },
         { type: 'pending_fact_reviews' },
+        {
+          type: 'compliance_hard_rules',
+          findings: [{ ruleId: 'rule.fha.repair_commentary' }],
+        },
       ],
     },
   });
 
   assert.equal(run.okMatch, true);
   assert.equal(run.missingExpectedBlockers.length, 0);
+  assert.equal(run.missingExpectedComplianceRuleIds.length, 0);
+  assert.ok(run.actualComplianceRuleIds.includes('rule.fha.repair_commentary'));
   assert.equal(run.passed, true);
 });
 
@@ -106,6 +113,28 @@ test('scoreGateFixture flags missing expected blockers', () => {
 
   assert.equal(run.okMatch, true);
   assert.deepEqual(run.missingExpectedBlockers, ['compliance_hard_rules']);
+  assert.equal(run.passed, false);
+});
+
+test('scoreGateFixture flags missing expected compliance rule IDs', () => {
+  const run = scoreGateFixture({
+    fixtureId: 'gate-c',
+    expectedOk: false,
+    expectedBlockerTypes: ['compliance_hard_rules'],
+    expectedComplianceRuleIds: ['rule.mixed_use.commentary'],
+    gateResult: {
+      ok: false,
+      blockers: [
+        {
+          type: 'compliance_hard_rules',
+          findings: [{ ruleId: 'rule.manufactured_home.comments' }],
+        },
+      ],
+    },
+  });
+
+  assert.equal(run.okMatch, true);
+  assert.deepEqual(run.missingExpectedComplianceRuleIds, ['rule.mixed_use.commentary']);
   assert.equal(run.passed, false);
 });
 
