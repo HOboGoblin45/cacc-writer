@@ -279,6 +279,24 @@ await test('PATCH /api/cases/:caseId/status sets status', async () => {
   assertOk(body, 'PATCH /api/cases/:caseId/status');
 });
 
+await test('PATCH /api/cases/:caseId/workflow-status sets workflow status', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'facts_incomplete',
+  });
+  assert(status === 200, `Expected 200, got ${status}`);
+  assert(body?.ok === true, 'ok should be true');
+  assert(body?.workflowStatus === 'facts_incomplete', 'workflowStatus should be updated');
+});
+
+await test('PATCH /api/cases/:caseId/workflow-status rejects invalid workflow status', async () => {
+  const { status, body } = await api('PATCH', `/api/cases/${testCaseId}/workflow-status`, {
+    workflowStatus: 'not_a_real_status',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_WORKFLOW_STATUS', 'code should be INVALID_WORKFLOW_STATUS');
+});
+
 // ── 4. Facts ──────────────────────────────────────────────────────────────────
 console.log('\n4. Facts');
 

@@ -648,7 +648,8 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     const status = trimText(body.workflowStatus, 40);
     if (!isValidWorkflowStatus(status)) {
       return res.status(400).json({
-        ok:    false,
+        ok: false,
+        code: 'INVALID_WORKFLOW_STATUS',
         error: `Invalid workflowStatus. Valid values: ${[
           'facts_incomplete', 'ready_for_generation', 'generation_in_progress',
           'sections_drafted', 'awaiting_review', 'automation_ready',
