@@ -589,7 +589,7 @@ function checkQcGate(caseId, generationRunId, config) {
         FROM qc_runs
         WHERE case_id = ?
           AND generation_run_id = ?
-          AND status = 'completed'
+          AND status IN ('complete', 'completed', 'partial_complete')
         ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
         LIMIT 1
       `).get(caseId, generationRunId);
@@ -598,7 +598,7 @@ function checkQcGate(caseId, generationRunId, config) {
         SELECT *
         FROM qc_runs
         WHERE case_id = ?
-          AND status = 'completed'
+          AND status IN ('complete', 'completed', 'partial_complete')
         ORDER BY COALESCE(completed_at, created_at) DESC, created_at DESC
         LIMIT 1
       `).get(caseId);
