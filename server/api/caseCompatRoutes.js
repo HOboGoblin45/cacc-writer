@@ -95,6 +95,7 @@ function parsePayload(schema, payload, res) {
   if (parsed.success) return parsed.data;
   res.status(400).json({
     ok: false,
+    code: 'INVALID_PAYLOAD',
     error: 'Invalid request payload',
     details: parsed.error.issues.map(i => ({
       path: i.path.join('.') || '(root)',
