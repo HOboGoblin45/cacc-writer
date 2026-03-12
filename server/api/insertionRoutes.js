@@ -48,6 +48,7 @@ const prepareInsertionSchema = z.object({
 });
 
 const runInsertionSchema = prepareInsertionSchema;
+const emptyMutationSchema = z.object({}).strict();
 const updateProfileSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   baseUrl: z.string().trim().min(1).max(600).optional(),
@@ -116,6 +117,7 @@ router.post('/insertion/prepare', (req, res) => {
 
 router.post('/insertion/execute/:runId', async (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { runId } = req.params;
     const run = getInsertionRun(runId);
 
@@ -230,6 +232,7 @@ router.get('/insertion/run/:runId/items', (req, res) => {
 
 router.post('/insertion/run/:runId/cancel', (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const run = getInsertionRun(req.params.runId);
     if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
 
@@ -257,6 +260,7 @@ router.post('/insertion/run/:runId/cancel', (req, res) => {
 
 router.post('/insertion/retry/:itemId', async (req, res) => {
   try {
+    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { itemId } = req.params;
     const item = getInsertionRunItem(itemId);
     if (!item) {
