@@ -9,3 +9,7 @@ benchmarks/phase-c/latest-results.json
 data/*.db-shm
 data/*.db-wal
 logs/*.log
+
+# Runtime-generated KB entries (tracked seed/index files remain explicit)
+knowledge_base/approvedNarratives/*.json
+!knowledge_base/approvedNarratives/index.json
