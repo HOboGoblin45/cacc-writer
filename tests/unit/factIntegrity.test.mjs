@@ -451,6 +451,31 @@ await test('evaluatePreDraftGate blocks when required alias fact path is missing
   assert.ok(gate.summary.missingRequiredProvenance >= 1, 'expected missing required provenance summary');
 });
 
+await test('evaluatePreDraftGate accepts provenance on alias path for required fact', () => {
+  const { caseId } = createFilesystemCase({
+    facts: {
+      subject: {
+        address: { value: '889 Alias Source Rd', confidence: 'high' },
+        lotSize: { value: '9100', confidence: 'medium' }, // alias for subject.siteSize
+      },
+    },
+    provenance: {
+      'subject.address': { sourceType: 'document', sourceId: 'order_sheet.pdf' },
+      'subject.lotSize': { sourceType: 'document', sourceId: 'assessor.pdf' },
+    },
+  });
+
+  const gate = evaluatePreDraftGate({
+    caseId,
+    formType: '1004',
+    sectionIds: ['site_description'],
+  });
+
+  assert.ok(gate, 'expected gate result');
+  assert.equal(gate.ok, true, 'alias provenance should satisfy required provenance check');
+  assert.equal(gate.summary.missingRequiredProvenance, 0, 'no required provenance blockers expected');
+});
+
 await test('evaluatePreDraftGate keeps non-required provenance gaps as warnings', () => {
   const { caseId } = createFilesystemCase({
     facts: {
