@@ -46,10 +46,12 @@ const benchmarkThresholdOverrideSchema = z.object({
     minAvgPrecision: z.number().finite().optional(),
     minAvgRecall: z.number().finite().optional(),
     minAvgF1: z.number().finite().optional(),
+    minLaneFixtureCounts: z.record(z.number().finite()).optional(),
   }).partial().optional(),
   gate: z.object({
     minFixtureCount: z.number().finite().optional(),
     minPassRate: z.number().finite().optional(),
+    minLaneFixtureCounts: z.record(z.number().finite()).optional(),
   }).partial().optional(),
 }).partial();
 

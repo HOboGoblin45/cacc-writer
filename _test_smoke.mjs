@@ -734,14 +734,30 @@ await test('POST /api/intelligence/benchmarks/phase-c/run executes benchmark run
 await test('POST /api/intelligence/benchmarks/phase-c/run accepts threshold overrides', async () => {
   const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {
     thresholds: {
-      extraction: { minFixtureCount: 1 },
-      gate: { minFixtureCount: 1 },
+      extraction: {
+        minFixtureCount: 1,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 1,
+        },
+      },
+      gate: {
+        minFixtureCount: 1,
+        minLaneFixtureCounts: {
+          residential: 1,
+          commercial: 1,
+        },
+      },
     },
   });
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, 'POST /api/intelligence/benchmarks/phase-c/run threshold overrides');
   assert(body.thresholdSource === 'request', 'thresholdSource should be request');
   assert(typeof body.qualityGate?.ok === 'boolean', 'qualityGate.ok should be boolean');
+  assert(
+    body.qualityGate?.checks?.some(c => c.id === 'gate.lane.commercial.fixture_count'),
+    'qualityGate should include commercial gate lane check under threshold overrides',
+  );
 });
 
 await test('POST /api/intelligence/benchmarks/phase-c/run rejects invalid threshold payload type', async () => {
