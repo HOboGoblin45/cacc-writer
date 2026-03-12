@@ -370,6 +370,33 @@ await test('hard compliance rules pass value-condition effective date check when
   assert.equal(check.passed, true, 'expected effective date check to pass when date exists');
 });
 
+await test('hard compliance rules warn when Illinois county disclosure is missing', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      state: 'IL',
+    },
+  });
+
+  const warning = scenario.complianceChecks.warnings.find(b => b.ruleId === 'rule.illinois.county_disclosure');
+  assert.ok(warning, 'expected Illinois county disclosure warning when county is missing');
+  assert.equal(warning.reasonCode, 'county_missing');
+});
+
+await test('hard compliance rules pass Illinois county disclosure when county is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      state: 'IL',
+      county: 'Cook',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.illinois.county_disclosure');
+  assert.ok(check, 'expected Illinois county disclosure check');
+  assert.equal(check.passed, true, 'expected Illinois county disclosure check to pass when county exists');
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`intelligenceRules: ${passed} passed, ${failed} failed`);
 if (failures.length) {
