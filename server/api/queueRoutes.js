@@ -15,6 +15,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import {
   enqueueReports,
   getQueueStatus,
@@ -26,6 +27,28 @@ import {
 import log from '../logger.js';
 
 const router = Router();
+const queueCaseSchema = z.object({
+  caseId: z.string().min(1).max(80),
+  formType: z.string().max(20).optional(),
+}).passthrough();
+const enqueueSchema = z.object({
+  cases: z.array(queueCaseSchema).min(1).max(200),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ── POST /reports/queue ───────────────────────────────────────────────────────
 // Enqueue cases for report generation.
@@ -35,21 +58,9 @@ const router = Router();
 
 router.post('/reports/queue', (req, res) => {
   try {
-    const { cases } = req.body;
-
-    if (!Array.isArray(cases) || cases.length === 0) {
-      return res.status(400).json({
-        error: 'Request body must include a non-empty "cases" array',
-        example: { cases: [{ caseId: 'case-001' }, { caseId: 'case-002', formType: '1004' }] },
-      });
-    }
-
-    // Validate each case entry
-    for (const c of cases) {
-      if (!c.caseId || typeof c.caseId !== 'string') {
-        return res.status(400).json({ error: `Invalid caseId: ${JSON.stringify(c)}` });
-      }
-    }
+    const body = parsePayload(enqueueSchema, req.body || {}, res);
+    if (!body) return;
+    const { cases } = body;
 
     const result = enqueueReports({ cases });
     res.json(result);
