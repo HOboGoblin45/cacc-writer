@@ -53,6 +53,8 @@ const suites = [
   'knowledgeBase.test.mjs',
   'generationService.test.mjs',
   'generationOrchestrator.test.mjs',
+  'sectionPolicyService.test.mjs',
+  'generationRegenerateRoutes.test.mjs',
   'reportQueue.test.mjs',
 ];
 

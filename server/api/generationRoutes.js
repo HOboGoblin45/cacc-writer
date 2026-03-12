@@ -55,6 +55,7 @@ import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
+import { resolveSectionPolicy, evaluateRegeneratePolicy } from '../sectionFactory/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -1168,6 +1169,24 @@ router.post('/generation/regenerate-section', async (req, res) => {
 
     // Collect prior section results for synthesis sections
     const priorSections = getGeneratedSectionsForRun(runId);
+    const sectionPolicy = resolveSectionPolicy({ formType, sectionDef });
+    const regenerateCheck = evaluateRegeneratePolicy({
+      runStatus,
+      sectionPolicy,
+      generatedSections: priorSections,
+    });
+    if (!regenerateCheck.ok) {
+      return res.status(409).json({
+        ok: false,
+        code: regenerateCheck.code,
+        error: regenerateCheck.error,
+        sectionId,
+        promptVersion: sectionPolicy.promptVersion,
+        dependencySnapshot: regenerateCheck.dependencySnapshot,
+        staleDependentSections: regenerateCheck.staleDependentSections,
+      });
+    }
+
     const priorResults  = {};
     for (const s of priorSections) {
       if (s.section_id !== sectionId) {
@@ -1191,6 +1210,10 @@ router.post('/generation/regenerate-section', async (req, res) => {
       text:      result.text,
       metrics:   result.metrics,
       error:     result.error || null,
+      promptVersion: result.promptVersion || sectionPolicy.promptVersion,
+      dependencySnapshot: regenerateCheck.dependencySnapshot,
+      staleDependentSections: regenerateCheck.staleDependentSections,
+      qualityScore: typeof result.qualityScore === 'number' ? result.qualityScore : null,
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);
