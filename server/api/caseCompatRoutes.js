@@ -39,6 +39,7 @@ import {
   getTargetSoftware,
   getFallbackStrategy,
 } from '../destinationRegistry.js';
+import { evaluateInsertionQcGate } from '../insertion/insertionRunEngine.js';
 import { buildReviewMessages } from '../promptBuilder.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
@@ -52,6 +53,13 @@ const gradeSchema = z.object({
   fieldId: z.string().max(80).optional(),
   text: z.string().max(8000).optional(),
 }).passthrough();
+const uploadSchema = z.object({
+  docType: z.string().max(60).optional(),
+}).passthrough();
+const extractFactsSchema = z.object({
+  answers: z.record(z.unknown()).optional(),
+}).passthrough();
+const questionnaireSchema = z.object({}).strict();
 
 const feedbackSchema = z.object({
   fieldId: z.string().max(80),
@@ -78,11 +86,27 @@ const patchOutputSchema = z.object({
   text: z.string().max(16000),
 });
 
+const insertSectionSchema = z.object({
+  text: z.string().max(16000).optional(),
+  generationRunId: z.string().max(80).optional(),
+  skipQcBlockers: z.boolean().optional(),
+}).passthrough();
+
+const copySectionSchema = z.object({
+  text: z.string().max(16000).optional(),
+}).passthrough();
+
+const insertAllSchema = z.object({
+  generationRunId: z.string().max(80).optional(),
+  skipQcBlockers: z.boolean().optional(),
+}).passthrough();
+
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
   res.status(400).json({
     ok: false,
+    code: 'INVALID_PAYLOAD',
     error: 'Invalid request payload',
     details: parsed.error.issues.map(i => ({
       path: i.path.join('.') || '(root)',
@@ -169,6 +193,9 @@ router.param('caseId', (req, res, next, caseId) => {
 });
 
 router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
+  const body = parsePayload(uploadSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = ensureCaseDir(req, res);
     if (!cd) return;
@@ -180,7 +207,7 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 
     if (!isPdf) return res.status(400).json({ ok: false, error: 'Only PDF files are allowed' });
 
-    const docType = trimText(req.body.docType || 'unknown', 60).replace(/[^a-z0-9_-]/gi, '_');
+    const docType = trimText(body.docType || 'unknown', 60).replace(/[^a-z0-9_-]/gi, '_');
     fs.mkdirSync(path.join(cd, 'documents'), { recursive: true });
     fs.writeFileSync(path.join(cd, 'documents', docType + '.pdf'), req.file.buffer);
 
@@ -235,13 +262,16 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 });
 
 router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
+  const body = parsePayload(extractFactsSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const docText = runtime.docText || {};
     const existingFacts = runtime.facts || {};
-    const answers = req.body?.answers || {};
+    const answers = body.answers || {};
     const { formType, formConfig } = runtime;
 
     if (!Object.keys(docText).length && !Object.keys(answers).length) {
@@ -277,6 +307,8 @@ router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
 });
 
 router.post('/:caseId/questionnaire', ensureAI, async (req, res) => {
+  if (!parsePayload(questionnaireSchema, req.body || {}, res)) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -454,13 +486,16 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
 });
 
 router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
+  const body = parsePayload(copySectionSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
+    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to copy for field: ' + fieldId });
 
     const now = new Date().toISOString();
@@ -596,14 +631,41 @@ router.get('/:caseId/exceptions', (req, res) => {
 });
 
 router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
+  const body = parsePayload(insertSectionSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
+    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to insert for field: ' + fieldId });
+
+    const generationRunId = trimText(body.generationRunId, 80) || null;
+    const skipQcBlockers = Boolean(body.skipQcBlockers);
+    const qcGate = evaluateInsertionQcGate({
+      caseId: req.params.caseId,
+      generationRunId,
+      config: {
+        requireQcRun: true,
+        requireFreshQcForGeneration: Boolean(generationRunId),
+      },
+    });
+    const canBypassQcGate = skipQcBlockers && qcGate.overrideAllowed !== false;
+    if (!qcGate.passed && !canBypassQcGate) {
+      return res.status(409).json({
+        ok: false,
+        code: 'QC_GATE_BLOCKED',
+        error: 'QC gate blocked insertion',
+        qcGate,
+        overrideAllowed: qcGate.overrideAllowed !== false,
+        message: qcGate.overrideAllowed === false
+          ? 'Run QC for this case before insertion.'
+          : 'Resolve QC blockers or set skipQcBlockers=true to bypass.',
+      });
+    }
 
     const { formType } = runtime;
     const destination = getDestination(formType, fieldId);
@@ -631,6 +693,7 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       destination: destination || null,
       targetSoftware: getTargetSoftware(formType, fieldId),
       fallback: getFallbackStrategy(formType, fieldId),
+      qcGate,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -638,6 +701,9 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
 });
 
 router.post('/:caseId/insert-all', (req, res) => {
+  const body = parsePayload(insertAllSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -662,6 +728,30 @@ router.post('/:caseId/insert-all', (req, res) => {
 
     const hasApproved = coreSections.some(sec => outputs[sec.id]?.sectionStatus === 'approved');
     if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
+
+    const generationRunId = trimText(body.generationRunId, 80) || null;
+    const skipQcBlockers = Boolean(body.skipQcBlockers);
+    const qcGate = evaluateInsertionQcGate({
+      caseId: req.params.caseId,
+      generationRunId,
+      config: {
+        requireQcRun: true,
+        requireFreshQcForGeneration: Boolean(generationRunId),
+      },
+    });
+    const canBypassQcGate = skipQcBlockers && qcGate.overrideAllowed !== false;
+    if (!qcGate.passed && !canBypassQcGate) {
+      return res.status(409).json({
+        ok: false,
+        code: 'QC_GATE_BLOCKED',
+        error: 'QC gate blocked insertion',
+        qcGate,
+        overrideAllowed: qcGate.overrideAllowed !== false,
+        message: qcGate.overrideAllowed === false
+          ? 'Run QC for this case before insertion.'
+          : 'Resolve QC blockers or set skipQcBlockers=true to bypass.',
+      });
+    }
 
     for (const section of coreSections) {
       const sid = section.id;
@@ -703,6 +793,7 @@ router.post('/:caseId/insert-all', (req, res) => {
       insertedSections: inserted,
       skipped,
       errors,
+      qcGate,
       totalInserted: inserted.length,
       pipelineStage: meta.pipelineStage || 'inserting',
     });

@@ -193,6 +193,7 @@ function buildQcCategories(flags, ctx) {
     'narrative_consistency',
     'value_support',
   ];
+  const subjectState = String(ctx?.subject?.state || '').trim().toUpperCase();
 
   if (flags.government_loan) categories.push('government_program_compliance');
   if (flags.fha_assignment) categories.push('fha_minimum_property_requirements');
@@ -209,6 +210,7 @@ function buildQcCategories(flags, ctx) {
   if (flags.declining_market) categories.push('declining_market_analysis');
   if (flags.adu_present) categories.push('adu_compliance');
   if (flags.manufactured_home) categories.push('manufactured_home_documentation');
+  if (subjectState === 'IL' || subjectState === 'ILLINOIS') categories.push('illinois_state_scope');
 
   return categories;
 }

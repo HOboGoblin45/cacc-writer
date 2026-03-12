@@ -14,6 +14,7 @@
 
 import { Router } from 'express';
 import path from 'path';
+import { z } from 'zod';
 
 import {
   CASES_DIR,
@@ -48,7 +49,52 @@ import {
 import log from '../logger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
+const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 const router = Router();
+const workflowFieldRefSchema = z.union([
+  z.string().max(80),
+  z.object({
+    id: z.string().max(80),
+    title: z.string().max(160).optional(),
+  }).passthrough(),
+]);
+const workflowRunSchema = z.object({
+  caseId: z.string().min(1).max(80),
+  fields: z.array(workflowFieldRefSchema).max(200).optional(),
+  formType: z.string().max(40).optional(),
+  twoPass: z.boolean().optional(),
+  saveOutputs: z.boolean().optional(),
+  options: z.object({
+    forceGateBypass: z.boolean().optional(),
+  }).passthrough().optional(),
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+const workflowRunBatchSchema = z.object({
+  cases: z.array(z.string().min(1).max(80)).min(1).max(10),
+  fields: z.array(workflowFieldRefSchema).max(200).optional(),
+  formType: z.string().max(40).optional(),
+  twoPass: z.boolean().optional(),
+  options: z.object({
+    forceGateBypass: z.boolean().optional(),
+  }).passthrough().optional(),
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 function toSectionIds(fields) {
   if (!Array.isArray(fields)) return [];
@@ -61,8 +107,23 @@ function toSectionIds(fields) {
   return ids;
 }
 
-function shouldBypassPreDraftGate(req) {
+function requestedGateBypass(req) {
   return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
+}
+
+function shouldBypassPreDraftGate(req) {
+  return requestedGateBypass(req) && ALLOW_FORCE_GATE_BYPASS;
+}
+
+function rejectBypassWhenDisabled(req, res) {
+  if (!requestedGateBypass(req) || ALLOW_FORCE_GATE_BYPASS) return false;
+  res.status(403).json({
+    ok: false,
+    code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+    error: 'forceGateBypass is disabled in this environment',
+    hint: 'Set CACC_ALLOW_FORCE_GATE_BYPASS=true to allow explicit pre-draft gate bypass.',
+  });
+  return true;
 }
 
 function evaluateGateForCase(caseId, formType, sectionIds) {
@@ -79,6 +140,9 @@ function buildGateBlockedResponse(caseId, gate, scopeMessage) {
     gate,
     factReviewQueuePath,
     factReviewQueueSummary: queue?.summary || null,
+    hint: ALLOW_FORCE_GATE_BYPASS
+      ? `Resolve blocker items from GET ${factReviewQueuePath}, or pass forceGateBypass=true.`
+      : `Resolve blocker items from GET ${factReviewQueuePath}.`,
   };
 }
 
@@ -121,14 +185,15 @@ function persistWorkflowOutputs(caseId, projection, results = {}) {
 
 router.post('/workflow/run', ensureAI, async (req, res) => {
   try {
-    const { caseId, fields, twoPass = false, saveOutputs = true } = req.body;
-    const requestedFt = String(req.body?.formType || '').trim().toLowerCase();
+    const body = parsePayload(workflowRunSchema, req.body || {}, res);
+    if (!body) return;
+    if (rejectBypassWhenDisabled(req, res)) return;
+    const { caseId, fields, twoPass = false, saveOutputs = true } = body;
+    const requestedFt = String(body.formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
       logDeferredAccess(requestedFt, 'POST /api/workflow/run', log);
       return res.status(400).json({ ok: false, supported: false, formType: requestedFt, scope: 'deferred' });
     }
-    if (!caseId) return res.status(400).json({ ok: false, error: 'caseId is required' });
-
     const runtime = loadCaseRuntime(caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
     const { projection, formType, formConfig, facts, assignmentMeta } = runtime;
@@ -233,17 +298,15 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
 
 router.post('/workflow/run-batch', ensureAI, async (req, res) => {
   try {
-    const { cases, fields, twoPass = false } = req.body;
-    const requestedFt = String(req.body?.formType || '').trim().toLowerCase();
+    const body = parsePayload(workflowRunBatchSchema, req.body || {}, res);
+    if (!body) return;
+    if (rejectBypassWhenDisabled(req, res)) return;
+    const { cases, fields, twoPass = false } = body;
+    const requestedFt = String(body.formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
       logDeferredAccess(requestedFt, 'POST /api/workflow/run-batch', log);
       return res.status(400).json({ ok: false, supported: false, formType: requestedFt, scope: 'deferred' });
     }
-    if (!Array.isArray(cases) || !cases.length) {
-      return res.status(400).json({ ok: false, error: 'cases must be a non-empty array' });
-    }
-    if (cases.length > 10) return res.status(400).json({ ok: false, error: 'cases must be <= 10' });
-
     const batchResults = [];
     const batchErrors = [];
     for (const caseId of cases) {

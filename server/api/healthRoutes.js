@@ -29,6 +29,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { CASES_DIR, CASE_ID_RE } from '../utils/caseUtils.js';
@@ -74,9 +75,34 @@ const ACI_AGENT_URL = process.env.ACI_AGENT_URL || 'http://localhost:5180';
 const RQ_AGENT_URL  = process.env.RQ_AGENT_URL  || 'http://localhost:5181';
 const PORT          = Number(process.env.PORT)   || 5178;
 const PIPELINE_STAGES = ['intake', 'extracting', 'generating', 'review', 'approved', 'inserting', 'complete'];
+const exportBundleSchema = z.object({
+  includeAllLogs: z.boolean().optional(),
+  zip: z.boolean().optional(),
+}).passthrough();
+const emptyMutationSchema = z.object({}).strict();
+const createNeighborhoodTemplateSchema = z.object({
+  name: z.string().min(1).max(120),
+  boundaries: z.string().max(600).optional(),
+  description: z.string().max(1200).optional(),
+}).passthrough();
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ── GET /health ───────────────────────────────────────────────────────────────
 router.get('/health', (_req, res) => {
@@ -280,10 +306,12 @@ router.get('/export/stats', (_req, res) => {
 // ── POST /export/bundle ───────────────────────────────────────────────────────
 router.post('/export/bundle', async (req, res) => {
   try {
+    const body = parsePayload(exportBundleSchema, req.body || {}, res);
+    if (!body) return;
     log.info('[export] Creating support bundle...');
     const result = await createSupportBundle({
-      includeAllLogs: Boolean(req.body?.includeAllLogs),
-      zip:            req.body?.zip !== false, // default true
+      includeAllLogs: Boolean(body.includeAllLogs),
+      zip:            body.zip !== false, // default true
     });
     if (!result.ok) {
       return res.status(500).json({ ok: false, error: result.error });
@@ -318,14 +346,15 @@ router.get('/templates/neighborhood', (_req, res) => {
 // ── POST /templates/neighborhood ──────────────────────────────────────────────
 router.post('/templates/neighborhood', (req, res) => {
   try {
-    const name = trimText(req.body?.name, 120);
-    if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+    const body = parsePayload(createNeighborhoodTemplateSchema, req.body || {}, res);
+    if (!body) return;
+    const name = trimText(body.name, 120);
     const templates = readJSON(TEMPLATES_FILE, []);
     templates.push({
       id:          uuidv4().replace(/-/g, '').slice(0, 8),
       name,
-      boundaries:  trimText(req.body?.boundaries,  600),
-      description: trimText(req.body?.description, 1200),
+      boundaries:  trimText(body.boundaries,  600),
+      description: trimText(body.description, 1200),
       createdAt:   new Date().toISOString(),
     });
     writeJSON(TEMPLATES_FILE, templates);
@@ -337,6 +366,8 @@ router.post('/templates/neighborhood', (req, res) => {
 
 // ── DELETE /templates/neighborhood/:id ────────────────────────────────────────
 router.delete('/templates/neighborhood/:id', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const templates = readJSON(TEMPLATES_FILE, []).filter(t => t.id !== req.params.id);
     writeJSON(TEMPLATES_FILE, templates);

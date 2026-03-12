@@ -15,6 +15,7 @@
  *   PATCH  /:caseId/pipeline              — advance pipeline stage
  *   PATCH  /:caseId/workflow-status       — set workflowStatus
  *   PUT    /:caseId/facts                 — save/merge facts
+ *   GET    /:caseId/qc-approval-gate      — evaluate QC gate for approval/finalization
  *   GET    /:caseId/history               — section version history
  *   GET    /:caseId/generation-runs       — list orchestrator runs for case
  *   POST   /:caseId/geocode               — geocode subject + comps
@@ -60,10 +61,13 @@ import { PIPELINE_STAGES, evaluatePipelineTransition } from '../caseRecord/workf
 import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue, resolveFactDecision } from '../factIntegrity/factDecisionQueue.js';
+import { evaluateCaseApprovalGate } from '../qc/caseApprovalGate.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
 const CASE_STATUSES = ['active', 'submitted', 'archived'];
+const QC_GATED_CASE_STATUSES = new Set(['submitted']);
+const QC_GATED_PIPELINE_STAGES = new Set(['approved', 'inserting', 'complete']);
 
 const createCaseSchema = z.object({
   address: z.string().max(240).optional(),
@@ -108,8 +112,9 @@ const pipelineSchema = z.object({
 const workflowStatusSchema = z.object({
   workflowStatus: z.string().min(1).max(40),
 });
+const QC_GATED_WORKFLOW_STATUSES = new Set(['automation_ready']);
 
-const factsSchema = z.record(z.unknown());
+const factsSchema = z.object({}).passthrough();
 const resolveFactDecisionSchema = z.object({
   factPath: z.string().min(1).max(180),
   selectedValue: z.string().min(1).max(4000),
@@ -131,11 +136,21 @@ const migrationBackfillSchema = z.object({
   limit: z.number().int().min(1).max(5000).optional(),
 }).passthrough();
 
+const geocodeSchema = z.object({
+  subjectAddress: z.string().max(240).optional(),
+}).passthrough();
+
+const missingFactsBatchSchema = z.object({
+  fieldIds: z.array(z.string().max(80)).max(200).optional(),
+}).passthrough();
+const emptyMutationSchema = z.object({}).strict();
+
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
   res.status(400).json({
     ok: false,
+    code: 'INVALID_PAYLOAD',
     error: 'Invalid request payload',
     details: parsed.error.issues.map(i => ({
       path: i.path.join('.') || '(root)',
@@ -478,6 +493,21 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
   }
 });
 
+router.get('/:caseId/qc-approval-gate', (req, res) => {
+  try {
+    const projection = getCaseProjection(req.params.caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const gate = evaluateCaseApprovalGate(req.params.caseId);
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      gate,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/:caseId', (req, res) => {
   try {
     const projection = getCaseProjection(req.params.caseId);
@@ -543,6 +573,8 @@ router.patch('/:caseId', (req, res) => {
 
 // ── DELETE /:caseId — Delete case ─────────────────────────────────────────────
 router.delete('/:caseId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -564,6 +596,18 @@ router.patch('/:caseId/status', (req, res) => {
     const projection = getCaseProjection(req.params.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
+    if (QC_GATED_CASE_STATUSES.has(nextStatus) && nextStatus !== (meta.status || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          status: nextStatus,
+          qcGate: gate,
+        });
+      }
+    }
     meta.status    = nextStatus;
     meta.updatedAt = new Date().toISOString();
     const updated = saveCaseProjection({
@@ -606,6 +650,19 @@ router.patch('/:caseId/pipeline', (req, res) => {
         allowedNextStages: transition.allowedNextStages,
       });
     }
+    if (QC_GATED_PIPELINE_STAGES.has(stage) && stage !== (meta.pipelineStage || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          fromStage: meta.pipelineStage || 'intake',
+          toStage: stage,
+          qcGate: gate,
+        });
+      }
+    }
 
     meta.pipelineStage = stage;
     meta.updatedAt     = new Date().toISOString();
@@ -639,7 +696,8 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     const status = trimText(body.workflowStatus, 40);
     if (!isValidWorkflowStatus(status)) {
       return res.status(400).json({
-        ok:    false,
+        ok: false,
+        code: 'INVALID_WORKFLOW_STATUS',
         error: `Invalid workflowStatus. Valid values: ${[
           'facts_incomplete', 'ready_for_generation', 'generation_in_progress',
           'sections_drafted', 'awaiting_review', 'automation_ready',
@@ -651,6 +709,18 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     const projection = getCaseProjection(req.params.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
+    if (QC_GATED_WORKFLOW_STATUSES.has(status) && status !== (meta.workflowStatus || '')) {
+      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      if (!gate.ok) {
+        return res.status(409).json({
+          ok: false,
+          code: gate.code,
+          error: gate.message,
+          workflowStatus: status,
+          qcGate: gate,
+        });
+      }
+    }
     meta.workflowStatus = status;
     meta.updatedAt      = new Date().toISOString();
     const updated = saveCaseProjection({
@@ -675,12 +745,7 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
 router.put('/:caseId/facts', (req, res) => {
   const body = parsePayload(factsSchema, req.body || {}, res);
-  if (!body || Array.isArray(body)) {
-    if (!res.headersSent) {
-      res.status(400).json({ ok: false, error: 'Facts payload must be a JSON object' });
-    }
-    return;
-  }
+  if (!body) return;
 
   try {
     const projection = getCaseProjection(req.params.caseId);
@@ -728,6 +793,9 @@ router.get('/:caseId/generation-runs', (req, res) => {
 
 // ── POST /:caseId/geocode — Geocode subject + comps ───────────────────────────
 router.post('/:caseId/geocode', async (req, res) => {
+  const body = parsePayload(geocodeSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     const projection = getCaseProjection(req.params.caseId);
@@ -747,7 +815,7 @@ router.post('/:caseId/geocode', async (req, res) => {
         const zip   = fv('subject_zip');
         return [street, city, state, zip].filter(Boolean).join(', ');
       })() ||
-      (req.body?.subjectAddress ? String(req.body.subjectAddress).trim() : null);
+      (body.subjectAddress ? String(body.subjectAddress).trim() : null);
 
     if (!subjectAddress) {
       return res.status(400).json({
@@ -888,8 +956,11 @@ router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
 
 // ── POST /:caseId/missing-facts — Batch missing facts check ───────────────────
 router.post('/:caseId/missing-facts', (req, res) => {
+  const body = parsePayload(missingFactsBatchSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const fieldIds = Array.isArray(req.body?.fieldIds) ? req.body.fieldIds : [];
+    const fieldIds = Array.isArray(body.fieldIds) ? body.fieldIds : [];
     if (!fieldIds.length) return res.json({ ok: true, warnings: [] });
 
     const projection = getCaseProjection(req.params.caseId);

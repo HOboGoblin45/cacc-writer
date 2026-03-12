@@ -20,6 +20,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { runQC } from '../qc/qcRunEngine.js';
 import {
   getQcRun,
@@ -36,6 +37,28 @@ import { getRegistryStats } from '../qc/qcRuleRegistry.js';
 import log from '../logger.js';
 
 const router = Router();
+const qcRunSchema = z.object({
+  caseId: z.string().min(1).max(80),
+  generationRunId: z.string().max(120).optional(),
+}).passthrough();
+const findingActionSchema = z.object({
+  note: z.string().max(2000).optional(),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 // ── POST /qc/run ─────────────────────────────────────────────────────────────
 /**
@@ -45,11 +68,9 @@ const router = Router();
  * Returns: { ok, qcRunId, summary, draftReadiness, findingCount, duration }
  */
 router.post('/qc/run', async (req, res) => {
-  const { caseId, generationRunId } = req.body || {};
-
-  if (!caseId) {
-    return res.status(400).json({ ok: false, error: 'caseId is required' });
-  }
+  const payload = parsePayload(qcRunSchema, req.body || {}, res);
+  if (!payload) return;
+  const { caseId, generationRunId } = payload;
 
   try {
     log.info('[qc] Starting QC run', { caseId, generationRunId });
@@ -221,7 +242,9 @@ router.get('/qc/runs/:qcRunId/sections/:sectionId', (req, res) => {
  */
 router.post('/qc/findings/:findingId/dismiss', (req, res) => {
   const { findingId } = req.params;
-  const { note } = req.body || {};
+  const payload = parsePayload(findingActionSchema, req.body || {}, res);
+  if (!payload) return;
+  const { note } = payload;
 
   try {
     const success = dismissFinding(findingId, note);
@@ -243,7 +266,9 @@ router.post('/qc/findings/:findingId/dismiss', (req, res) => {
  */
 router.post('/qc/findings/:findingId/resolve', (req, res) => {
   const { findingId } = req.params;
-  const { note } = req.body || {};
+  const payload = parsePayload(findingActionSchema, req.body || {}, res);
+  if (!payload) return;
+  const { note } = payload;
 
   try {
     const success = resolveFinding(findingId, note);
@@ -264,6 +289,7 @@ router.post('/qc/findings/:findingId/resolve', (req, res) => {
  */
 router.post('/qc/findings/:findingId/reopen', (req, res) => {
   const { findingId } = req.params;
+  if (!parsePayload(findingActionSchema, req.body || {}, res)) return;
 
   try {
     const success = reopenFinding(findingId);

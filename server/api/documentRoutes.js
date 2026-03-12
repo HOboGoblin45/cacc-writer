@@ -26,6 +26,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { createRequire } from 'module';
+import { z } from 'zod';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { upload } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
@@ -60,6 +61,38 @@ const pdfParse = require('pdf-parse');
 
 const router = Router();
 const SUPPORTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.tif', '.tiff'];
+const classifyDocumentSchema = z.object({
+  docType: z.string().max(60),
+}).passthrough();
+const uploadMetadataSchema = z.object({
+  docType: z.string().max(60).optional(),
+}).passthrough();
+const ingestRetrySchema = z.object({
+  step: z.string().max(40).optional(),
+}).passthrough();
+const reviewFactSchema = z.object({
+  factId: z.string().max(80),
+  action: z.enum(['accepted', 'rejected']),
+}).passthrough();
+const mergeFactsSchema = z.object({
+  factIds: z.array(z.string().max(80)).min(1).max(200),
+}).passthrough();
+const emptyMutationSchema = z.object({}).strict();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
 
 function detectUploadKind(file) {
   const ext = path.extname(file?.originalname || '').toLowerCase();
@@ -160,6 +193,9 @@ router.param('caseId', (req, res, next, caseId) => {
  */
 router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req, res) => {
   let ingestJobId = null;
+  const body = parsePayload(uploadMetadataSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
@@ -175,7 +211,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     }
 
     const caseId = req.params.caseId;
-    const legacyDocType = req.body.docType || null;
+    const legacyDocType = body.docType || null;
     const originalFilename = req.file.originalname || 'document.pdf';
     const fileHash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
     const duplicateExisting = findDuplicateDocumentByHash(caseId, fileHash);
@@ -485,6 +521,8 @@ router.get('/cases/:caseId/documents/:docId', (req, res) => {
 
 // ── DELETE /cases/:caseId/documents/:docId ───────────────────────────────────
 router.delete('/cases/:caseId/documents/:docId', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const doc = getDocument(req.params.docId);
     if (!doc || doc.case_id !== req.params.caseId) {
@@ -504,8 +542,11 @@ router.delete('/cases/:caseId/documents/:docId', (req, res) => {
 
 // ── PATCH /cases/:caseId/documents/:docId/classify ───────────────────────────
 router.patch('/cases/:caseId/documents/:docId/classify', (req, res) => {
+  const body = parsePayload(classifyDocumentSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { docType } = req.body;
+    const docType = body.docType;
     if (!docType || !DOC_TYPES.includes(docType)) {
       return res.status(400).json({ error: `Invalid doc type. Must be one of: ${DOC_TYPES.join(', ')}` });
     }
@@ -518,6 +559,8 @@ router.patch('/cases/:caseId/documents/:docId/classify', (req, res) => {
 
 // ── POST /cases/:caseId/documents/:docId/extract ─────────────────────────────
 router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const doc = getDocument(req.params.docId);
     if (!doc || doc.case_id !== req.params.caseId) {
@@ -569,8 +612,11 @@ router.get('/cases/:caseId/ingest-jobs/:jobId', (req, res) => {
 });
 
 router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
+  const body = parsePayload(ingestRetrySchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const step = String(req.body?.step || 'extract').toLowerCase();
+    const step = String(body.step || 'extract').toLowerCase();
     const job = getDocumentIngestJob(req.params.jobId);
     if (!job || job.caseId !== req.params.caseId) {
       return res.status(404).json({
@@ -690,12 +736,11 @@ router.get('/cases/:caseId/extracted-facts', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-facts/review ───────────────────────────────
 router.post('/cases/:caseId/extracted-facts/review', (req, res) => {
+  const body = parsePayload(reviewFactSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { factId, action } = req.body;
-    if (!factId || !['accepted', 'rejected'].includes(action)) {
-      return res.status(400).json({ error: 'Provide factId and action (accepted|rejected)' });
-    }
-    reviewFact(factId, action);
+    reviewFact(body.factId, body.action);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -704,12 +749,11 @@ router.post('/cases/:caseId/extracted-facts/review', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-facts/merge ────────────────────────────────
 router.post('/cases/:caseId/extracted-facts/merge', (req, res) => {
+  const body = parsePayload(mergeFactsSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { factIds } = req.body;
-    if (!Array.isArray(factIds) || factIds.length === 0) {
-      return res.status(400).json({ error: 'Provide factIds array' });
-    }
-    const result = acceptAndMergeFacts(req.params.caseId, factIds);
+    const result = acceptAndMergeFacts(req.params.caseId, body.factIds);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -729,6 +773,8 @@ router.get('/cases/:caseId/extracted-sections', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-sections/:id/approve ───────────────────────
 router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     const result = approveSection(req.params.id);
     res.json({ ok: true, ...result });
@@ -739,6 +785,8 @@ router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
 
 // ── POST /cases/:caseId/extracted-sections/:id/reject ────────────────────────
 router.post('/cases/:caseId/extracted-sections/:id/reject', (req, res) => {
+  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+
   try {
     rejectSection(req.params.id);
     res.json({ ok: true });

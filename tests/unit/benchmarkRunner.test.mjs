@@ -51,6 +51,12 @@ await test('readPhaseCBenchmarkFixtures parses repo fixture file', () => {
   assert.equal(typeof fixtures.version, 'string');
   assert.ok(Array.isArray(fixtures.extractionFixtures));
   assert.ok(fixtures.extractionFixtures.length >= 1);
+  const complianceFixture = fixtures.gateFixtures.find(f => f.id === 'gate-block-compliance');
+  assert.ok(complianceFixture, 'expected compliance gate fixture');
+  assert.deepEqual(
+    complianceFixture.expectedComplianceRuleIds,
+    ['rule.mixed_use.commentary'],
+  );
 });
 
 await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', async () => {
@@ -59,6 +65,7 @@ await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', asyn
     extractionFixtures: [
       {
         id: 'contract-smoke',
+        lane: 'residential',
         docType: 'contract',
         text: 'Contract Date: 01/02/2026 Purchase Price: $500,000 Closing Date: 02/14/2026',
         expectedFacts: [
@@ -70,9 +77,27 @@ await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', asyn
     gateFixtures: [
       {
         id: 'gate-pass',
+        lane: 'commercial',
         expectedOk: true,
         expectedBlockerTypes: [],
+        expectedComplianceRuleIds: [],
         gateResult: { ok: true, blockers: [] },
+      },
+      {
+        id: 'gate-compliance',
+        lane: 'residential',
+        expectedOk: false,
+        expectedBlockerTypes: ['compliance_hard_rules'],
+        expectedComplianceRuleIds: ['rule.fha.repair_commentary'],
+        gateResult: {
+          ok: false,
+          blockers: [
+            {
+              type: 'compliance_hard_rules',
+              findings: [{ ruleId: 'rule.fha.repair_commentary' }],
+            },
+          ],
+        },
       },
     ],
   };
@@ -80,9 +105,20 @@ await test('runPhaseCBenchmarkSuite returns extraction and gate summaries', asyn
   const results = await runPhaseCBenchmarkSuite(fixtures);
   assert.equal(results.version, 'unit-fixture');
   assert.equal(results.extractionRuns.length, 1);
-  assert.equal(results.gateRuns.length, 1);
+  assert.equal(results.gateRuns.length, 2);
+  assert.equal(results.extractionRuns[0].lane, 'residential');
+  assert.equal(results.gateRuns[0].lane, 'commercial');
+  assert.equal(results.gateRuns[1].lane, 'residential');
   assert.equal(results.summary.extraction.fixtureCount, 1);
-  assert.equal(results.summary.gate.fixtureCount, 1);
+  assert.equal(results.summary.gate.fixtureCount, 2);
+  assert.equal(results.summary.gate.complianceExpectationFixtureCount, 1);
+  assert.equal(results.summary.gate.complianceExpectationPassRate, 1);
+  assert.equal(results.summary.extraction.byLane.residential.fixtureCount, 1);
+  assert.equal(results.summary.gate.byLane.commercial.fixtureCount, 1);
+  assert.equal(results.summary.gate.byLane.residential.fixtureCount, 1);
+  assert.ok(results.gateRuns[1].actualComplianceRuleIds.includes('rule.fha.repair_commentary'));
+  assert.equal(results.gateRuns[1].missingExpectedComplianceRuleIds.length, 0);
+  assert.equal(results.gateRuns[1].passed, true);
 });
 
 await test('runPhaseCBenchmarksFromFile + write/read result snapshot round-trips', async () => {
@@ -127,4 +163,3 @@ if (failures.length) {
 }
 console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);
-

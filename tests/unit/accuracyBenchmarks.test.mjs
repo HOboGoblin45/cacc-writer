@@ -79,17 +79,24 @@ test('scoreGateFixture validates expected blockers and ok state', () => {
     fixtureId: 'gate-a',
     expectedOk: false,
     expectedBlockerTypes: ['pending_fact_reviews', 'missing_required_facts'],
+    expectedComplianceRuleIds: ['rule.fha.repair_commentary'],
     gateResult: {
       ok: false,
       blockers: [
         { type: 'missing_required_facts' },
         { type: 'pending_fact_reviews' },
+        {
+          type: 'compliance_hard_rules',
+          findings: [{ ruleId: 'rule.fha.repair_commentary' }],
+        },
       ],
     },
   });
 
   assert.equal(run.okMatch, true);
   assert.equal(run.missingExpectedBlockers.length, 0);
+  assert.equal(run.missingExpectedComplianceRuleIds.length, 0);
+  assert.ok(run.actualComplianceRuleIds.includes('rule.fha.repair_commentary'));
   assert.equal(run.passed, true);
 });
 
@@ -109,16 +116,38 @@ test('scoreGateFixture flags missing expected blockers', () => {
   assert.equal(run.passed, false);
 });
 
+test('scoreGateFixture flags missing expected compliance rule IDs', () => {
+  const run = scoreGateFixture({
+    fixtureId: 'gate-c',
+    expectedOk: false,
+    expectedBlockerTypes: ['compliance_hard_rules'],
+    expectedComplianceRuleIds: ['rule.mixed_use.commentary'],
+    gateResult: {
+      ok: false,
+      blockers: [
+        {
+          type: 'compliance_hard_rules',
+          findings: [{ ruleId: 'rule.manufactured_home.comments' }],
+        },
+      ],
+    },
+  });
+
+  assert.equal(run.okMatch, true);
+  assert.deepEqual(run.missingExpectedComplianceRuleIds, ['rule.mixed_use.commentary']);
+  assert.equal(run.passed, false);
+});
+
 test('summarizeBenchmarkSuite aggregates extraction and gate metrics', () => {
   const summary = summarizeBenchmarkSuite({
     extractionRuns: [
-      { precision: 1, recall: 0.5, f1: 0.6667 },
-      { precision: 0.5, recall: 1, f1: 0.6667 },
+      { lane: 'residential', precision: 1, recall: 0.5, f1: 0.6667 },
+      { lane: 'commercial', precision: 0.5, recall: 1, f1: 0.6667 },
     ],
     gateRuns: [
-      { passed: true },
-      { passed: false },
-      { passed: true },
+      { lane: 'residential', passed: true, expectedComplianceRuleIds: ['rule.a'] },
+      { lane: 'commercial', passed: false, expectedComplianceRuleIds: ['rule.b'] },
+      { lane: 'residential', passed: true, expectedComplianceRuleIds: [] },
     ],
   });
 
@@ -128,6 +157,15 @@ test('summarizeBenchmarkSuite aggregates extraction and gate metrics', () => {
   assert.equal(summary.gate.fixtureCount, 3);
   assert.equal(summary.gate.passedCount, 2);
   assert.equal(summary.gate.passRate, 0.6667);
+  assert.equal(summary.gate.complianceExpectationFixtureCount, 2);
+  assert.equal(summary.gate.complianceExpectationPassedCount, 1);
+  assert.equal(summary.gate.complianceExpectationPassRate, 0.5);
+  assert.equal(summary.extraction.byLane.residential.fixtureCount, 1);
+  assert.equal(summary.extraction.byLane.commercial.fixtureCount, 1);
+  assert.equal(summary.gate.byLane.residential.passedCount, 2);
+  assert.equal(summary.gate.byLane.commercial.passedCount, 0);
+  assert.equal(summary.gate.byLane.residential.complianceExpectationFixtureCount, 1);
+  assert.equal(summary.gate.byLane.commercial.complianceExpectationFixtureCount, 1);
 });
 
 console.log('\n' + '-'.repeat(60));
@@ -141,4 +179,3 @@ if (failures.length) {
 }
 console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);
-
