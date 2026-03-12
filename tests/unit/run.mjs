@@ -42,6 +42,7 @@ const suites = [
   'logger.test.mjs',
   'openaiClient.test.mjs',
   'promptBuilder.test.mjs',
+  'knowledgeBase.test.mjs',
   'generationService.test.mjs',
   'reportQueue.test.mjs',
 ];
