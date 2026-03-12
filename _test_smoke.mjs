@@ -578,6 +578,15 @@ await test('POST /api/intelligence/benchmarks/phase-c/run accepts threshold over
   assert(typeof body.qualityGate?.ok === 'boolean', 'qualityGate.ok should be boolean');
 });
 
+await test('POST /api/intelligence/benchmarks/phase-c/run rejects invalid threshold payload type', async () => {
+  const { status, body } = await api('POST', '/api/intelligence/benchmarks/phase-c/run?persist=false', {
+    thresholds: 'invalid-thresholds',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate', async () => {
   const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {});
   assert(status === 409, `Expected 409, got ${status}`);
