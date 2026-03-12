@@ -68,6 +68,8 @@ app.use((req, res, next) => {
 app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
+app.get('/workspace.js', (_q, r) => r.sendFile(path.join(__dirname, 'workspace.js')));
+app.get('/styles.css', (_q, r) => r.sendFile(path.join(__dirname, 'styles.css')));
 app.get('/phase8.css', (_q, r) => r.sendFile(path.join(__dirname, 'phase8.css')));
 app.get('/favicon.ico', (_q, r) => {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0b1020"/><text x="16" y="23" font-family="Arial" font-size="20" font-weight="bold" fill="#d7b35a" text-anchor="middle">C</text></svg>';

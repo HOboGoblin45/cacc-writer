@@ -387,6 +387,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('case')">Case</div>
+  <div class="tab" onclick="showTab('workspace')">Workspace</div>
   <div class="tab" onclick="showTab('facts')">Facts</div>
   <div class="tab" onclick="showTab('generate')">Generate</div>
   <div class="tab" onclick="showTab('qc')">QC Grade</div>
@@ -684,6 +685,74 @@ button.sm{padding:5px 9px;font-size:11px;}
     </div><!-- /.case-detail -->
   </div><!-- /.case-layout -->
 </div><!-- /#tab-case -->
+
+<!-- ===== TAB: WORKSPACE ===== -->
+<div class="page" id="tab-workspace">
+  <div class="workspace-shell">
+    <aside class="workspace-nav">
+      <div class="workspace-nav-head">
+        <div>
+          <div class="workspace-kicker">Primary Interface</div>
+          <h2>CACC 1004 Workspace</h2>
+        </div>
+        <div class="chip" id="workspaceFormTypeChip">1004</div>
+      </div>
+      <div class="workspace-status-card">
+        <div class="workspace-status-row">
+          <span>Case</span>
+          <strong id="workspaceCaseLabel">No case selected</strong>
+        </div>
+        <div class="workspace-status-row">
+          <span>Autosave</span>
+          <strong id="workspaceSaveState">Idle</strong>
+        </div>
+        <div class="workspace-status-row">
+          <span>Last Saved</span>
+          <strong id="workspaceSavedAt">-</strong>
+        </div>
+      </div>
+      <div class="workspace-nav-list" id="workspaceNavList">
+        <div class="hint">Select a 1004 case to load the section map.</div>
+      </div>
+    </aside>
+
+    <main class="workspace-main">
+      <div class="workspace-main-head">
+        <div>
+          <div class="workspace-kicker" id="workspaceSectionPageHint">Section</div>
+          <h2 id="workspaceSectionTitle">No case selected</h2>
+          <p id="workspaceSectionDescription" class="hint">The section-based workspace will appear here.</p>
+        </div>
+        <div class="workspace-head-actions">
+          <button class="sec sm" onclick="workspaceForceSave()">Save Now</button>
+          <button class="sec sm" onclick="workspaceReload()">Reload</button>
+        </div>
+      </div>
+      <div id="workspaceBanner" class="workspace-banner" style="display:none;"></div>
+      <div id="workspaceSectionContent" class="workspace-section-content">
+        <div class="card">
+          <div class="card-body">
+            <div class="hint">Select a case to enter the CACC 1004 workspace.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="workspace-assistant">
+      <div class="workspace-assistant-card">
+        <div class="workspace-assistant-head">
+          <div>
+            <div class="workspace-kicker">Assistant Panel</div>
+            <h3 id="workspaceAssistantTitle">No field selected</h3>
+          </div>
+        </div>
+        <div id="workspaceAssistantBody">
+          <div class="hint">Focus a field to review evidence support, apply suggestions, and restore versions.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div><!-- /#tab-workspace -->
 
 <!-- ===== TAB: FACTS ===== -->
 <div class="page" id="tab-facts">
@@ -2920,8 +2989,338 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-case .assign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px 16px !important; }
 #tab-case .assign-grid .full { grid-column: 1 / -1 !important; }
 
+/* Workspace Tab */
+#tab-workspace { padding: 0 !important; display: block !important; }
+#tab-workspace.active { display: block !important; }
+.workspace-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 340px;
+  min-height: calc(100vh - 150px);
+}
+.workspace-nav,
+.workspace-main,
+.workspace-assistant {
+  min-width: 0;
+}
+.workspace-nav {
+  border-right: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.workspace-nav-head,
+.workspace-main-head,
+.workspace-assistant-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+.workspace-kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--gold);
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+.workspace-nav-head h2,
+.workspace-main-head h2,
+.workspace-assistant-head h3 {
+  font-size: 18px;
+  font-family: "Source Serif 4", serif;
+}
+.workspace-status-card,
+.workspace-assistant-card,
+.workspace-banner,
+.workspace-section-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+}
+.workspace-status-card {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.workspace-status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.workspace-status-row strong {
+  color: var(--text);
+  font-weight: 700;
+  text-align: right;
+}
+.workspace-nav-list {
+  display: grid;
+  gap: 6px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.workspace-nav-item {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.02);
+  cursor: pointer;
+  transition: border-color .15s, transform .15s, background .15s;
+}
+.workspace-nav-item:hover {
+  border-color: rgba(255,255,255,.15);
+  transform: translateY(-1px);
+}
+.workspace-nav-item.active {
+  border-color: rgba(215,179,90,.35);
+  background: rgba(215,179,90,.08);
+}
+.workspace-nav-item-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+.workspace-nav-item-meta {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.workspace-main {
+  padding: 20px 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.workspace-head-actions {
+  display: flex;
+  gap: 8px;
+}
+.workspace-banner {
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.workspace-section-content {
+  display: grid;
+  gap: 14px;
+}
+.workspace-card-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.workspace-card-head h3 {
+  font-size: 13px;
+  font-weight: 800;
+}
+.workspace-card-head .chip {
+  flex-shrink: 0;
+}
+.workspace-card-body {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.workspace-field-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+.workspace-field {
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.workspace-field.full {
+  grid-column: 1 / -1;
+}
+.workspace-field.third {
+  grid-column: span 4;
+}
+.workspace-field.quarter {
+  grid-column: span 3;
+}
+.workspace-field label {
+  margin: 0;
+}
+.workspace-field-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+.workspace-field-hint {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.workspace-field input,
+.workspace-field textarea,
+.workspace-field select {
+  background: rgba(0,0,0,.22);
+}
+.workspace-field.is-focused input,
+.workspace-field.is-focused textarea,
+.workspace-field.is-focused select {
+  border-color: rgba(215,179,90,.45);
+  box-shadow: 0 0 0 1px rgba(215,179,90,.1);
+}
+.workspace-grid-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.workspace-grid {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+.workspace-grid th,
+.workspace-grid td {
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-right: 1px solid rgba(255,255,255,.06);
+  padding: 8px;
+  vertical-align: top;
+}
+.workspace-grid th {
+  position: sticky;
+  top: 0;
+  background: rgba(11,16,32,.95);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+  color: var(--muted);
+}
+.workspace-grid td:first-child {
+  min-width: 220px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.workspace-grid td input,
+.workspace-grid td textarea {
+  width: 100%;
+  min-width: 120px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+}
+.workspace-grid td input[disabled] {
+  opacity: .7;
+}
+.workspace-locked {
+  padding: 14px;
+  border: 1px dashed rgba(215,179,90,.25);
+  border-radius: 10px;
+  background: rgba(215,179,90,.04);
+}
+.workspace-locked-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+  color: var(--gold);
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.workspace-assistant {
+  border-left: 1px solid var(--border);
+  padding: 20px 16px 24px;
+  background: rgba(0,0,0,.12);
+}
+.workspace-assistant-card {
+  position: sticky;
+  top: 16px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.workspace-assistant-section {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 12px;
+}
+.workspace-assistant-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.workspace-assistant-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.workspace-suggestion {
+  border: 1px solid rgba(85,209,143,.2);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(85,209,143,.05);
+}
+.workspace-suggestion-value,
+.workspace-history-value,
+.workspace-qc-item {
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.workspace-meta-list {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.workspace-history-item {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.workspace-assistant .workspace-select-inline {
+  min-width: 180px;
+  width: auto;
+  flex: 1 1 180px;
+  background: rgba(0,0,0,.22);
+}
+@media (max-width: 1200px) {
+  .workspace-shell {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .workspace-assistant {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  .workspace-assistant-card {
+    position: static;
+  }
+}
+@media (max-width: 820px) {
+  .workspace-shell {
+    grid-template-columns: 1fr;
+  }
+  .workspace-nav {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .workspace-field,
+  .workspace-field.third,
+  .workspace-field.quarter {
+    grid-column: 1 / -1;
+  }
+}
+
 </style>
 <link rel="stylesheet" href="styles.css"/>
 <script src="app.js"></script>
+<script src="workspace.js"></script>
 </body>
 </html>

@@ -45,6 +45,7 @@ import {
   getActiveForms,
   getDeferredForms,
 } from '../../forms/index.js';
+import { getWorkspaceDefinition } from '../workspace/workspaceService.js';
 import { ACTIVE_FORMS, DEFERRED_FORMS } from '../config/productionScope.js';
 // Note: ACTIVE_FORMS and DEFERRED_FORMS come from productionScope, not forms/index.js
 import {
@@ -234,6 +235,21 @@ router.get('/forms/:formType', (req, res) => {
       voiceFields: cfg.voiceFields || [],
     },
   });
+});
+
+router.get('/forms/:formType/workspace', (req, res) => {
+  const ft = String(req.params.formType || '').trim();
+  if (!isValidFormType(ft)) {
+    return res.status(404).json({ ok: false, error: `Unknown form type: ${ft}` });
+  }
+  const definition = getWorkspaceDefinition(ft);
+  if (!definition) {
+    return res.status(404).json({
+      ok: false,
+      error: `No workspace definition available for form type: ${ft}`,
+    });
+  }
+  res.json({ ok: true, workspace: definition });
 });
 
 // ── GET /destination-registry ─────────────────────────────────────────────────
