@@ -243,6 +243,26 @@ export function evaluateHardComplianceRules({
     }));
   }
 
+  if (flags.subject_to_any || flags.retrospective_value || flags.prospective_value) {
+    const passed = hasActiveSection(sectionRequirements, 'certification_addendum_comment');
+    const assignmentCondition = flags.subject_to_any
+      ? 'subject_to'
+      : (flags.retrospective_value ? 'retrospective_value' : 'prospective_value');
+    checks.push(buildCheck({
+      ruleId: 'rule.assignment_condition.certification_addendum',
+      severity: 'blocker',
+      passed,
+      reasonCode: passed ? 'assignment_condition_addendum_present' : 'assignment_condition_addendum_missing',
+      message: passed
+        ? 'Certification addendum commentary is present for assignment-condition reporting.'
+        : 'Assignment condition requires certification addendum commentary, but section is missing.',
+      evidence: {
+        expectedSectionId: 'certification_addendum_comment',
+        assignmentCondition,
+      },
+    }));
+  }
+
   if (flags.flood_commentary_required) {
     const passed = hasActiveSection(sectionRequirements, 'flood_comment');
     checks.push(buildCheck({

@@ -108,6 +108,17 @@
           { "type": "compliance_hard_rules" }
         ]
       }
+    },
+    {
+      "id": "gate-block-missing-required-facts",
+      "expectedOk": false,
+      "expectedBlockerTypes": ["missing_required_facts"],
+      "gateResult": {
+        "ok": false,
+        "blockers": [
+          { "type": "missing_required_facts" }
+        ]
+      }
     }
   ]
 }

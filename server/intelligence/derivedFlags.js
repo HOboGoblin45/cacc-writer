@@ -111,7 +111,7 @@ export function deriveAssignmentFlags(ctx) {
   // ── Assignment condition flags ──────────────────────────────────────────
   const extraordinary_assumption_present = ea.length > 0;
   const hypothetical_condition_present   = hc.length > 0;
-  const additional_certification_risk    = extraordinary_assumption_present || hypothetical_condition_present || subject_to_any || retrospective_value;
+  const additional_certification_risk    = extraordinary_assumption_present || hypothetical_condition_present || subject_to_any || retrospective_value || prospective_value;
 
   // ── Market / comp flags ─────────────────────────────────────────────────
   const has_comps                  = comps.length > 0;
