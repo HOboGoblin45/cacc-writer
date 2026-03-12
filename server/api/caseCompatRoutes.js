@@ -79,6 +79,12 @@ const patchOutputSchema = z.object({
   text: z.string().max(16000),
 });
 
+const insertSectionSchema = z.object({
+  text: z.string().max(16000).optional(),
+  generationRunId: z.string().max(80).optional(),
+  skipQcBlockers: z.boolean().optional(),
+}).passthrough();
+
 const insertAllSchema = z.object({
   generationRunId: z.string().max(80).optional(),
   skipQcBlockers: z.boolean().optional(),
@@ -602,14 +608,41 @@ router.get('/:caseId/exceptions', (req, res) => {
 });
 
 router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
+  const body = parsePayload(insertSectionSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const fieldId = trimText(req.params.fieldId, 80);
     const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(req.body?.text, 16000) || outputs[fieldId]?.text || '';
+    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
     if (!text) return res.status(400).json({ ok: false, error: 'No text to insert for field: ' + fieldId });
+
+    const generationRunId = trimText(body.generationRunId, 80) || null;
+    const skipQcBlockers = Boolean(body.skipQcBlockers);
+    const qcGate = evaluateInsertionQcGate({
+      caseId: req.params.caseId,
+      generationRunId,
+      config: {
+        requireQcRun: true,
+        requireFreshQcForGeneration: Boolean(generationRunId),
+      },
+    });
+    const canBypassQcGate = skipQcBlockers && qcGate.overrideAllowed !== false;
+    if (!qcGate.passed && !canBypassQcGate) {
+      return res.status(409).json({
+        ok: false,
+        code: 'QC_GATE_BLOCKED',
+        error: 'QC gate blocked insertion',
+        qcGate,
+        overrideAllowed: qcGate.overrideAllowed !== false,
+        message: qcGate.overrideAllowed === false
+          ? 'Run QC for this case before insertion.'
+          : 'Resolve QC blockers or set skipQcBlockers=true to bypass.',
+      });
+    }
 
     const { formType } = runtime;
     const destination = getDestination(formType, fieldId);
@@ -637,6 +670,7 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       destination: destination || null,
       targetSoftware: getTargetSoftware(formType, fieldId),
       fallback: getFallbackStrategy(formType, fieldId),
+      qcGate,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

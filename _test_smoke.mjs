@@ -692,6 +692,25 @@ await test('POST /api/insertion/retry/:itemId returns coded 404 for unknown item
   assert(body?.code === 'INSERTION_ITEM_NOT_FOUND', 'code should be INSERTION_ITEM_NOT_FOUND');
 });
 
+await test('POST /api/cases/:caseId/sections/:fieldId/insert blocks when QC run is missing', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/insert`, {
+    text: 'Smoke section insert payload',
+  });
+  assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'QC_GATE_BLOCKED', 'code should be QC_GATE_BLOCKED');
+  assert(body?.qcGate?.reason === 'missing_qc_run', 'qcGate reason should indicate missing QC run');
+});
+
+await test('POST /api/cases/:caseId/sections/:fieldId/insert rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/sections/neighborhood_description/insert`, {
+    skipQcBlockers: 'true',
+  });
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(typeof body?.error === 'string', 'error should be a string');
+});
+
 await test('POST /api/cases/:caseId/insert-all blocks approved insertion when QC run is missing', async () => {
   const fieldId = 'neighborhood_description';
 
