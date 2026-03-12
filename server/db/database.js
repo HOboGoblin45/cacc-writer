@@ -203,6 +203,10 @@ export function getTableCounts() {
     'engagement_records',
     'invoices',
     'pipeline_entries',
+    'inspections',
+    'inspection_photos',
+    'inspection_measurements',
+    'inspection_conditions',
   ];
 
   const counts = {};
