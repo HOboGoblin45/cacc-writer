@@ -119,6 +119,17 @@
           { "type": "missing_required_facts" }
         ]
       }
+    },
+    {
+      "id": "gate-block-missing-required-provenance",
+      "expectedOk": false,
+      "expectedBlockerTypes": ["missing_required_provenance"],
+      "gateResult": {
+        "ok": false,
+        "blockers": [
+          { "type": "missing_required_provenance" }
+        ]
+      }
     }
   ]
 }
