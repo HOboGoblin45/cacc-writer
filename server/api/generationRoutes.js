@@ -125,6 +125,8 @@ const regenerateSectionSchema = z.object({
   runId: z.string().min(1).max(80),
   sectionId: z.string().min(1).max(80),
   caseId: z.string().min(1).max(80),
+  forceGateBypass: z.boolean().optional(),
+  options: fullDraftOptionsSchema.optional(),
 }).passthrough();
 const emptyMutationSchema = z.object({}).strict();
 
@@ -1124,12 +1126,13 @@ router.get('/generation/runs/:runId/result', (req, res) => {
  * Regenerate a single section within an existing run.
  * Useful for fixing a failed or thin section without re-running the full draft.
  *
- * Body:    { runId, sectionId, caseId }
+ * Body:    { runId, sectionId, caseId, forceGateBypass?, options? }
  * Returns: { ok, sectionId, text, metrics }
  */
 router.post('/generation/regenerate-section', async (req, res) => {
   const body = parsePayload(regenerateSectionSchema, req.body || {}, res);
   if (!body) return;
+  req.body = body;
   const { runId, sectionId, caseId } = body;
 
   try {
@@ -1137,12 +1140,27 @@ router.post('/generation/regenerate-section', async (req, res) => {
     if (!runStatus) {
       return res.status(404).json({ ok: false, error: `Run not found: ${runId}` });
     }
+    if (runStatus.caseId && runStatus.caseId !== caseId) {
+      return res.status(409).json({
+        ok: false,
+        code: 'RUN_CASE_MISMATCH',
+        error: 'runId does not belong to caseId',
+        runId,
+        caseId,
+        runCaseId: runStatus.caseId,
+      });
+    }
 
     const formType   = runStatus.formType || '1004';
     const sectionDef = getSectionDef(formType, sectionId);
     if (!sectionDef) {
       return res.status(400).json({ ok: false, error: `Unknown section: ${sectionId} for form ${formType}` });
     }
+    if (!enforcePreDraftGate(req, res, {
+      caseId,
+      formType,
+      sectionIds: [sectionId],
+    })) return;
 
     const context       = await buildAssignmentContext(caseId);
     const plan          = buildReportPlan(context);
