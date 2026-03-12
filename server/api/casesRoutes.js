@@ -601,7 +601,8 @@ router.get('/:caseId/workspace', (req, res) => {
     const narrativeSections = [
       'offering_history', 'contract_analysis', 'neighborhood_description',
       'market_conditions', 'site_description', 'improvements_description',
-      'sca_summary', 'reconciliation',
+      'sca_summary', 'reconciliation', 'prior_sales', 'exposure_time',
+      'cost_approach_summary', 'income_approach_summary',
     ];
     for (const sid of narrativeSections) {
       const pol = buildSectionPolicy(sid, projection.facts || {});

@@ -278,12 +278,28 @@ function buildRetrievalQuery(ctx, canonicalFieldId, reportFamily, formType, sect
 
 // ── Voice Hints Builder ─────────────────────────────────────────────────────
 
+// Default professional appraisal voice when no custom profile exists
+const DEFAULT_VOICE_PROFILE = {
+  tone: 'professional, objective, and measured',
+  sentenceLength: 'medium — clear and direct',
+  hedgingDegree: 'moderate — use "appears to", "based on available data" where appropriate',
+  terminologyPreference: 'standard USPAP and appraisal industry terminology',
+  reconciliationStyle: 'weight-based with clear reasoning for emphasis',
+  preferredPhrases: [],
+  phrasingPatterns: [],
+  forbiddenPhrases: [
+    'the subject property is a beautiful home',
+    'this property is worth every penny',
+    'the market is booming',
+  ],
+};
+
 /**
  * Build voice hints from a resolved voice profile.
- * These are structured instructions for the generation prompt.
+ * Falls back to a sensible default professional appraisal voice.
  */
 function buildVoiceHints(profile) {
-  if (!profile) return null;
+  if (!profile) profile = DEFAULT_VOICE_PROFILE;
 
   const hints = {
     tone: profile.tone || null,
@@ -314,7 +330,7 @@ function buildVoiceHints(profile) {
  * Build disallowed phrases list from voice profile.
  */
 function buildDisallowedPhrases(profile, maxPhrases) {
-  if (!profile) return [];
+  if (!profile) profile = DEFAULT_VOICE_PROFILE;
 
   const phrases = [...(profile.forbiddenPhrases || [])];
 
