@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { normalizeFormType } from '../utils/caseUtils.js';
@@ -44,6 +45,25 @@ const KB_DIR       = path.join(__dirname, '..', '..', 'knowledge_base');
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
+const emptyMutationSchema = z.object({}).strict();
+const voiceImportFolderSchema = z.object({
+  formType: z.string().max(40).optional(),
+}).strict();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(issue => ({
+      path: issue.path.join('.') || '(root)',
+      message: issue.message,
+    })),
+  });
+  return null;
+}
 
 // ── GET /kb/status ────────────────────────────────────────────────────────────
 router.get('/kb/status', (_req, res) => {
@@ -64,6 +84,8 @@ router.get('/kb/status', (_req, res) => {
 
 // ── POST /kb/reindex ──────────────────────────────────────────────────────────
 router.post('/kb/reindex', (_req, res) => {
+  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
+
   try {
     const index = indexExamples();
     res.json({
@@ -78,6 +100,8 @@ router.post('/kb/reindex', (_req, res) => {
 
 // ── POST /kb/migrate-voice ────────────────────────────────────────────────────
 router.post('/kb/migrate-voice', (_req, res) => {
+  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
+
   try {
     const voiceEntries = readJSON(VOICE_FILE, []);
     if (!voiceEntries.length) {
@@ -109,6 +133,8 @@ router.post('/kb/migrate-voice', (_req, res) => {
 // One-time migration: ingest all local KB examples into Pinecone.
 // Requires PINECONE_API_KEY and PINECONE_INDEX_NAME to be set.
 router.post('/kb/ingest-to-pinecone', async (_req, res) => {
+  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
+
   try {
     let ingestLocalKBToPinecone;
     try {
@@ -273,8 +299,11 @@ router.delete('/voice/examples/:id', (req, res) =>
 
 // ── POST /voice/import-folder ─────────────────────────────────────────────────
 router.post('/voice/import-folder', ensureAI, async (req, res) => {
+  const body = parsePayload(voiceImportFolderSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const requestedFormType = normalizeFormType(req.body?.formType || DEFAULT_FORM_TYPE);
+    const requestedFormType = normalizeFormType(body.formType || DEFAULT_FORM_TYPE);
     const formConfig        = getFormConfig(requestedFormType);
     const voiceFields       = asArray(formConfig.voiceFields);
     if (!voiceFields.length) {
