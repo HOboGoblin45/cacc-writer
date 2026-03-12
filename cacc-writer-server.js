@@ -36,6 +36,7 @@ import qcRouter from './server/api/qcRoutes.js';
 import insertionRouter from './server/api/insertionRoutes.js';
 import operationsRouter from './server/api/operationsRoutes.js';
 import queueRouter from './server/api/queueRoutes.js';
+import learningRouter from './server/api/learningRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -92,6 +93,7 @@ app.use('/api', qcRouter);
 app.use('/api', insertionRouter);
 app.use('/api', operationsRouter);
 app.use('/api', queueRouter);
+app.use('/api', learningRouter);
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);

@@ -45,6 +45,7 @@ const suites = [
   'insertionQcGate.test.mjs',
   'insertionReliability.test.mjs',
   'casesInsertionRoutes.test.mjs',
+  'insertionReplay.test.mjs',
   'envPrecedence.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
@@ -60,6 +61,7 @@ const suites = [
   'reportQueue.test.mjs',
   'contradictionResolution.test.mjs',
   'valuationCalculator.test.mjs',
+  'learningSystem.test.mjs',
 ];
 
 let totalPassed = 0;
