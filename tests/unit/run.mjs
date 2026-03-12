@@ -31,6 +31,7 @@ const suites = [
   'documentClassifier.test.mjs',
   'documentExtractors.test.mjs',
   'documentQuality.test.mjs',
+  'complianceProfile.test.mjs',
   'intelligenceRules.test.mjs',
   'insertionQcGate.test.mjs',
   'envPrecedence.test.mjs',
