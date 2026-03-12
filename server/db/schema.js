@@ -56,6 +56,17 @@ function runMigrations(db) {
     `ALTER TABLE case_documents ADD COLUMN duplicate_of_document_id TEXT`,
     // Phase C document intake hardening — ingestion warning note
     `ALTER TABLE case_documents ADD COLUMN ingestion_warning TEXT`,
+    // Phase D — section factory governance
+    `ALTER TABLE generated_sections ADD COLUMN prompt_version TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN section_policy_json TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN dependency_snapshot_json TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN audit_metadata_json TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN quality_score REAL`,
+    `ALTER TABLE generated_sections ADD COLUMN quality_factors_json TEXT`,
+    // Phase D — section job governance
+    `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
+    `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT`,
+    `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT`,
   ];
 
   for (const sql of migrations) {

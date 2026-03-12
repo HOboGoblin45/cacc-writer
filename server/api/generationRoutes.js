@@ -55,7 +55,18 @@ import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
-import { resolveSectionPolicy, evaluateRegeneratePolicy } from '../sectionFactory/sectionPolicyService.js';
+import {
+  buildSectionPolicy,
+  buildDependencySnapshot as buildFactDependencySnapshot,
+  computeQualityScore,
+  getPromptVersion,
+  findStaleDependentSections,
+  evaluateRegeneratePolicy as evaluateFactRegeneratePolicy,
+} from '../services/sectionPolicyService.js';
+import {
+  resolveSectionPolicy,
+  evaluateRegeneratePolicy as evaluateRunRegeneratePolicy,
+} from '../sectionFactory/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -1169,10 +1180,10 @@ router.post('/generation/regenerate-section', async (req, res) => {
 
     // Collect prior section results for synthesis sections
     const priorSections = getGeneratedSectionsForRun(runId);
-    const sectionPolicy = resolveSectionPolicy({ formType, sectionDef });
-    const regenerateCheck = evaluateRegeneratePolicy({
+    const runSectionPolicy = resolveSectionPolicy({ formType, sectionDef });
+    const regenerateCheck = evaluateRunRegeneratePolicy({
       runStatus,
-      sectionPolicy,
+      sectionPolicy: runSectionPolicy,
       generatedSections: priorSections,
     });
     if (!regenerateCheck.ok) {
@@ -1181,7 +1192,7 @@ router.post('/generation/regenerate-section', async (req, res) => {
         code: regenerateCheck.code,
         error: regenerateCheck.error,
         sectionId,
-        promptVersion: sectionPolicy.promptVersion,
+        promptVersion: runSectionPolicy.promptVersion,
         dependencySnapshot: regenerateCheck.dependencySnapshot,
         staleDependentSections: regenerateCheck.staleDependentSections,
       });
@@ -1194,6 +1205,20 @@ router.post('/generation/regenerate-section', async (req, res) => {
       }
     }
 
+    // Phase D — evaluate fact-level regenerate policy
+    const projection = getCaseProjection(caseId);
+    const facts = projection?.facts || {};
+    const regenPolicy = evaluateFactRegeneratePolicy(sectionId, facts, priorResults);
+    if (!regenPolicy.allowed && !body.forceGateBypass) {
+      return res.status(409).json({
+        ok: false,
+        code: 'REGENERATE_POLICY_BLOCKED',
+        sectionId,
+        blockers: regenPolicy.blockers,
+        warnings: regenPolicy.warnings,
+      });
+    }
+
     const result = await runSectionJob({
       runId,
       caseId,
@@ -1204,16 +1229,36 @@ router.post('/generation/regenerate-section', async (req, res) => {
       analysisArtifacts: {},
     });
 
+    // Phase D — build audit metadata for the regenerated section
+    const promptVersion = getPromptVersion(sectionId);
+    const dependencySnapshot = buildFactDependencySnapshot(sectionId, facts);
+    const factSectionPolicy = buildSectionPolicy(sectionId, facts);
+    const staleDependents = findStaleDependentSections(sectionId);
+    let qualityResult = null;
+    if (result.ok && result.text) {
+      qualityResult = computeQualityScore({
+        sectionId,
+        facts,
+        generatedText: result.text,
+        reviewPassed: result.reviewPassed || false,
+        examplesUsed: result.metrics?.examplesUsed || 0,
+      });
+    }
+
     res.json({
       ok:        result.ok,
       sectionId: result.sectionId,
       text:      result.text,
       metrics:   result.metrics,
       error:     result.error || null,
-      promptVersion: result.promptVersion || sectionPolicy.promptVersion,
-      dependencySnapshot: regenerateCheck.dependencySnapshot,
-      staleDependentSections: regenerateCheck.staleDependentSections,
-      qualityScore: typeof result.qualityScore === 'number' ? result.qualityScore : null,
+      // Phase D audit metadata
+      promptVersion: result.promptVersion || promptVersion,
+      dependencySnapshot,
+      sectionPolicy: factSectionPolicy,
+      staleDependentSections: staleDependents,
+      qualityScore:   qualityResult?.score ?? null,
+      qualityFactors: qualityResult?.factors ?? null,
+      regenerateWarnings: regenPolicy.warnings,
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);

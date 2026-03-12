@@ -25,6 +25,12 @@
  */
 
 import { getSectionDefs } from '../context/reportPlanner.js';
+import {
+  buildSectionPolicy,
+  buildDependencySnapshot,
+  computeQualityScore,
+  getPromptVersion,
+} from '../services/sectionPolicyService.js';
 
 // ── Minimum text length thresholds ────────────────────────────────────────────
 const MIN_TEXT_LENGTH = {
@@ -258,14 +264,38 @@ export function assembleDraftPackage({
   const sectionDefs = plan.sections || getSectionDefs(context.formType);
   const sections    = {};
 
+  const facts = context?.facts || context?.subject ? context : {};
   for (const def of sectionDefs) {
     const result = sectionResults[def.id];
+    const text = result?.text || '';
+
+    // Phase D — section-level audit metadata
+    const promptVersion = getPromptVersion(def.id);
+    let qualityResult = null;
+    let sectionPolicy = null;
+    let dependencySnapshot = null;
+    try {
+      sectionPolicy = buildSectionPolicy(def.id, facts);
+      dependencySnapshot = buildDependencySnapshot(def.id, facts);
+      if (text) {
+        qualityResult = computeQualityScore({
+          sectionId: def.id,
+          facts,
+          generatedText: text,
+          reviewPassed: result?.reviewPassed || false,
+          examplesUsed: result?.metrics?.examplesUsed || 0,
+        });
+      }
+    } catch {
+      // Non-fatal — audit metadata is best-effort
+    }
+
     sections[def.id] = {
       sectionId:       def.id,
       label:           def.label,
       generatorProfile: def.generatorProfile,
       ok:              result?.ok || false,
-      text:            result?.text || '',
+      text,
       metrics:         result?.metrics || {},
       error:           result?.error || null,
       promptVersion:   result?.promptVersion || null,
@@ -275,6 +305,12 @@ export function assembleDraftPackage({
       insertionTarget: def.insertionTarget,
       aciTab:          def.aciTab || null,
       rqSection:       def.rqSection || null,
+      // Phase D audit metadata
+      promptVersion,
+      sectionPolicy:      sectionPolicy || null,
+      dependencySnapshot: dependencySnapshot || null,
+      qualityScore:       qualityResult?.score ?? null,
+      qualityFactors:     qualityResult?.factors ?? null,
     };
   }
 

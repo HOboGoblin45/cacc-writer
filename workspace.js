@@ -126,12 +126,56 @@ function workspaceInsertionReliability() {
   return WORKSPACE_STATE.payload?.insertionReliability || null;
 }
 
+function workspaceSectionPolicySummary() {
+  return WORKSPACE_STATE.payload?.sectionPolicySummary || {};
+}
+
 function workspaceSectionContradictions(sectionId) {
   const items = Array.isArray(workspaceContradictionGraph()?.items)
     ? workspaceContradictionGraph().items
     : [];
   if (!sectionId) return items;
   return items.filter((item) => Array.isArray(item.sectionIds) && item.sectionIds.includes(sectionId));
+}
+
+function workspaceRenderSectionAuditPanel(sectionId) {
+  const summary = workspaceSectionPolicySummary();
+  const audit = summary[sectionId];
+  if (!audit) return '';
+
+  const blockerChip = audit.hasBlockers
+    ? '<span class="chip warn">Blockers</span>'
+    : '<span class="chip ok">Ready</span>';
+  const missingRequired = audit.missingRequiredCount || 0;
+  const missingRecommended = audit.missingRecommendedCount || 0;
+
+  let factStatus = '';
+  if (missingRequired > 0) {
+    factStatus += `<div><strong>Missing Required:</strong> <span style="color:var(--warn)">${esc(String(missingRequired))} fact${missingRequired === 1 ? '' : 's'}</span></div>`;
+  }
+  if (missingRecommended > 0) {
+    factStatus += `<div><strong>Missing Recommended:</strong> ${esc(String(missingRecommended))} fact${missingRecommended === 1 ? '' : 's'}</div>`;
+  }
+  if (missingRequired === 0 && missingRecommended === 0) {
+    factStatus = '<div style="color:var(--ok)">All required and recommended facts available</div>';
+  }
+
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Section Governance</h4>` +
+      `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">` +
+        `<span style="font-size:0.85em;opacity:0.7">${esc(audit.profileId || 'default')}</span>` +
+        `${blockerChip}` +
+      `</div>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Prompt Version:</strong> ${esc(audit.promptVersion || '-')}</div>` +
+        factStatus +
+      `</div>` +
+      `<div style="margin-top:8px;">` +
+        `<button class="sec sm" onclick="workspaceLoadSectionAudit('${esc(sectionId)}')">View Full Audit</button>` +
+      `</div>` +
+    `</div>`
+  );
 }
 
 function workspaceRenderContradictionGraphPanel(sectionId, limit = 5) {
@@ -155,17 +199,48 @@ function workspaceRenderContradictionGraphPanel(sectionId, limit = 5) {
         `<div><strong>High/Blocker:</strong> ${esc(String((graph.summary.highCount || 0) + (graph.summary.blockerCount || 0)))}</div>` +
         `<div><strong>Comparable:</strong> ${esc(String(graph.summary.sourceCounts?.comparable_intelligence || 0))}</div>` +
       `</div>` +
-      (visibleItems.length
-        ? visibleItems.map((item) => (
-          `<div class="workspace-history-item">` +
-            `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
-              `<div class="workspace-qc-item"><strong>${esc(item.categoryLabel || item.category || 'Conflict')}</strong></div>` +
-              `<span class="chip ${item.severity === 'blocker' || item.severity === 'high' ? 'warn' : ''}">${esc(item.severity || 'medium')}</span>` +
-            `</div>` +
-            `<div class="workspace-history-value">${esc(item.message || '')}</div>` +
-            `${item.factPaths?.length ? `<div class="workspace-meta-list"><div><strong>Paths:</strong> ${esc(item.factPaths.join(', '))}</div></div>` : ''}` +
+      (graph.resolutionSummary
+        ? `<div class="workspace-meta-list" style="margin-top:6px;">` +
+            `<div><strong>Resolved:</strong> ${esc(String(graph.resolutionSummary.resolved || 0))}</div>` +
+            `<div><strong>Dismissed:</strong> ${esc(String(graph.resolutionSummary.dismissed || 0))}</div>` +
+            `<div><strong>Open:</strong> ${esc(String(graph.resolutionSummary.open || 0))}</div>` +
+            `<div><strong>Completion:</strong> ${esc(String(graph.resolutionSummary.completionPercent || 0))}%</div>` +
           `</div>`
-        )).join('')
+        : '') +
+      (visibleItems.length
+        ? visibleItems.map((item) => {
+          const resolution = item.resolution || {};
+          const resStatus = resolution.status || 'open';
+          const isOpen = resStatus === 'open';
+          const resChipTone = resStatus === 'resolved' ? 'ok' : resStatus === 'dismissed' ? '' : resStatus === 'acknowledged' ? 'warn' : '';
+          const resLabel = resStatus.charAt(0).toUpperCase() + resStatus.slice(1);
+          const itemId = item.id || '';
+          const actionButtons = isOpen
+            ? `<div class="btnrow" style="margin-top:6px;">` +
+                `<button class="sm" onclick="workspaceResolveContradiction('${esc(itemId)}')">Resolve</button>` +
+                `<button class="sec sm" onclick="workspaceDismissContradiction('${esc(itemId)}')">Dismiss</button>` +
+                `<button class="ghost sm" onclick="workspaceAcknowledgeContradiction('${esc(itemId)}')">Acknowledge</button>` +
+              `</div>`
+            : `<div class="btnrow" style="margin-top:6px;">` +
+                `<button class="ghost sm" onclick="workspaceReopenContradiction('${esc(itemId)}')">Reopen</button>` +
+              `</div>`;
+
+          return (
+            `<div class="workspace-history-item">` +
+              `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
+                `<div class="workspace-qc-item"><strong>${esc(item.categoryLabel || item.category || 'Conflict')}</strong></div>` +
+                `<div style="display:flex;gap:4px;">` +
+                  `<span class="chip ${resChipTone}" style="font-size:0.7em;">${esc(resLabel)}</span>` +
+                  `<span class="chip ${item.severity === 'blocker' || item.severity === 'high' ? 'warn' : ''}">${esc(item.severity || 'medium')}</span>` +
+                `</div>` +
+              `</div>` +
+              `<div class="workspace-history-value">${esc(item.message || '')}</div>` +
+              `${item.factPaths?.length ? `<div class="workspace-meta-list"><div><strong>Paths:</strong> ${esc(item.factPaths.join(', '))}</div></div>` : ''}` +
+              `${resolution.actor ? `<div class="workspace-meta-list"><div><strong>By:</strong> ${esc(resolution.actor)}${resolution.resolvedAt || resolution.dismissedAt || resolution.acknowledgedAt ? ` at ${esc(new Date(resolution.resolvedAt || resolution.dismissedAt || resolution.acknowledgedAt).toLocaleString())}` : ''}</div></div>` : ''}` +
+              actionButtons +
+            `</div>`
+          );
+        }).join('')
         : '<div class="hint">No contradictions are scoped to this section.</div>') +
     `</div>`
   );
@@ -201,6 +276,53 @@ function workspaceComparableLabelMap() {
 function workspaceComparableFactorLabels(factors = []) {
   const labelMap = workspaceComparableLabelMap();
   return factors.map((factor) => labelMap[factor] || factor);
+}
+
+function workspaceRenderComparableScoreBreakdown(candidate) {
+  const breakdown = candidate.weightedBreakdown || {};
+  const entries = Object.entries(breakdown);
+  if (!entries.length) return '';
+  const labelMap = workspaceComparableLabelMap();
+  const rows = entries
+    .sort((a, b) => (b[1] || 0) - (a[1] || 0))
+    .slice(0, 8)
+    .map(([factor, score]) => {
+      const pct = Math.round((score || 0) * 100);
+      const barWidth = Math.min(pct, 100);
+      const tone = pct >= 75 ? 'var(--ok)' : pct >= 50 ? 'var(--warn)' : 'rgba(255,92,92,.6)';
+      return (
+        `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">` +
+          `<span style="width:100px;font-size:0.75em;opacity:0.8;flex-shrink:0;">${esc(labelMap[factor] || factor)}</span>` +
+          `<div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">` +
+            `<div style="width:${barWidth}%;height:100%;background:${tone};border-radius:3px;"></div>` +
+          `</div>` +
+          `<span style="width:32px;font-size:0.7em;opacity:0.6;text-align:right;">${pct}%</span>` +
+        `</div>`
+      );
+    }).join('');
+  return (
+    `<details style="margin-top:8px;">` +
+      `<summary style="cursor:pointer;font-size:0.8em;opacity:0.7;">Score Breakdown</summary>` +
+      `<div style="margin-top:6px;">${rows}</div>` +
+    `</details>`
+  );
+}
+
+function workspaceRenderComparableGridPreview(preview) {
+  const entries = Object.entries(preview || {});
+  if (!entries.length) return '';
+  const rows = entries.map(([label, value]) => (
+    `<div style="display:flex;justify-content:space-between;gap:8px;font-size:0.75em;">` +
+      `<span style="opacity:0.7;">${esc(label)}</span>` +
+      `<span>${esc(String(value || '-'))}</span>` +
+    `</div>`
+  )).join('');
+  return (
+    `<details style="margin-top:6px;">` +
+      `<summary style="cursor:pointer;font-size:0.8em;opacity:0.7;">Grid Preview</summary>` +
+      `<div style="margin-top:4px;">${rows}</div>` +
+    `</details>`
+  );
 }
 
 function workspaceComparableTierTone(tier) {
@@ -450,6 +572,326 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
   );
 }
 
+// ── Valuation Calculator Panel ────────────────────────────────────────────────
+
+const VALUATION_STATE = {
+  lastResult: null,
+  incomeResult: null,
+  costResult: null,
+  reconciliationResult: null,
+};
+
+function workspaceRenderValuationCalculatorPanel() {
+  const intelligence = workspaceComparableIntelligence();
+  const acceptedSlots = Array.isArray(intelligence?.acceptedSlots) ? intelligence.acceptedSlots : [];
+
+  // Build comp summary from accepted slots
+  const compRows = acceptedSlots.map((slot, i) => {
+    const adjPrice = slot.valuationMetrics?.adjustedSalePrice;
+    const netAdj = slot.valuationMetrics?.netAdjustmentAmount;
+    const grossPct = slot.burdenMetrics?.grossAdjustmentPercent || 0;
+    const netPct = slot.burdenMetrics?.netAdjustmentPercent || 0;
+    const weightLabel = slot.valuationMetrics?.suggestedWeightLabel || 'Context';
+    return (
+      `<div class="workspace-history-item" style="padding:6px 8px;">` +
+        `<div style="display:flex;justify-content:space-between;gap:8px;">` +
+          `<div>` +
+            `<strong>${esc(slot.gridSlotLabel || `Comp ${i + 1}`)}</strong>` +
+            `<div class="workspace-field-hint">${esc(slot.address || 'Loaded comparable')}</div>` +
+          `</div>` +
+          `<div style="text-align:right;">` +
+            `<div>${adjPrice != null ? esc(workspaceCurrency(adjPrice)) : 'n/a'}</div>` +
+            `<div class="workspace-field-hint">Net ${esc(String(netPct))}% | Gross ${esc(String(grossPct))}%</div>` +
+          `</div>` +
+        `</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  // Show last calculation result if available
+  let resultHtml = '';
+  if (VALUATION_STATE.lastResult) {
+    const r = VALUATION_STATE.lastResult;
+    resultHtml = (
+      `<div style="margin-top:10px;padding:8px;border:1px solid var(--ok);border-radius:8px;background:rgba(0,200,100,.05);">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong>Sales Comparison Indication</strong>` +
+          `<span style="font-size:1.1em;color:var(--ok)">${esc(workspaceCurrency(r.indication?.indicatedValue))}</span>` +
+        `</div>` +
+        `<div class="workspace-meta-list" style="margin-top:6px;">` +
+          `<div><strong>Method:</strong> ${esc(r.indication?.method || '-')}</div>` +
+          `<div><strong>Comp Count:</strong> ${esc(String(r.burden?.compCount || 0))}</div>` +
+          `<div><strong>Adjusted Range:</strong> ${esc(workspaceCurrency(r.burden?.adjustedPriceRange?.low))} - ${esc(workspaceCurrency(r.burden?.adjustedPriceRange?.high))}</div>` +
+          `<div><strong>Avg Net %:</strong> ${esc(String(r.burden?.averageNetPercent || 0))}%</div>` +
+          `<div><strong>Avg Gross %:</strong> ${esc(String(r.burden?.averageGrossPercent || 0))}%</div>` +
+        `</div>` +
+        (r.burden?.warnings?.length
+          ? `<div style="margin-top:6px;">${r.burden.warnings.map((w) => `<div class="workspace-qc-item" style="color:var(--warn)">${esc(w.comp)}: ${esc(w.type)} (${esc(String(w.value))}%)</div>`).join('')}</div>`
+          : '') +
+      `</div>`
+    );
+  }
+
+  // Income approach result
+  let incomeHtml = '';
+  if (VALUATION_STATE.incomeResult) {
+    const ir = VALUATION_STATE.incomeResult;
+    incomeHtml = (
+      `<div style="margin-top:10px;padding:8px;border:1px solid rgba(100,180,255,.3);border-radius:8px;background:rgba(100,180,255,.05);">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong>Income Approach</strong>` +
+          `<span style="font-size:1.1em;">${esc(workspaceCurrency(ir.indicatedValue))}</span>` +
+        `</div>` +
+        `<div class="workspace-meta-list" style="margin-top:6px;">` +
+          `<div><strong>Monthly Rent:</strong> ${esc(workspaceCurrency(ir.monthlyRent))}</div>` +
+          `<div><strong>GRM:</strong> ${esc(String(ir.grm || '-'))}</div>` +
+          `<div><strong>Annual Rent:</strong> ${esc(workspaceCurrency(ir.annualRent))}</div>` +
+        `</div>` +
+      `</div>`
+    );
+  }
+
+  // Cost approach result
+  let costHtml = '';
+  if (VALUATION_STATE.costResult) {
+    const cr = VALUATION_STATE.costResult;
+    costHtml = (
+      `<div style="margin-top:10px;padding:8px;border:1px solid rgba(200,180,100,.3);border-radius:8px;background:rgba(200,180,100,.05);">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong>Cost Approach</strong>` +
+          `<span style="font-size:1.1em;">${esc(workspaceCurrency(cr.indicatedValue))}</span>` +
+        `</div>` +
+        `<div class="workspace-meta-list" style="margin-top:6px;">` +
+          `<div><strong>Site Value:</strong> ${esc(workspaceCurrency(cr.siteValue))}</div>` +
+          `<div><strong>Total Cost New:</strong> ${esc(workspaceCurrency(cr.totalCostNew))}</div>` +
+          `<div><strong>Depreciation:</strong> ${esc(workspaceCurrency(cr.totalDepreciation))}</div>` +
+          `<div><strong>Site Improvements:</strong> ${esc(workspaceCurrency(cr.siteImprovementsValue))}</div>` +
+        `</div>` +
+      `</div>`
+    );
+  }
+
+  // Reconciliation result
+  let reconHtml = '';
+  if (VALUATION_STATE.reconciliationResult) {
+    const rr = VALUATION_STATE.reconciliationResult;
+    reconHtml = (
+      `<div style="margin-top:10px;padding:8px;border:1px solid rgba(180,100,255,.3);border-radius:8px;background:rgba(180,100,255,.05);">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong>Reconciliation</strong>` +
+          `<span style="font-size:1.1em;">${rr.weightedValue ? esc(workspaceCurrency(rr.weightedValue)) : 'Pending weights'}</span>` +
+        `</div>` +
+        `<div class="workspace-meta-list" style="margin-top:6px;">` +
+          `<div><strong>Approaches:</strong> ${esc(String(rr.approachCount || 0))}</div>` +
+          `<div><strong>Range:</strong> ${rr.range ? `${esc(workspaceCurrency(rr.range.low))} - ${esc(workspaceCurrency(rr.range.high))}` : 'n/a'}</div>` +
+          `<div><strong>Spread:</strong> ${rr.range ? esc(workspaceCurrency(rr.range.spread)) : 'n/a'}</div>` +
+        `</div>` +
+      `</div>`
+    );
+  }
+
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Valuation Calculator</h4>` +
+      (acceptedSlots.length
+        ? `<div>${compRows}</div>` +
+          `<div class="btnrow" style="margin-top:8px;">` +
+            `<button class="sm" onclick="workspaceComputeSalesComparison()">Compute Sales Comparison</button>` +
+          `</div>`
+        : `<div class="hint">Load comparable candidates into comp slots to compute valuation metrics.</div>`) +
+      resultHtml +
+      `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">` +
+        `<div style="display:flex;gap:6px;flex-wrap:wrap;">` +
+          `<button class="sec sm" onclick="workspaceComputeIncomeApproach()">Income Approach</button>` +
+          `<button class="sec sm" onclick="workspaceComputeCostApproach()">Cost Approach</button>` +
+          `<button class="sec sm" onclick="workspaceComputeReconciliation()">Reconcile</button>` +
+        `</div>` +
+      `</div>` +
+      incomeHtml +
+      costHtml +
+      reconHtml +
+    `</div>`
+  );
+}
+
+async function workspaceComputeSalesComparison() {
+  if (!STATE.caseId) return;
+  const intelligence = workspaceComparableIntelligence();
+  const slots = Array.isArray(intelligence?.acceptedSlots) ? intelligence.acceptedSlots : [];
+  if (!slots.length) return;
+
+  const comps = slots.map((slot) => {
+    const salePrice = slot.valuationMetrics?.salePrice || slot.candidate?.salePrice || 0;
+    const adjustments = {};
+    for (const record of (slot.adjustmentSupport || [])) {
+      const amount = record.finalAmount ?? record.suggestedAmount;
+      if (amount != null) adjustments[record.adjustmentCategory] = amount;
+    }
+    return { salePrice, adjustments };
+  }).filter((c) => c.salePrice);
+
+  if (!comps.length) {
+    workspaceSetBanner('No valid comp sale prices found.', 'warn');
+    return;
+  }
+
+  workspaceSetBanner('Computing sales comparison...', 'info');
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/sales-comparison`, {
+    method: 'POST',
+    body: { comps },
+  });
+
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Sales comparison computation failed.', 'error');
+    return;
+  }
+
+  VALUATION_STATE.lastResult = result;
+  workspaceSetBanner('');
+  workspaceRenderAssistant();
+}
+
+async function workspaceComputeIncomeApproach() {
+  if (!STATE.caseId) return;
+  const entries = workspaceEntries();
+
+  // Try to read from workspace fields
+  const monthlyRent = entries['income_monthly_rent']?.value
+    || entries['income_indicated_monthly_rent']?.value;
+  const grm = entries['income_grm']?.value;
+
+  if (!monthlyRent || !grm) {
+    const rentInput = window.prompt('Monthly rent ($):', monthlyRent || '');
+    if (rentInput == null) return;
+    const grmInput = window.prompt('Gross Rent Multiplier (GRM):', grm || '');
+    if (grmInput == null) return;
+
+    const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/income`, {
+      method: 'POST',
+      body: { monthlyRent: rentInput, grm: grmInput },
+    });
+
+    if (!result.ok) {
+      workspaceSetBanner(result.error || 'Income approach computation failed.', 'error');
+      return;
+    }
+    VALUATION_STATE.incomeResult = result;
+  } else {
+    const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/income`, {
+      method: 'POST',
+      body: { monthlyRent, grm },
+    });
+
+    if (!result.ok) {
+      workspaceSetBanner(result.error || 'Income approach computation failed.', 'error');
+      return;
+    }
+    VALUATION_STATE.incomeResult = result;
+  }
+
+  workspaceSetBanner('');
+  workspaceRenderAssistant();
+}
+
+async function workspaceComputeCostApproach() {
+  if (!STATE.caseId) return;
+  const entries = workspaceEntries();
+
+  const siteValue = entries['cost_estimated_site_value']?.value;
+  const dwellingCostNew = entries['cost_dwelling_cost_new']?.value;
+  const totalDepreciation = entries['cost_total_depreciation']?.value;
+  const garageCarportCost = entries['cost_garage_carport']?.value || 0;
+  const otherCosts = entries['cost_porches_patios']?.value || 0;
+  const siteImprovementsValue = entries['cost_site_improvements_value']?.value || 0;
+
+  if (!siteValue || !dwellingCostNew) {
+    const siteInput = window.prompt('Estimated site value ($):', siteValue || '');
+    if (siteInput == null) return;
+    const dwellingInput = window.prompt('Dwelling cost new ($):', dwellingCostNew || '');
+    if (dwellingInput == null) return;
+    const depInput = window.prompt('Total depreciation ($):', totalDepreciation || '');
+    if (depInput == null) return;
+
+    const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/cost`, {
+      method: 'POST',
+      body: {
+        siteValue: siteInput,
+        dwellingCostNew: dwellingInput,
+        totalDepreciation: depInput,
+        garageCarportCost,
+        otherCosts,
+        siteImprovementsValue,
+      },
+    });
+
+    if (!result.ok) {
+      workspaceSetBanner(result.error || 'Cost approach computation failed.', 'error');
+      return;
+    }
+    VALUATION_STATE.costResult = result;
+  } else {
+    const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/cost`, {
+      method: 'POST',
+      body: {
+        siteValue,
+        dwellingCostNew,
+        totalDepreciation: totalDepreciation || 0,
+        garageCarportCost,
+        otherCosts,
+        siteImprovementsValue,
+      },
+    });
+
+    if (!result.ok) {
+      workspaceSetBanner(result.error || 'Cost approach computation failed.', 'error');
+      return;
+    }
+    VALUATION_STATE.costResult = result;
+  }
+
+  workspaceSetBanner('');
+  workspaceRenderAssistant();
+}
+
+async function workspaceComputeReconciliation() {
+  if (!STATE.caseId) return;
+
+  const salesVal = VALUATION_STATE.lastResult?.indication?.indicatedValue || null;
+  const incomeVal = VALUATION_STATE.incomeResult?.indicatedValue || null;
+  const costVal = VALUATION_STATE.costResult?.indicatedValue || null;
+
+  if (!salesVal && !incomeVal && !costVal) {
+    workspaceSetBanner('Compute at least one approach value before reconciliation.', 'warn');
+    return;
+  }
+
+  // Default weights — sales comparison primary
+  const weights = {
+    salesComparison: salesVal ? 60 : 0,
+    costApproach: costVal ? 20 : 0,
+    incomeApproach: incomeVal ? 20 : 0,
+  };
+
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/valuation/reconciliation`, {
+    method: 'POST',
+    body: {
+      salesComparisonValue: salesVal,
+      costApproachValue: costVal,
+      incomeApproachValue: incomeVal,
+      weights,
+    },
+  });
+
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Reconciliation computation failed.', 'error');
+    return;
+  }
+
+  VALUATION_STATE.reconciliationResult = result;
+  workspaceSetBanner('');
+  workspaceRenderAssistant();
+}
+
 function workspaceRenderReconciliationSupportPanel() {
   const support = workspaceComparableIntelligence()?.reconciliationSupport || null;
   if (!support || !support.summary?.consideredCompCount) {
@@ -556,11 +998,15 @@ function workspaceRenderComparablePanel() {
         `<div class="workspace-meta-list" style="margin-top:8px;">` +
           `<div><strong>Source strength:</strong> ${esc(candidate.sourceStrength || 'n/a')}</div>` +
           `<div><strong>Coverage:</strong> ${esc(workspaceComparableScore(candidate.coverageScore))}</div>` +
+          `<div><strong>Relevance:</strong> ${esc(workspaceComparableScore(candidate.relevanceScore))}</div>` +
           `<div><strong>Key matches:</strong> ${esc(keyMatches.length ? keyMatches.join(', ') : 'Limited')}</div>` +
           `<div><strong>Key mismatches:</strong> ${esc(mismatchList)}</div>` +
+          `${(candidate.missingFactors || []).length ? `<div><strong>Missing factors:</strong> <span style="color:var(--warn)">${esc(workspaceComparableFactorLabels(candidate.missingFactors).join(', '))}</span></div>` : ''}` +
           `<div><strong>Prior usage:</strong> ${esc(`${candidate.priorUsage?.acceptedCount || 0} accepted / ${candidate.priorUsage?.rejectedCount || 0} rejected`)}</div>` +
         `</div>` +
         `<div style="margin-top:8px;">${warningList}</div>` +
+        workspaceRenderComparableScoreBreakdown(candidate) +
+        workspaceRenderComparableGridPreview(preview) +
         `<div class="btnrow">` +
           `<button class="sec sm" onclick="workspaceAcceptComparableCandidate('${candidate.id}')">Accept</button>` +
           `<button class="ghost sm" onclick="workspaceHoldComparableCandidate('${candidate.id}')">Hold</button>` +
@@ -703,12 +1149,22 @@ function workspaceRender() {
   workspaceFocusFirstFieldForSection(currentSection);
 
   const nav = ws$('workspaceNavList');
+  const policySummary = workspaceSectionPolicySummary();
   if (nav) {
     nav.innerHTML = payload.definition.sections.map((section) => {
       const active = section.id === WORKSPACE_STATE.sectionId ? ' active' : '';
+      const audit = policySummary[section.id];
+      let badge = '';
+      if (audit) {
+        if (audit.hasBlockers) {
+          badge = ' <span class="chip warn" style="font-size:0.65em;padding:1px 5px;">Missing Facts</span>';
+        } else if (audit.missingRecommendedCount > 0) {
+          badge = ' <span class="chip" style="font-size:0.65em;padding:1px 5px;opacity:0.7">Gaps</span>';
+        }
+      }
       return (
         `<button class="workspace-nav-item${active}" onclick="workspaceSelectSection('${section.id}')">` +
-          `<div class="workspace-nav-item-title">${esc(section.label)}</div>` +
+          `<div class="workspace-nav-item-title">${esc(section.label)}${badge}</div>` +
           `<div class="workspace-nav-item-meta">${esc(section.pageHint || 'Workspace section')}</div>` +
         `</button>`
       );
@@ -856,7 +1312,7 @@ function workspaceRenderAssistant() {
   const field = WORKSPACE_STATE.fieldId ? definition?.fieldIndex?.[WORKSPACE_STATE.fieldId] : null;
   const currentSection = workspaceCurrentSection();
   const comparableWorkspacePanel = ['sales_comparison', 'reconciliation'].includes(currentSection?.id)
-    ? `${workspaceRenderComparablePanel()}${workspaceRenderAcceptedComparableSlots(workspaceComparableIntelligence())}${workspaceRenderReconciliationSupportPanel()}`
+    ? `${workspaceRenderComparablePanel()}${workspaceRenderAcceptedComparableSlots(workspaceComparableIntelligence())}${workspaceRenderValuationCalculatorPanel()}${workspaceRenderReconciliationSupportPanel()}`
     : '';
   const insertionReliability = workspaceInsertionReliability();
   const insertionPanel = workspaceRenderInsertionReliabilityPanel(currentSection?.id, {
@@ -883,6 +1339,7 @@ function workspaceRenderAssistant() {
     assistantTitle.textContent = 'Section Summary';
     body.innerHTML =
       comparableWorkspacePanel +
+      workspaceRenderSectionAuditPanel(currentSection?.id) +
       workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
       insertionPanel +
       `<div class="workspace-assistant-section">` +
@@ -1059,6 +1516,99 @@ function workspaceSelectSection(sectionId) {
   WORKSPACE_STATE.sectionId = sectionId;
   WORKSPACE_STATE.fieldId = null;
   workspaceRender();
+}
+
+async function workspaceLoadSectionAudit(sectionId) {
+  if (!STATE.caseId || !sectionId) return;
+  const body = ws$('workspaceAssistantBody');
+  if (!body) return;
+
+  body.innerHTML = '<div class="hint">Loading section audit...</div>';
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/section-audit/${sectionId}`);
+  if (!result.ok) {
+    body.innerHTML = `<div class="hint" style="color:var(--warn)">Failed to load audit: ${esc(result.error || 'Unknown error')}</div>`;
+    return;
+  }
+
+  const policy = result.policy || {};
+  const snapshot = result.dependencySnapshot || {};
+  const regen = result.regeneratePolicy || {};
+  const staleDeps = result.staleDependentSections || [];
+
+  const requiredFacts = snapshot.requiredFacts || {};
+  const factRows = Object.entries(requiredFacts).map(([path, val]) => {
+    const present = val != null;
+    return (
+      `<div style="display:flex;justify-content:space-between;gap:6px;">` +
+        `<span>${esc(path)}</span>` +
+        `<span class="chip ${present ? 'ok' : 'warn'}" style="font-size:0.7em;padding:1px 5px;">${present ? esc(String(val)) : 'Missing'}</span>` +
+      `</div>`
+    );
+  }).join('');
+
+  const blockerList = (regen.blockers || []).map(
+    (b) => `<div style="color:var(--warn)">- ${esc(b)}</div>`
+  ).join('');
+  const warningList = (regen.warnings || []).map(
+    (w) => `<div style="opacity:0.8">- ${esc(w)}</div>`
+  ).join('');
+
+  const staleDepsHtml = staleDeps.length
+    ? staleDeps.map((s) => `<span class="chip" style="font-size:0.7em;margin:2px;">${esc(s)}</span>`).join(' ')
+    : '<span style="opacity:0.6">None</span>';
+
+  const sections = [];
+
+  sections.push(
+    `<div class="workspace-assistant-section">` +
+      `<h4>Section Policy</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Section:</strong> ${esc(policy.sectionId || sectionId)}</div>` +
+        `<div><strong>Profile:</strong> ${esc(policy.profileId || '-')}</div>` +
+        `<div><strong>Prompt Version:</strong> ${esc(result.promptVersion || policy.promptVersion || '-')}</div>` +
+        `<div><strong>Temperature:</strong> ${esc(String(policy.temperature ?? '-'))}</div>` +
+      `</div>` +
+    `</div>`
+  );
+
+  if (Object.keys(requiredFacts).length) {
+    sections.push(
+      `<div class="workspace-assistant-section">` +
+        `<h4>Dependency Snapshot</h4>` +
+        `<div class="workspace-meta-list">${factRows}</div>` +
+        (snapshot.capturedAt ? `<div style="margin-top:6px;font-size:0.75em;opacity:0.6">Captured: ${esc(new Date(snapshot.capturedAt).toLocaleString())}</div>` : '') +
+      `</div>`
+    );
+  }
+
+  sections.push(
+    `<div class="workspace-assistant-section">` +
+      `<h4>Regenerate Policy</h4>` +
+      `<div style="margin-bottom:6px;">` +
+        `<span class="chip ${regen.allowed ? 'ok' : 'warn'}">${regen.allowed ? 'Allowed' : 'Blocked'}</span>` +
+      `</div>` +
+      (blockerList ? `<div style="margin-bottom:4px;"><strong>Blockers:</strong>${blockerList}</div>` : '') +
+      (warningList ? `<div><strong>Warnings:</strong>${warningList}</div>` : '') +
+    `</div>`
+  );
+
+  if (staleDeps.length || true) {
+    sections.push(
+      `<div class="workspace-assistant-section">` +
+        `<h4>Stale Dependent Sections</h4>` +
+        `<div>${staleDepsHtml}</div>` +
+        `<div style="margin-top:6px;font-size:0.75em;opacity:0.6">Sections that share fact dependencies and may need regeneration</div>` +
+      `</div>`
+    );
+  }
+
+  sections.push(
+    `<div style="margin-top:12px;">` +
+      `<button class="sec sm" onclick="workspaceRenderAssistant()">Back to Summary</button>` +
+    `</div>`
+  );
+
+  body.innerHTML = sections.join('');
 }
 
 function workspaceHandleFocus(target) {
@@ -1510,6 +2060,73 @@ async function workspaceModifyAdjustmentSupportDecision(gridSlot, adjustmentCate
     rationaleNote: noteInput,
     supportType: 'appraiser_judgment_with_explanation',
   });
+}
+
+// ── Contradiction Resolution Actions ──────────────────────────────────────────
+
+async function workspaceResolveContradiction(contradictionId) {
+  if (!contradictionId || !STATE.caseId) return;
+  const note = window.prompt('Resolution note (optional):') || '';
+  workspaceSetBanner('Resolving contradiction...', 'info');
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/contradiction-graph/${contradictionId}/resolve`, {
+    method: 'POST',
+    body: { actor: 'appraiser', note },
+  });
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Failed to resolve contradiction.', 'error');
+    return;
+  }
+  workspaceSetBanner('Contradiction resolved.', 'info');
+  await workspaceLoad(true);
+}
+
+async function workspaceDismissContradiction(contradictionId) {
+  if (!contradictionId || !STATE.caseId) return;
+  const reason = window.prompt('Dismissal reason:');
+  if (reason == null) return;
+  workspaceSetBanner('Dismissing contradiction...', 'info');
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/contradiction-graph/${contradictionId}/dismiss`, {
+    method: 'POST',
+    body: { actor: 'appraiser', reason },
+  });
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Failed to dismiss contradiction.', 'error');
+    return;
+  }
+  workspaceSetBanner('Contradiction dismissed.', 'info');
+  await workspaceLoad(true);
+}
+
+async function workspaceAcknowledgeContradiction(contradictionId) {
+  if (!contradictionId || !STATE.caseId) return;
+  const note = window.prompt('Acknowledgement note (optional):') || '';
+  workspaceSetBanner('Acknowledging contradiction...', 'info');
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/contradiction-graph/${contradictionId}/acknowledge`, {
+    method: 'POST',
+    body: { actor: 'appraiser', note },
+  });
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Failed to acknowledge contradiction.', 'error');
+    return;
+  }
+  workspaceSetBanner('Contradiction acknowledged.', 'info');
+  await workspaceLoad(true);
+}
+
+async function workspaceReopenContradiction(contradictionId) {
+  if (!contradictionId || !STATE.caseId) return;
+  const reason = window.prompt('Reopen reason (optional):') || '';
+  workspaceSetBanner('Reopening contradiction...', 'info');
+  const result = await apiFetch(`/api/cases/${STATE.caseId}/contradiction-graph/${contradictionId}/reopen`, {
+    method: 'POST',
+    body: { actor: 'appraiser', reason },
+  });
+  if (!result.ok) {
+    workspaceSetBanner(result.error || 'Failed to reopen contradiction.', 'error');
+    return;
+  }
+  workspaceSetBanner('Contradiction reopened.', 'info');
+  await workspaceLoad(true);
 }
 
 function workspaceRestoreVersion(fieldId, historyIndex) {
