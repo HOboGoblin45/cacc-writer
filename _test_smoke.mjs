@@ -35,6 +35,7 @@ process.env.CACC_LOGS_DIR = process.env.CACC_LOGS_DIR
 process.env.CACC_DB_PATH = process.env.CACC_DB_PATH || smokeDbPath;
 process.env.CACC_DISABLE_FILE_LOGGER = process.env.CACC_DISABLE_FILE_LOGGER || '1';
 process.env.CACC_DISABLE_KB_WRITES = process.env.CACC_DISABLE_KB_WRITES || '1';
+process.env.CACC_ALLOW_FORCE_GATE_BYPASS = process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '0';
 
 const defaultSmokePort = 5600 + Math.floor(Math.random() * 2000);
 const REQUESTED_BASE = process.env.TEST_BASE_URL || `http://127.0.0.1:${defaultSmokePort}`;
@@ -759,6 +760,15 @@ await test('POST /api/cases/:caseId/generate-full-draft blocks on pre-draft gate
   assert(body.code === 'PRE_DRAFT_GATE_BLOCKED', 'should return pre-draft gate code');
   assert(typeof body.factReviewQueuePath === 'string', 'factReviewQueuePath should be returned when gate blocks');
   assert(typeof body.factReviewQueueSummary === 'object', 'factReviewQueueSummary should be returned when gate blocks');
+});
+
+await test('POST /api/cases/:caseId/generate-full-draft rejects forceGateBypass when disabled', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/generate-full-draft`, {
+    forceGateBypass: true,
+  });
+  assert(status === 403, `Expected 403, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'PRE_DRAFT_GATE_BYPASS_DISABLED', 'code should be PRE_DRAFT_GATE_BYPASS_DISABLED');
 });
 
 await test('POST /api/cases/:caseId/generate-full-draft rejects invalid payload type', async () => {

@@ -49,6 +49,8 @@ import {
 import log from '../logger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
+const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 const router = Router();
 const workflowFieldRefSchema = z.union([
   z.string().max(80),
@@ -105,8 +107,23 @@ function toSectionIds(fields) {
   return ids;
 }
 
-function shouldBypassPreDraftGate(req) {
+function requestedGateBypass(req) {
   return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
+}
+
+function shouldBypassPreDraftGate(req) {
+  return requestedGateBypass(req) && ALLOW_FORCE_GATE_BYPASS;
+}
+
+function rejectBypassWhenDisabled(req, res) {
+  if (!requestedGateBypass(req) || ALLOW_FORCE_GATE_BYPASS) return false;
+  res.status(403).json({
+    ok: false,
+    code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+    error: 'forceGateBypass is disabled in this environment',
+    hint: 'Set CACC_ALLOW_FORCE_GATE_BYPASS=true to allow explicit pre-draft gate bypass.',
+  });
+  return true;
 }
 
 function evaluateGateForCase(caseId, formType, sectionIds) {
@@ -123,6 +140,9 @@ function buildGateBlockedResponse(caseId, gate, scopeMessage) {
     gate,
     factReviewQueuePath,
     factReviewQueueSummary: queue?.summary || null,
+    hint: ALLOW_FORCE_GATE_BYPASS
+      ? `Resolve blocker items from GET ${factReviewQueuePath}, or pass forceGateBypass=true.`
+      : `Resolve blocker items from GET ${factReviewQueuePath}.`,
   };
 }
 
@@ -167,6 +187,7 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
   try {
     const body = parsePayload(workflowRunSchema, req.body || {}, res);
     if (!body) return;
+    if (rejectBypassWhenDisabled(req, res)) return;
     const { caseId, fields, twoPass = false, saveOutputs = true } = body;
     const requestedFt = String(body.formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
@@ -279,6 +300,7 @@ router.post('/workflow/run-batch', ensureAI, async (req, res) => {
   try {
     const body = parsePayload(workflowRunBatchSchema, req.body || {}, res);
     if (!body) return;
+    if (rejectBypassWhenDisabled(req, res)) return;
     const { cases, fields, twoPass = false } = body;
     const requestedFt = String(body.formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
