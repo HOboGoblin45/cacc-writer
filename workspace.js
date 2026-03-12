@@ -117,6 +117,55 @@ function workspaceComparableIntelligence() {
   return WORKSPACE_STATE.payload?.comparableIntelligence || null;
 }
 
+function workspaceContradictionGraph() {
+  return WORKSPACE_STATE.payload?.contradictionGraph || null;
+}
+
+function workspaceSectionContradictions(sectionId) {
+  const items = Array.isArray(workspaceContradictionGraph()?.items)
+    ? workspaceContradictionGraph().items
+    : [];
+  if (!sectionId) return items;
+  return items.filter((item) => Array.isArray(item.sectionIds) && item.sectionIds.includes(sectionId));
+}
+
+function workspaceRenderContradictionGraphPanel(sectionId, limit = 5) {
+  const graph = workspaceContradictionGraph();
+  if (!graph?.summary?.totalContradictions) {
+    return (
+      `<div class="workspace-assistant-section">` +
+        `<h4>Contradiction Graph</h4>` +
+        `<div class="hint">No case-level contradictions are currently flagged.</div>` +
+      `</div>`
+    );
+  }
+
+  const items = workspaceSectionContradictions(sectionId);
+  const visibleItems = (items.length ? items : (graph.items || [])).slice(0, limit);
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Contradiction Graph</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Total:</strong> ${esc(String(graph.summary.totalContradictions || 0))}</div>` +
+        `<div><strong>High/Blocker:</strong> ${esc(String((graph.summary.highCount || 0) + (graph.summary.blockerCount || 0)))}</div>` +
+        `<div><strong>Comparable:</strong> ${esc(String(graph.summary.sourceCounts?.comparable_intelligence || 0))}</div>` +
+      `</div>` +
+      (visibleItems.length
+        ? visibleItems.map((item) => (
+          `<div class="workspace-history-item">` +
+            `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
+              `<div class="workspace-qc-item"><strong>${esc(item.categoryLabel || item.category || 'Conflict')}</strong></div>` +
+              `<span class="chip ${item.severity === 'blocker' || item.severity === 'high' ? 'warn' : ''}">${esc(item.severity || 'medium')}</span>` +
+            `</div>` +
+            `<div class="workspace-history-value">${esc(item.message || '')}</div>` +
+            `${item.factPaths?.length ? `<div class="workspace-meta-list"><div><strong>Paths:</strong> ${esc(item.factPaths.join(', '))}</div></div>` : ''}` +
+          `</div>`
+        )).join('')
+        : '<div class="hint">No contradictions are scoped to this section.</div>') +
+    `</div>`
+  );
+}
+
 function workspaceComparableScore(value) {
   const score = Number(value || 0);
   return `${Math.round(score * 100)}%`;
@@ -623,10 +672,12 @@ function workspaceRenderAssistant() {
     assistantTitle.textContent = 'Section Summary';
     body.innerHTML =
       salesComparisonPanel +
+      workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
       `<div class="workspace-assistant-section">` +
         `<h4>Quality Control</h4>` +
         `<div class="workspace-meta-list">` +
           `<div><strong>Conflicts:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
+          `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
           `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
           `<div><strong>Workflow Status:</strong> ${esc(WORKSPACE_STATE.payload.meta?.workflowStatus || '-')}</div>` +
         `</div>` +
@@ -765,11 +816,14 @@ function workspaceRenderAssistant() {
     `</div>`
   );
 
+  sections.push(workspaceRenderContradictionGraphPanel(field.sectionId, 4));
+
   sections.push(
     `<div class="workspace-assistant-section">` +
       `<h4>QC Snapshot</h4>` +
       `<div class="workspace-meta-list">` +
         `<div><strong>Conflict Count:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
+        `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
         `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
         `<div><strong>Field Conflicts:</strong> ${esc(String(conflicts.length || 0))}</div>` +
         `<div><strong>Pending Candidates:</strong> ${esc(String(entry.pendingReviewCount || 0))}</div>` +
