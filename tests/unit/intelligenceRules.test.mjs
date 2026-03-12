@@ -276,6 +276,104 @@ await test('hard compliance rules block USDA assignment when site eligibility se
   assert.ok(blocker, 'expected USDA site eligibility blocker when section is excluded');
 });
 
+await test('hard compliance rules warn when condo project analysis is excluded for condo assignment', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1073',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const condo = matrix.sections.find(s => s.sectionId === 'condo_project_analysis');
+  assert.ok(condo, 'expected condo_project_analysis section in matrix');
+  condo.status = 'excluded';
+  condo.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const warning = checks.warnings.find(b => b.ruleId === 'rule.condo.project_analysis');
+  assert.ok(warning, 'expected condo project analysis warning when section is excluded');
+});
+
+await test('hard compliance rules block manufactured-home assignment when manufactured section is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004c',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const manufactured = matrix.sections.find(s => s.sectionId === 'manufactured_home_comments');
+  assert.ok(manufactured, 'expected manufactured_home_comments section in matrix');
+  manufactured.status = 'excluded';
+  manufactured.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.manufactured_home.comments');
+  assert.ok(blocker, 'expected manufactured-home blocker when section is excluded');
+});
+
+await test('hard compliance rules block mixed-use assignment when mixed-use commentary is excluded', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      propertyType: 'mixed_use',
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const mixedUse = matrix.sections.find(s => s.sectionId === 'mixed_use_comment');
+  assert.ok(mixedUse, 'expected mixed_use_comment section in matrix');
+  mixedUse.status = 'excluded';
+  mixedUse.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const blocker = checks.blockers.find(b => b.ruleId === 'rule.mixed_use.commentary');
+  assert.ok(blocker, 'expected mixed-use blocker when section is excluded');
+});
+
+await test('hard compliance rules warn when ADU commentary is excluded for ADU assignment', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      adu: true,
+    },
+  });
+
+  const matrix = clone(scenario.sectionRequirements);
+  const adu = matrix.sections.find(s => s.sectionId === 'adu_comment');
+  assert.ok(adu, 'expected adu_comment section in matrix');
+  adu.status = 'excluded';
+  adu.required = false;
+
+  const checks = evaluateHardComplianceRules({
+    context: scenario.context,
+    flags: scenario.flags,
+    compliance: scenario.compliance,
+    sectionRequirements: matrix,
+  });
+
+  const warning = checks.warnings.find(b => b.ruleId === 'rule.adu.commentary');
+  assert.ok(warning, 'expected ADU commentary warning when section is excluded');
+});
+
 await test('hard compliance rules block government loan in high-risk flood zone when flood comment is excluded', () => {
   const scenario = buildScenario({
     meta: {
