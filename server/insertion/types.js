@@ -107,6 +107,9 @@
  * @property {boolean} [dryRun=false] - Format and map but don't actually insert
  * @property {boolean} [verifyAfter=true] - Run verification after each insertion
  * @property {boolean} [skipQcBlockers=false] - Insert even if QC blockers exist
+ * @property {boolean} [requireQcRun=false] - Require at least one completed QC run before insertion
+ * @property {boolean} [requireFreshQcForGeneration=true] - When generationRunId is provided, require completed QC tied to the same generation run
+ * @property {boolean} [qcOverrideAllowed=true] - Internal snapshot set at prepare-time; if false, skipQcBlockers cannot bypass the gate
  * @property {boolean} [forceReinsert=false] - Re-insert already-verified fields
  * @property {number} [maxRetries=3] - Max retry attempts per field
  * @property {FallbackStrategy} [defaultFallback='retry_then_clipboard']
@@ -256,6 +259,8 @@
  * @property {string[]} blockerMessages - Summary of blocker findings
  * @property {string[]} highMessages - Summary of high findings
  * @property {string} recommendation - 'proceed' | 'review_first' | 'blocked'
+ * @property {string} [reason] - 'clean' | 'high_findings' | 'blocker_findings' | 'missing_qc_run' | 'missing_fresh_generation_qc' | 'no_qc_run'
+ * @property {boolean} [overrideAllowed] - Whether skipQcBlockers may bypass this gate result
  */
 
 // ── Mapping Preview ───────────────────────────────────────────────────────────

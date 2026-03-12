@@ -4,3 +4,8 @@ cases/
 voice_pdfs/**/*.pdf
 voice_pdfs/**/*.PDF
 benchmarks/phase-c/latest-results.json
+
+# Runtime artifacts
+data/*.db-shm
+data/*.db-wal
+logs/*.log

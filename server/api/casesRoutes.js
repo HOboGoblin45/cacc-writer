@@ -59,6 +59,7 @@ import {
 import { PIPELINE_STAGES, evaluatePipelineTransition } from '../caseRecord/workflowStateMachine.js';
 import { detectFactConflicts } from '../factIntegrity/factConflictEngine.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue, resolveFactDecision } from '../factIntegrity/factDecisionQueue.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
@@ -109,6 +110,15 @@ const workflowStatusSchema = z.object({
 });
 
 const factsSchema = z.record(z.unknown());
+const resolveFactDecisionSchema = z.object({
+  factPath: z.string().min(1).max(180),
+  selectedValue: z.string().min(1).max(4000),
+  sourceType: z.enum(['manual', 'canonical', 'extracted']).optional(),
+  sourceId: z.string().max(180).optional().nullable(),
+  selectedFactId: z.string().uuid().optional().nullable(),
+  rejectOtherPending: z.boolean().optional(),
+  note: z.string().max(1000).optional(),
+});
 
 const factSourcesSchema = z.object({
   sources: z.record(z.unknown()).optional(),
@@ -410,6 +420,38 @@ router.get('/:caseId/fact-conflicts', (req, res) => {
   }
 });
 
+router.get('/:caseId/fact-review-queue', (req, res) => {
+  try {
+    const queue = buildFactDecisionQueue(req.params.caseId);
+    if (!queue) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({ ok: true, queue });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/:caseId/fact-review-queue/resolve', (req, res) => {
+  const body = parsePayload(resolveFactDecisionSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const result = resolveFactDecision({
+      caseId: req.params.caseId,
+      factPath: body.factPath,
+      selectedValue: body.selectedValue,
+      sourceType: body.sourceType || 'manual',
+      sourceId: body.sourceId || null,
+      selectedFactId: body.selectedFactId || null,
+      rejectOtherPending: body.rejectOtherPending !== false,
+      note: body.note || '',
+    });
+    if (!result) return res.status(404).json({ ok: false, error: 'Case not found' });
+    res.json({ ok: true, result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/:caseId/pre-draft-check', (req, res) => {
   try {
     const formType = trimText(req.query.formType, 40) || null;
@@ -424,7 +466,13 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
       sectionIds: sectionIds.length ? sectionIds : null,
     });
     if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
-    res.json({ ok: true, gate });
+    const decisionQueue = buildFactDecisionQueue(req.params.caseId);
+    res.json({
+      ok: true,
+      gate,
+      factReviewQueuePath: `/api/cases/${req.params.caseId}/fact-review-queue`,
+      decisionQueueSummary: decisionQueue?.summary || null,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
