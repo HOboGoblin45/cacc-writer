@@ -67,6 +67,11 @@ function runMigrations(db) {
     `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT`,
+    // Priority 3 — section freshness tracking
+    `ALTER TABLE generated_sections ADD COLUMN freshness_status TEXT DEFAULT 'current'`,
+    `ALTER TABLE generated_sections ADD COLUMN stale_reason TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN stale_since TEXT`,
+    `ALTER TABLE generated_sections ADD COLUMN regeneration_count INTEGER DEFAULT 0`,
   ];
 
   for (const sql of migrations) {
