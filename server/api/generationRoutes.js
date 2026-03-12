@@ -55,6 +55,14 @@ import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
+import {
+  buildSectionPolicy,
+  buildDependencySnapshot,
+  computeQualityScore,
+  getPromptVersion,
+  findStaleDependentSections,
+  evaluateRegeneratePolicy,
+} from '../services/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -1175,6 +1183,20 @@ router.post('/generation/regenerate-section', async (req, res) => {
       }
     }
 
+    // Phase D — evaluate regenerate policy
+    const projection = getCaseProjection(caseId);
+    const facts = projection?.facts || {};
+    const regenPolicy = evaluateRegeneratePolicy(sectionId, facts, priorResults);
+    if (!regenPolicy.allowed && !body.forceGateBypass) {
+      return res.status(409).json({
+        ok: false,
+        code: 'REGENERATE_POLICY_BLOCKED',
+        sectionId,
+        blockers: regenPolicy.blockers,
+        warnings: regenPolicy.warnings,
+      });
+    }
+
     const result = await runSectionJob({
       runId,
       caseId,
@@ -1185,12 +1207,36 @@ router.post('/generation/regenerate-section', async (req, res) => {
       analysisArtifacts: {},
     });
 
+    // Phase D — build audit metadata for the regenerated section
+    const promptVersion = getPromptVersion(sectionId);
+    const dependencySnapshot = buildDependencySnapshot(sectionId, facts);
+    const sectionPolicy = buildSectionPolicy(sectionId, facts);
+    const staleDependents = findStaleDependentSections(sectionId);
+    let qualityResult = null;
+    if (result.ok && result.text) {
+      qualityResult = computeQualityScore({
+        sectionId,
+        facts,
+        generatedText: result.text,
+        reviewPassed: result.reviewPassed || false,
+        examplesUsed: result.metrics?.examplesUsed || 0,
+      });
+    }
+
     res.json({
       ok:        result.ok,
       sectionId: result.sectionId,
       text:      result.text,
       metrics:   result.metrics,
       error:     result.error || null,
+      // Phase D audit metadata
+      promptVersion,
+      dependencySnapshot,
+      sectionPolicy,
+      staleDependentSections: staleDependents,
+      qualityScore:   qualityResult?.score ?? null,
+      qualityFactors: qualityResult?.factors ?? null,
+      regenerateWarnings: regenPolicy.warnings,
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);
