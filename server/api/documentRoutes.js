@@ -573,17 +573,30 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
     const step = String(req.body?.step || 'extract').toLowerCase();
     const job = getDocumentIngestJob(req.params.jobId);
     if (!job || job.caseId !== req.params.caseId) {
-      return res.status(404).json({ error: 'Ingest job not found' });
+      return res.status(404).json({
+        ok: false,
+        code: 'INGEST_JOB_NOT_FOUND',
+        error: 'Ingest job not found',
+      });
     }
     if (step !== 'extract') {
-      return res.status(400).json({ error: 'Only extract step retry is currently supported.' });
+      return res.status(400).json({
+        ok: false,
+        code: 'INGEST_STEP_UNSUPPORTED',
+        error: 'Only extract step retry is currently supported.',
+      });
     }
     if (!isDocumentIngestStepFailed(job, step)) {
-      return res.status(409).json({ error: 'Requested step is not in failed state.' });
+      return res.status(409).json({
+        ok: false,
+        code: 'INGEST_STEP_NOT_FAILED',
+        error: 'Requested step is not in failed state.',
+      });
     }
     const retryState = getDocumentIngestRetryState(job, step);
     if (!retryState.ok && retryState.reason === 'retry_limit_reached') {
       return res.status(409).json({
+        ok: false,
         error: `Retry limit reached for this ingest job (${retryState.retryCount}/${retryState.maxRetries}).`,
         code: 'INGEST_RETRY_LIMIT_REACHED',
         retryCount: retryState.retryCount,
@@ -591,12 +604,20 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
       });
     }
     if (!job.documentId) {
-      return res.status(400).json({ error: 'Ingest job has no linked document.' });
+      return res.status(400).json({
+        ok: false,
+        code: 'INGEST_JOB_MISSING_DOCUMENT',
+        error: 'Ingest job has no linked document.',
+      });
     }
 
     const doc = getDocument(job.documentId);
     if (!doc || doc.case_id !== req.params.caseId) {
-      return res.status(404).json({ error: 'Linked document not found' });
+      return res.status(404).json({
+        ok: false,
+        code: 'INGEST_DOCUMENT_NOT_FOUND',
+        error: 'Linked document not found',
+      });
     }
 
     const runtime = getCaseRuntime(req.params.caseId);
@@ -606,7 +627,11 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
       runtimeDocText: runtime?.docText || {},
     });
     if (!text || text.length < 20) {
-      return res.status(400).json({ error: 'No text available for extraction retry.' });
+      return res.status(400).json({
+        ok: false,
+        code: 'INGEST_RETRY_NO_TEXT',
+        error: 'No text available for extraction retry.',
+      });
     }
 
     const stepRun = await runDocumentIngestStep(

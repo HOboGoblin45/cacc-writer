@@ -404,10 +404,21 @@ await test('GET /api/cases/:caseId/ingest-jobs/:jobId returns ingest job details
 
 await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry rejects non-failed step retry', async () => {
   assert(typeof latestIngestJobId === 'string' && latestIngestJobId.length > 0, 'expected ingest job id from upload');
-  const { status } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/${latestIngestJobId}/retry`, {
     step: 'extract',
   });
   assert(status === 409, `Expected 409, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INGEST_STEP_NOT_FAILED', 'code should be INGEST_STEP_NOT_FAILED');
+});
+
+await test('POST /api/cases/:caseId/ingest-jobs/:jobId/retry returns coded 404 for unknown job', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/ingest-jobs/ingest_missing/retry`, {
+    step: 'extract',
+  });
+  assert(status === 404, `Expected 404, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INGEST_JOB_NOT_FOUND', 'code should be INGEST_JOB_NOT_FOUND');
 });
 console.log('\n5. Feedback & KB');
 
