@@ -39,6 +39,7 @@ import {
   getTargetSoftware,
   getFallbackStrategy,
 } from '../destinationRegistry.js';
+import { evaluateInsertionQcGate } from '../insertion/insertionRunEngine.js';
 import { buildReviewMessages } from '../promptBuilder.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
@@ -663,6 +664,30 @@ router.post('/:caseId/insert-all', (req, res) => {
     const hasApproved = coreSections.some(sec => outputs[sec.id]?.sectionStatus === 'approved');
     if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
 
+    const generationRunId = trimText(req.body?.generationRunId, 80) || null;
+    const skipQcBlockers = Boolean(req.body?.skipQcBlockers);
+    const qcGate = evaluateInsertionQcGate({
+      caseId: req.params.caseId,
+      generationRunId,
+      config: {
+        requireQcRun: true,
+        requireFreshQcForGeneration: Boolean(generationRunId),
+      },
+    });
+    const canBypassQcGate = skipQcBlockers && qcGate.overrideAllowed !== false;
+    if (!qcGate.passed && !canBypassQcGate) {
+      return res.status(409).json({
+        ok: false,
+        code: 'QC_GATE_BLOCKED',
+        error: 'QC gate blocked insertion',
+        qcGate,
+        overrideAllowed: qcGate.overrideAllowed !== false,
+        message: qcGate.overrideAllowed === false
+          ? 'Run QC for this case before insertion.'
+          : 'Resolve QC blockers or set skipQcBlockers=true to bypass.',
+      });
+    }
+
     for (const section of coreSections) {
       const sid = section.id;
       const text = outputs[sid]?.text || '';
@@ -703,6 +728,7 @@ router.post('/:caseId/insert-all', (req, res) => {
       insertedSections: inserted,
       skipped,
       errors,
+      qcGate,
       totalInserted: inserted.length,
       pipelineStage: meta.pipelineStage || 'inserting',
     });
