@@ -209,6 +209,42 @@ const inspectionLevelChoices = [
   { value: 'interior_and_exterior', label: 'Interior and Exterior' },
 ];
 
+const conditionRatingChoices = [
+  { value: '', label: 'Unknown' },
+  { value: 'C1', label: 'C1' },
+  { value: 'C2', label: 'C2' },
+  { value: 'C3', label: 'C3' },
+  { value: 'C4', label: 'C4' },
+  { value: 'C5', label: 'C5' },
+  { value: 'C6', label: 'C6' },
+];
+
+const qualityRatingChoices = [
+  { value: '', label: 'Unknown' },
+  { value: 'Q1', label: 'Q1' },
+  { value: 'Q2', label: 'Q2' },
+  { value: 'Q3', label: 'Q3' },
+  { value: 'Q4', label: 'Q4' },
+  { value: 'Q5', label: 'Q5' },
+  { value: 'Q6', label: 'Q6' },
+];
+
+const reportConditionChoices = [
+  { value: '', label: 'Unknown' },
+  { value: 'as_is', label: '"As Is"' },
+  { value: 'subject_to_repairs', label: 'Subject to Completion of Repairs' },
+  { value: 'subject_to_alterations', label: 'Subject to Alterations / Conditions' },
+  { value: 'subject_to_completion', label: 'Subject to Completion per Plans/Specifications' },
+];
+
+const surfaceTypeChoices = [
+  { value: '', label: 'Unknown' },
+  { value: 'asphalt', label: 'Asphalt' },
+  { value: 'concrete', label: 'Concrete' },
+  { value: 'gravel', label: 'Gravel' },
+  { value: 'dirt', label: 'Dirt' },
+];
+
 const adjustmentGridRows = [
   'Address',
   'Proximity to Subject',
@@ -415,6 +451,49 @@ const sections = [
         group: 'Transmittal',
         width: 'quarter',
       }),
+      textField('assignment_transmittal_census_tract', 'Transmittal: Census Tract', 'workspace1004.assignment.transmittal.censusTract', {
+        suggestionPath: 'subject.censusTract',
+        syncPaths: ['subject.censusTract'],
+        page: 2,
+        group: 'Transmittal',
+        width: 'quarter',
+      }),
+      textField('assignment_transmittal_map_reference', 'Transmittal: Map Reference', 'workspace1004.assignment.transmittal.mapReference', {
+        page: 2,
+        group: 'Transmittal',
+        width: 'quarter',
+      }),
+      textField('assignment_transmittal_county', 'Transmittal: County', 'workspace1004.assignment.transmittal.county', {
+        suggestionPath: 'subject.county',
+        syncPaths: ['subject.county'],
+        page: 2,
+        group: 'Transmittal',
+        width: 'quarter',
+      }),
+      textField('assignment_transmittal_state', 'Transmittal: State', 'workspace1004.assignment.transmittal.state', {
+        suggestionPath: 'subject.state',
+        syncPaths: ['subject.state'],
+        page: 2,
+        group: 'Transmittal',
+        width: 'quarter',
+      }),
+      textField('assignment_transmittal_zip', 'Transmittal: Zip Code', 'workspace1004.assignment.transmittal.zip', {
+        suggestionPath: 'subject.zip',
+        syncPaths: ['subject.zip'],
+        page: 2,
+        group: 'Transmittal',
+        width: 'quarter',
+      }),
+      textField('assignment_transmittal_borrower', 'Transmittal: Borrower', 'workspace1004.assignment.transmittal.borrower', {
+        page: 2,
+        group: 'Transmittal',
+        width: 'half',
+      }),
+      textField('assignment_transmittal_legal_description', 'Transmittal: Legal Description', 'workspace1004.assignment.transmittal.legalDescription', {
+        page: 2,
+        group: 'Transmittal',
+        width: 'full',
+      }),
       textareaField('assignment_scope_notes', 'Scope Notes / Special Instructions', 'workspace1004.assignment.scopeNotes', {
         suggestionPath: 'assignment.scopeOfWork',
         page: 1,
@@ -570,6 +649,25 @@ const sections = [
         group: 'Assignment Type',
         width: 'full',
       }),
+      textField('subject_sale_price', 'Sale Price of Subject', 'workspace1004.subject.salePrice', {
+        suggestionPath: 'contract.contractPrice',
+        syncPaths: ['contract.contractPrice'],
+        page: 1,
+        group: 'Identity',
+        width: 'third',
+      }),
+      textField('subject_date_of_sale', 'Date of Sale', 'workspace1004.subject.dateOfSale', {
+        suggestionPath: 'contract.contractDate',
+        syncPaths: ['contract.contractDate'],
+        page: 1,
+        group: 'Identity',
+        width: 'third',
+      }),
+      textField('subject_data_source_sale_price', 'Data Source(s) for Sale Price', 'workspace1004.subject.dataSources', {
+        page: 1,
+        group: 'Identity',
+        width: 'third',
+      }),
     ],
   },
   {
@@ -695,7 +793,18 @@ const sections = [
       textField('neighborhood_pred_age', 'Predominant Age', 'workspace1004.neighborhood.predominantAge', {
         page: 1,
         group: 'Housing Stock',
-        width: 'half',
+        width: 'quarter',
+      }),
+      textField('neighborhood_pred_price', 'Predominant Price', 'workspace1004.neighborhood.predominantPrice', {
+        suggestionPath: 'market.predominantPrice',
+        page: 1,
+        group: 'Housing Stock',
+        width: 'quarter',
+      }),
+      textField('neighborhood_age_range', 'Age Range', 'workspace1004.neighborhood.ageRange', {
+        page: 1,
+        group: 'Housing Stock',
+        width: 'quarter',
       }),
       textField('neighborhood_one_unit_percent', 'One-Unit %', 'workspace1004.neighborhood.oneUnitPercent', {
         page: 1,
@@ -771,6 +880,36 @@ const sections = [
       textField('site_view', 'View', 'workspace1004.site.view', {
         page: 1,
         group: 'Physical',
+        width: 'quarter',
+      }),
+      textField('site_topography', 'Topography', 'workspace1004.site.topography', {
+        page: 1,
+        group: 'Physical',
+        width: 'quarter',
+      }),
+      textField('site_drainage', 'Drainage', 'workspace1004.site.drainage', {
+        page: 1,
+        group: 'Physical',
+        width: 'quarter',
+      }),
+      selectField('site_street_surface', 'Street Surface', 'workspace1004.site.streetSurface', surfaceTypeChoices, {
+        page: 1,
+        group: 'Off-Site Improvements',
+        width: 'quarter',
+      }),
+      selectField('site_curb_gutter', 'Curb / Gutter', 'workspace1004.site.curbGutter', yesNoUnknown, {
+        page: 1,
+        group: 'Off-Site Improvements',
+        width: 'quarter',
+      }),
+      selectField('site_sidewalk', 'Sidewalk', 'workspace1004.site.sidewalk', yesNoUnknown, {
+        page: 1,
+        group: 'Off-Site Improvements',
+        width: 'quarter',
+      }),
+      selectField('site_street_lights', 'Street Lights', 'workspace1004.site.streetLights', yesNoUnknown, {
+        page: 1,
+        group: 'Off-Site Improvements',
         width: 'quarter',
       }),
       textField('site_zoning_classification', 'Specific Zoning Classification', 'workspace1004.site.zoningClassification', {
@@ -921,6 +1060,20 @@ const sections = [
         width: 'quarter',
       }),
       textField('improvements_effective_age', 'Effective Age', 'workspace1004.improvements.effectiveAge', {
+        page: 1,
+        group: 'General Description',
+        width: 'quarter',
+      }),
+      selectField('improvements_quality_rating', 'Quality Rating (Q1-Q6)', 'workspace1004.improvements.qualityRating', qualityRatingChoices, {
+        suggestionPath: 'subject.quality',
+        syncPaths: ['subject.quality'],
+        page: 1,
+        group: 'General Description',
+        width: 'quarter',
+      }),
+      selectField('improvements_condition_rating', 'Condition Rating (C1-C6)', 'workspace1004.improvements.conditionRating', conditionRatingChoices, {
+        suggestionPath: 'subject.condition',
+        syncPaths: ['subject.condition'],
         page: 1,
         group: 'General Description',
         width: 'quarter',
@@ -1488,6 +1641,16 @@ const sections = [
         group: 'Cost Calculation',
         width: 'quarter',
       }),
+      textField('cost_porches_patios', 'Porches / Patios / Decks', 'workspace1004.costApproach.porchesPatios', {
+        page: 3,
+        group: 'Cost Calculation',
+        width: 'half',
+      }),
+      textField('cost_other_improvements', 'Other (describe)', 'workspace1004.costApproach.otherImprovements', {
+        page: 3,
+        group: 'Cost Calculation',
+        width: 'half',
+      }),
       textField('cost_total_cost_new', 'Total Estimate of Cost New', 'workspace1004.costApproach.totalCostNew', {
         page: 3,
         group: 'Cost Calculation',
@@ -1550,6 +1713,51 @@ const sections = [
         page: 3,
         group: 'Income Inputs',
         width: 'third',
+      }),
+      textField('income_rent_comp1_address', 'Rent Comp 1 Address', 'workspace1004.incomeApproach.rentComps.comp1.address', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'half',
+      }),
+      textField('income_rent_comp1_rent', 'Rent Comp 1 Rent', 'workspace1004.incomeApproach.rentComps.comp1.rent', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
+      }),
+      textField('income_rent_comp1_data_source', 'Rent Comp 1 Data Source', 'workspace1004.incomeApproach.rentComps.comp1.dataSource', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
+      }),
+      textField('income_rent_comp2_address', 'Rent Comp 2 Address', 'workspace1004.incomeApproach.rentComps.comp2.address', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'half',
+      }),
+      textField('income_rent_comp2_rent', 'Rent Comp 2 Rent', 'workspace1004.incomeApproach.rentComps.comp2.rent', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
+      }),
+      textField('income_rent_comp2_data_source', 'Rent Comp 2 Data Source', 'workspace1004.incomeApproach.rentComps.comp2.dataSource', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
+      }),
+      textField('income_rent_comp3_address', 'Rent Comp 3 Address', 'workspace1004.incomeApproach.rentComps.comp3.address', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'half',
+      }),
+      textField('income_rent_comp3_rent', 'Rent Comp 3 Rent', 'workspace1004.incomeApproach.rentComps.comp3.rent', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
+      }),
+      textField('income_rent_comp3_data_source', 'Rent Comp 3 Data Source', 'workspace1004.incomeApproach.rentComps.comp3.dataSource', {
+        page: 3,
+        group: 'Rent Comparables',
+        width: 'quarter',
       }),
       textareaField('income_summary', 'Summary of Income Approach', 'workspace1004.incomeApproach.summary', {
         page: 3,
@@ -1668,6 +1876,11 @@ const sections = [
         page: 2,
         group: 'Value Indications',
         width: 'third',
+      }),
+      selectField('reconciliation_report_condition', 'Report Condition Type', 'workspace1004.reconciliation.reportConditionType', reportConditionChoices, {
+        page: 2,
+        group: 'Conditions',
+        width: 'half',
       }),
       textareaField('reconciliation_conditions', 'As-Is / Hypothetical Condition / Repair Condition Statement', 'workspace1004.reconciliation.conditionStatement', {
         page: 2,
