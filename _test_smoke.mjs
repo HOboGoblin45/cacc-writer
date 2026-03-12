@@ -142,6 +142,24 @@ async function apiForm(path, formData) {
   }
 }
 
+async function waitForQueueJobTerminal(jobId, { timeoutMs = 5000, intervalMs = 120 } = {}) {
+  const started = Date.now();
+  let lastBody = null;
+
+  while (Date.now() - started < timeoutMs) {
+    const { status, body } = await api('GET', `/api/reports/queue/job/${jobId}`);
+    if (status === 200 && body && typeof body === 'object') {
+      lastBody = body;
+      if (body.status !== 'queued' && body.status !== 'running') {
+        return body;
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+  }
+
+  return lastBody;
+}
+
 // ── Test state ────────────────────────────────────────────────────────────────
 let testCaseId = null;
 let latestIngestJobId = null;
@@ -1421,6 +1439,16 @@ await test('GET /api/reports/queue/job/:jobId returns job status', async () => {
   assert(status === 200, `Expected 200, got ${status}`);
   assert(typeof body?.jobId === 'string', 'jobId should be present');
   assert(typeof body?.status === 'string', 'job status should be a string');
+});
+
+await test('queued generation honors pre-draft gate and returns gate metadata', async () => {
+  const job = await waitForQueueJobTerminal(smokeQueueJobId, { timeoutMs: 6000, intervalMs: 150 });
+  assert(job && typeof job === 'object', 'job status payload should be present');
+  assert(job.status === 'failed', `Expected failed job status, got ${job?.status}`);
+  assert(job.errorCode === 'PRE_DRAFT_GATE_BLOCKED', `Expected PRE_DRAFT_GATE_BLOCKED, got ${job?.errorCode}`);
+  assert(job.preDraftGate?.ok === false, 'preDraftGate.ok should be false');
+  assert(Number(job.preDraftGate?.blockerCount || 0) > 0, 'preDraftGate.blockerCount should be > 0');
+  assert(typeof job.preDraftGate?.factReviewQueuePath === 'string', 'factReviewQueuePath should be present');
 });
 
 // ── 11. Operations Endpoints ──────────────────────────────────────────────────

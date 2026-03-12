@@ -102,8 +102,8 @@ test('enqueues valid cases and returns batchId + jobs', () => {
   assert.equal(result.jobs.length, 2);
   assert.equal(result.jobs[0].caseId, 'test-case-1');
   assert.equal(result.jobs[1].caseId, 'test-case-2');
-  // First job may already be 'running' if processQueue kicked off immediately
-  assert.ok(['queued', 'running'].includes(result.jobs[0].status));
+  // First job may already be terminal when gate checks fail immediately.
+  assert.ok(['queued', 'running', 'failed'].includes(result.jobs[0].status));
 });
 
 test('jobs have required fields', () => {
