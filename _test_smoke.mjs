@@ -372,6 +372,17 @@ await test('POST /api/cases/:caseId/missing-facts rejects invalid payload type',
 // —— 4b. Document Intake & Classification ——————————————————————————————
 console.log('\n4b. Document Intake');
 
+await test('POST /api/cases/:caseId/upload rejects invalid docType payload', async () => {
+  const pseudoPdf = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<<>>\n%%EOF`;
+  const form = new FormData();
+  form.append('file', new Blob([pseudoPdf], { type: 'application/pdf' }), 'legacy-upload-smoke.pdf');
+  form.append('docType', 'x'.repeat(120));
+  const { status, body } = await apiForm(`/api/cases/${testCaseId}/upload`, form);
+  assert(status === 400, `Expected 400, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+});
+
 await test('POST /api/cases/:caseId/documents/upload rejects unsupported file types', async () => {
   const form = new FormData();
   form.append('file', new Blob(['plain text'], { type: 'text/plain' }), 'notes.txt');
@@ -1076,6 +1087,28 @@ await test('POST /api/workflow/run without caseId returns 400 or 503', async () 
   const { status, body } = await api('POST', '/api/workflow/run', {});
   assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
   assert(body.ok === false, 'ok should be false');
+});
+
+await test('POST /api/cases/:caseId/extract-facts rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/extract-facts`, {
+    answers: 'not-an-object',
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
+});
+
+await test('POST /api/cases/:caseId/questionnaire rejects invalid payload type', async () => {
+  const { status, body } = await api('POST', `/api/cases/${testCaseId}/questionnaire`, {
+    includeHints: true,
+  });
+  assert(status === 400 || status === 503, `Expected 400 or 503, got ${status}`);
+  assert(body?.ok === false, 'ok should be false');
+  if (status === 400) {
+    assert(body?.code === 'INVALID_PAYLOAD', 'code should be INVALID_PAYLOAD');
+  }
 });
 
 await test('POST /api/workflow/run rejects invalid payload type', async () => {

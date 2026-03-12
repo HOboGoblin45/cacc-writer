@@ -53,6 +53,13 @@ const gradeSchema = z.object({
   fieldId: z.string().max(80).optional(),
   text: z.string().max(8000).optional(),
 }).passthrough();
+const uploadSchema = z.object({
+  docType: z.string().max(60).optional(),
+}).passthrough();
+const extractFactsSchema = z.object({
+  answers: z.record(z.unknown()).optional(),
+}).passthrough();
+const questionnaireSchema = z.object({}).strict();
 
 const feedbackSchema = z.object({
   fieldId: z.string().max(80),
@@ -186,6 +193,9 @@ router.param('caseId', (req, res, next, caseId) => {
 });
 
 router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
+  const body = parsePayload(uploadSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const cd = ensureCaseDir(req, res);
     if (!cd) return;
@@ -197,7 +207,7 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 
     if (!isPdf) return res.status(400).json({ ok: false, error: 'Only PDF files are allowed' });
 
-    const docType = trimText(req.body.docType || 'unknown', 60).replace(/[^a-z0-9_-]/gi, '_');
+    const docType = trimText(body.docType || 'unknown', 60).replace(/[^a-z0-9_-]/gi, '_');
     fs.mkdirSync(path.join(cd, 'documents'), { recursive: true });
     fs.writeFileSync(path.join(cd, 'documents', docType + '.pdf'), req.file.buffer);
 
@@ -252,13 +262,16 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 });
 
 router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
+  const body = parsePayload(extractFactsSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
     const docText = runtime.docText || {};
     const existingFacts = runtime.facts || {};
-    const answers = req.body?.answers || {};
+    const answers = body.answers || {};
     const { formType, formConfig } = runtime;
 
     if (!Object.keys(docText).length && !Object.keys(answers).length) {
@@ -294,6 +307,8 @@ router.post('/:caseId/extract-facts', ensureAI, async (req, res) => {
 });
 
 router.post('/:caseId/questionnaire', ensureAI, async (req, res) => {
+  if (!parsePayload(questionnaireSchema, req.body || {}, res)) return;
+
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
