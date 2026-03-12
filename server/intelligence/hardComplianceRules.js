@@ -23,6 +23,10 @@ function hasAnyActiveSection(sectionRequirements, sectionIds = []) {
   return sectionIds.some(sectionId => hasActiveSection(sectionRequirements, sectionId));
 }
 
+function unique(values = []) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 function buildCheck({
   ruleId,
   severity,
@@ -80,6 +84,33 @@ export function evaluateHardComplianceRules({
     message: Array.isArray(sectionRequirements.sections) && sectionRequirements.sections.length > 0
       ? 'Section requirement matrix is available.'
       : 'Section requirement matrix is missing.',
+  }));
+
+  const baselineRequiredSectionIds = unique(
+    (sectionRequirements.sections || [])
+      .filter(section => (
+        section?.reasonCode === 'manifest_required'
+        || section?.reasonCode === 'manifest_condition_met'
+      ))
+      .map(section => section.sectionId),
+  );
+  const missingBaselineRequiredSectionIds = baselineRequiredSectionIds.filter(
+    sectionId => !hasActiveSection(sectionRequirements, sectionId),
+  );
+  checks.push(buildCheck({
+    ruleId: 'rule.manifest_required_sections.active',
+    severity: 'blocker',
+    passed: missingBaselineRequiredSectionIds.length === 0,
+    reasonCode: missingBaselineRequiredSectionIds.length === 0
+      ? 'manifest_required_sections_active'
+      : 'manifest_required_sections_missing',
+    message: missingBaselineRequiredSectionIds.length === 0
+      ? 'All manifest-required sections are active in the section matrix.'
+      : 'One or more manifest-required sections are not active in the section matrix.',
+    evidence: {
+      expectedSectionIds: baselineRequiredSectionIds,
+      missingSectionIds: missingBaselineRequiredSectionIds,
+    },
   }));
 
   checks.push(buildCheck({
