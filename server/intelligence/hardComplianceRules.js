@@ -58,6 +58,7 @@ export function evaluateHardComplianceRules({
   sectionRequirements = {},
 }) {
   const checks = [];
+  const effectiveDate = asText(context?.assignment?.effectiveDate);
 
   checks.push(buildCheck({
     ruleId: 'rule.uspap.applicable',
@@ -259,6 +260,22 @@ export function evaluateHardComplianceRules({
       evidence: {
         expectedSectionId: 'certification_addendum_comment',
         assignmentCondition,
+      },
+    }));
+  }
+
+  if (flags.retrospective_value || flags.prospective_value) {
+    checks.push(buildCheck({
+      ruleId: 'rule.value_condition.effective_date',
+      severity: 'blocker',
+      passed: Boolean(effectiveDate),
+      reasonCode: effectiveDate ? 'effective_date_present' : 'effective_date_missing',
+      message: effectiveDate
+        ? 'Effective date is present for non-as-is value condition.'
+        : 'Prospective/retrospective value condition requires an explicit effective date.',
+      evidence: {
+        valueCondition: flags.retrospective_value ? 'retrospective' : 'prospective',
+        effectiveDate: effectiveDate || null,
       },
     }));
   }

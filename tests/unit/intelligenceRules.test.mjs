@@ -318,6 +318,32 @@ await test('hard compliance rules pass assignment-condition certification check 
   assert.equal(check.passed, true, 'expected assignment condition certification check to pass when section is active');
 });
 
+await test('hard compliance rules block prospective/retrospective values with missing effective date', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'retrospective',
+    },
+  });
+
+  const blocker = scenario.complianceChecks.blockers.find(b => b.ruleId === 'rule.value_condition.effective_date');
+  assert.ok(blocker, 'expected effective date blocker for retrospective assignment without effective date');
+});
+
+await test('hard compliance rules pass value-condition effective date check when date is present', () => {
+  const scenario = buildScenario({
+    meta: {
+      formType: '1004',
+      reportConditionMode: 'prospective',
+      effectiveDate: '2026-02-10',
+    },
+  });
+
+  const check = scenario.complianceChecks.checks.find(c => c.ruleId === 'rule.value_condition.effective_date');
+  assert.ok(check, 'expected value condition effective date check');
+  assert.equal(check.passed, true, 'expected effective date check to pass when date exists');
+});
+
 console.log('\n' + '-'.repeat(60));
 console.log(`intelligenceRules: ${passed} passed, ${failed} failed`);
 if (failures.length) {
