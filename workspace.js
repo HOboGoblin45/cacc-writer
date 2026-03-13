@@ -1601,6 +1601,24 @@ function workspaceSelectSection(sectionId) {
   workspaceRender();
 }
 
+function workspaceFlashStaleSections(sectionIds) {
+  // Re-render nav to pick up updated freshness badges
+  workspaceRender();
+  // Briefly highlight the nav items for newly-stale sections
+  requestAnimationFrame(() => {
+    const navItems = document.querySelectorAll('.workspace-nav-item');
+    for (const item of navItems) {
+      const onclick = item.getAttribute('onclick') || '';
+      const match = onclick.match(/workspaceSelectSection\('([^']+)'\)/);
+      if (match && sectionIds.includes(match[1])) {
+        item.style.transition = 'background 0.3s';
+        item.style.background = 'rgba(231,76,60,0.25)';
+        setTimeout(() => { item.style.background = ''; }, 2500);
+      }
+    }
+  });
+}
+
 async function workspaceLoadSectionAudit(sectionId) {
   if (!STATE.caseId || !sectionId) return;
   const body = ws$('workspaceAssistantBody');
@@ -1933,6 +1951,29 @@ async function workspaceFlushSave() {
   workspaceSetSavedAt(response.savedAt || response.meta?.updatedAt || new Date().toISOString());
   workspaceSetSaveState(WORKSPACE_STATE.dirtyFieldIds.size ? 'Unsaved' : 'Saved');
   workspaceSetBanner('');
+
+  // Handle fact-change cascade: update local governance data and notify user
+  if (response.factChangeInvalidation && response.factChangeInvalidation.invalidatedSections?.length > 0) {
+    const inv = response.factChangeInvalidation;
+    // Update local sectionPolicySummary to reflect newly-stale sections
+    const policySummary = WORKSPACE_STATE.payload?.sectionPolicySummary || {};
+    for (const sid of inv.invalidatedSections) {
+      if (policySummary[sid]) {
+        policySummary[sid].freshnessStatus = 'stale_due_to_fact_change';
+        policySummary[sid].staleReasons = [`Fact change: ${inv.changedPaths.join(', ')}`];
+        policySummary[sid].changedPaths = inv.changedPaths;
+      }
+    }
+    // Update freshness summary counts
+    if (WORKSPACE_STATE.payload?.sectionFreshnessSummary) {
+      const fs = WORKSPACE_STATE.payload.sectionFreshnessSummary;
+      fs.stale = (fs.stale || 0) + inv.invalidatedSections.length;
+      fs.current = Math.max(0, (fs.current || 0) - inv.invalidatedSections.length);
+    }
+    // Flash stale nav items
+    workspaceFlashStaleSections(inv.invalidatedSections);
+  }
+
   workspaceRenderAssistant();
 }
 
