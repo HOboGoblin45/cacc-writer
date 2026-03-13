@@ -579,6 +579,20 @@ button.sm{padding:5px 9px;font-size:11px;}
 .fact-card-value{font-family:var(--mono);color:var(--gold);}
 .fact-card-prov{font-size:9px;color:var(--muted);}
 .fact-card-conflict{font-size:9px;color:var(--danger);font-weight:700;margin-top:2px;}
+/* ── Phase 8: Golden-Path Validation ──────────────────────────────────────── */
+.gp-step{display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:11px;border-radius:6px;margin-bottom:2px;}
+.gp-step-icon{min-width:16px;text-align:center;font-size:12px;}
+.gp-step-dod{font-size:8px;padding:1px 5px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700;min-width:24px;text-align:center;}
+.gp-step.pass{background:rgba(85,209,143,.04);}
+.gp-step.fail{background:rgba(255,92,92,.04);}
+.gp-step.running{background:rgba(215,179,90,.04);}
+.gp-step .gp-step-icon.pass{color:var(--ok);}
+.gp-step .gp-step-icon.fail{color:var(--danger);}
+.gp-step .gp-step-icon.running{color:var(--gold);}
+.gp-summary{display:flex;gap:16px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;font-size:14px;font-weight:900;font-family:var(--mono);}
+.gp-summary-pass{color:var(--ok);}
+.gp-summary-fail{color:var(--danger);}
+.gp-summary-time{color:var(--muted);font-size:11px;font-weight:400;}
 </style>
 </head>
 <body>
@@ -2415,6 +2429,35 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
         <div id="sysAuditBody"><div class="hint">Click Refresh to load audit events.</div></div>
         <div style="margin-top:8px;display:flex;gap:6px;" id="sysAuditPager"></div>
+      </div>
+    </div>
+
+    <!-- Golden-Path Validation Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Golden-Path Validation</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="sm" onclick="gpRun1004()">Run 1004</button>
+          <button class="sm" onclick="gpRunCommercial()">Run Commercial</button>
+          <button class="sm sec" onclick="gpRunBoth()">Run Both</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">
+          End-to-end validation of the full appraisal lifecycle against the 10 Definition of Done conditions.
+          Creates a test case, loads fixture data, and exercises every pipeline stage.
+        </div>
+
+        <!-- Test Plan -->
+        <div id="gpTestPlan" style="margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-bottom:6px;">Test Plan (14 steps × 2 form types)</div>
+          <div id="gpStepList"></div>
+        </div>
+
+        <!-- Results -->
+        <div id="gpResultsSummary"></div>
+        <div id="gpResultsBody"></div>
+        <div id="gpStatus" class="status"></div>
       </div>
     </div>
 
