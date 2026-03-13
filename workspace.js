@@ -1281,6 +1281,330 @@ function workspaceRender() {
 
   workspaceRenderSection(currentSection);
   workspaceRenderAssistant();
+
+  // Render overview panels (readiness, missing facts, insertion reliability)
+  const overviewEl = ws$('workspaceOverviewPanels');
+  if (overviewEl) {
+    const overviewParts = [
+      workspaceRenderReadinessChecklist(),
+      workspaceRenderMissingFactsDashboard(),
+      workspaceRenderInsertionSummaryCard(),
+    ].filter(Boolean);
+    if (overviewParts.length) {
+      overviewEl.innerHTML = overviewParts.join('');
+      overviewEl.style.display = '';
+    } else {
+      overviewEl.style.display = 'none';
+    }
+  }
+}
+
+function workspaceRenderGovernanceCard(sectionId) {
+  const audit = workspaceSectionPolicySummary()[sectionId];
+  if (!audit) return '';
+
+  // Freshness
+  const freshBadge = workspaceFreshnessBadge(audit.freshnessStatus || 'not_generated');
+  const isStale = audit.freshnessStatus && audit.freshnessStatus !== 'current' && audit.freshnessStatus !== 'not_generated';
+  const staleDetail = isStale && audit.staleReasons?.length
+    ? `<div class="workspace-gov-detail">${esc(audit.staleReasons.join('; '))}</div>` : '';
+
+  // Quality
+  const qualityBar = audit.qualityScore !== null && audit.qualityScore !== undefined
+    ? workspaceQualityBar(audit.qualityScore) : '<span class="hint">Not yet scored</span>';
+
+  // Missing facts
+  const missingReq = audit.missingRequiredCount || 0;
+  const missingRec = audit.missingRecommendedCount || 0;
+  let factChip = '';
+  if (missingReq > 0) {
+    factChip = `<span class="chip warn">${missingReq} required missing</span>`;
+  } else if (missingRec > 0) {
+    factChip = `<span class="chip">${missingRec} recommended missing</span>`;
+  } else {
+    factChip = '<span class="chip ok">Facts complete</span>';
+  }
+
+  // Blocker badge
+  const blockerBadge = audit.hasBlockers
+    ? '<span class="chip warn">Blocked</span>'
+    : '<span class="chip ok">Ready</span>';
+
+  // Generation info
+  const genAt = audit.generatedAt
+    ? `<span style="font-size:0.8em;opacity:0.7;">${esc(new Date(audit.generatedAt).toLocaleString())}</span>` : '<span class="hint">Never</span>';
+  const regenCount = audit.regenerationCount > 0
+    ? ` <span class="chip" style="font-size:0.7em;">${audit.regenerationCount} regen</span>` : '';
+
+  return (
+    `<div class="workspace-section-card workspace-gov-card">` +
+      `<div class="workspace-card-head">` +
+        `<h3>Section Governance</h3>` +
+        `<div style="display:flex;gap:4px;align-items:center;">${blockerBadge} ${freshBadge}</div>` +
+      `</div>` +
+      `<div class="workspace-card-body">` +
+        `<div class="workspace-gov-grid">` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Prompt</div>` +
+            `<div class="workspace-gov-value">${esc(audit.promptVersion || 'default')}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Facts</div>` +
+            `<div class="workspace-gov-value">${factChip}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Generated</div>` +
+            `<div class="workspace-gov-value">${genAt}${regenCount}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Quality</div>` +
+            `<div class="workspace-gov-value">${qualityBar}</div>` +
+          `</div>` +
+        `</div>` +
+        staleDetail +
+      `</div>` +
+    `</div>`
+  );
+}
+
+function workspaceRenderReadinessChecklist() {
+  const payload = WORKSPACE_STATE.payload;
+  if (!payload) return '';
+
+  const policySummary = workspaceSectionPolicySummary();
+  const freshness = workspaceSectionFreshnessSummary();
+  const qc = payload.qc || {};
+  const gate = qc.approvalGate;
+  const insertionRel = workspaceInsertionReliability();
+
+  // Ready to generate: all required facts are present for all narrative sections
+  const sectionIds = Object.keys(policySummary);
+  const totalSections = sectionIds.length;
+  const readyToGenerate = sectionIds.filter(sid => !policySummary[sid].hasBlockers).length;
+  const allReadyToGenerate = readyToGenerate === totalSections && totalSections > 0;
+
+  // Ready to review: all sections are generated and current
+  const generatedCount = freshness.total || 0;
+  const staleCount = freshness.stale || 0;
+  const currentCount = freshness.current || 0;
+  const allGenerated = generatedCount > 0 && staleCount === 0;
+
+  // Ready to finalize: QC gate passes, no contradictions, insertion clean
+  const qcPasses = gate?.ok === true;
+  const contradictions = qc.contradictionGraphCount || 0;
+  const insertionClean = insertionRel?.latestRun
+    ? (insertionRel.latestRun.failedFields === 0 && insertionRel.latestRun.rollbackFields === 0)
+    : false;
+
+  function checkRow(label, passed, detail) {
+    const icon = passed ? '<span style="color:var(--ok);font-weight:bold;">&#x2713;</span>' : '<span style="color:var(--warn);font-weight:bold;">&#x2717;</span>';
+    return (
+      `<div class="workspace-readiness-row">` +
+        `${icon} <span class="workspace-readiness-label">${esc(label)}</span>` +
+        `<span class="workspace-readiness-detail">${esc(detail)}</span>` +
+      `</div>`
+    );
+  }
+
+  return (
+    `<div class="workspace-section-card">` +
+      `<div class="workspace-card-head">` +
+        `<h3>1004 Readiness</h3>` +
+        `<div style="display:flex;gap:4px;align-items:center;">` +
+          (allReadyToGenerate && allGenerated && qcPasses
+            ? '<span class="chip ok">Ready to finalize</span>'
+            : allReadyToGenerate && allGenerated
+              ? '<span class="chip warn">Ready for review</span>'
+              : allReadyToGenerate
+                ? '<span class="chip">Ready to generate</span>'
+                : '<span class="chip warn">Not ready</span>') +
+        `</div>` +
+      `</div>` +
+      `<div class="workspace-card-body">` +
+        `<div class="workspace-readiness-group">` +
+          `<div class="workspace-readiness-heading">Ready to Generate</div>` +
+          checkRow('Required facts present', allReadyToGenerate, `${readyToGenerate}/${totalSections} sections have required facts`) +
+          checkRow('Pre-draft gate', !qc.factReviewQueueSummary?.preDraftBlocked, qc.factReviewQueueSummary?.preDraftBlocked ? 'Fact review pending' : 'Clear') +
+        `</div>` +
+        `<div class="workspace-readiness-group">` +
+          `<div class="workspace-readiness-heading">Ready for Review</div>` +
+          checkRow('Sections generated', generatedCount > 0, `${generatedCount} generated`) +
+          checkRow('No stale sections', staleCount === 0, staleCount > 0 ? `${staleCount} stale` : 'All current') +
+          checkRow('Quality thresholds', currentCount > 0, currentCount > 0 ? `${currentCount} current` : 'None scored') +
+        `</div>` +
+        `<div class="workspace-readiness-group">` +
+          `<div class="workspace-readiness-heading">Ready to Finalize</div>` +
+          checkRow('QC gate passes', qcPasses, gate?.ok ? 'Pass' : (gate?.message || gate?.code || 'Not run')) +
+          checkRow('Contradictions resolved', contradictions === 0, contradictions > 0 ? `${contradictions} unresolved` : 'Clear') +
+          checkRow('Insertion clean', insertionClean, insertionRel?.latestRun ? `${insertionRel.latestRun.failedFields || 0} failed, ${insertionRel.latestRun.rollbackFields || 0} rollback` : 'Not run') +
+        `</div>` +
+      `</div>` +
+    `</div>`
+  );
+}
+
+function workspaceRenderMissingFactsDashboard() {
+  const policySummary = workspaceSectionPolicySummary();
+  const sectionIds = Object.keys(policySummary);
+  if (!sectionIds.length) return '';
+
+  const rows = sectionIds
+    .map(sid => {
+      const audit = policySummary[sid];
+      const reqCount = audit.missingRequiredCount || 0;
+      const recCount = audit.missingRecommendedCount || 0;
+      if (reqCount === 0 && recCount === 0) return null;
+      return { sectionId: sid, required: reqCount, recommended: recCount, hasBlockers: audit.hasBlockers };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.required - a.required || b.recommended - a.recommended);
+
+  if (!rows.length) {
+    return (
+      `<div class="workspace-section-card">` +
+        `<div class="workspace-card-head"><h3>Missing Facts</h3><span class="chip ok">Complete</span></div>` +
+        `<div class="workspace-card-body"><div class="hint" style="color:var(--ok)">All narrative sections have their required and recommended facts.</div></div>` +
+      `</div>`
+    );
+  }
+
+  const totalBlockers = rows.filter(r => r.hasBlockers).length;
+  const totalGaps = rows.length;
+
+  return (
+    `<div class="workspace-section-card">` +
+      `<div class="workspace-card-head">` +
+        `<h3>Missing Facts Dashboard</h3>` +
+        `<div style="display:flex;gap:4px;">` +
+          (totalBlockers > 0 ? `<span class="chip warn">${totalBlockers} blocked</span>` : '') +
+          `<span class="chip">${totalGaps} sections with gaps</span>` +
+        `</div>` +
+      `</div>` +
+      `<div class="workspace-card-body">` +
+        rows.map(row => {
+          const sev = row.hasBlockers ? 'blocker' : row.required > 0 ? 'high' : 'low';
+          const sevColor = sev === 'blocker' ? 'var(--danger, #ff5c5c)' : sev === 'high' ? 'var(--warn)' : 'var(--muted)';
+          return (
+            `<div class="workspace-missing-row" style="border-left:3px solid ${sevColor};">` +
+              `<div class="workspace-missing-section">${esc(row.sectionId)}</div>` +
+              `<div class="workspace-missing-counts">` +
+                (row.required > 0 ? `<span class="chip warn">${row.required} required</span>` : '') +
+                (row.recommended > 0 ? `<span class="chip">${row.recommended} recommended</span>` : '') +
+              `</div>` +
+            `</div>`
+          );
+        }).join('') +
+      `</div>` +
+    `</div>`
+  );
+}
+
+function workspaceRenderInsertionSummaryCard() {
+  const reliability = workspaceInsertionReliability();
+  const latestRun = reliability?.latestRun || null;
+
+  if (!latestRun) {
+    return (
+      `<div class="workspace-section-card">` +
+        `<div class="workspace-card-head"><h3>Insertion Reliability</h3></div>` +
+        `<div class="workspace-card-body"><div class="hint">No insertion runs recorded. Run insertion from the Workspace to see reliability data.</div></div>` +
+      `</div>`
+    );
+  }
+
+  const total = latestRun.totalFields || 0;
+  const completed = latestRun.completedFields || 0;
+  const verified = latestRun.verifiedFields || 0;
+  const failed = latestRun.failedFields || 0;
+  const rollback = latestRun.rollbackFields || 0;
+  const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
+  const pctColor = pct >= 95 ? 'var(--ok)' : pct >= 80 ? 'var(--warn)' : 'var(--danger, #ff5c5c)';
+  const statusTone = workspaceInsertionStatusTone(latestRun.status);
+
+  return (
+    `<div class="workspace-section-card">` +
+      `<div class="workspace-card-head">` +
+        `<h3>ACI Insertion Reliability</h3>` +
+        `<div style="display:flex;gap:4px;align-items:center;">` +
+          `<span class="chip ${statusTone}">${esc(workspaceReviewLabel(latestRun.status))}</span>` +
+          `<span style="font-size:1.1em;font-weight:900;color:${pctColor};">${pct}%</span>` +
+        `</div>` +
+      `</div>` +
+      `<div class="workspace-card-body">` +
+        `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">` +
+          `<div style="flex:1;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;">` +
+            `<div style="width:${pct}%;height:100%;background:${pctColor};border-radius:4px;"></div>` +
+          `</div>` +
+          `<span style="font-size:0.8em;color:${pctColor};font-weight:bold;">${verified}/${total} verified</span>` +
+        `</div>` +
+        `<div class="workspace-gov-grid">` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Target</div>` +
+            `<div class="workspace-gov-value">${esc(latestRun.targetSoftware || latestRun.formType || 'ACI')}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Inserted</div>` +
+            `<div class="workspace-gov-value">${completed}/${total}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Failed</div>` +
+            `<div class="workspace-gov-value" style="${failed > 0 ? 'color:var(--danger, #ff5c5c)' : ''}">${failed}</div>` +
+          `</div>` +
+          `<div class="workspace-gov-cell">` +
+            `<div class="workspace-gov-label">Rollbacks</div>` +
+            `<div class="workspace-gov-value" style="${rollback > 0 ? 'color:var(--warn)' : ''}">${rollback}</div>` +
+          `</div>` +
+        `</div>` +
+        `<div class="workspace-meta-list" style="margin-top:8px;">` +
+          `<div><strong>Run ID:</strong> ${esc(latestRun.id)}</div>` +
+          `<div><strong>QC Gate:</strong> ${esc(latestRun.qcGatePassed ? 'Pass' : 'Blocked')}</div>` +
+          `<div><strong>Replay Items:</strong> ${esc(String(latestRun.issueFieldCount || 0))}</div>` +
+          `<div><strong>Started:</strong> ${esc(latestRun.startedAt ? new Date(latestRun.startedAt).toLocaleString() : '-')}</div>` +
+        `</div>` +
+      `</div>` +
+    `</div>`
+  );
+}
+
+function workspaceRenderVersionCompare(fieldId) {
+  const entry = workspaceEntry(fieldId);
+  if (!entry) return '';
+  const versions = Array.isArray(entry.history) ? entry.history : [];
+  if (versions.length < 1) return '';
+
+  const currentValue = entry.value != null ? String(entry.value) : '';
+  const previousValue = versions[0]?.value != null ? String(versions[0].value) : '';
+
+  if (currentValue === previousValue) return '';
+
+  // Simple line-level diff display
+  const currentLines = currentValue.split('\n');
+  const previousLines = previousValue.split('\n');
+  const maxLines = Math.max(currentLines.length, previousLines.length);
+  let diffRows = '';
+  for (let i = 0; i < maxLines; i++) {
+    const prev = previousLines[i] ?? '';
+    const curr = currentLines[i] ?? '';
+    if (prev === curr) {
+      diffRows += `<div class="workspace-diff-line workspace-diff-same">${esc(curr || ' ')}</div>`;
+    } else {
+      if (prev) diffRows += `<div class="workspace-diff-line workspace-diff-removed">- ${esc(prev)}</div>`;
+      if (curr) diffRows += `<div class="workspace-diff-line workspace-diff-added">+ ${esc(curr)}</div>`;
+    }
+  }
+
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Version Compare</h4>` +
+      `<div class="workspace-diff-head">` +
+        `<span class="chip">Current</span> vs <span class="chip">${esc(versions[0].savedAt ? new Date(versions[0].savedAt).toLocaleString() : 'Previous')}</span>` +
+      `</div>` +
+      `<div class="workspace-diff-container">${diffRows}</div>` +
+      `<div class="btnrow" style="margin-top:6px;">` +
+        `<button class="sec sm" onclick="workspaceRestoreVersion('${esc(fieldId)}', 0)">Restore Previous</button>` +
+      `</div>` +
+    `</div>`
+  );
 }
 
 function workspaceRenderSection(section) {
@@ -1288,6 +1612,9 @@ function workspaceRenderSection(section) {
   if (!wrap) return;
 
   const parts = [];
+
+  // Governance card for this section
+  parts.push(workspaceRenderGovernanceCard(section.id));
 
   if (Array.isArray(section.lockedTextBlocks) && section.lockedTextBlocks.length) {
     parts.push(
@@ -1460,6 +1787,9 @@ function workspaceRenderAssistant() {
     return;
   }
 
+  // Version compare for the focused field (shown before other assistant content)
+  const versionComparePanel = workspaceRenderVersionCompare(field.fieldId);
+
   const entry = workspaceEntry(field.fieldId) || { value: null, history: [], suggestion: null };
   assistantTitle.textContent = field.label;
 
@@ -1611,6 +1941,12 @@ function workspaceRenderAssistant() {
       `</div>` +
     `</div>`
   );
+
+  // Insert version compare after Current Value section (index 1 after comparable panel)
+  if (versionComparePanel) {
+    const insertIdx = comparableWorkspacePanel ? 2 : 1;
+    sections.splice(insertIdx, 0, versionComparePanel);
+  }
 
   body.innerHTML = sections.join('');
 }
