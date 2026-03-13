@@ -18,6 +18,7 @@
 
 import { Router } from 'express';
 import log from '../logger.js';
+import { emitCaseEvent } from '../operations/auditLogger.js';
 
 import {
   archiveCompletedAssignment,
@@ -109,6 +110,12 @@ router.post('/cases/:caseId/archive', (req, res) => {
     } catch (err) {
       log.warn('learning:feedback-loop-close-failed', { caseId, error: err.message });
     }
+
+    emitCaseEvent(caseId, 'learning.archived', 'Assignment archived for learning', {
+      archiveId: result.id,
+      autoLearn: req.body?.autoLearn !== false,
+      patternsCreated: learningResult?.patternsCreated || 0,
+    });
 
     res.json({
       ok: true,

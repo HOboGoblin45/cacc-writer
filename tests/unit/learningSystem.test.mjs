@@ -251,6 +251,17 @@ await test('archiveCompletedAssignment — requires existing case', () => {
   assert.ok(result.error, 'should return error for nonexistent case');
 });
 
+await test('archiveCompletedAssignment — blocks non-approved case', () => {
+  const db = getDb();
+  const unapprovedId = 'lrn-unap';
+  try {
+    db.prepare(`INSERT INTO case_records (case_id, form_type, status, pipeline_stage, workflow_status) VALUES (?, '1004', 'active', 'generating', 'draft_in_progress')`).run(unapprovedId);
+  } catch { /* may exist */ }
+  const result = archiveCompletedAssignment(unapprovedId);
+  assert.ok(result.error, 'should return error for non-approved case');
+  assert.ok(result.error.includes('not in an approved state'), 'error should mention approval policy');
+});
+
 await test('archiveCompletedAssignment — archives a completed case', () => {
   seedCaseRecord(testCaseId, '1004');
   seedCaseFacts(testCaseId, {
