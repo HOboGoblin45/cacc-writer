@@ -130,12 +130,59 @@ function workspaceSectionPolicySummary() {
   return WORKSPACE_STATE.payload?.sectionPolicySummary || {};
 }
 
+function workspaceSectionFreshnessSummary() {
+  return WORKSPACE_STATE.payload?.sectionFreshnessSummary || { total: 0, current: 0, stale: 0, notGenerated: 0 };
+}
+
 function workspaceSectionContradictions(sectionId) {
   const items = Array.isArray(workspaceContradictionGraph()?.items)
     ? workspaceContradictionGraph().items
     : [];
   if (!sectionId) return items;
   return items.filter((item) => Array.isArray(item.sectionIds) && item.sectionIds.includes(sectionId));
+}
+
+function workspaceFreshnessBadge(status) {
+  const labels = {
+    current: ['Current', 'ok'],
+    stale_due_to_fact_change: ['Stale: Facts Changed', 'warn'],
+    stale_due_to_dependency_change: ['Stale: Dependency Changed', 'warn'],
+    stale_due_to_prompt_change: ['Stale: Prompt Updated', 'warn'],
+    not_generated: ['Not Generated', ''],
+  };
+  const [label, cls] = labels[status] || [status || 'Unknown', ''];
+  return `<span class="chip ${cls}" style="font-size:0.75em;padding:2px 6px;">${esc(label)}</span>`;
+}
+
+function workspaceQualityBar(score) {
+  if (score === null || score === undefined) return '';
+  const pct = Math.min(100, Math.max(0, score));
+  const color = pct >= 70 ? 'var(--ok)' : pct >= 40 ? 'var(--warn)' : 'var(--err,#e74c3c)';
+  return (
+    `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">` +
+      `<div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">` +
+        `<div style="width:${pct}%;height:100%;background:${color};border-radius:3px;"></div>` +
+      `</div>` +
+      `<span style="font-size:0.8em;font-weight:bold;color:${color};">${pct}/100</span>` +
+    `</div>`
+  );
+}
+
+function workspaceRenderFreshnessSummaryPanel() {
+  const fs = workspaceSectionFreshnessSummary();
+  if (!fs.total && !fs.stale) return '';
+  const staleColor = fs.stale > 0 ? 'var(--warn)' : 'var(--ok)';
+  return (
+    `<div class="workspace-assistant-section">` +
+      `<h4>Section Freshness</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Generated Sections:</strong> ${esc(String(fs.total || 0))}</div>` +
+        `<div><strong>Current:</strong> <span style="color:var(--ok)">${esc(String(fs.current || 0))}</span></div>` +
+        `<div><strong>Stale:</strong> <span style="color:${staleColor}">${esc(String(fs.stale || 0))}</span></div>` +
+        `<div><strong>Not Generated:</strong> ${esc(String(fs.notGenerated || 0))}</div>` +
+      `</div>` +
+    `</div>`
+  );
 }
 
 function workspaceRenderSectionAuditPanel(sectionId) {
@@ -160,6 +207,32 @@ function workspaceRenderSectionAuditPanel(sectionId) {
     factStatus = '<div style="color:var(--ok)">All required and recommended facts available</div>';
   }
 
+  // Freshness + quality section
+  let freshnessBlock = '';
+  const fs = audit.freshnessStatus;
+  if (fs) {
+    freshnessBlock += `<div style="margin-top:8px;"><strong>Freshness:</strong> ${workspaceFreshnessBadge(fs)}</div>`;
+    if (audit.staleReasons && audit.staleReasons.length > 0) {
+      freshnessBlock += `<div style="font-size:0.8em;opacity:0.8;margin-top:2px;">${esc(audit.staleReasons.join('; '))}</div>`;
+    }
+    if (audit.changedPaths && audit.changedPaths.length > 0) {
+      freshnessBlock += `<div style="font-size:0.75em;opacity:0.6;margin-top:2px;">Changed: ${esc(audit.changedPaths.slice(0, 5).join(', '))}${audit.changedPaths.length > 5 ? ` +${audit.changedPaths.length - 5} more` : ''}</div>`;
+    }
+  }
+
+  let qualityBlock = '';
+  if (audit.qualityScore !== null && audit.qualityScore !== undefined) {
+    qualityBlock = `<div style="margin-top:8px;"><strong>Quality Score:</strong>${workspaceQualityBar(audit.qualityScore)}</div>`;
+  }
+
+  let generationBlock = '';
+  if (audit.generatedAt) {
+    generationBlock += `<div><strong>Generated:</strong> ${esc(new Date(audit.generatedAt).toLocaleString())}</div>`;
+  }
+  if (audit.regenerationCount > 0) {
+    generationBlock += `<div><strong>Regenerations:</strong> ${esc(String(audit.regenerationCount))}</div>`;
+  }
+
   return (
     `<div class="workspace-assistant-section">` +
       `<h4>Section Governance</h4>` +
@@ -170,6 +243,9 @@ function workspaceRenderSectionAuditPanel(sectionId) {
       `<div class="workspace-meta-list">` +
         `<div><strong>Prompt Version:</strong> ${esc(audit.promptVersion || '-')}</div>` +
         factStatus +
+        freshnessBlock +
+        qualityBlock +
+        generationBlock +
       `</div>` +
       `<div style="margin-top:8px;">` +
         `<button class="sec sm" onclick="workspaceLoadSectionAudit('${esc(sectionId)}')">View Full Audit</button>` +
@@ -1158,8 +1234,14 @@ function workspaceRender() {
       if (audit) {
         if (audit.hasBlockers) {
           badge = ' <span class="chip warn" style="font-size:0.65em;padding:1px 5px;">Missing Facts</span>';
+        } else if (audit.freshnessStatus && audit.freshnessStatus !== 'current' && audit.freshnessStatus !== 'not_generated') {
+          badge = ' <span class="chip warn" style="font-size:0.65em;padding:1px 5px;">Stale</span>';
         } else if (audit.missingRecommendedCount > 0) {
           badge = ' <span class="chip" style="font-size:0.65em;padding:1px 5px;opacity:0.7">Gaps</span>';
+        }
+        if (audit.qualityScore !== null && audit.qualityScore !== undefined) {
+          const qColor = audit.qualityScore >= 70 ? 'var(--ok)' : audit.qualityScore >= 40 ? 'var(--warn)' : 'var(--err,#e74c3c)';
+          badge += ` <span style="font-size:0.6em;color:${qColor};font-weight:bold;" title="Quality: ${audit.qualityScore}/100">${audit.qualityScore}</span>`;
         }
       }
       return (
@@ -1342,6 +1424,7 @@ function workspaceRenderAssistant() {
       workspaceRenderSectionAuditPanel(currentSection?.id) +
       workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
       insertionPanel +
+      workspaceRenderFreshnessSummaryPanel() +
       `<div class="workspace-assistant-section">` +
         `<h4>Quality Control</h4>` +
         `<div class="workspace-meta-list">` +
@@ -1568,6 +1651,31 @@ async function workspaceLoadSectionAudit(sectionId) {
         `<div><strong>Prompt Version:</strong> ${esc(result.promptVersion || policy.promptVersion || '-')}</div>` +
         `<div><strong>Temperature:</strong> ${esc(String(policy.temperature ?? '-'))}</div>` +
       `</div>` +
+    `</div>`
+  );
+
+  // Freshness & quality from the enriched audit endpoint
+  sections.push(
+    `<div class="workspace-assistant-section">` +
+      `<h4>Freshness & Quality</h4>` +
+      `<div class="workspace-meta-list">` +
+        `<div><strong>Freshness:</strong> ${workspaceFreshnessBadge(result.freshnessStatus || 'not_generated')}</div>` +
+        (result.qualityScore !== null && result.qualityScore !== undefined
+          ? `<div><strong>Quality:</strong>${workspaceQualityBar(result.qualityScore)}</div>`
+          : `<div><strong>Quality:</strong> <span style="opacity:0.6">Not scored</span></div>`) +
+        (result.generatedAt
+          ? `<div><strong>Generated:</strong> ${esc(new Date(result.generatedAt).toLocaleString())}</div>`
+          : '') +
+        (result.regenerationCount > 0
+          ? `<div><strong>Regeneration Count:</strong> ${esc(String(result.regenerationCount))}</div>`
+          : '') +
+      `</div>` +
+      ((result.staleReasons || []).length
+        ? `<div style="margin-top:6px;font-size:0.8em;"><strong>Stale Reasons:</strong><ul style="margin:4px 0 0 16px;padding:0;">${result.staleReasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>`
+        : '') +
+      ((result.changedPaths || []).length
+        ? `<div style="margin-top:4px;font-size:0.75em;opacity:0.7;">Changed paths: ${esc(result.changedPaths.join(', '))}</div>`
+        : '') +
     `</div>`
   );
 
