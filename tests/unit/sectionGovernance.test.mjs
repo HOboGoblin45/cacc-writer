@@ -127,9 +127,9 @@ function seedTestData() {
     // Insert section job first
     try {
       dbRun(
-        `INSERT OR IGNORE INTO section_jobs (id, run_id, section_id, case_id, form_type, status, created_at)
-         VALUES (?, ?, ?, ?, '1004', 'completed', datetime('now'))`,
-        [s.jobId, TEST_RUN_ID, s.sectionId, TEST_CASE_ID],
+        `INSERT OR IGNORE INTO section_jobs (id, run_id, section_id, status, created_at)
+         VALUES (?, ?, ?, 'completed', datetime('now'))`,
+        [s.jobId, TEST_RUN_ID, s.sectionId],
       );
     } catch { /* already exists */ }
 
@@ -257,9 +257,14 @@ test('markSectionStale returns ok:false for null inputs', () => {
 });
 
 test('markSectionStale does not double-mark already stale section', () => {
-  // Ensure stale
+  // Reset to current first
+  dbRun(
+    "UPDATE generated_sections SET freshness_status = 'current', stale_reason = NULL, stale_since = NULL WHERE case_id = ? AND section_id = ?",
+    [TEST_CASE_ID, 'site_description'],
+  );
+  // Mark stale with first reason
   markSectionStale(TEST_CASE_ID, 'site_description', 'first_reason');
-  // Try to mark stale again
+  // Try to mark stale again with different reason
   const result = markSectionStale(TEST_CASE_ID, 'site_description', 'second_reason');
   assert.equal(result.ok, true);
   assert.equal(result.updated, 0);
@@ -342,8 +347,8 @@ test('FRESHNESS_STATUS constants are defined correctly', () => {
 // ── Cleanup ─────────────────────────────────────────────────────────────────
 try {
   dbRun("DELETE FROM generated_sections WHERE case_id = ?", [TEST_CASE_ID]);
-  dbRun("DELETE FROM section_jobs WHERE case_id = ?", [TEST_CASE_ID]);
-  dbRun("DELETE FROM generation_runs WHERE case_id = ?", [TEST_CASE_ID]);
+  dbRun("DELETE FROM section_jobs WHERE id IN ('gov-job-001', 'gov-job-002', 'gov-job-003')", []);
+  dbRun("DELETE FROM generation_runs WHERE id = ?", [TEST_RUN_ID]);
 } catch { /* best effort cleanup */ }
 
 console.log('─'.repeat(60));
