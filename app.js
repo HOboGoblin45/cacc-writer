@@ -47,6 +47,7 @@ function showTab(name) {
   if(name==='qc')qcOnTabOpen();
   if(name==='valuation' && typeof valOnTabOpen==='function')valOnTabOpen();
   if(name==='governance' && typeof govOnTabOpen==='function')govOnTabOpen();
+  if(name==='learning' && typeof lrnOnTabOpen==='function')lrnOnTabOpen();
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
   if(name==='inspect' && typeof inspOnTabOpen==='function')inspOnTabOpen();
   if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
@@ -7066,4 +7067,378 @@ async function govLoadRuns() {
       `</div>` +
     `</div>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 11: Learning Dashboard — Patterns, Suggestions, Explainability,
+//           Revision Diffs, Ranked Suggestions, Case Learning Reports
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _lrnPatterns = [];
+
+function lrnOnTabOpen() {
+  lrnLoadAcceptanceRate();
+  lrnLoadPatterns();
+  lrnLoadSuggestionHistory();
+  lrnLoadDiffStats();
+  lrnLoadCaseReport();
+}
+
+// ── Suggestion Acceptance Metrics ───────────────────────────────────────────
+
+async function lrnLoadAcceptanceRate() {
+  const el = $('lrnAcceptanceBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch('/api/learning/acceptance-rate').catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No acceptance data yet.</div>'; return; }
+
+  const d = res;
+  const total = d.total || 0;
+  const accepted = d.accepted || 0;
+  const modified = d.modified || 0;
+  const rejected = d.rejected || 0;
+  const accRate = d.acceptanceRate != null ? (d.acceptanceRate * 100).toFixed(0) : '—';
+  const modRate = d.modificationRate != null ? (d.modificationRate * 100).toFixed(0) : '—';
+
+  el.innerHTML = `<div class="lrn-stat-grid">` +
+    `<div class="lrn-stat"><div class="lrn-stat-val">${total}</div><div class="lrn-stat-label">Total</div></div>` +
+    `<div class="lrn-stat"><div class="lrn-stat-val" style="color:var(--ok);">${accepted}</div><div class="lrn-stat-label">Accepted</div></div>` +
+    `<div class="lrn-stat"><div class="lrn-stat-val" style="color:var(--gold);">${modified}</div><div class="lrn-stat-label">Modified</div></div>` +
+    `<div class="lrn-stat"><div class="lrn-stat-val" style="color:var(--danger);">${rejected}</div><div class="lrn-stat-label">Rejected</div></div>` +
+  `</div>` +
+  `<div style="font-size:11px;display:flex;gap:16px;">` +
+    `<div>Acceptance: <strong style="color:var(--ok);">${accRate}%</strong></div>` +
+    `<div>Modification: <strong style="color:var(--gold);">${modRate}%</strong></div>` +
+  `</div>`;
+}
+
+// ── Case Learning Report ────────────────────────────────────────────────────
+
+async function lrnLoadCaseReport() {
+  const el = $('lrnCaseReportBody');
+  if (!el || !activeCaseId) { if (el) el.innerHTML = '<div class="hint">Select a case.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/learning/case-report/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No learning report for this case.</div>'; return; }
+
+  let html = '<div style="font-size:11px;">';
+
+  const archive = res.archive;
+  if (archive) {
+    html += `<div style="margin-bottom:6px;">` +
+      `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Form</span><strong>${esc(archive.formType || '—')}</strong></div>` +
+      `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Property</span><strong>${esc(archive.propertyType || '—')}</strong></div>` +
+      `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Archived</span><strong>${esc(String(archive.archivedAt || '—').slice(0, 10))}</strong></div>` +
+    `</div>`;
+  }
+
+  const patterns = res.patternsApplied || [];
+  if (patterns.length) {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += `<div style="font-weight:700;">Patterns Applied: ${patterns.length}</div>`;
+    const byType = {};
+    patterns.forEach(p => { byType[p.patternType || 'unknown'] = (byType[p.patternType || 'unknown'] || 0) + 1; });
+    Object.entries(byType).forEach(([type, count]) => {
+      html += `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${esc(type.replace(/_/g, ' '))}</span><strong>${count}</strong></div>`;
+    });
+  }
+
+  const sugg = res.suggestions;
+  if (sugg) {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += `<div style="font-weight:700;">Suggestions</div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Accepted</span><strong style="color:var(--ok);">${sugg.accepted || 0}</strong></div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Modified</span><strong style="color:var(--gold);">${sugg.modified || 0}</strong></div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Rejected</span><strong style="color:var(--danger);">${sugg.rejected || 0}</strong></div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Rate</span><strong>${sugg.acceptanceRate != null ? (sugg.acceptanceRate * 100).toFixed(0) + '%' : '—'}</strong></div>`;
+  }
+
+  const rev = res.revisionStats;
+  if (rev) {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += `<div style="font-weight:700;">Revisions</div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Sections Changed</span><strong>${rev.sectionsChanged || 0}/${rev.totalSections || 0}</strong></div>`;
+    html += `<div style="display:flex;justify-content:space-between;"><span>Avg Change</span><strong>${rev.averageChangeRatio != null ? (rev.averageChangeRatio * 100).toFixed(0) + '%' : '—'}</strong></div>`;
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Learned Patterns ────────────────────────────────────────────────────────
+
+async function lrnLoadPatterns() {
+  const el = $('lrnPatternsBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const filter = $('lrnPatternFilter')?.value || '';
+  let url = '/api/learning/patterns';
+  if (filter) url += `?patternType=${encodeURIComponent(filter)}`;
+
+  const res = await apiFetch(url).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No patterns found.</div>'; return; }
+
+  const patterns = Array.isArray(res) ? res : res.patterns || [];
+  _lrnPatterns = patterns;
+
+  if (!patterns.length) { el.innerHTML = '<div class="hint">No patterns match filter.</div>'; return; }
+
+  el.innerHTML = patterns.slice(0, 50).map(p => {
+    const conf = ((p.confidence || 0) * 100).toFixed(0);
+    const confCls = p.confidence >= 0.7 ? 'high' : p.confidence >= 0.4 ? 'mid' : 'low';
+    const type = p.pattern_type || p.patternType || '—';
+    const key = p.pattern_key || p.patternKey || '';
+    const usage = p.usage_count || p.usageCount || 0;
+    const lastUsed = p.last_used_at || p.lastUsedAt || '';
+    return `<div class="lrn-pattern" onclick="lrnShowPatternDetail('${esc(p.id)}')">` +
+      `<div class="lrn-conf ${confCls}">${conf}</div>` +
+      `<div style="flex:1;">` +
+        `<div style="font-weight:700;">${esc(key || type.replace(/_/g, ' '))}</div>` +
+        `<div style="font-size:10px;color:var(--muted);">Used ${usage}× ${lastUsed ? '· last ' + esc(String(lastUsed).slice(0, 10)) : ''}</div>` +
+      `</div>` +
+      `<span class="lrn-type-badge">${esc(type.replace(/_/g, ' '))}</span>` +
+    `</div>`;
+  }).join('');
+}
+
+async function lrnShowPatternDetail(patternId) {
+  const card = $('lrnPatternDetailCard');
+  const titleEl = $('lrnPatternDetailTitle');
+  const bodyEl = $('lrnPatternDetailBody');
+  if (!card || !bodyEl) return;
+
+  card.style.display = '';
+  bodyEl.innerHTML = '<div class="hint">Loading...</div>';
+
+  const pattern = _lrnPatterns.find(p => p.id === patternId);
+  if (!pattern) { bodyEl.innerHTML = '<div class="hint">Pattern not found.</div>'; return; }
+
+  const conf = ((pattern.confidence || 0) * 100).toFixed(0);
+  const type = pattern.pattern_type || pattern.patternType || '—';
+  titleEl.textContent = type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  let data = pattern.pattern_data_json || pattern.patternDataJson || pattern.patternData;
+  if (typeof data === 'string') try { data = JSON.parse(data); } catch(e) { data = {}; }
+  if (!data) data = {};
+
+  const srRes = await apiFetch(`/api/learning/patterns/${patternId}/success-rate`).catch(() => null);
+
+  let html = '<div style="font-size:11px;">';
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Confidence</span><strong>${conf}%</strong></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Type</span><strong>${esc(type)}</strong></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Usage Count</span><strong>${pattern.usage_count || pattern.usageCount || 0}</strong></div>`;
+
+  if (srRes && !srRes.error) {
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Success Rate</span><strong>${srRes.successRate != null ? (srRes.successRate * 100).toFixed(0) + '%' : '—'}</strong></div>`;
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Applications</span><strong>${srRes.total || 0} (${srRes.accepted || 0} accepted, ${srRes.rejected || 0} rejected)</strong></div>`;
+  }
+
+  html += '<div class="sep" style="margin:6px 0;"></div>';
+  html += '<div style="font-weight:700;margin-bottom:3px;">Pattern Data</div>';
+  Object.entries(data).forEach(([key, val]) => {
+    const display = typeof val === 'object' ? JSON.stringify(val).slice(0, 80) : String(val).slice(0, 80);
+    html += `<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:10px;">` +
+      `<span style="font-family:var(--mono);color:var(--muted);">${esc(key)}</span>` +
+      `<span style="font-weight:600;">${esc(display)}</span>` +
+    `</div>`;
+  });
+
+  html += '</div>';
+  bodyEl.innerHTML = html;
+}
+
+// ── Suggestion History ──────────────────────────────────────────────────────
+
+async function lrnLoadSuggestionHistory() {
+  const el = $('lrnSuggestionBody');
+  if (!el || !activeCaseId) { if (el) el.innerHTML = '<div class="hint">Select a case.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/learning/suggestion-history/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No suggestion outcomes for this case.</div>'; return; }
+
+  const outcomes = Array.isArray(res) ? res : res.outcomes || [];
+  if (!outcomes.length) { el.innerHTML = '<div class="hint">No suggestion outcomes recorded.</div>'; return; }
+
+  el.innerHTML = outcomes.slice(0, 30).map(o => {
+    const accepted = o.accepted;
+    const modified = o.modified;
+    const outcomeCls = accepted ? 'accepted' : modified ? 'modified' : 'rejected';
+    const outcomeLabel = accepted ? 'Accepted' : modified ? 'Modified' : 'Rejected';
+    const section = o.section_id || o.sectionId || '—';
+    const type = o.suggestion_type || o.suggestionType || '—';
+    const reason = o.rejection_reason || o.rejectionReason || '';
+    const label = section.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return `<div class="lrn-sugg-row">` +
+      `<span class="lrn-outcome ${outcomeCls}">${outcomeLabel}</span>` +
+      `<div style="flex:1;">` +
+        `<div style="font-weight:700;">${esc(label)}</div>` +
+        `<div style="font-size:10px;color:var(--muted);">${esc(type.replace(/_/g, ' '))}${reason ? ' · ' + esc(reason) : ''}</div>` +
+      `</div>` +
+    `</div>`;
+  }).join('');
+}
+
+// ── Revision Diff Stats ─────────────────────────────────────────────────────
+
+async function lrnLoadDiffStats() {
+  const el = $('lrnDiffBody');
+  if (!el || !activeCaseId) { if (el) el.innerHTML = '<div class="hint">Select a case.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/learning/revision-diffs/${activeCaseId}/stats`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No revision data.</div>'; return; }
+
+  const changed = res.sectionsChanged || 0;
+  const total = res.totalSections || 0;
+  const avg = res.averageChangeRatio != null ? (res.averageChangeRatio * 100).toFixed(0) : '—';
+  const most = res.mostChangedSections || [];
+
+  let html = `<div style="font-size:11px;margin-bottom:6px;">` +
+    `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Sections Edited</span><strong>${changed}/${total}</strong></div>` +
+    `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Avg Change</span><strong>${avg}%</strong></div>` +
+  `</div>`;
+
+  if (most.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;">MOST EDITED SECTIONS</div>';
+    most.forEach(m => {
+      const ratio = m.changeRatio || m.change_ratio || 0;
+      const ratioStr = (ratio * 100).toFixed(0);
+      const cls = ratio > 0.5 ? 'danger' : ratio > 0.25 ? 'warn' : 'ok';
+      const label = (m.sectionId || m.section_id || '—').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      html += `<div class="lrn-diff-section">` +
+        `<div class="lrn-diff-ratio" style="color:var(--${cls === 'ok' ? 'ok' : cls === 'warn' ? 'gold' : 'danger'});">${ratioStr}%</div>` +
+        `<div style="flex:1;"><div style="font-weight:700;">${esc(label)}</div>` +
+        `<div class="lrn-bar" style="width:100%;"><div class="lrn-bar-fill ${cls}" style="width:${Math.min(ratio * 100, 100)}%;"></div></div></div>` +
+      `</div>`;
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+// ── Influence Explainability ────────────────────────────────────────────────
+
+async function lrnLoadInfluence() {
+  const el = $('lrnInfluenceBody');
+  if (!el) return;
+  const sectionId = $('lrnInfluenceSection')?.value;
+  if (!sectionId) return;
+  el.innerHTML = '<div class="hint">Loading influence explanation...</div>';
+
+  const res = await apiFetch(`/api/learning/influence/${sectionId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No influence data for this section.</div>'; return; }
+
+  let html = '<div class="lrn-influence">';
+
+  if (res.explanation) {
+    html += `<div style="font-size:12px;line-height:1.5;margin-bottom:8px;padding:8px;background:rgba(215,179,90,.04);border-radius:8px;border:1px solid rgba(215,179,90,.15);">${esc(res.explanation)}</div>`;
+  }
+
+  if (res.acceptanceRate != null) {
+    const rate = (res.acceptanceRate * 100).toFixed(0);
+    const cls = res.acceptanceRate >= 0.8 ? 'ok' : res.acceptanceRate >= 0.5 ? 'gold' : 'danger';
+    html += `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">` +
+      `<span style="font-weight:700;">Historical Acceptance Rate</span>` +
+      `<strong style="color:var(--${cls});">${rate}%</strong>` +
+    `</div>`;
+    html += `<div style="font-size:10px;color:var(--muted);">Sample size: ${res.sampleSize || 0}</div>`;
+  }
+
+  const factors = res.influenceFactors || [];
+  if (factors.length) {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Influence Factors</div>';
+    factors.forEach(f => {
+      html += `<div class="lrn-influence-factor">` +
+        `<span style="font-weight:700;">${esc(f.factor || f.name || '—')}</span>` +
+        `<span style="color:var(--muted);">${esc(f.description || '')}</span>` +
+        `<span style="font-family:var(--mono);font-weight:700;">${f.weight != null ? (f.weight * 100).toFixed(0) + '%' : '—'}</span>` +
+      `</div>`;
+    });
+  }
+
+  const topPatterns = res.topPatterns || [];
+  if (topPatterns.length) {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Top Patterns</div>';
+    topPatterns.forEach(tp => {
+      const rate = tp.acceptanceRate != null ? (tp.acceptanceRate * 100).toFixed(0) + '%' : '—';
+      html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;">` +
+        `<span>${esc((tp.suggestionType || tp.type || '—').replace(/_/g, ' '))}</span>` +
+        `<span>acceptance: <strong>${rate}</strong> (n=${tp.sampleSize || 0})</span>` +
+      `</div>`;
+    });
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Ranked Suggestions ──────────────────────────────────────────────────────
+
+async function lrnLoadRanked() {
+  const el = $('lrnRankedBody');
+  if (!el) return;
+  const sectionId = $('lrnRankedSection')?.value;
+  if (!sectionId) return;
+  el.innerHTML = '<div class="hint">Loading ranked suggestions...</div>';
+
+  const res = await apiFetch(`/api/learning/ranked-suggestions/${sectionId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No ranked suggestions for this section.</div>'; return; }
+
+  const ranked = Array.isArray(res) ? res : res.ranked || res.suggestions || [];
+  if (!ranked.length) { el.innerHTML = '<div class="hint">No suggestion history to rank.</div>'; return; }
+
+  el.innerHTML = ranked.map((r, i) => {
+    const rate = r.acceptanceRate != null ? (r.acceptanceRate * 100).toFixed(0) : '—';
+    const rateCls = r.acceptanceRate >= 0.7 ? 'ok' : r.acceptanceRate >= 0.4 ? 'warn' : 'danger';
+    const type = r.suggestionType || r.suggestion_type || r.type || '—';
+    const total = r.total || r.sampleSize || 0;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;">` +
+      `<div style="font-size:14px;font-weight:900;font-family:var(--mono);color:var(--muted);min-width:20px;">#${i + 1}</div>` +
+      `<div style="flex:1;">` +
+        `<div style="font-weight:700;">${esc(type.replace(/_/g, ' '))}</div>` +
+        `<div style="font-size:10px;color:var(--muted);">${total} outcomes</div>` +
+      `</div>` +
+      `<div style="text-align:right;">` +
+        `<div style="font-family:var(--mono);font-weight:900;color:var(--${rateCls});">${rate}%</div>` +
+        `<div class="lrn-bar" style="width:60px;"><div class="lrn-bar-fill ${rateCls}" style="width:${rate}%;"></div></div>` +
+      `</div>` +
+    `</div>`;
+  }).join('');
+}
+
+// ── Archive & Feedback Loop ─────────────────────────────────────────────────
+
+async function lrnArchiveCase() {
+  if (!activeCaseId) { setStatus('lrnArchiveStatus', 'Select a case first.', 'err'); return; }
+  setStatus('lrnArchiveStatus', 'Archiving...', '');
+  const res = await apiFetch(`/api/learning/cases/${activeCaseId}/archive`, { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('lrnArchiveStatus', 'Case archived. Patterns extracted.', 'ok');
+    lrnLoadPatterns();
+    lrnLoadCaseReport();
+  } else {
+    setStatus('lrnArchiveStatus', res?.error || 'Archive failed.', 'err');
+  }
+}
+
+async function lrnCloseFeedbackLoop() {
+  if (!activeCaseId) { setStatus('lrnArchiveStatus', 'Select a case first.', 'err'); return; }
+  setStatus('lrnArchiveStatus', 'Closing feedback loop...', '');
+  const res = await apiFetch(`/api/cases/${activeCaseId}/feedback-loop/close`, { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    const processed = res.sectionsProcessed || 0;
+    const updated = res.applicationsUpdated || 0;
+    setStatus('lrnArchiveStatus', `Loop closed: ${processed} sections, ${updated} applications updated.`, 'ok');
+    lrnLoadAcceptanceRate();
+    lrnLoadPatterns();
+  } else {
+    setStatus('lrnArchiveStatus', res?.error || 'Failed to close loop.', 'err');
+  }
 }
