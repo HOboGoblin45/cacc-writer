@@ -7418,7 +7418,7 @@ async function lrnLoadRanked() {
 async function lrnArchiveCase() {
   if (!activeCaseId) { setStatus('lrnArchiveStatus', 'Select a case first.', 'err'); return; }
   setStatus('lrnArchiveStatus', 'Archiving...', '');
-  const res = await apiFetch(`/api/learning/cases/${activeCaseId}/archive`, { method: 'POST', body: {} }).catch(() => null);
+  const res = await apiFetch(`/api/cases/${activeCaseId}/archive`, { method: 'POST', body: {} }).catch(() => null);
   if (res && !res.error) {
     setStatus('lrnArchiveStatus', 'Case archived. Patterns extracted.', 'ok');
     lrnLoadPatterns();
