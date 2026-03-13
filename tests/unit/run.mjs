@@ -62,6 +62,10 @@ const suites = [
   'contradictionResolution.test.mjs',
   'valuationCalculator.test.mjs',
   'learningSystem.test.mjs',
+  'businessOps.test.mjs',
+  'inspectionWorkflow.test.mjs',
+  'exportLayer.test.mjs',
+  'securityGovernance.test.mjs',
 ];
 
 let totalPassed = 0;

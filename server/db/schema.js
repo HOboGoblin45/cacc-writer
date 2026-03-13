@@ -38,6 +38,8 @@ import { initPhase10Schema } from '../migration/phase10Schema.js';
 import { initPhase11Schema } from '../migration/phase11Schema.js';
 import { initPhase12Schema } from '../migration/phase12Schema.js';
 import { initPhase13Schema } from '../migration/phase13Schema.js';
+import { initPhase14Schema } from '../migration/phase14Schema.js';
+import { initPhase15Schema } from '../migration/phase15Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -803,6 +805,20 @@ export function initSchema(db) {
     initPhase13Schema(db);
   } catch (err) {
     log.error('schema:phase13-init', { error: err.message });
+  }
+
+  // Run Phase 14 schema additions (export layer)
+  try {
+    initPhase14Schema(db);
+  } catch (err) {
+    log.error('schema:phase14-init', { error: err.message });
+  }
+
+  // Run Phase 15 schema additions (security/governance)
+  try {
+    initPhase15Schema(db);
+  } catch (err) {
+    log.error('schema:phase15-init', { error: err.message });
   }
 }
 

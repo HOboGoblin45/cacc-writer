@@ -207,6 +207,14 @@ export function getTableCounts() {
     'inspection_photos',
     'inspection_measurements',
     'inspection_conditions',
+    'export_jobs',
+    'delivery_records',
+    'export_templates',
+    'users',
+    'access_policies',
+    'access_log',
+    'data_retention_rules',
+    'compliance_records',
   ];
 
   const counts = {};
