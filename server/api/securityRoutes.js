@@ -90,6 +90,52 @@ import {
   getComplianceSummary,
 } from '../security/complianceService.js';
 
+import { z } from 'zod';
+import { parsePayload } from '../utils/routeUtils.js';
+
+const createUserSchema = z.object({
+  username: z.string().min(1).max(100),
+  email: z.string().max(200).optional(),
+  role: z.string().max(40).optional(),
+  displayName: z.string().max(200).optional(),
+}).passthrough();
+
+const updateUserSchema = z.object({}).passthrough();
+
+const suspendUserSchema = z.object({
+  reason: z.string().max(500).optional(),
+}).passthrough();
+
+const accessCheckSchema = z.object({
+  userId: z.string().min(1).max(80),
+  resourceType: z.string().min(1).max(80),
+  action: z.string().min(1).max(80),
+  context: z.record(z.unknown()).optional(),
+}).passthrough();
+
+const createPolicySchema = z.object({
+  role: z.string().max(40).optional(),
+  resource_type: z.string().max(80).optional(),
+  action: z.string().max(80).optional(),
+  effect: z.enum(['allow', 'deny']).optional(),
+}).passthrough();
+
+const updatePolicySchema = z.object({}).passthrough();
+
+const createRetentionRuleSchema = z.object({
+  resource_type: z.string().max(80),
+  retention_days: z.number().int().positive().optional(),
+}).passthrough();
+
+const updateRetentionRuleSchema = z.object({}).passthrough();
+
+const complianceCheckSchema = z.object({
+  complianceType: z.string().min(1).max(80).optional(),
+  compliance_type: z.string().min(1).max(80).optional(),
+}).passthrough().refine(d => d.complianceType || d.compliance_type, {
+  message: 'complianceType is required',
+});
+
 const router = Router();
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -106,22 +152,24 @@ router.get('/security/users', (req, res) => {
       offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
     };
     const result = listUsers(opts);
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:list-users', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // POST /security/users — create user
 router.post('/security/users', (req, res) => {
   try {
-    const result = createUser(req.body);
-    if (result.error) return res.status(400).json(result);
-    res.status(201).json(result);
+    const body = parsePayload(createUserSchema, req.body || {}, res);
+    if (!body) return;
+    const result = createUser(body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:create-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -129,23 +177,25 @@ router.post('/security/users', (req, res) => {
 router.get('/security/users/:userId', (req, res) => {
   try {
     const user = getUser(req.params.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, user });
   } catch (err) {
     log.error('api:security:get-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // PUT /security/users/:userId — update user
 router.put('/security/users/:userId', (req, res) => {
   try {
-    const result = updateUser(req.params.userId, req.body);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    const body = parsePayload(updateUserSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updateUser(req.params.userId, body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:update-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -153,23 +203,25 @@ router.put('/security/users/:userId', (req, res) => {
 router.post('/security/users/:userId/deactivate', (req, res) => {
   try {
     const result = deactivateUser(req.params.userId);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:deactivate-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // POST /security/users/:userId/suspend — suspend user
 router.post('/security/users/:userId/suspend', (req, res) => {
   try {
-    const result = suspendUser(req.params.userId, req.body.reason);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    const body = parsePayload(suspendUserSchema, req.body || {}, res);
+    if (!body) return;
+    const result = suspendUser(req.params.userId, body.reason);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:suspend-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -177,11 +229,11 @@ router.post('/security/users/:userId/suspend', (req, res) => {
 router.post('/security/users/:userId/reactivate', (req, res) => {
   try {
     const result = reactivateUser(req.params.userId);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:reactivate-user', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -192,15 +244,13 @@ router.post('/security/users/:userId/reactivate', (req, res) => {
 // POST /security/access/check — check access
 router.post('/security/access/check', (req, res) => {
   try {
-    const { userId, resourceType, action, context } = req.body;
-    if (!userId || !resourceType || !action) {
-      return res.status(400).json({ error: 'userId, resourceType, and action are required' });
-    }
-    const result = checkAccess(userId, resourceType, action, context || {});
-    res.json(result);
+    const body = parsePayload(accessCheckSchema, req.body || {}, res);
+    if (!body) return;
+    const result = checkAccess(body.userId, body.resourceType, body.action, body.context || {});
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:check-access', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -215,10 +265,10 @@ router.get('/security/policies', (req, res) => {
       offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
     };
     const result = listPolicies(opts);
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:list-policies', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -226,34 +276,38 @@ router.get('/security/policies', (req, res) => {
 router.post('/security/policies/seed', (req, res) => {
   try {
     const result = seedDefaultPolicies();
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:seed-policies', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // POST /security/policies — create policy
 router.post('/security/policies', (req, res) => {
   try {
-    const result = createPolicy(req.body);
-    if (result.error) return res.status(400).json(result);
-    res.status(201).json(result);
+    const body = parsePayload(createPolicySchema, req.body || {}, res);
+    if (!body) return;
+    const result = createPolicy(body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:create-policy', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // PUT /security/policies/:policyId — update policy
 router.put('/security/policies/:policyId', (req, res) => {
   try {
-    const result = updatePolicy(req.params.policyId, req.body);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    const body = parsePayload(updatePolicySchema, req.body || {}, res);
+    if (!body) return;
+    const result = updatePolicy(req.params.policyId, body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:update-policy', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -261,11 +315,11 @@ router.put('/security/policies/:policyId', (req, res) => {
 router.delete('/security/policies/:policyId', (req, res) => {
   try {
     const result = deletePolicy(req.params.policyId);
-    if (result.error) return res.status(404).json(result);
-    res.json(result);
+    if (result.error) return res.status(404).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:delete-policy', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -278,10 +332,10 @@ router.get('/security/access-log/stats', (req, res) => {
   try {
     const since = req.query.since || undefined;
     const stats = getAccessStats(since);
-    res.json(stats);
+    res.json({ ok: true, stats });
   } catch (err) {
     log.error('api:security:access-stats', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -298,10 +352,10 @@ router.get('/security/access-log', (req, res) => {
       offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
     };
     const result = getAccessLog(opts);
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:access-log', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -319,34 +373,38 @@ router.get('/security/retention/rules', (req, res) => {
       offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
     };
     const result = listRetentionRules(opts);
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:list-retention', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // POST /security/retention/rules — create retention rule
 router.post('/security/retention/rules', (req, res) => {
   try {
-    const result = createRetentionRule(req.body);
-    if (result.error) return res.status(400).json(result);
-    res.status(201).json(result);
+    const body = parsePayload(createRetentionRuleSchema, req.body || {}, res);
+    if (!body) return;
+    const result = createRetentionRule(body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:create-retention', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // PUT /security/retention/rules/:ruleId — update retention rule
 router.put('/security/retention/rules/:ruleId', (req, res) => {
   try {
-    const result = updateRetentionRule(req.params.ruleId, req.body);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    const body = parsePayload(updateRetentionRuleSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updateRetentionRule(req.params.ruleId, body);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:update-retention', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -354,10 +412,10 @@ router.put('/security/retention/rules/:ruleId', (req, res) => {
 router.post('/security/retention/check', (req, res) => {
   try {
     const result = runRetentionCheck();
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:retention-check', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -365,11 +423,11 @@ router.post('/security/retention/check', (req, res) => {
 router.post('/security/retention/execute/:ruleId', (req, res) => {
   try {
     const result = executeRetentionRule(req.params.ruleId);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:retention-execute', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -377,10 +435,10 @@ router.post('/security/retention/execute/:ruleId', (req, res) => {
 router.post('/security/retention/seed', (req, res) => {
   try {
     const result = seedDefaultRules();
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:retention-seed', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -392,26 +450,25 @@ router.post('/security/retention/seed', (req, res) => {
 router.get('/cases/:caseId/compliance', (req, res) => {
   try {
     const records = listComplianceRecords(req.params.caseId);
-    res.json({ records });
+    res.json({ ok: true, records });
   } catch (err) {
     log.error('api:security:list-compliance', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // POST /cases/:caseId/compliance/check — run compliance check
 router.post('/cases/:caseId/compliance/check', (req, res) => {
   try {
-    const complianceType = req.body.complianceType || req.body.compliance_type;
-    if (!complianceType) {
-      return res.status(400).json({ error: 'complianceType is required' });
-    }
+    const body = parsePayload(complianceCheckSchema, req.body || {}, res);
+    if (!body) return;
+    const complianceType = body.complianceType || body.compliance_type;
     const result = runComplianceCheck(req.params.caseId, complianceType);
-    if (result.error) return res.status(400).json(result);
-    res.json(result);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:compliance-check', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -419,10 +476,10 @@ router.post('/cases/:caseId/compliance/check', (req, res) => {
 router.get('/cases/:caseId/compliance/status', (req, res) => {
   try {
     const result = getCaseComplianceStatus(req.params.caseId);
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:compliance-status', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -430,10 +487,10 @@ router.get('/cases/:caseId/compliance/status', (req, res) => {
 router.get('/security/compliance/summary', (req, res) => {
   try {
     const result = getComplianceSummary();
-    res.json(result);
+    res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:compliance-summary', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
