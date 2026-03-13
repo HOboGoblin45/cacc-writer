@@ -7,6 +7,9 @@
 
 import { listQcRuns, getFindings } from './qcRepo.js';
 import { getRunsForCase as getGenerationRunsForCase } from '../db/repositories/generationRepo.js';
+import { evaluateAllSectionsFreshness } from '../services/sectionFreshnessService.js';
+import { buildContradictionGraph } from '../contradictionGraph/contradictionGraphService.js';
+import { buildResolutionSummary } from '../contradictionGraph/contradictionResolutionService.js';
 
 function asText(value) {
   if (value === null || value === undefined) return '';
@@ -143,6 +146,77 @@ export function evaluateCaseApprovalGate(caseId, deps = {}) {
       latestQcRun: latestSummary,
       openBlockerCount: 0,
     };
+  }
+
+  // ── Freshness gate: block if any generated sections are stale ──────────────
+  const evaluateFreshness = deps.evaluateAllSectionsFreshness || evaluateAllSectionsFreshness;
+  try {
+    const freshnessResult = evaluateFreshness(normalizedCaseId);
+    if (freshnessResult.summary.stale > 0) {
+      const staleSections = freshnessResult.sections
+        .filter(s => s.freshness !== 'current' && s.freshness !== 'not_generated')
+        .map(s => s.sectionId);
+      return {
+        ok: false,
+        code: 'SECTIONS_STALE',
+        message: `${freshnessResult.summary.stale} section(s) are stale and must be regenerated before approval.`,
+        latestQcRun: latestSummary,
+        staleSections,
+        staleSectionCount: freshnessResult.summary.stale,
+      };
+    }
+  } catch {
+    // Freshness check failure is non-fatal — allow gate to continue
+  }
+
+  // ── Quality gate: block if any generated section scores below threshold ────
+  const QUALITY_THRESHOLD = deps.qualityThreshold ?? 30;
+  try {
+    const freshnessResult = evaluateFreshness(normalizedCaseId);
+    const lowQualitySections = freshnessResult.sections
+      .filter(s => s.qualityScore !== null && s.qualityScore < QUALITY_THRESHOLD);
+    if (lowQualitySections.length > 0) {
+      return {
+        ok: false,
+        code: 'SECTIONS_LOW_QUALITY',
+        message: `${lowQualitySections.length} section(s) have quality scores below ${QUALITY_THRESHOLD}. Regenerate or review before approval.`,
+        latestQcRun: latestSummary,
+        lowQualitySections: lowQualitySections.map(s => ({
+          sectionId: s.sectionId,
+          qualityScore: s.qualityScore,
+        })),
+      };
+    }
+  } catch {
+    // Quality check failure is non-fatal
+  }
+
+  // ── Contradiction gate: block if unresolved contradictions remain ───────────
+  const buildGraph = deps.buildContradictionGraph || buildContradictionGraph;
+  const buildResSummary = deps.buildResolutionSummary || buildResolutionSummary;
+  try {
+    const graph = buildGraph(normalizedCaseId);
+    const items = graph?.items || [];
+    if (items.length > 0) {
+      const resSummary = buildResSummary(normalizedCaseId, items);
+      if (!resSummary.allAddressed) {
+        return {
+          ok: false,
+          code: 'CONTRADICTIONS_UNRESOLVED',
+          message: `${resSummary.open} unresolved contradiction(s) must be addressed before approval.`,
+          latestQcRun: latestSummary,
+          contradictionSummary: {
+            total: resSummary.total,
+            open: resSummary.open,
+            resolved: resSummary.resolved,
+            dismissed: resSummary.dismissed,
+            acknowledged: resSummary.acknowledged,
+          },
+        };
+      }
+    }
+  } catch {
+    // Contradiction check failure is non-fatal
   }
 
   return {

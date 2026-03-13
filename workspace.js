@@ -168,6 +168,25 @@ function workspaceQualityBar(score) {
   );
 }
 
+function workspaceApprovalGateChip(gate) {
+  if (!gate) return '<span class="chip" style="font-size:0.75em;padding:2px 6px;">Pending</span>';
+  if (gate.ok) return '<span class="chip ok" style="font-size:0.75em;padding:2px 6px;">Pass</span>';
+  const codeLabels = {
+    CASE_ID_REQUIRED: 'No Case',
+    QC_REQUIRED_BEFORE_APPROVAL: 'QC Required',
+    QC_IN_PROGRESS: 'QC Running',
+    QC_LAST_RUN_NOT_COMPLETE: 'QC Incomplete',
+    QC_STALE_FOR_CURRENT_DRAFT: 'QC Stale',
+    QC_BLOCKERS_OPEN: 'QC Blockers',
+    QC_NOT_READY: 'Not Ready',
+    SECTIONS_STALE: 'Stale Sections',
+    SECTIONS_LOW_QUALITY: 'Low Quality',
+    CONTRADICTIONS_UNRESOLVED: 'Contradictions',
+  };
+  const label = codeLabels[gate.code] || gate.code || 'Blocked';
+  return `<span class="chip warn" style="font-size:0.75em;padding:2px 6px;">${esc(label)}</span>`;
+}
+
 function workspaceRenderFreshnessSummaryPanel() {
   const fs = workspaceSectionFreshnessSummary();
   if (!fs.total && !fs.stale) return '';
@@ -1430,7 +1449,8 @@ function workspaceRenderAssistant() {
         `<div class="workspace-meta-list">` +
           `<div><strong>Conflicts:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
           `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
-          `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
+          `<div><strong>Approval Gate:</strong> ${workspaceApprovalGateChip(qc.approvalGate)}</div>` +
+          (qc.approvalGate && !qc.approvalGate.ok ? `<div style="font-size:0.8em;color:var(--warn);margin-top:2px;">${esc(qc.approvalGate.message || '')}</div>` : '') +
           `<div><strong>Insertion:</strong> ${esc(qc.latestInsertionStatus || 'Not run')}</div>` +
           `<div><strong>Insertion Issues:</strong> ${esc(String(qc.latestInsertionIssueCount || 0))}</div>` +
           `<div><strong>Insertion Rollbacks:</strong> ${esc(String(qc.latestInsertionRollbackCount || 0))}</div>` +
@@ -1580,7 +1600,7 @@ function workspaceRenderAssistant() {
       `<div class="workspace-meta-list">` +
         `<div><strong>Conflict Count:</strong> ${esc(String(qc.conflictCount || 0))}</div>` +
         `<div><strong>Contradictions:</strong> ${esc(String(qc.contradictionGraphCount || 0))}</div>` +
-        `<div><strong>Approval Gate:</strong> ${esc(qc.approvalGate?.ok ? 'Pass' : (qc.approvalGate?.code || 'Pending'))}</div>` +
+        `<div><strong>Approval Gate:</strong> ${workspaceApprovalGateChip(qc.approvalGate)}</div>` +
         `<div><strong>Insertion:</strong> ${esc(qc.latestInsertionStatus || 'Not run')}</div>` +
         `<div><strong>Insertion Issues:</strong> ${esc(String(qc.latestInsertionIssueCount || 0))}</div>` +
         `<div><strong>Insertion Rollbacks:</strong> ${esc(String(qc.latestInsertionRollbackCount || 0))}</div>` +
