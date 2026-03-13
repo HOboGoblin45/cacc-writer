@@ -339,6 +339,156 @@ button.sm{padding:5px 9px;font-size:11px;}
 .fd-warnings.visible{display:block;}
 .fd-warning-item{font-size:11px;color:var(--warn);padding:2px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
 .fd-run-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+/* ── Phase 3: Governance Cards ──────────────────────────────────────────────── */
+.gov-card{border:1px solid rgba(215,179,90,.2);background:rgba(215,179,90,.03);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.gov-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.gov-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--gold);}
+.gov-card-badge{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:800;border:1px solid;}
+.gov-card-badge.current{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.gov-card-badge.stale{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.08);}
+.gov-card-badge.regenerating{color:#8ac4ff;border-color:rgba(100,180,255,.35);background:rgba(100,180,255,.08);}
+.gov-card-badge.not_generated{color:var(--muted);border-color:var(--border);background:transparent;}
+.gov-quality-bar{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.gov-quality-track{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.gov-quality-fill{height:100%;border-radius:2px;transition:width .3s;}
+.gov-quality-fill.high{background:var(--ok);}
+.gov-quality-fill.mid{background:var(--warn);}
+.gov-quality-fill.low{background:var(--danger);}
+.gov-quality-label{font-size:10px;font-weight:700;font-family:var(--mono);min-width:28px;text-align:right;}
+.gov-dep-list{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;}
+.gov-dep-chip{font-size:9px;padding:1px 6px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
+.gov-dep-chip.present{color:var(--ok);border-color:rgba(85,209,143,.25);}
+.gov-dep-chip.missing{color:var(--danger);border-color:rgba(255,92,92,.25);}
+/* ── Phase 3: Readiness Checklist ───────────────────────────────────────────── */
+.rdns-checklist{display:flex;flex-direction:column;gap:4px;}
+.rdns-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;font-size:11px;border:1px solid transparent;}
+.rdns-item.pass{background:rgba(85,209,143,.04);border-color:rgba(85,209,143,.12);}
+.rdns-item.fail{background:rgba(255,92,92,.04);border-color:rgba(255,92,92,.12);}
+.rdns-item.warn{background:rgba(245,200,66,.04);border-color:rgba(245,200,66,.12);}
+.rdns-icon{width:16px;text-align:center;flex-shrink:0;font-size:12px;}
+.rdns-label{flex:1;font-weight:600;}
+.rdns-detail{font-size:10px;color:var(--muted);}
+/* ── Phase 3: Missing-Facts Dashboard ───────────────────────────────────────── */
+.mf-dashboard{display:flex;flex-direction:column;gap:8px;}
+.mf-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.mf-section-head{padding:6px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;}
+.mf-section-body{padding:8px 10px;}
+.mf-fact-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mf-fact-row:last-child{border-bottom:none;}
+.mf-fact-path{flex:1;font-family:var(--mono);font-size:10px;color:var(--muted);}
+.mf-fact-sev{font-size:9px;font-weight:800;padding:1px 5px;border-radius:999px;}
+.mf-fact-sev.required{color:var(--danger);border:1px solid rgba(255,92,92,.25);background:rgba(255,92,92,.08);}
+.mf-fact-sev.recommended{color:var(--warn);border:1px solid rgba(245,200,66,.25);background:rgba(245,200,66,.06);}
+/* ── Phase 3: Business Status Summary ───────────────────────────────────────── */
+.biz-status-card{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:rgba(0,0,0,.12);}
+.biz-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
+.biz-metric{display:flex;flex-direction:column;gap:2px;}
+.biz-metric-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+.biz-metric-value{font-size:14px;font-weight:800;font-family:var(--mono);}
+.biz-metric-value.ok{color:var(--ok);}
+.biz-metric-value.warn{color:var(--warn);}
+.biz-metric-value.err{color:var(--danger);}
+/* ── Phase 3: Due-Date / Pipeline Dashboard ─────────────────────────────────── */
+.due-queue{display:flex;flex-direction:column;gap:4px;}
+.due-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:11px;border:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.due-item:hover{background:rgba(255,255,255,.04);}
+.due-item.overdue{border-color:rgba(255,92,92,.3);background:rgba(255,92,92,.04);}
+.due-item.urgent{border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.04);}
+.due-item-addr{flex:1;font-weight:600;}
+.due-item-date{font-size:10px;font-family:var(--mono);color:var(--muted);}
+.due-item-days{font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;border:1px solid;}
+.due-item-days.past{color:var(--danger);border-color:rgba(255,92,92,.3);}
+.due-item-days.soon{color:var(--warn);border-color:rgba(245,200,66,.3);}
+.due-item-days.ok{color:var(--ok);border-color:rgba(85,209,143,.25);}
+.pipeline-stages{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:12px;}
+.pipeline-stage{font-size:9px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;}
+.pipeline-stage.active{border-color:var(--gold);color:var(--gold);background:rgba(215,179,90,.08);}
+.pipeline-stage .ps-count{font-weight:900;margin-left:3px;}
+/* ── Phase 4: Valuation Desk ────────────────────────────────────────────────── */
+.val-desk-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.val-desk-tab{padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;text-transform:uppercase;letter-spacing:.3px;transition:color .15s,border-color .15s;}
+.val-desk-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.val-desk-tab:hover:not(.active){color:var(--text);}
+.val-desk-panel{display:none;}
+.val-desk-panel.active{display:block;}
+.comp-queue-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color .2s;}
+.comp-queue-item:hover{border-color:rgba(215,179,90,.3);}
+.comp-queue-item.accepted{border-color:rgba(85,209,143,.3);background:rgba(85,209,143,.03);}
+.comp-queue-item.held{border-color:rgba(245,200,66,.3);background:rgba(245,200,66,.03);}
+.comp-queue-item.rejected{border-color:rgba(255,92,92,.2);background:rgba(255,92,92,.02);opacity:.6;}
+.comp-queue-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.comp-queue-addr{font-size:12px;font-weight:700;}
+.comp-queue-price{font-size:12px;font-weight:700;color:var(--gold);font-family:var(--mono);}
+.comp-queue-meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.comp-queue-actions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.comp-queue-reason{font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;}
+.adj-notebook{display:flex;flex-direction:column;gap:6px;}
+.adj-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;}
+.adj-row.positive{border-left:3px solid var(--ok);}
+.adj-row.negative{border-left:3px solid var(--danger);}
+.adj-row.zero{border-left:3px solid var(--muted);}
+.adj-cat{flex:1;font-weight:600;}
+.adj-subj{font-size:10px;color:var(--muted);min-width:60px;}
+.adj-comp{font-size:10px;color:var(--muted);min-width:60px;}
+.adj-amount{font-weight:800;font-family:var(--mono);min-width:70px;text-align:right;}
+.adj-amount.pos{color:var(--ok);}
+.adj-amount.neg{color:var(--danger);}
+.adj-strength{font-size:9px;padding:1px 5px;border-radius:999px;border:1px solid;}
+.adj-strength.high{color:var(--ok);border-color:rgba(85,209,143,.3);}
+.adj-strength.medium{color:var(--warn);border-color:rgba(245,200,66,.3);}
+.adj-strength.low{color:var(--danger);border-color:rgba(255,92,92,.3);}
+.burden-card{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.burden-meter{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.burden-meter-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+.burden-meter-fill{height:100%;border-radius:3px;}
+.burden-meter-label{font-size:10px;font-weight:700;font-family:var(--mono);min-width:35px;text-align:right;}
+.recon-approach{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.recon-approach-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.recon-approach-name{font-size:12px;font-weight:800;}
+.recon-approach-value{font-size:14px;font-weight:900;font-family:var(--mono);color:var(--gold);}
+.recon-weight-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.recon-weight-input{width:60px;text-align:center;padding:4px;font-size:12px;font-weight:700;}
+.recon-narrative{margin-top:12px;}
+.recon-narrative textarea{min-height:120px;font-size:12px;line-height:1.5;}
+/* ── Phase 5: Learning Dashboard & Memory Health ──────────────────────────── */
+.learn-dash{display:flex;flex-direction:column;gap:12px;}
+.learn-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.learn-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+.learn-stat-value{font-size:22px;font-weight:900;font-family:var(--mono);}
+.learn-stat-value.good{color:var(--ok);}
+.learn-stat-value.mid{color:var(--warn);}
+.learn-stat-value.low{color:var(--danger);}
+.learn-stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px;}
+.learn-pattern-list{display:flex;flex-direction:column;gap:6px;}
+.learn-pattern{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.learn-pattern-type{font-size:9px;padding:1px 6px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700;text-transform:uppercase;}
+.learn-conf-bar{width:60px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.learn-conf-fill{height:100%;border-radius:2px;}
+.learn-revision-list{display:flex;flex-direction:column;gap:4px;}
+.learn-revision{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;display:flex;align-items:center;gap:8px;}
+.learn-revision-section{flex:1;font-weight:600;}
+.learn-revision-ratio{font-family:var(--mono);font-weight:800;font-size:10px;min-width:40px;text-align:right;}
+/* Memory Health */
+.mem-health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.mem-health-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+.mem-health-value{font-size:18px;font-weight:900;font-family:var(--mono);}
+.mem-health-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px;}
+.mem-health-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mem-health-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;margin-bottom:4px;}
+.mem-health-item.stale{border-color:rgba(245,200,66,.25);background:rgba(245,200,66,.03);}
+.mem-health-item.duplicate{border-color:rgba(100,180,255,.25);background:rgba(100,180,255,.03);}
+.mem-health-item.weak{border-color:rgba(255,92,92,.2);background:rgba(255,92,92,.03);}
+.mem-health-item-text{flex:1;font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;}
+/* Why-This-Suggestion Drawer */
+.why-drawer{border:1px solid rgba(100,180,255,.2);background:rgba(100,180,255,.03);border-radius:10px;padding:10px 12px;margin-top:8px;}
+.why-drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.why-drawer-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:#8ac4ff;}
+.why-factor{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;border-bottom:1px solid rgba(255,255,255,.04);}
+.why-factor:last-child{border-bottom:none;}
+.why-factor-name{flex:1;color:var(--muted);}
+.why-factor-value{font-weight:700;font-family:var(--mono);min-width:45px;text-align:right;}
+.why-factor-bar{width:50px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.why-factor-fill{height:100%;background:#8ac4ff;border-radius:2px;}
 </style>
 </head>
 <body>
@@ -644,6 +794,30 @@ button.sm{padding:5px 9px;font-size:11px;}
             <div class="field-hint">Tracked in the canonical case record and shown in Phase B health metrics.</div>
             <div id="metaChips" class="meta-chips" style="display:none;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Business Status + Readiness Summary -->
+      <div class="card-row" id="caseBusinessRow" style="display:none;">
+        <div class="card">
+          <div class="card-head"><h3>Business Status</h3><button class="ghost sm" onclick="loadCaseBusinessStatus()">&#x21BB;</button></div>
+          <div class="card-body" id="caseBusinessBody">
+            <div class="hint">Select a case to view business status.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Readiness Summary</h3><button class="ghost sm" onclick="loadCaseReadiness()">&#x21BB;</button></div>
+          <div class="card-body" id="caseReadinessBody">
+            <div class="hint">Select a case to view readiness checklist.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Missing Facts Dashboard -->
+      <div class="card" id="caseMissingFactsCard" style="display:none;">
+        <div class="card-head"><h3>Missing Facts Dashboard</h3><button class="ghost sm" onclick="loadCaseMissingFacts()">&#x21BB;</button></div>
+        <div class="card-body" id="caseMissingFactsBody">
+          <div class="hint">Select a case to view missing facts by section.</div>
         </div>
       </div>
 
@@ -1288,54 +1462,203 @@ button.sm{padding:5px 9px;font-size:11px;}
 
 <!-- ===== TAB: INTEL (Phase 4 — Assignment Intelligence Inspector) ===== -->
 <div class="page" id="tab-intel">
-  <div class="col narrow">
-    <div class="card">
-      <div class="card-head"><h3>Assignment Intelligence</h3></div>
-      <div class="card-body">
-        <div class="hint">Inspect the assignment intelligence bundle for the active case. This shows derived flags, compliance profile, report family, and section plan.</div>
-        <div class="btnrow">
-          <button onclick="buildIntelligence()">Build Intelligence</button>
-          <button class="sec" onclick="loadIntelligence()">Load Cached</button>
+
+  <!-- Valuation Desk Sub-Tabs -->
+  <div class="val-desk-tabs" style="margin:-14px -14px 14px -14px;padding:0 14px;">
+    <div class="val-desk-tab active" onclick="valDeskShowPanel('intelligence')">Intelligence</div>
+    <div class="val-desk-tab" onclick="valDeskShowPanel('compQueue')">Comp Queue</div>
+    <div class="val-desk-tab" onclick="valDeskShowPanel('adjustments')">Adjustments</div>
+    <div class="val-desk-tab" onclick="valDeskShowPanel('approaches')">Approaches</div>
+    <div class="val-desk-tab" onclick="valDeskShowPanel('reconciliation')">Reconciliation</div>
+  </div>
+
+  <!-- Panel: Intelligence (existing) -->
+  <div class="val-desk-panel active" id="valPanel-intelligence">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="col narrow">
+        <div class="card">
+          <div class="card-head"><h3>Assignment Intelligence</h3></div>
+          <div class="card-body">
+            <div class="hint">Inspect the assignment intelligence bundle for the active case.</div>
+            <div class="btnrow">
+              <button onclick="buildIntelligence()">Build Intelligence</button>
+              <button class="sec" onclick="loadIntelligence()">Load Cached</button>
+            </div>
+            <div id="intelStatus" class="status"></div>
+            <div class="sep"></div>
+            <div id="intelSummary" style="font-size:12px;"></div>
+          </div>
         </div>
-        <div id="intelStatus" class="status"></div>
-        <div class="sep"></div>
-        <div id="intelSummary" style="font-size:12px;"></div>
+        <div class="card">
+          <div class="card-head"><h3>Derived Flags</h3></div>
+          <div class="card-body">
+            <div id="intelFlags" style="font-size:12px;font-family:var(--ds-mono,monospace);"><div class="hint">No bundle loaded.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Compliance Profile</h3></div>
+          <div class="card-body">
+            <div id="intelCompliance" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h3>Derived Flags</h3></div>
-      <div class="card-body">
-        <div id="intelFlags" style="font-size:12px;font-family:var(--ds-mono,monospace);"><div class="hint">No bundle loaded.</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h3>Compliance Profile</h3></div>
-      <div class="card-body">
-        <div id="intelCompliance" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="col wide">
-    <div class="card">
-      <div class="card-head"><h3>Report Family &amp; Section Plan</h3></div>
-      <div class="card-body">
-        <div id="intelReportFamily" style="font-size:12px;margin-bottom:12px;"><div class="hint">No bundle loaded.</div></div>
-        <div id="intelSectionPlan"><div class="hint">Build intelligence to see the section plan.</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h3>Canonical Fields</h3></div>
-      <div class="card-body">
-        <div id="intelCanonicalFields" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h3>Normalized Context (v2)</h3></div>
-      <div class="card-body">
-        <div id="intelContext" style="font-size:11px;font-family:var(--ds-mono,monospace);max-height:400px;overflow:auto;"><div class="hint">No bundle loaded.</div></div>
+      <div class="col wide">
+        <div class="card">
+          <div class="card-head"><h3>Report Family &amp; Section Plan</h3></div>
+          <div class="card-body">
+            <div id="intelReportFamily" style="font-size:12px;margin-bottom:12px;"><div class="hint">No bundle loaded.</div></div>
+            <div id="intelSectionPlan"><div class="hint">Build intelligence to see the section plan.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Canonical Fields</h3></div>
+          <div class="card-body">
+            <div id="intelCanonicalFields" style="font-size:12px;"><div class="hint">No bundle loaded.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Normalized Context (v2)</h3></div>
+          <div class="card-body">
+            <div id="intelContext" style="font-size:11px;font-family:var(--ds-mono,monospace);max-height:400px;overflow:auto;"><div class="hint">No bundle loaded.</div></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Panel: Comp Queue -->
+  <div class="val-desk-panel" id="valPanel-compQueue">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="col narrow">
+        <div class="card">
+          <div class="card-head"><h3>Comp Grid Status</h3><button class="ghost sm" onclick="valLoadCompGrid()">&#x21BB;</button></div>
+          <div class="card-body" id="valCompGridStatus">
+            <div class="hint">Select a case to view comp grid.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Queue Filters</h3></div>
+          <div class="card-body">
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <button class="filt-btn active" onclick="valFilterQueue('all',this)">All</button>
+              <button class="filt-btn" onclick="valFilterQueue('pending',this)">Pending</button>
+              <button class="filt-btn" onclick="valFilterQueue('accepted',this)">Accepted</button>
+              <button class="filt-btn" onclick="valFilterQueue('held',this)">Held</button>
+              <button class="filt-btn" onclick="valFilterQueue('rejected',this)">Rejected</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col wide">
+        <div class="card">
+          <div class="card-head"><h3>Comparable Candidates</h3><button class="ghost sm" onclick="valLoadCompQueue()">&#x21BB;</button></div>
+          <div class="card-body" id="valCompQueueBody">
+            <div class="hint">Select a case to see comparable candidates.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Adjustments -->
+  <div class="val-desk-panel" id="valPanel-adjustments">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="col narrow">
+        <div class="card">
+          <div class="card-head"><h3>Burden Metrics</h3><button class="ghost sm" onclick="valLoadBurden()">&#x21BB;</button></div>
+          <div class="card-body" id="valBurdenBody">
+            <div class="hint">Load comps to see burden metrics.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col wide">
+        <div class="card">
+          <div class="card-head"><h3>Adjustment Notebook</h3><button class="ghost sm" onclick="valLoadAdjustments()">&#x21BB;</button></div>
+          <div class="card-body" id="valAdjNotebookBody">
+            <div class="hint">Load comps and run analysis to see adjustment support.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Approaches -->
+  <div class="val-desk-panel" id="valPanel-approaches">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="col narrow">
+        <div class="card">
+          <div class="card-head"><h3>Income Approach</h3></div>
+          <div class="card-body" id="valIncomeBody">
+            <label>Monthly Rent</label>
+            <input id="valIncomeRent" type="text" placeholder="e.g. 1500"/>
+            <label>GRM</label>
+            <input id="valIncomeGrm" type="text" placeholder="e.g. 120"/>
+            <div class="btnrow">
+              <button class="sm" onclick="valCalcIncome()">Calculate</button>
+              <button class="sec sm" onclick="valLoadIncome()">Load Saved</button>
+            </div>
+            <div id="valIncomeResult" class="status"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Cost Approach</h3></div>
+          <div class="card-body" id="valCostBody">
+            <label>Site Value</label>
+            <input id="valCostSite" type="text" placeholder="e.g. 45000"/>
+            <label>Dwelling Cost New</label>
+            <input id="valCostDwelling" type="text" placeholder="e.g. 180000"/>
+            <label>Total Depreciation</label>
+            <input id="valCostDepr" type="text" placeholder="e.g. 25000"/>
+            <div class="btnrow">
+              <button class="sm" onclick="valCalcCost()">Calculate</button>
+              <button class="sec sm" onclick="valLoadCost()">Load Saved</button>
+            </div>
+            <div id="valCostResult" class="status"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col wide">
+        <div class="card">
+          <div class="card-head"><h3>Sales Comparison Summary</h3><button class="ghost sm" onclick="valLoadGridSummary()">&#x21BB;</button></div>
+          <div class="card-body" id="valSalesBody">
+            <div class="hint">Load and calculate comp grid to see sales comparison summary.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Reconciliation -->
+  <div class="val-desk-panel" id="valPanel-reconciliation">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="col narrow">
+        <div class="card">
+          <div class="card-head"><h3>Approach Values</h3><button class="ghost sm" onclick="valLoadRecon()">&#x21BB;</button></div>
+          <div class="card-body" id="valReconApproaches">
+            <div class="hint">Calculate approach values first.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col wide">
+        <div class="card">
+          <div class="card-head"><h3>Reconciliation Memo</h3></div>
+          <div class="card-body" id="valReconMemoBody">
+            <div id="valReconWeightSection"></div>
+            <div class="recon-narrative">
+              <label>Reconciliation Narrative</label>
+              <textarea id="valReconNarrative" placeholder="Discuss the strengths and weaknesses of each approach, the reliability of the data, and justify your final value opinion..."></textarea>
+            </div>
+            <div class="btnrow">
+              <button onclick="valCalcRecon()">Calculate Final Value</button>
+              <button class="sec" onclick="valSaveReconNarrative()">Save Narrative</button>
+            </div>
+            <div id="valReconResult" class="status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ===== TAB: DOCS (Phase 5 — Document Intelligence) ===== -->
@@ -1470,6 +1793,15 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
 
+    <!-- Learning Dashboard Card -->
+    <div class="card">
+      <div class="card-head"><h3>Learning Dashboard</h3><button class="sm sec" onclick="learnLoadDashboard()">Refresh</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Suggestion acceptance metrics, pattern confidence, and revision statistics from completed assignments.</div>
+        <div id="learnDashBody"><div class="hint">Click Refresh to load learning metrics.</div></div>
+      </div>
+    </div>
+
     <!-- Retrieval Preview Card -->
     <div class="card">
       <div class="card-head"><h3>Retrieval Preview</h3></div>
@@ -1545,12 +1877,43 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
 
+    <!-- Memory Health Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Memory Health</h3>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="sm sec" onclick="memHealthScan()">Scan</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Detect stale, duplicate, and low-quality memory items. Prune to keep the knowledge base clean and performant.</div>
+        <div id="memHealthStats"></div>
+        <div id="memHealthBody"><div class="hint">Click Scan to analyze memory health.</div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- ===== TAB: PIPELINE (Cloudflare Data Pipeline) ===== -->
 <div class="page" id="tab-pipeline">
   <div class="col narrow">
+
+    <!-- Due-Date Dashboard Card -->
+    <div class="card">
+      <div class="card-head"><h3>Due-Date Queue</h3><button class="ghost sm" onclick="loadDueDateQueue()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="dueDateQueueBody"><div class="hint">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- Pipeline Summary Card -->
+    <div class="card">
+      <div class="card-head"><h3>Pipeline Summary</h3><button class="ghost sm" onclick="loadPipelineSummary()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="pipelineSummaryBody"><div class="hint">Loading...</div></div>
+      </div>
+    </div>
 
     <!-- Settings Card -->
     <div class="card">

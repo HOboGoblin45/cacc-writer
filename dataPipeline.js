@@ -1367,6 +1367,9 @@ function dpOnTabOpen() {
   dpRefreshUsage();
   dpShowCacheStats();
   showErr('dpError', '');
+  // Phase 3: Load due-date queue and pipeline summary
+  if (typeof loadDueDateQueue === 'function') loadDueDateQueue();
+  if (typeof loadPipelineSummary === 'function') loadPipelineSummary();
 }
 
 // ── Enhanced AI prompt context builder ──────────────────────────────────────────
