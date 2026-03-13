@@ -59,6 +59,11 @@ import {
 } from '../operations/retentionManager.js';
 import { buildCaseExportManifest, exportCaseManifest, getSupportBundleData } from '../operations/exportEnhancer.js';
 import { buildDashboard, buildLightDashboard } from '../operations/dashboardBuilder.js';
+import {
+  detectStuckStates,
+  failStuckGenerationRun,
+  failStuckExtractionJob,
+} from '../operations/stuckStateDetector.js';
 import log from '../logger.js';
 
 const router = Router();
@@ -347,6 +352,38 @@ router.get('/operations/dashboard/light', (req, res) => {
   } catch (err) {
     log.error('api:dashboard-light', { error: err.message });
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Stuck State Detection ────────────────────────────────────────────────────
+
+router.get('/operations/stuck-states', (req, res) => {
+  try {
+    const result = detectStuckStates();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:stuck-states', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/operations/stuck-states/fail-run/:runId', (req, res) => {
+  try {
+    const result = failStuckGenerationRun(req.params.runId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:fail-stuck-run', { runId: req.params.runId, error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/operations/stuck-states/fail-extraction/:jobId', (req, res) => {
+  try {
+    const result = failStuckExtractionJob(req.params.jobId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:fail-stuck-extraction', { jobId: req.params.jobId, error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
   }
 });
 

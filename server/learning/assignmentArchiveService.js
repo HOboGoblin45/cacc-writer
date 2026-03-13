@@ -68,6 +68,14 @@ export function archiveCompletedAssignment(caseId) {
     return { error: `Case ${caseId} not found` };
   }
 
+  // WS8: Only learn from approved/completed cases — policy enforcement
+  const ARCHIVABLE_STAGES = new Set(['approved', 'inserting', 'complete']);
+  if (!ARCHIVABLE_STAGES.has(caseRecord.pipeline_stage)) {
+    return {
+      error: `Case ${caseId} is not in an approved state (pipeline_stage: ${caseRecord.pipeline_stage}). Only approved/completed cases can be archived for learning.`,
+    };
+  }
+
   const formType = caseRecord.form_type;
 
   // ── 1. Subject facts snapshot ──────────────────────────────────────────

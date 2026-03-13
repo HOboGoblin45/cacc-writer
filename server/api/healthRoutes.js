@@ -63,6 +63,8 @@ import {
   listExports,
 } from '../backupExport.js';
 import { MODEL } from '../openaiClient.js';
+import { getDb } from '../db/database.js';
+import { detectStuckStates } from '../operations/stuckStateDetector.js';
 import log from '../logger.js';
 
 const __dirname      = path.dirname(fileURLToPath(import.meta.url));
@@ -389,6 +391,36 @@ router.delete('/templates/neighborhood/:id', (req, res) => {
     writeJSON(TEMPLATES_FILE, templates);
     res.json({ ok: true, templates });
   } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /health/diagnostics ──────────────────────────────────────────────────
+router.get('/health/diagnostics', (req, res) => {
+  try {
+    const db = getDb();
+    const activeCases = db.prepare("SELECT COUNT(*) as cnt FROM case_records WHERE status != 'archived'").get()?.cnt || 0;
+    const pendingExtractions = db.prepare("SELECT COUNT(*) as cnt FROM document_extractions WHERE status = 'pending'").get()?.cnt || 0;
+    const runningGenerations = db.prepare("SELECT COUNT(*) as cnt FROM generation_runs WHERE status = 'running'").get()?.cnt || 0;
+    const pendingFactReviews = db.prepare("SELECT COUNT(*) as cnt FROM fact_decision_queue WHERE status = 'pending'").get()?.cnt || 0;
+
+    let stuckSummary = { totalStuck: 0 };
+    try {
+      stuckSummary = detectStuckStates();
+    } catch { /* non-fatal */ }
+
+    res.json({
+      ok: true,
+      status: stuckSummary.totalStuck > 0 ? 'degraded' : 'healthy',
+      activeCases,
+      pendingExtractions,
+      runningGenerations,
+      pendingFactReviews,
+      stuckStates: stuckSummary,
+      checkedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    log.error('api:health-diagnostics', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
