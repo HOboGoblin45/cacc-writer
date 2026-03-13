@@ -42,6 +42,9 @@ import inspectionRouter from './server/api/inspectionRoutes.js';
 import businessRouter from './server/api/businessRoutes.js';
 import exportRouter from './server/api/exportRoutes.js';
 import securityRouter from './server/api/securityRoutes.js';
+import valuationRouter from './server/api/valuationRoutes.js';
+import contradictionLifecycleRouter from './server/api/contradictionLifecycleRoutes.js';
+import sectionGovernanceRouter from './server/api/sectionGovernanceRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -105,6 +108,9 @@ app.use('/api', inspectionRouter);
 app.use('/api', businessRouter);
 app.use('/api', exportRouter);
 app.use('/api', securityRouter);
+app.use('/api', valuationRouter);
+app.use('/api', contradictionLifecycleRouter);
+app.use('/api', sectionGovernanceRouter);
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);

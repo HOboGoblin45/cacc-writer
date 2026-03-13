@@ -52,6 +52,11 @@ await test('1004 workspace definition exposes the required section order', () =>
     'dimension_addendum',
     'photo_addendum',
     'qc_review',
+    'subject_property_addendum',
+    'pud_condo_addendum',
+    'cost_approach_addendum',
+    'income_approach_addendum',
+    'small_residential_income_addendum',
   ]);
 
   assert.ok(definition.fieldIndex.sales_comp_grid, 'expected sales comparison grid field');

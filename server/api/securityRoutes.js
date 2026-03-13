@@ -90,6 +90,25 @@ import {
   getComplianceSummary,
 } from '../security/complianceService.js';
 
+import {
+  encryptField,
+  decryptField,
+  rotateKey,
+  getEncryptionStatus,
+  encryptCaseSensitiveFields,
+  decryptCaseSensitiveFields,
+} from '../security/encryptionService.js';
+
+import {
+  createBackup,
+  listBackups,
+  restoreFromBackup,
+  getBackupSchedule,
+  setBackupSchedule,
+  verifyBackup,
+  getDRStatus,
+} from '../security/backupRestoreService.js';
+
 import { z } from 'zod';
 import { parsePayload } from '../utils/routeUtils.js';
 
@@ -490,6 +509,129 @@ router.get('/security/compliance/summary', (req, res) => {
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:compliance-summary', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Encryption
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /security/encryption/status — encryption status
+router.get('/security/encryption/status', (_req, res) => {
+  try {
+    const status = getEncryptionStatus();
+    res.json({ ok: true, status });
+  } catch (err) {
+    log.error('api:security:encryption-status', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /security/encryption/encrypt-case/:caseId — encrypt case PII
+router.post('/security/encryption/encrypt-case/:caseId', (req, res) => {
+  try {
+    const result = encryptCaseSensitiveFields(req.params.caseId);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:security:encrypt-case', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /security/encryption/rotate-key — rotate encryption key
+router.post('/security/encryption/rotate-key', (req, res) => {
+  try {
+    const { oldKeyId, newKeyId } = req.body || {};
+    const result = rotateKey(oldKeyId, newKeyId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:security:rotate-key', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Backup & Restore
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /security/backups — list backups
+router.get('/security/backups', (_req, res) => {
+  try {
+    const backups = listBackups();
+    res.json({ ok: true, backups });
+  } catch (err) {
+    log.error('api:security:list-backups', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /security/backups/schedule — get backup schedule (before :backupId)
+router.get('/security/backups/schedule', (_req, res) => {
+  try {
+    const schedule = getBackupSchedule();
+    res.json({ ok: true, schedule });
+  } catch (err) {
+    log.error('api:security:backup-schedule', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// PUT /security/backups/schedule — set backup schedule
+router.put('/security/backups/schedule', (req, res) => {
+  try {
+    const schedule = setBackupSchedule(req.body || {});
+    res.json({ ok: true, schedule });
+  } catch (err) {
+    log.error('api:security:set-backup-schedule', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /security/backups/create — create backup
+router.post('/security/backups/create', (req, res) => {
+  try {
+    const result = createBackup(req.body || {});
+    if (result.error) return res.status(500).json({ ok: false, error: result.error });
+    res.json({ ok: true, backup: result });
+  } catch (err) {
+    log.error('api:security:create-backup', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /security/backups/:backupId/verify — verify backup
+router.post('/security/backups/:backupId/verify', (req, res) => {
+  try {
+    const result = verifyBackup(req.params.backupId);
+    if (result.error) return res.status(404).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:security:verify-backup', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /security/backups/:backupId/restore — restore from backup
+router.post('/security/backups/:backupId/restore', (req, res) => {
+  try {
+    const result = restoreFromBackup(req.params.backupId);
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:security:restore-backup', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /security/dr-status — disaster recovery readiness
+router.get('/security/dr-status', (_req, res) => {
+  try {
+    const status = getDRStatus();
+    res.json({ ok: true, ...status });
+  } catch (err) {
+    log.error('api:security:dr-status', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
