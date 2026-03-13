@@ -12,7 +12,7 @@ import { getDb } from '../db/database.js';
 import {
   createInsertionRun, updateInsertionRun,
   createInsertionRunItems, getInsertionRunItems, updateInsertionRunItem,
-  getActiveProfile, getInsertionRun,
+  getActiveProfile, getInsertionRun, getInsertionRunItem,
 } from './insertionRepo.js';
 import { resolveMapping, resolveAllMappings, inferTargetSoftware } from './destinationMapper.js';
 import { formatForDestination } from './formatters/index.js';
@@ -657,6 +657,152 @@ async function rollbackInsertedField({
       errorText: err.message,
     };
   }
+}
+
+/**
+ * Manually rollback a specific insertion item to its pre-insert value.
+ * Can be called by the appraiser from the UI when they want to undo an insertion.
+ *
+ * @param {string} itemId - The insertion run item ID
+ * @param {Object} [options]
+ * @param {boolean} [options.verify] - Verify rollback succeeded via readback (default: true)
+ * @returns {Promise<Object>} Rollback result
+ */
+export async function manualRollbackItem(itemId, options = {}) {
+  const item = getInsertionRunItem(itemId);
+  if (!item) throw new Error(`Insertion item not found: ${itemId}`);
+
+  const run = getInsertionRun(item.runId);
+  if (!run) throw new Error(`Insertion run not found: ${item.runId}`);
+
+  if (!item.preinsertRaw && !item.preinsert_raw) {
+    return {
+      itemId,
+      status: 'skipped',
+      reason: 'No pre-insert snapshot available for this field',
+    };
+  }
+
+  const profile = getActiveProfile(run.targetSoftware);
+  if (!profile) {
+    return {
+      itemId,
+      status: 'failed',
+      reason: `No active profile for ${run.targetSoftware}`,
+    };
+  }
+
+  const mapping = resolveMapping(item.fieldId, run.formType, run.targetSoftware);
+  const agentBaseUrl = profile.agentUrl || profile.agent_url;
+  const rollbackText = item.preinsertRaw || item.preinsert_raw || '';
+
+  try {
+    const result = await callAgentInsert(
+      mapping.agentFieldKey || item.fieldId,
+      rollbackText,
+      run.targetSoftware,
+      agentBaseUrl,
+      profile?.config?.timeout || 15000,
+    );
+
+    if (!result.success) {
+      updateInsertionRunItem(itemId, {
+        rollbackAttempted: true,
+        rollbackStatus: 'failed',
+        rollbackText,
+        rollbackErrorText: result.message || 'Rollback rejected by agent',
+      });
+      return {
+        itemId,
+        status: 'failed',
+        reason: result.message || 'Rollback rejected by agent',
+      };
+    }
+
+    // Verify rollback if requested
+    let verificationResult = null;
+    if (options.verify !== false && supportsReadback(profile, mapping)) {
+      try {
+        verificationResult = await verifyInsertion({
+          fieldKey: mapping.agentFieldKey || item.fieldId,
+          expectedText: rollbackText,
+          targetSoftware: run.targetSoftware,
+          agentBaseUrl,
+          timeout: profile?.config?.timeout || 10000,
+          mapping,
+        });
+      } catch {
+        verificationResult = { status: 'unreadable' };
+      }
+    }
+
+    updateInsertionRunItem(itemId, {
+      rollbackAttempted: true,
+      rollbackStatus: 'restored',
+      rollbackText,
+      rollbackErrorText: null,
+      status: 'rolled_back',
+    });
+
+    return {
+      itemId,
+      status: 'restored',
+      rollbackText: rollbackText.slice(0, 200),
+      verification: verificationResult ? verificationResult.status : 'not_checked',
+    };
+  } catch (err) {
+    updateInsertionRunItem(itemId, {
+      rollbackAttempted: true,
+      rollbackStatus: 'failed',
+      rollbackText,
+      rollbackErrorText: err.message,
+    });
+    return {
+      itemId,
+      status: 'failed',
+      reason: err.message,
+    };
+  }
+}
+
+/**
+ * Batch rollback: rollback all eligible items in a run.
+ *
+ * @param {string} runId
+ * @param {Object} [options]
+ * @param {boolean} [options.verify] - Verify each rollback (default: true)
+ * @param {string[]} [options.fieldIds] - Limit to specific fields (default: all eligible)
+ * @returns {Promise<Object>} Batch rollback summary
+ */
+export async function batchRollback(runId, options = {}) {
+  const run = getInsertionRun(runId);
+  if (!run) throw new Error(`Insertion run not found: ${runId}`);
+
+  const items = getInsertionRunItems(runId);
+  let eligible = items.filter(item =>
+    (item.preinsertRaw || item.preinsert_raw) &&
+    (item.status === 'inserted' || item.status === 'verified' || item.status === 'failed')
+  );
+
+  if (options.fieldIds) {
+    const fieldSet = new Set(options.fieldIds);
+    eligible = eligible.filter(item => fieldSet.has(item.fieldId));
+  }
+
+  const results = [];
+  for (const item of eligible) {
+    const result = await manualRollbackItem(item.id, { verify: options.verify });
+    results.push(result);
+  }
+
+  return {
+    runId,
+    totalEligible: eligible.length,
+    restored: results.filter(r => r.status === 'restored').length,
+    failed: results.filter(r => r.status === 'failed').length,
+    skipped: results.filter(r => r.status === 'skipped').length,
+    results,
+  };
 }
 
 function buildInsertionReplayPackage({ run, items }) {
