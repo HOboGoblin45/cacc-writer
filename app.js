@@ -45,6 +45,7 @@ function showTab(name) {
   if(name==='docs')loadDocsTab();
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
+  if(name==='valuation' && typeof valOnTabOpen==='function')valOnTabOpen();
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
   if(name==='inspect' && typeof inspOnTabOpen==='function')inspOnTabOpen();
   if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
@@ -6163,4 +6164,476 @@ async function gpRunBoth() {
   const passed = all.filter(r => r.status === 'pass').length;
   const failed = all.filter(r => r.status === 'fail').length;
   setStatus('gpStatus', `Both golden paths: ${passed}/${all.length} passed, ${failed} failed (${(ms / 1000).toFixed(1)}s)`, failed ? 'err' : 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 9: Unified Valuation Desk — Comp Grid, Candidates, Adjustments,
+//          Income/Cost Approaches, Reconciliation Memo Builder
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _valIntel = null;
+
+function valOnTabOpen() {
+  valLoadCandidates();
+  valLoadGrid();
+  valLoadReconciliation();
+  valLoadIncome();
+  valLoadCost();
+}
+
+// ── Comp Candidate Queue ────────────────────────────────────────────────────
+
+async function valBuildIntel() {
+  if (!activeCaseId) { setStatus('valCandidateStatus', 'Select a case first.', 'err'); return; }
+  setStatus('valCandidateStatus', 'Building intelligence...', '');
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence`).catch(() => null);
+  if (!res || res.error) { setStatus('valCandidateStatus', res?.error || 'Failed.', 'err'); return; }
+  _valIntel = res;
+  setStatus('valCandidateStatus', `${(res.candidates || []).length} candidates scored.`, 'ok');
+  valRenderCandidates(res);
+  valLoadGrid();
+  valLoadBurden();
+}
+
+async function valLoadCandidates() {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence`).catch(() => null);
+  if (!res || res.error) return;
+  _valIntel = res;
+  valRenderCandidates(res);
+}
+
+function valRenderCandidates(intel) {
+  const el = $('valCandidateList');
+  if (!el) return;
+  const candidates = intel.candidates || [];
+  if (!candidates.length) { el.innerHTML = '<div class="hint">No candidates. Add comps via Pipeline tab or build intelligence.</div>'; return; }
+
+  // Sort by score descending
+  const sorted = [...candidates].sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+  el.innerHTML = sorted.map(c => {
+    const score = ((c.relevanceScore || 0) * 100).toFixed(0);
+    const tier = c.tier || 4;
+    const tierCls = `t${tier}`;
+    const status = c.reviewStatus || 'pending';
+    const addr = c.candidate?.address || c.sourceKey || '—';
+    const price = c.candidate?.salePrice || c.candidate?.sale_price;
+    const priceStr = price ? '$' + Number(price).toLocaleString() : '';
+    return `<div class="val-cand">` +
+      `<div class="val-cand-score ${tierCls}">${score}</div>` +
+      `<div style="flex:1;">` +
+        `<div style="font-weight:700;">${esc(addr)}</div>` +
+        `<div style="font-size:10px;color:var(--muted);">${priceStr} · Tier ${tier} · ${esc(status)}</div>` +
+        (c.keyMatches?.length ? `<div style="font-size:9px;color:var(--ok);">+ ${c.keyMatches.slice(0, 3).map(m => esc(m)).join(', ')}</div>` : '') +
+        (c.keyMismatches?.length ? `<div style="font-size:9px;color:var(--danger);">- ${c.keyMismatches.slice(0, 3).map(m => esc(m)).join(', ')}</div>` : '') +
+      `</div>` +
+      `<span class="val-cand-tier">T${tier}</span>` +
+      `<div class="val-cand-actions">` +
+        (status !== 'accepted' ? `<button class="ghost sm" onclick="valAcceptCandidate('${esc(c.id)}')">Accept</button>` : '') +
+        (status !== 'held' ? `<button class="ghost sm" onclick="valHoldCandidate('${esc(c.id)}')">Hold</button>` : '') +
+        (status !== 'rejected' ? `<button class="ghost sm" onclick="valRejectCandidate('${esc(c.id)}')">Reject</button>` : '') +
+      `</div>` +
+    `</div>`;
+  }).join('');
+}
+
+async function valAcceptCandidate(candidateId) {
+  if (!activeCaseId) return;
+  const slot = prompt('Grid slot (1-6):', '1');
+  if (!slot) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence/candidates/${candidateId}/accept`, {
+    method: 'POST', body: { gridSlot: parseInt(slot), acceptedBy: 'appraiser' }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valCandidateStatus', 'Candidate accepted into grid.', 'ok');
+    valLoadCandidates();
+    valLoadGrid();
+    valLoadBurden();
+  } else {
+    setStatus('valCandidateStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+async function valHoldCandidate(candidateId) {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence/candidates/${candidateId}/hold`, {
+    method: 'POST', body: {}
+  }).catch(() => null);
+  if (res && !res.error) { valLoadCandidates(); }
+}
+
+async function valRejectCandidate(candidateId) {
+  if (!activeCaseId) return;
+  const reason = prompt('Rejection reason (too_distant, inferior_data_quality, poor_condition_match, poor_market_area_match, atypical_sale, other):', 'other');
+  if (!reason) return;
+  const note = prompt('Note (optional):');
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence/candidates/${candidateId}/reject`, {
+    method: 'POST', body: { reasonCode: reason, rejectedBy: 'appraiser', note: note || '' }
+  }).catch(() => null);
+  if (res && !res.error) { valLoadCandidates(); }
+}
+
+// ── Comp Grid ───────────────────────────────────────────────────────────────
+
+async function valLoadGrid() {
+  const el = $('valGridBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading grid...</div>';
+  const res = await apiFetch(`/api/valuation/grid/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No grid data.</div>'; return; }
+
+  const slots = res.slots || res.grid || [];
+  if (!slots.length && !res.slot1) { el.innerHTML = '<div class="hint">No comps in grid. Accept candidates to populate.</div>'; return; }
+
+  // Build grid as either array or keyed object
+  const gridSlots = Array.isArray(slots) ? slots : [1,2,3,4,5,6].map(i => res[`slot${i}`] || res.slots?.[i-1]).filter(Boolean);
+  if (!gridSlots.length) { el.innerHTML = '<div class="hint">No comps in grid yet.</div>'; return; }
+
+  const features = ['Address', 'Sale Price', 'Sale Date', 'GLA', 'Bedrooms', 'Bathrooms', 'Year Built', 'Condition', 'Lot Size', 'Garage'];
+  const featureKeys = ['address', 'salePrice', 'saleDate', 'gla', 'bedrooms', 'bathrooms', 'yearBuilt', 'condition', 'lotSize', 'garage'];
+
+  let html = '<div style="overflow-x:auto;"><table class="val-grid-table"><thead><tr><th>Feature</th><th>Subject</th>';
+  gridSlots.forEach((s, i) => { html += `<th>Comp ${s.grid_slot || s.gridSlot || i + 1}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  features.forEach((feat, fi) => {
+    const key = featureKeys[fi];
+    html += `<tr><td class="val-grid-label">${esc(feat)}</td><td class="val-grid-value">—</td>`;
+    gridSlots.forEach(s => {
+      const data = s.candidateData || s.candidate_data || s.candidate || {};
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      let val = parsed[key] || parsed[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '—';
+      if (key === 'salePrice' && val !== '—') val = '$' + Number(val).toLocaleString();
+      html += `<td class="val-grid-value">${esc(String(val))}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  // Indicated values row
+  html += '<tr style="border-top:2px solid var(--gold);"><td class="val-grid-label" style="color:var(--gold);font-weight:900;">Indicated Value</td><td>—</td>';
+  gridSlots.forEach(s => {
+    const iv = s.indicated_value || s.indicatedValue || '—';
+    html += `<td class="val-grid-value" style="color:var(--gold);">${iv !== '—' ? '$' + Number(iv).toLocaleString() : '—'}</td>`;
+  });
+  html += '</tr></tbody></table></div>';
+
+  el.innerHTML = html;
+}
+
+async function valLoadGridSummary() {
+  const el = $('valGridSummary');
+  if (!el || !activeCaseId) return;
+  const res = await apiFetch(`/api/valuation/grid/${activeCaseId}/summary`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = ''; return; }
+  const range = res.range || {};
+  el.innerHTML = `<div style="font-size:11px;">` +
+    `<div>Range: <strong>$${Number(range.low || 0).toLocaleString()}</strong> – <strong>$${Number(range.high || 0).toLocaleString()}</strong></div>` +
+    `<div>Average: <strong>$${Number(res.average || 0).toLocaleString()}</strong></div>` +
+    `<div>Slots filled: <strong>${res.filledSlots || 0}/6</strong></div>` +
+  `</div>`;
+}
+
+// ── Adjustment Support Notebook ─────────────────────────────────────────────
+
+const ADJ_CATEGORIES = [
+  'sale_financing_concessions', 'market_conditions_time', 'location', 'site_size',
+  'view', 'design_style', 'quality', 'age', 'condition', 'bedrooms_bathrooms',
+  'room_count', 'gla', 'basement_finished_below_grade', 'functional_utility',
+  'hvac', 'energy_efficient_items', 'garage_carport', 'porch_patio_deck'
+];
+
+async function valLoadAdjustments() {
+  const el = $('valAdjBody');
+  if (!el || !activeCaseId) return;
+  const slot = $('valAdjSlot')?.value || '1';
+  el.innerHTML = '<div class="hint">Loading adjustments...</div>';
+
+  const res = await apiFetch(`/api/valuation/grid/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No grid data.</div>'; return; }
+
+  // Find slot adjustments
+  const slots = res.slots || [];
+  const slotData = Array.isArray(slots) ? slots.find(s => String(s.grid_slot || s.gridSlot) === slot) : null;
+  const adjustments = slotData?.adjustments || [];
+
+  // Build from categories, filling in existing data
+  const adjMap = {};
+  adjustments.forEach(a => { adjMap[a.adjustment_category || a.adjustmentCategory] = a; });
+
+  el.innerHTML = ADJ_CATEGORIES.map(cat => {
+    const adj = adjMap[cat] || {};
+    const status = adj.decision_status || adj.decisionStatus || 'pending';
+    const statusCls = status === 'approved' ? 'approved' : status === 'deferred' ? 'deferred' : 'pending';
+    const subj = adj.subject_value ?? adj.subjectValue ?? '—';
+    const comp = adj.comp_value ?? adj.compValue ?? '—';
+    const suggested = adj.suggested_amount ?? adj.suggestedAmount ?? '—';
+    const final = adj.final_amount ?? adj.finalAmount ?? '—';
+    const label = cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return `<div class="val-adj-row">` +
+      `<span class="val-adj-cat">${esc(label)}</span>` +
+      `<div class="val-adj-vals">` +
+        `<span title="Subject">${esc(String(subj))}</span>` +
+        `<span title="Comp">${esc(String(comp))}</span>` +
+        `<span title="Suggested" style="color:var(--muted);">${esc(String(suggested))}</span>` +
+        `<span title="Final" style="color:var(--gold);">${esc(String(final))}</span>` +
+      `</div>` +
+      `<span class="val-adj-status ${statusCls}">${esc(status)}</span>` +
+      `<button class="ghost sm" onclick="valEditAdj('${slot}','${cat}')" title="Edit adjustment">Edit</button>` +
+    `</div>`;
+  }).join('');
+}
+
+async function valEditAdj(slot, category) {
+  if (!activeCaseId) return;
+  const finalAmount = prompt(`Final adjustment amount for ${category.replace(/_/g, ' ')} (positive = comp inferior, negative = comp superior):`);
+  if (finalAmount === null) return;
+  const rationale = prompt('Rationale note:');
+  const res = await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence/adjustment-support/${slot}/${category}`, {
+    method: 'POST',
+    body: { decisionStatus: 'approved', finalAmount: parseFloat(finalAmount) || 0, rationaleNote: rationale || '', supportType: 'appraiser_judgment' }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valAdjStatus', 'Adjustment saved.', 'ok');
+    valLoadAdjustments();
+  } else {
+    setStatus('valAdjStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+// ── Burden & Contradiction Visibility ───────────────────────────────────────
+
+async function valLoadBurden() {
+  const el = $('valBurdenBody');
+  const cEl = $('valContradictions');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const intel = _valIntel || await apiFetch(`/api/cases/${activeCaseId}/comparable-intelligence`).catch(() => null);
+  if (!intel || intel.error) { el.innerHTML = '<div class="hint">Build intelligence first.</div>'; return; }
+
+  // Burden from grid
+  const gridRes = await apiFetch(`/api/valuation/grid/${activeCaseId}`).catch(() => null);
+  const slots = gridRes?.slots || [];
+
+  if (!slots.length) { el.innerHTML = '<div class="hint">No comps in grid.</div>'; return; }
+
+  el.innerHTML = slots.map(s => {
+    const slotNum = s.grid_slot || s.gridSlot || '?';
+    const burden = s.burden || {};
+    const net = burden.net_adjustment_percent || burden.netAdjustmentPercent || 0;
+    const gross = burden.gross_adjustment_percent || burden.grossAdjustmentPercent || 0;
+    const netCls = Math.abs(net) > 15 ? 'danger' : Math.abs(net) > 10 ? 'warn' : 'ok';
+    const grossCls = gross > 25 ? 'danger' : gross > 20 ? 'warn' : 'ok';
+    const conf = burden.data_confidence_score || burden.dataConfidenceScore || 0;
+    const addr = s.candidateData?.address || s.candidate_data?.address || '—';
+    return `<div style="margin-bottom:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;">` +
+      `<div style="font-weight:700;">Slot ${slotNum}: ${esc(typeof addr === 'string' ? addr : '—')}</div>` +
+      `<div style="display:flex;gap:16px;margin-top:4px;">` +
+        `<div style="flex:1;">Net: <strong>${net.toFixed(1)}%</strong><div class="val-burden-bar"><div class="val-burden-fill ${netCls}" style="width:${Math.min(Math.abs(net) * 3, 100)}%;"></div></div></div>` +
+        `<div style="flex:1;">Gross: <strong>${gross.toFixed(1)}%</strong><div class="val-burden-bar"><div class="val-burden-fill ${grossCls}" style="width:${Math.min(gross * 2, 100)}%;"></div></div></div>` +
+        `<div>Confidence: <strong>${(conf * 100).toFixed(0)}%</strong></div>` +
+      `</div>` +
+    `</div>`;
+  }).join('');
+
+  // Contradictions
+  if (cEl) {
+    const contradictions = intel.contradictions || [];
+    if (!contradictions.length) {
+      cEl.innerHTML = '<div style="font-size:11px;color:var(--ok);font-weight:700;">No contradictions detected.</div>';
+    } else {
+      cEl.innerHTML = '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--danger);margin-bottom:4px;">Contradictions</div>' +
+        contradictions.map(c =>
+          `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);">` +
+            `<strong>${esc(c.field || c.category || '—')}</strong>: ${esc(c.message || c.description || '')}` +
+          `</div>`
+        ).join('');
+    }
+  }
+}
+
+// ── Income Approach ─────────────────────────────────────────────────────────
+
+async function valLoadIncome() {
+  const el = $('valIncomeBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/income/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No income data yet.</div>'; return; }
+
+  const d = res.data || res;
+  let html = '<div>';
+  const rows = [
+    ['Monthly Market Rent', d.monthly_market_rent || d.monthlyMarketRent],
+    ['GRM', d.grm],
+    ['Gross Income', d.gross_income || d.grossIncome],
+    ['Operating Expenses', d.expenses_json ? (typeof d.expenses_json === 'string' ? '(see detail)' : Object.values(d.expenses_json).reduce((a, b) => a + (Number(b) || 0), 0)) : '—'],
+    ['Net Income', d.net_income || d.netIncome],
+    ['Indicated Value', d.indicated_value || d.indicatedValue],
+  ];
+  rows.forEach(([label, val]) => {
+    const v = val != null && val !== '—' ? (typeof val === 'number' && val > 100 ? '$' + Number(val).toLocaleString() : val) : '—';
+    html += `<div class="val-income-row"><span>${esc(label)}</span><span>${esc(String(v))}</span></div>`;
+  });
+  html += '</div>';
+
+  // Rent comps
+  const rentComps = d.rent_comps_json ? (typeof d.rent_comps_json === 'string' ? JSON.parse(d.rent_comps_json) : d.rent_comps_json) : [];
+  if (rentComps.length) {
+    html += '<div style="margin-top:6px;font-size:10px;font-weight:700;color:var(--muted);">RENT COMPS</div>';
+    rentComps.forEach(rc => {
+      html += `<div style="font-size:10px;padding:2px 0;">${esc(rc.address || '—')} — $${Number(rc.monthlyRent || rc.monthly_rent || 0).toLocaleString()}/mo</div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+async function valCalcIncome() {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/valuation/income/${activeCaseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valIncomeStatus', 'Income approach calculated.', 'ok');
+    valLoadIncome();
+    valLoadReconciliation();
+  } else {
+    setStatus('valIncomeStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+// ── Cost Approach ───────────────────────────────────────────────────────────
+
+async function valLoadCost() {
+  const el = $('valCostBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/cost/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No cost data yet.</div>'; return; }
+
+  const d = res.data || res;
+  const rows = [
+    ['Land Value', d.land_value || d.landValue],
+    ['RCN (Replacement Cost New)', d.replacement_cost_new || d.replacementCostNew],
+    ['Physical Depreciation', d.physical_depreciation || d.physicalDepreciation],
+    ['Functional Depreciation', d.functional_depreciation || d.functionalDepreciation],
+    ['External Depreciation', d.external_depreciation || d.externalDepreciation],
+    ['Total Depreciation', d.total_depreciation || d.totalDepreciation],
+    ['Depreciated Value', d.depreciated_value || d.depreciatedValue],
+    ['Site Improvements', d.site_improvements || d.siteImprovements],
+    ['Indicated Value', d.indicated_value || d.indicatedValue],
+  ];
+
+  let html = '<div>';
+  rows.forEach(([label, val]) => {
+    const v = val != null ? '$' + Number(val).toLocaleString() : '—';
+    html += `<div class="val-cost-row"><span>${esc(label)}</span><span>${esc(v)}</span></div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+async function valCalcCost() {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/valuation/cost/${activeCaseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valCostStatus', 'Cost approach calculated.', 'ok');
+    valLoadCost();
+    valLoadReconciliation();
+  } else {
+    setStatus('valCostStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+// ── Reconciliation ──────────────────────────────────────────────────────────
+
+async function valLoadReconciliation() {
+  const summaryEl = $('valApproachSummary');
+  const reconEl = $('valReconBody');
+  if (!activeCaseId) return;
+
+  const res = await apiFetch(`/api/valuation/reconciliation/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) {
+    if (summaryEl) summaryEl.innerHTML = '<div class="hint">No reconciliation data.</div>';
+    if (reconEl) reconEl.innerHTML = '';
+    return;
+  }
+
+  const d = res.data || res;
+
+  // Approach summary cards
+  if (summaryEl) {
+    const approaches = [
+      { label: 'Sales Comparison', value: d.sales_comparison_value || d.salesComparisonValue, weight: d.sales_comparison_weight || d.salesComparisonWeight },
+      { label: 'Income', value: d.income_value || d.incomeValue, weight: d.income_weight || d.incomeWeight },
+      { label: 'Cost', value: d.cost_value || d.costValue, weight: d.cost_weight || d.costWeight },
+    ];
+    summaryEl.innerHTML = approaches.map(a => {
+      const v = a.value ? '$' + Number(a.value).toLocaleString() : '—';
+      const w = a.weight != null ? (a.weight * 100).toFixed(0) + '%' : '—';
+      return `<div class="val-approach-card">` +
+        `<div class="val-approach-label">${esc(a.label)} (${w})</div>` +
+        `<div class="val-approach-value">${esc(v)}</div>` +
+      `</div>`;
+    }).join('');
+  }
+
+  // Populate weight inputs
+  if (d.sales_comparison_weight != null) { const e = $('valWtSales'); if (e) e.value = d.sales_comparison_weight; }
+  if (d.income_weight != null) { const e = $('valWtIncome'); if (e) e.value = d.income_weight; }
+  if (d.cost_weight != null) { const e = $('valWtCost'); if (e) e.value = d.cost_weight; }
+
+  // Narrative
+  const narrative = d.reconciliation_narrative || d.reconciliationNarrative || '';
+  const nEl = $('valReconNarrative');
+  if (nEl && narrative) nEl.value = narrative;
+
+  // Final value
+  const finalEl = $('valFinalValue');
+  const finalVal = d.final_opinion_value || d.finalOpinionValue;
+  if (finalEl && finalVal) {
+    finalEl.innerHTML = `<div class="val-final-box">` +
+      `<div class="val-final-label">Final Opinion of Value</div>` +
+      `<div class="val-final-value">$${Number(finalVal).toLocaleString()}</div>` +
+    `</div>`;
+  }
+}
+
+async function valSaveWeights() {
+  if (!activeCaseId) return;
+  const salesWeight = parseFloat($('valWtSales')?.value) || 0;
+  const incomeWeight = parseFloat($('valWtIncome')?.value) || 0;
+  const costWeight = parseFloat($('valWtCost')?.value) || 0;
+  const res = await apiFetch(`/api/valuation/reconciliation/${activeCaseId}/weights`, {
+    method: 'PUT', body: { salesWeight, incomeWeight, costWeight }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valReconStatus', 'Weights saved.', 'ok');
+    valLoadReconciliation();
+  } else {
+    setStatus('valReconStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+async function valCalculateFinal() {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/valuation/reconciliation/${activeCaseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valReconStatus', 'Final value calculated.', 'ok');
+    valLoadReconciliation();
+  } else {
+    setStatus('valReconStatus', res?.error || 'Failed to calculate.', 'err');
+  }
+}
+
+async function valSaveNarrative() {
+  if (!activeCaseId) return;
+  const narrative = $('valReconNarrative')?.value || '';
+  if (!narrative.trim()) { setStatus('valReconStatus', 'Enter a narrative first.', 'err'); return; }
+  const res = await apiFetch(`/api/valuation/reconciliation/${activeCaseId}/narrative`, {
+    method: 'PUT', body: { narrative }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valReconStatus', 'Reconciliation memo saved.', 'ok');
+  } else {
+    setStatus('valReconStatus', res?.error || 'Failed.', 'err');
+  }
 }
