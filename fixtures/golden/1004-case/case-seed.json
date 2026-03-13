@@ -1,0 +1,100 @@
+{
+  "assignment": {
+    "orderNumber": "GP-1004-001",
+    "lenderName": "First National Bank of Springfield",
+    "lenderAddress": "200 Main Street, Springfield, IL 62701",
+    "clientName": "AMC Valuation Services",
+    "clientContact": "Jennifer Martinez",
+    "clientEmail": "jmartinez@amcval.example.com",
+    "intendedUse": "Mortgage lending — purchase transaction",
+    "intendedUsers": "First National Bank of Springfield and its assigns",
+    "effectiveDate": "2026-03-01",
+    "reportDueDate": "2026-03-15",
+    "feeAmount": 450,
+    "propertyRightsAppraised": "Fee Simple"
+  },
+  "subject": {
+    "address": "742 Evergreen Terrace, Springfield, IL 62704",
+    "county": "Sangamon",
+    "legalDescription": "Lot 14, Block 3, Evergreen Estates Subdivision, as recorded in Plat Book 22, Page 148, Sangamon County Recorder's Office",
+    "parcelNumber": "14-29-351-014",
+    "censusTract": "0012.02",
+    "mapReference": "Springfield Quadrangle, Section 29, T16N, R5W",
+    "occupant": "Owner",
+    "borrowerName": "David and Sarah Thompson",
+    "ownerOfPublicRecord": "David M. Thompson and Sarah J. Thompson",
+    "yearBuilt": 1998,
+    "effectiveAge": 15,
+    "grossLivingArea": 2150,
+    "lotSize": "10,450 sq ft (0.24 acres)",
+    "lotDimensions": "85 x 123 (irregular)",
+    "zoning": "R-1, Single Family Residential",
+    "zoningCompliance": "Legal conforming",
+    "highestBestUse": "Single-family residential, as improved",
+    "floodZone": "Zone X (minimal flood hazard)",
+    "floodMapNumber": "17167C0215E",
+    "floodMapDate": "2019-09-26",
+    "siteUtilities": {
+      "electricity": "Public (Ameren Illinois)",
+      "gas": "Public (Ameren Illinois)",
+      "water": "Public (City of Springfield)",
+      "sewer": "Public (Springfield Metro Sanitary District)"
+    },
+    "improvements": {
+      "foundationType": "Full basement",
+      "exteriorWalls": "Vinyl siding over wood frame",
+      "roofSurface": "Architectural shingle, ~10 years remaining life",
+      "windowType": "Double-hung vinyl, insulated glass",
+      "stories": 2,
+      "designStyle": "Colonial",
+      "bedrooms": 4,
+      "bathrooms": 2.5,
+      "rooms": 8,
+      "basementFinish": "50% finished (rec room and storage)",
+      "basementSqFt": 1075,
+      "heating": "Forced air, gas",
+      "cooling": "Central air conditioning",
+      "garage": "Attached 2-car garage",
+      "garageSqFt": 484,
+      "porch": "Covered front porch, rear deck (12x16)",
+      "driveway": "Concrete",
+      "pool": "None",
+      "fireplace": "1 wood-burning, family room",
+      "condition": "C3 — Good condition, well-maintained, minor deferred maintenance (exterior paint touch-up needed)",
+      "quality": "Q3 — Good quality construction, standard builder-grade materials with some upgrades"
+    }
+  },
+  "transaction": {
+    "salePrice": 315000,
+    "contractDate": "2026-02-10",
+    "financingType": "Conventional, 80% LTV",
+    "concessions": "Seller paid $4,500 toward buyer closing costs",
+    "daysOnMarket": 22,
+    "listPrice": 319900,
+    "priorSaleDate": "2019-05-15",
+    "priorSalePrice": 265000
+  },
+  "neighborhood": {
+    "name": "Evergreen Estates",
+    "builtUp": "Over 75%",
+    "growth": "Stable",
+    "propertyValues": "Stable to increasing",
+    "demandSupply": "In balance",
+    "marketingTime": "3-6 months",
+    "predominantAge": "15-30 years",
+    "predominantPrice": "$280,000-$360,000",
+    "predominantOccupancy": "Owner-occupied (est. 92%)",
+    "landUse": {
+      "singleFamily": "85%",
+      "multiFamily": "5%",
+      "commercial": "5%",
+      "other": "5% (parks, school, church)"
+    },
+    "boundaries": {
+      "north": "Wabash Avenue",
+      "south": "Stanford Avenue",
+      "east": "MacArthur Boulevard",
+      "west": "Chatham Road"
+    }
+  }
+}
