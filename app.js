@@ -46,6 +46,7 @@ function showTab(name) {
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
+  if(name==='inspect' && typeof inspOnTabOpen==='function')inspOnTabOpen();
   if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
 }
 
@@ -5291,4 +5292,589 @@ function _sysAuditIcon(category) {
     qc: '&#x2705;', insertion: '&#x1F4E5;', system: '&#x1F5A5;', security: '&#x1F512;'
   };
   return icons[category] || '&#x25CF;';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 7: Inspection Capture — Photo Upload, Checklists, Measurements, Conditions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _inspActiveId = null;
+
+function inspOnTabOpen() {
+  inspLoadList();
+  inspLoadChecklist();
+}
+
+// ── Inspection List ─────────────────────────────────────────────────────────
+
+async function inspLoadList() {
+  const el = $('inspListBody');
+  if (!el) return;
+  if (!activeCaseId) { el.innerHTML = '<div class="hint">Select a case first.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No inspections.</div>'; return; }
+  const items = res.inspections || res.rows || [];
+  if (!items.length) { el.innerHTML = '<div class="hint">No inspections yet.</div>'; return; }
+
+  el.innerHTML = items.map(i => {
+    const active = i.id === _inspActiveId ? ' active' : '';
+    const st = i.status || 'scheduled';
+    const date = i.scheduled_date ? new Date(i.scheduled_date).toLocaleDateString() : '—';
+    return `<div class="insp-item${active}" onclick="inspSelect('${esc(i.id)}')">` +
+      `<span class="insp-item-status ${st}">${esc(st)}</span>` +
+      `<span style="flex:1;font-weight:700;">${esc(i.inspection_type || 'General')}</span>` +
+      `<span style="font-size:10px;color:var(--muted);">${esc(date)}</span>` +
+    `</div>`;
+  }).join('');
+}
+
+async function inspCreate() {
+  if (!activeCaseId) { setStatus('inspListStatus', 'Select a case first.', 'err'); return; }
+  const type = prompt('Inspection type (interior, exterior, full, drive_by):', 'full');
+  if (!type) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections`, {
+    method: 'POST', body: { inspection_type: type, scheduled_date: new Date().toISOString().split('T')[0] }
+  }).catch(() => null);
+  if (res && !res.error) {
+    _inspActiveId = res.id;
+    inspLoadList();
+    setStatus('inspListStatus', 'Inspection created.', 'ok');
+  } else {
+    setStatus('inspListStatus', res?.error || 'Failed to create inspection.', 'err');
+  }
+}
+
+async function inspSelect(id) {
+  _inspActiveId = id;
+  inspLoadList();
+  inspLoadPhotos();
+  inspLoadConditions();
+  inspLoadMeasurements();
+}
+
+// ── Checklist Templates ─────────────────────────────────────────────────────
+
+const INSP_CHECKLISTS = {
+  interior: {
+    'Living Areas': ['Living Room', 'Family Room', 'Dining Room', 'Den/Study', 'Bonus Room'],
+    'Kitchen': ['Countertops', 'Cabinets', 'Appliances', 'Flooring', 'Backsplash', 'Pantry'],
+    'Bedrooms': ['Primary Bedroom', 'Bedroom 2', 'Bedroom 3', 'Bedroom 4', 'Closets'],
+    'Bathrooms': ['Primary Bath', 'Full Bath', 'Half Bath', 'Fixtures', 'Tile/Surround'],
+    'Other': ['Laundry Room', 'Basement', 'Attic Access', 'Stairs/Hallways', 'Storage']
+  },
+  exterior: {
+    'Structure': ['Foundation', 'Framing Visible', 'Roof Covering', 'Gutters/Downspouts', 'Fascia/Soffit'],
+    'Siding/Facade': ['Primary Material', 'Secondary Material', 'Paint/Stain Condition', 'Trim'],
+    'Openings': ['Windows', 'Exterior Doors', 'Garage Door', 'Storm Windows/Doors'],
+    'Outdoor': ['Porch/Patio', 'Deck', 'Fencing', 'Landscaping', 'Driveway', 'Walkways']
+  },
+  site: {
+    'Lot': ['Shape/Topography', 'Drainage', 'View', 'Street Scene', 'Setbacks'],
+    'Improvements': ['Garage/Carport', 'Shed/Outbuilding', 'Pool/Spa', 'Retaining Walls'],
+    'Utilities': ['Public Water', 'Public Sewer', 'Electric Service', 'Gas Service', 'Well/Septic']
+  },
+  mechanical: {
+    'HVAC': ['Heating Type', 'Cooling Type', 'Age/Condition', 'Ductwork Visible', 'Thermostat'],
+    'Electrical': ['Panel Amperage', 'Panel Condition', 'Wiring Type', 'GFCI Present'],
+    'Plumbing': ['Supply Piping', 'Drain Piping', 'Water Heater', 'Sump Pump']
+  }
+};
+
+function inspLoadChecklist() {
+  const el = $('inspChecklistBody');
+  if (!el) return;
+  const type = $('inspChecklistType')?.value || 'interior';
+  const checklist = INSP_CHECKLISTS[type] || {};
+  let html = '';
+  Object.entries(checklist).forEach(([group, items]) => {
+    html += `<div class="checklist-group"><div class="checklist-group-head">${esc(group)}</div>`;
+    items.forEach(item => {
+      const id = `ck_${type}_${item.replace(/\W/g,'_')}`;
+      html += `<div class="checklist-item"><input type="checkbox" id="${id}"/><label for="${id}">${esc(item)}</label></div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ── Photo Capture ───────────────────────────────────────────────────────────
+
+async function inspLoadPhotos() {
+  const el = $('inspPhotoGrid');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading photos...</div>';
+  const endpoint = _inspActiveId
+    ? `/api/cases/${activeCaseId}/inspections/${_inspActiveId}/photos`
+    : `/api/cases/${activeCaseId}/photos`;
+  const res = await apiFetch(endpoint).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No photos.</div>'; return; }
+  const photos = res.photos || res.rows || [];
+  if (!photos.length) { el.innerHTML = '<div class="hint">No photos yet. Upload files or paste Dropbox/URL links.</div>'; return; }
+
+  el.innerHTML = photos.map(p => {
+    const isUrl = p.file_path && (p.file_path.startsWith('http') || p.file_path.startsWith('dropbox'));
+    const imgSrc = isUrl ? p.file_path : (p.file_path ? `/cases/${activeCaseId}/photos/${p.file_name || p.id}` : '');
+    const imgContent = imgSrc
+      ? `<img src="${esc(imgSrc)}" alt="${esc(p.label || '')}" onerror="this.parentElement.innerHTML='&#x1F4F7;'"/>`
+      : '&#x1F4F7;';
+    const tags = [p.photo_category, p.label].filter(Boolean);
+    return `<div class="photo-card">` +
+      `<div class="photo-card-img">${imgContent}</div>` +
+      `<div class="photo-card-info">` +
+        `<div class="photo-card-label">${esc(p.label || p.photo_category || 'Photo')}</div>` +
+        `<div class="photo-card-meta">${esc(p.file_name || (isUrl ? 'URL link' : '—'))}</div>` +
+        tags.map(t => `<span class="photo-card-tag">${esc(t)}</span>`).join('') +
+      `</div>` +
+    `</div>`;
+  }).join('');
+}
+
+function inspAddPhotoFile() {
+  const input = $('inspPhotoFileInput');
+  if (input) input.click();
+}
+
+async function inspHandleFileUpload(input) {
+  if (!activeCaseId || !_inspActiveId) { setStatus('inspPhotoStatus', 'Select an inspection first.', 'err'); return; }
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  let added = 0;
+  for (const file of files) {
+    const category = prompt(`Category for "${file.name}" (front, rear, street, interior, kitchen, bathroom, bedroom, garage, other):`, 'interior');
+    if (!category) continue;
+    const label = prompt(`Label for "${file.name}" (e.g., "Front Elevation", "Kitchen Overview"):`, file.name.replace(/\.[^.]+$/, ''));
+    const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/photos`, {
+      method: 'POST',
+      body: {
+        photo_category: category,
+        label: label || file.name,
+        file_name: file.name,
+        file_path: file.name,
+        mime_type: file.type,
+        file_size: file.size
+      }
+    }).catch(() => null);
+    if (res && !res.error) added++;
+  }
+  input.value = '';
+  setStatus('inspPhotoStatus', `${added} photo(s) added.`, 'ok');
+  inspLoadPhotos();
+}
+
+async function inspAddPhotoUrl() {
+  if (!activeCaseId || !_inspActiveId) { setStatus('inspPhotoStatus', 'Select an inspection first.', 'err'); return; }
+  const url = prompt('Paste photo URL (Dropbox shared link, Google Drive, or direct image URL):');
+  if (!url) return;
+  const category = prompt('Photo category (front, rear, street, interior, kitchen, bathroom, other):', 'exterior');
+  if (!category) return;
+  const label = prompt('Photo label:', '');
+
+  // Normalize Dropbox URL for direct access
+  let filePath = url;
+  if (url.includes('dropbox.com') && url.includes('dl=0')) {
+    filePath = url.replace('dl=0', 'dl=1');
+  }
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/photos`, {
+    method: 'POST',
+    body: {
+      photo_category: category,
+      label: label || 'Linked photo',
+      file_path: filePath,
+      file_name: url.split('/').pop()?.split('?')[0] || 'photo',
+      mime_type: 'image/jpeg',
+      notes: 'Source: ' + (url.includes('dropbox') ? 'Dropbox' : 'URL')
+    }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('inspPhotoStatus', 'Photo link added.', 'ok');
+    inspLoadPhotos();
+  } else {
+    setStatus('inspPhotoStatus', res?.error || 'Failed to add photo.', 'err');
+  }
+}
+
+// ── Condition Findings ──────────────────────────────────────────────────────
+
+async function inspLoadConditions() {
+  const el = $('inspCondBody');
+  if (!el || !activeCaseId || !_inspActiveId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/conditions`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No conditions logged.</div>'; return; }
+  const items = res.conditions || res.rows || [];
+  if (!items.length) { el.innerHTML = '<div class="hint">No findings yet. Add observations as you inspect.</div>'; return; }
+
+  el.innerHTML = items.map(c => {
+    const sev = (c.severity || c.condition_rating || 'fair').toLowerCase();
+    const sevCls = sev === 'good' || sev === 'c1' ? 'good' : sev === 'poor' || sev === 'c5' || sev === 'c6' ? 'poor' : 'fair';
+    return `<div class="cond-item">` +
+      `<span class="cond-sev ${sevCls}">${esc(c.condition_rating || sev)}</span>` +
+      `<div style="flex:1;"><strong>${esc(c.component || c.category || '')}</strong>` +
+        `<div style="font-size:10px;color:var(--muted);">${esc(c.observation || c.notes || '')}</div>` +
+      `</div>` +
+    `</div>`;
+  }).join('');
+}
+
+async function inspAddCondition() {
+  if (!activeCaseId || !_inspActiveId) { setStatus('inspCondStatus', 'Select an inspection first.', 'err'); return; }
+  const component = prompt('Component (e.g., Kitchen, Roof, Foundation, HVAC):');
+  if (!component) return;
+  const category = prompt('Category (interior, exterior, mechanical, structural):', 'interior');
+  const rating = prompt('Condition rating (C1=new, C2=minor, C3=maintained, C4=needed repairs, C5=obvious deficiencies, C6=major issues):', 'C3');
+  const observation = prompt('Observation notes:');
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/conditions`, {
+    method: 'POST',
+    body: { component, category, condition_rating: rating, observation, severity: rating }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('inspCondStatus', 'Condition finding added.', 'ok');
+    inspLoadConditions();
+  } else {
+    setStatus('inspCondStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+// ── Measurements ────────────────────────────────────────────────────────────
+
+async function inspLoadMeasurements() {
+  const el = $('inspMeasBody');
+  if (!el || !activeCaseId || !_inspActiveId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/measurements`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No measurements.</div>'; return; }
+  const items = res.measurements || res.rows || [];
+  if (!items.length) { el.innerHTML = '<div class="hint">Add room measurements.</div>'; return; }
+
+  el.innerHTML = items.map(m => {
+    const area = (m.length_ft && m.width_ft) ? (m.length_ft * m.width_ft).toFixed(0) : '—';
+    return `<div class="meas-row">` +
+      `<span class="meas-row-label">${esc(m.room_name || m.label || '')}</span>` +
+      `<span class="meas-row-dim">${m.length_ft || '—'} × ${m.width_ft || '—'}</span>` +
+      `<span class="meas-row-area">${area} sf</span>` +
+      `<span style="color:var(--muted);font-size:9px;">${esc(m.level || '')}</span>` +
+    `</div>`;
+  }).join('');
+}
+
+async function inspAddMeasurement() {
+  if (!activeCaseId || !_inspActiveId) { setStatus('inspMeasStatus', 'Select an inspection first.', 'err'); return; }
+  const room = prompt('Room name (e.g., Living Room, Kitchen, Primary Bedroom):');
+  if (!room) return;
+  const length = parseFloat(prompt('Length (feet):', '12'));
+  const width = parseFloat(prompt('Width (feet):', '10'));
+  const level = prompt('Level (main, upper, lower, basement):', 'main');
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/measurements`, {
+    method: 'POST',
+    body: { room_name: room, label: room, length_ft: length, width_ft: width, level, measurement_type: 'room' }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('inspMeasStatus', 'Measurement added.', 'ok');
+    inspLoadMeasurements();
+  } else {
+    setStatus('inspMeasStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+async function inspCalcGLA() {
+  if (!activeCaseId || !_inspActiveId) return;
+  const el = $('inspGLAResult');
+  if (!el) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/measurements/gla`).catch(() => null);
+  if (res && !res.error) {
+    const gla = res.gla || res.totalGLA || res.total || 0;
+    el.innerHTML = `<div style="font-size:14px;font-weight:900;font-family:var(--mono);color:var(--gold);">GLA: ${Number(gla).toLocaleString()} SF</div>`;
+  } else {
+    el.innerHTML = '<div class="hint">Could not calculate GLA.</div>';
+  }
+}
+
+// ── Inspection Summary & Push to Context ────────────────────────────────────
+
+async function inspBuildSummary() {
+  const el = $('inspSummaryBody');
+  if (!el || !activeCaseId || !_inspActiveId) { setStatus('inspSummaryStatus', 'Select an inspection first.', 'err'); return; }
+  el.innerHTML = '<div class="hint">Building summary...</div>';
+  const res = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/summary`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">Could not build summary.</div>'; return; }
+
+  const s = res.summary || res;
+  let html = '<div style="font-size:11px;">';
+  html += `<div><strong>Type:</strong> ${esc(s.inspection_type || '—')}</div>`;
+  html += `<div><strong>Status:</strong> ${esc(s.status || '—')}</div>`;
+  if (s.photos_count != null) html += `<div><strong>Photos:</strong> ${s.photos_count}</div>`;
+  if (s.measurements_count != null) html += `<div><strong>Measurements:</strong> ${s.measurements_count}</div>`;
+  if (s.conditions_count != null) html += `<div><strong>Conditions:</strong> ${s.conditions_count}</div>`;
+  if (s.gla) html += `<div><strong>GLA:</strong> ${Number(s.gla).toLocaleString()} SF</div>`;
+
+  // Show conditions summary if available
+  if (s.conditions_summary) {
+    html += '<div style="margin-top:6px;"><strong>Condition Summary:</strong></div>';
+    if (typeof s.conditions_summary === 'string') {
+      html += `<div style="padding:6px;background:var(--surface);border-radius:6px;font-size:10px;margin-top:4px;white-space:pre-wrap;">${esc(s.conditions_summary)}</div>`;
+    }
+  }
+  html += '</div>';
+  el.innerHTML = html;
+
+  // Show push button
+  const btn = $('inspPushBtn');
+  if (btn) btn.style.display = '';
+}
+
+async function inspPushToContext() {
+  if (!activeCaseId || !_inspActiveId) return;
+  setStatus('inspSummaryStatus', 'Pushing to prompt context...', '');
+  const summaryRes = await apiFetch(`/api/cases/${activeCaseId}/inspections/${_inspActiveId}/summary`).catch(() => null);
+  if (!summaryRes || summaryRes.error) { setStatus('inspSummaryStatus', 'Failed to get summary.', 'err'); return; }
+
+  // Store as a fact/context item for the case
+  const contextPayload = {
+    category: 'inspection',
+    field_name: 'inspection_summary',
+    value: JSON.stringify(summaryRes.summary || summaryRes),
+    source: 'inspection_capture',
+    confidence: 1.0
+  };
+  const res = await apiFetch(`/api/cases/${activeCaseId}/facts`, { method: 'POST', body: contextPayload }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('inspSummaryStatus', 'Inspection summary pushed to case facts for generation context.', 'ok');
+  } else {
+    setStatus('inspSummaryStatus', 'Could not push to facts: ' + (res?.error || 'unknown'), 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 7: Insertion Reliability Panel — Readback Verification & Replay
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function insLoadReliability() {
+  const el = $('insReliabilityBody');
+  if (!el || !activeCaseId) { if (el) el.innerHTML = '<div class="hint">Select a case first.</div>'; return; }
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/insertion/runs?caseId=${activeCaseId}&limit=1`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No insertion runs.</div>'; return; }
+  const runs = res.runs || res.rows || [];
+  if (!runs.length) { el.innerHTML = '<div class="hint">No insertion runs for this case.</div>'; return; }
+
+  const run = runs[0];
+  const itemsRes = await apiFetch(`/api/insertion/runs/${run.id}/items`).catch(() => null);
+  const items = (itemsRes && !itemsRes.error) ? (itemsRes.items || itemsRes.rows || []) : [];
+
+  const verified = items.filter(i => i.status === 'verified' || i.readback_match === true).length;
+  const failed = items.filter(i => i.status === 'failed' || i.readback_match === false).length;
+  const pending = items.filter(i => !i.status || i.status === 'pending' || i.status === 'clipboard').length;
+
+  let html = `<div style="font-size:11px;margin-bottom:6px;">`;
+  html += `<div>Run: <strong>${esc(run.id?.slice(0, 12) || '')}</strong> · ${esc(run.status || '—')}</div>`;
+  html += `<div style="margin-top:4px;">`;
+  html += `<span style="color:var(--ok);font-weight:700;">${verified} verified</span> · `;
+  html += `<span style="color:var(--danger);font-weight:700;">${failed} failed</span> · `;
+  html += `<span style="color:var(--muted);">${pending} pending</span>`;
+  html += `</div></div>`;
+
+  // Show individual field items (limit to 15)
+  const shown = items.slice(0, 15);
+  html += shown.map(item => {
+    const st = item.status || (item.readback_match === true ? 'verified' : item.readback_match === false ? 'failed' : 'pending');
+    const stCls = st === 'verified' ? 'verified' : st === 'failed' ? 'failed' : st === 'clipboard' ? 'clipboard' : 'pending';
+    return `<div class="ins-field-item">` +
+      `<span class="ins-field-status ${stCls}">${esc(st)}</span>` +
+      `<span style="flex:1;font-weight:600;">${esc(item.field_id || item.fieldId || '')}</span>` +
+      (st === 'failed' ? `<button class="ghost sm" onclick="insRetryField('${esc(run.id)}','${esc(item.id || item.field_id)}')">Retry</button>` : '') +
+    `</div>`;
+  }).join('');
+
+  if (items.length > 15) html += `<div class="hint" style="margin-top:4px;">+ ${items.length - 15} more fields...</div>`;
+  el.innerHTML = html;
+}
+
+async function insShowRunHistory() {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/insertion/runs?caseId=${activeCaseId}&limit=10`).catch(() => null);
+  if (!res || res.error) { setStatus('insReliabilityStatus', 'No runs found.', 'err'); return; }
+  const runs = res.runs || res.rows || [];
+  const el = $('insReliabilityBody');
+  if (!el) return;
+
+  el.innerHTML = '<div style="font-size:10px;font-weight:700;margin-bottom:6px;text-transform:uppercase;color:var(--muted);">Run History</div>' +
+    runs.map(r => {
+      const date = r.created_at ? new Date(r.created_at).toLocaleString() : '—';
+      const dest = r.destination || r.target_software || '—';
+      return `<div class="ins-run-item">` +
+        `<span style="font-weight:700;">${esc(dest)}</span>` +
+        `<span style="flex:1;color:var(--muted);font-size:10px;">${esc(date)}</span>` +
+        `<span class="ins-field-status ${r.status === 'completed' ? 'verified' : r.status === 'failed' ? 'failed' : 'pending'}">${esc(r.status || '—')}</span>` +
+      `</div>`;
+    }).join('');
+}
+
+async function insReplayFailed() {
+  if (!activeCaseId) return;
+  setStatus('insReliabilityStatus', 'Replaying failed fields...', '');
+  const runsRes = await apiFetch(`/api/insertion/runs?caseId=${activeCaseId}&limit=1`).catch(() => null);
+  const runs = (runsRes && !runsRes.error) ? (runsRes.runs || runsRes.rows || []) : [];
+  if (!runs.length) { setStatus('insReliabilityStatus', 'No runs to replay.', 'err'); return; }
+
+  const res = await apiFetch(`/api/insertion/runs/${runs[0].id}/replay`, { method: 'POST', body: { failedOnly: true } }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('insReliabilityStatus', 'Replay completed. ' + (res.replayed || 0) + ' fields retried.', 'ok');
+    insLoadReliability();
+  } else {
+    setStatus('insReliabilityStatus', 'Replay failed: ' + (res?.error || 'unknown'), 'err');
+  }
+}
+
+async function insRetryField(runId, fieldId) {
+  const res = await apiFetch(`/api/insertion/runs/${runId}/items/${fieldId}/retry`, { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('insReliabilityStatus', 'Field retried.', 'ok');
+    insLoadReliability();
+  } else {
+    setStatus('insReliabilityStatus', 'Retry failed.', 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 7: Pipeline Enhancements — Fact Cards, Verification Queue, Dedup
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function dpOnTabOpen() {
+  loadDueDateQueue();
+  loadPipelineSummary();
+  dpLoadVerificationQueue();
+}
+
+// ── Extracted Fact Cards rendering (enhances existing dpRenderExtractedData) ─
+
+function dpRenderFactCards(data, source) {
+  const el = $('dpExtractedPreview');
+  if (!el) return;
+  if (!data || typeof data !== 'object') {
+    el.innerHTML = '<div class="hint">No structured data extracted.</div>';
+    return;
+  }
+
+  const entries = Array.isArray(data) ? data : Object.entries(data).map(([k, v]) => ({ field: k, value: v }));
+  if (!entries.length) { el.innerHTML = '<div class="hint">No fields extracted.</div>'; return; }
+
+  el.innerHTML = entries.map(item => {
+    const field = item.field || item.field_name || item.key || '—';
+    const value = item.value ?? '—';
+    const prov = item.source || item.provenance || source || 'web crawl';
+    const conflict = item.conflict || item.conflictWith || null;
+    return `<div class="fact-card">` +
+      `<div class="fact-card-head">` +
+        `<span class="fact-card-field">${esc(String(field))}</span>` +
+        `<span class="fact-card-value">${esc(String(value))}</span>` +
+      `</div>` +
+      `<div class="fact-card-prov">Source: ${esc(prov)}</div>` +
+      (conflict ? `<div class="fact-card-conflict">Conflicts with: ${esc(conflict)}</div>` : '') +
+    `</div>`;
+  }).join('');
+}
+
+// ── Duplicate Detection ─────────────────────────────────────────────────────
+
+async function dpCheckDuplicates() {
+  const el = $('dpDupeResults');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Checking for duplicate data...</div>';
+
+  // Check extracted data against case facts
+  if (!activeCaseId) { el.innerHTML = '<div class="hint">Select a case to check duplicates.</div>'; return; }
+  const factsRes = await apiFetch(`/api/cases/${activeCaseId}/facts`).catch(() => null);
+  const facts = (factsRes && !factsRes.error) ? (factsRes.facts || factsRes.rows || []) : [];
+
+  // Count field-name duplicates
+  const fieldCounts = {};
+  facts.forEach(f => {
+    const key = f.field_name || f.key || '';
+    fieldCounts[key] = (fieldCounts[key] || 0) + 1;
+  });
+  const dupes = Object.entries(fieldCounts).filter(([, c]) => c > 1);
+
+  if (!dupes.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--ok);font-weight:700;">No duplicates detected.</div>';
+  } else {
+    el.innerHTML = '<div style="font-size:10px;font-weight:700;color:var(--warn);margin-bottom:4px;">Potential Duplicates:</div>' +
+      dupes.map(([field, count]) =>
+        `<div style="font-size:11px;padding:2px 0;"><strong>${esc(field)}</strong> — ${count} entries</div>`
+      ).join('');
+  }
+}
+
+// ── Verification Queue ──────────────────────────────────────────────────────
+
+let _dpVerifItems = [];
+
+async function dpLoadVerificationQueue() {
+  const el = $('dpVerifQueue');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${activeCaseId}/facts?source=web_crawl&limit=100`).catch(() =>
+    apiFetch(`/api/cases/${activeCaseId}/facts?limit=100`).catch(() => null)
+  );
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No facts from web sources.</div>'; return; }
+  const items = (res.facts || res.rows || []).filter(f =>
+    !f.verified && (f.source === 'web_crawl' || f.source === 'crawl' || f.source === 'pipeline' || f.source === 'extracted')
+  );
+  _dpVerifItems = items;
+
+  if (!items.length) { el.innerHTML = '<div class="hint">All extracted data verified or no web-sourced facts.</div>'; return; }
+
+  el.innerHTML = items.slice(0, 20).map(f => {
+    const field = f.field_name || f.key || '—';
+    const value = f.value ?? '—';
+    return `<div class="fact-card">` +
+      `<div class="fact-card-head">` +
+        `<span class="fact-card-field">${esc(String(field))}</span>` +
+        `<span class="fact-card-value">${esc(String(value).slice(0, 60))}</span>` +
+      `</div>` +
+      `<div style="display:flex;gap:4px;margin-top:4px;">` +
+        `<button class="ghost sm" onclick="dpVerifySingle('${esc(f.id)}')">Verify</button>` +
+        `<button class="ghost sm" onclick="dpRejectSingle('${esc(f.id)}')">Reject</button>` +
+      `</div>` +
+    `</div>`;
+  }).join('') + (items.length > 20 ? `<div class="hint">+ ${items.length - 20} more...</div>` : '');
+}
+
+async function dpVerifySingle(factId) {
+  const res = await apiFetch(`/api/cases/${activeCaseId}/facts/${factId}`, { method: 'PATCH', body: { verified: true } }).catch(() => null);
+  if (res && !res.error) dpLoadVerificationQueue();
+}
+
+async function dpRejectSingle(factId) {
+  const res = await apiFetch(`/api/cases/${activeCaseId}/facts/${factId}`, { method: 'DELETE' }).catch(() => null);
+  if (res && !res.error) dpLoadVerificationQueue();
+}
+
+async function dpVerifyAll() {
+  if (!_dpVerifItems.length) return;
+  if (!confirm(`Mark ${_dpVerifItems.length} items as verified?`)) return;
+  let ok = 0;
+  for (const f of _dpVerifItems) {
+    const res = await apiFetch(`/api/cases/${activeCaseId}/facts/${f.id}`, { method: 'PATCH', body: { verified: true } }).catch(() => null);
+    if (res && !res.error) ok++;
+  }
+  setStatus('dpVerifStatus', `${ok} items verified.`, 'ok');
+  dpLoadVerificationQueue();
+}
+
+async function dpRejectUnverified() {
+  if (!_dpVerifItems.length) return;
+  if (!confirm(`Reject ${_dpVerifItems.length} unverified items?`)) return;
+  let ok = 0;
+  for (const f of _dpVerifItems) {
+    const res = await apiFetch(`/api/cases/${activeCaseId}/facts/${f.id}`, { method: 'DELETE' }).catch(() => null);
+    if (res && !res.error) ok++;
+  }
+  setStatus('dpVerifStatus', `${ok} items rejected.`, 'ok');
+  dpLoadVerificationQueue();
 }
