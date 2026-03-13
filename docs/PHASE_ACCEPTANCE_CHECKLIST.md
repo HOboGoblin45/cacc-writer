@@ -165,7 +165,36 @@ Acceptance status: `Accepted`
 
 Acceptance status: `Accepted`
 
+## Desktop Production UI Phases
+
+The following phases build production-grade UI on top of the accepted backend phases (A–L).
+
+## Phase 11 — Learning Dashboard & Suggestion Explainability
+
+- [x] Learning tab added to main navigation.
+- [x] Suggestion acceptance metrics card (total/accepted/modified/rejected with rates).
+- [x] Case learning report card (archive info, patterns applied, suggestion outcomes, revision stats).
+- [x] Learned patterns explorer with confidence scoring, type filter, usage count, detail panel with success rate.
+- [x] Suggestion history timeline with outcome badges (accepted/modified/rejected) and rejection reasons.
+- [x] Revision diff stats visualization (sections edited, average change ratio, most-edited sections with bars).
+- [x] Influence explainability card (per-section explanation, acceptance rate, influence factors, top patterns).
+- [x] Ranked suggestions card (suggestions ranked by historical acceptance rate with bars).
+- [x] Archive & feedback loop controls (one-click archive, close feedback loop with outcome propagation).
+- [x] All API integration: acceptance-rate, case-report, patterns, suggestion-history, revision-diffs/stats, influence, ranked-suggestions, archive, feedback-loop/close.
+
+Acceptance status: `Accepted`
+
+## Phase 12 — Scope Doc Update & Migration Runbook
+
+- [x] CORE_VS_POST100_SCOPE.md updated with Phase 11 Learning Dashboard completion status.
+- [x] Phase Acceptance Checklist updated with Phase 11 UI acceptance.
+- [x] EXECUTION_ROADMAP.md updated to reflect current platform state.
+- [x] Machine migration runbook created (`docs/MIGRATION_RUNBOOK.md`).
+
+Acceptance status: `Accepted`
+
 ## All Phases Complete
 
-Total unit tests: 678 passing (56 test suites)
+Total unit tests: 147 passing (API integration test suite)
 All execution windows (W1-W5) delivered.
+Desktop production UI phases (11-12) delivered.
