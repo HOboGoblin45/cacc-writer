@@ -339,6 +339,71 @@ button.sm{padding:5px 9px;font-size:11px;}
 .fd-warnings.visible{display:block;}
 .fd-warning-item{font-size:11px;color:var(--warn);padding:2px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
 .fd-run-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+/* ── Phase 3: Governance Cards ──────────────────────────────────────────────── */
+.gov-card{border:1px solid rgba(215,179,90,.2);background:rgba(215,179,90,.03);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.gov-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.gov-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--gold);}
+.gov-card-badge{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:800;border:1px solid;}
+.gov-card-badge.current{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.gov-card-badge.stale{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.08);}
+.gov-card-badge.regenerating{color:#8ac4ff;border-color:rgba(100,180,255,.35);background:rgba(100,180,255,.08);}
+.gov-card-badge.not_generated{color:var(--muted);border-color:var(--border);background:transparent;}
+.gov-quality-bar{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.gov-quality-track{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.gov-quality-fill{height:100%;border-radius:2px;transition:width .3s;}
+.gov-quality-fill.high{background:var(--ok);}
+.gov-quality-fill.mid{background:var(--warn);}
+.gov-quality-fill.low{background:var(--danger);}
+.gov-quality-label{font-size:10px;font-weight:700;font-family:var(--mono);min-width:28px;text-align:right;}
+.gov-dep-list{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;}
+.gov-dep-chip{font-size:9px;padding:1px 6px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
+.gov-dep-chip.present{color:var(--ok);border-color:rgba(85,209,143,.25);}
+.gov-dep-chip.missing{color:var(--danger);border-color:rgba(255,92,92,.25);}
+/* ── Phase 3: Readiness Checklist ───────────────────────────────────────────── */
+.rdns-checklist{display:flex;flex-direction:column;gap:4px;}
+.rdns-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;font-size:11px;border:1px solid transparent;}
+.rdns-item.pass{background:rgba(85,209,143,.04);border-color:rgba(85,209,143,.12);}
+.rdns-item.fail{background:rgba(255,92,92,.04);border-color:rgba(255,92,92,.12);}
+.rdns-item.warn{background:rgba(245,200,66,.04);border-color:rgba(245,200,66,.12);}
+.rdns-icon{width:16px;text-align:center;flex-shrink:0;font-size:12px;}
+.rdns-label{flex:1;font-weight:600;}
+.rdns-detail{font-size:10px;color:var(--muted);}
+/* ── Phase 3: Missing-Facts Dashboard ───────────────────────────────────────── */
+.mf-dashboard{display:flex;flex-direction:column;gap:8px;}
+.mf-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.mf-section-head{padding:6px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;}
+.mf-section-body{padding:8px 10px;}
+.mf-fact-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mf-fact-row:last-child{border-bottom:none;}
+.mf-fact-path{flex:1;font-family:var(--mono);font-size:10px;color:var(--muted);}
+.mf-fact-sev{font-size:9px;font-weight:800;padding:1px 5px;border-radius:999px;}
+.mf-fact-sev.required{color:var(--danger);border:1px solid rgba(255,92,92,.25);background:rgba(255,92,92,.08);}
+.mf-fact-sev.recommended{color:var(--warn);border:1px solid rgba(245,200,66,.25);background:rgba(245,200,66,.06);}
+/* ── Phase 3: Business Status Summary ───────────────────────────────────────── */
+.biz-status-card{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:rgba(0,0,0,.12);}
+.biz-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
+.biz-metric{display:flex;flex-direction:column;gap:2px;}
+.biz-metric-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+.biz-metric-value{font-size:14px;font-weight:800;font-family:var(--mono);}
+.biz-metric-value.ok{color:var(--ok);}
+.biz-metric-value.warn{color:var(--warn);}
+.biz-metric-value.err{color:var(--danger);}
+/* ── Phase 3: Due-Date / Pipeline Dashboard ─────────────────────────────────── */
+.due-queue{display:flex;flex-direction:column;gap:4px;}
+.due-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:11px;border:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.due-item:hover{background:rgba(255,255,255,.04);}
+.due-item.overdue{border-color:rgba(255,92,92,.3);background:rgba(255,92,92,.04);}
+.due-item.urgent{border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.04);}
+.due-item-addr{flex:1;font-weight:600;}
+.due-item-date{font-size:10px;font-family:var(--mono);color:var(--muted);}
+.due-item-days{font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;border:1px solid;}
+.due-item-days.past{color:var(--danger);border-color:rgba(255,92,92,.3);}
+.due-item-days.soon{color:var(--warn);border-color:rgba(245,200,66,.3);}
+.due-item-days.ok{color:var(--ok);border-color:rgba(85,209,143,.25);}
+.pipeline-stages{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:12px;}
+.pipeline-stage{font-size:9px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;}
+.pipeline-stage.active{border-color:var(--gold);color:var(--gold);background:rgba(215,179,90,.08);}
+.pipeline-stage .ps-count{font-weight:900;margin-left:3px;}
 </style>
 </head>
 <body>
@@ -644,6 +709,30 @@ button.sm{padding:5px 9px;font-size:11px;}
             <div class="field-hint">Tracked in the canonical case record and shown in Phase B health metrics.</div>
             <div id="metaChips" class="meta-chips" style="display:none;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Business Status + Readiness Summary -->
+      <div class="card-row" id="caseBusinessRow" style="display:none;">
+        <div class="card">
+          <div class="card-head"><h3>Business Status</h3><button class="ghost sm" onclick="loadCaseBusinessStatus()">&#x21BB;</button></div>
+          <div class="card-body" id="caseBusinessBody">
+            <div class="hint">Select a case to view business status.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Readiness Summary</h3><button class="ghost sm" onclick="loadCaseReadiness()">&#x21BB;</button></div>
+          <div class="card-body" id="caseReadinessBody">
+            <div class="hint">Select a case to view readiness checklist.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Missing Facts Dashboard -->
+      <div class="card" id="caseMissingFactsCard" style="display:none;">
+        <div class="card-head"><h3>Missing Facts Dashboard</h3><button class="ghost sm" onclick="loadCaseMissingFacts()">&#x21BB;</button></div>
+        <div class="card-body" id="caseMissingFactsBody">
+          <div class="hint">Select a case to view missing facts by section.</div>
         </div>
       </div>
 
@@ -1550,6 +1639,22 @@ button.sm{padding:5px 9px;font-size:11px;}
 <!-- ===== TAB: PIPELINE (Cloudflare Data Pipeline) ===== -->
 <div class="page" id="tab-pipeline">
   <div class="col narrow">
+
+    <!-- Due-Date Dashboard Card -->
+    <div class="card">
+      <div class="card-head"><h3>Due-Date Queue</h3><button class="ghost sm" onclick="loadDueDateQueue()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="dueDateQueueBody"><div class="hint">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- Pipeline Summary Card -->
+    <div class="card">
+      <div class="card-head"><h3>Pipeline Summary</h3><button class="ghost sm" onclick="loadPipelineSummary()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="pipelineSummaryBody"><div class="hint">Loading...</div></div>
+      </div>
+    </div>
 
     <!-- Settings Card -->
     <div class="card">

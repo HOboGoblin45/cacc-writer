@@ -1438,9 +1438,12 @@ function workspaceRenderAssistant() {
   const qc = WORKSPACE_STATE.payload?.qc || {};
   if (!field) {
     assistantTitle.textContent = 'Section Summary';
+    const govCard = typeof workspaceRenderGovernanceCard === 'function'
+      ? workspaceRenderGovernanceCard(currentSection?.id)
+      : '';
     body.innerHTML =
       comparableWorkspacePanel +
-      workspaceRenderSectionAuditPanel(currentSection?.id) +
+      (govCard || workspaceRenderSectionAuditPanel(currentSection?.id)) +
       workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
       insertionPanel +
       workspaceRenderFreshnessSummaryPanel() +

@@ -412,6 +412,7 @@ async function loadCase(caseId) {
   setStatus('genStatus','Ready.','');
   _updateGenStrip();
   if(typeof workspaceOnCaseLoaded==='function')workspaceOnCaseLoaded();
+  showCaseBusinessCards();
   renderQuestionnaire([]);
   setStatus('questionnaireStatus','','');
   if(d.facts&&Object.keys(d.facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'&&k!=='workspace1004').length>0)await generateQuestions(true);
@@ -3783,3 +3784,313 @@ setInterval(() => {
     loadCaseTimeline();
   }
 }, 60000);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 3: Governance Cards, Readiness Checklists, Missing-Facts Dashboard,
+//          Business Status Summary, Due-Date / Pipeline Dashboard
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Case Business Status ──────────────────────────────────────────────────────
+async function loadCaseBusinessStatus() {
+  const el = $('caseBusinessBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const [engRes, invRes, pipRes] = await Promise.all([
+    apiFetch('/api/business/engagements?caseId=' + STATE.caseId).catch(() => ({ ok: false })),
+    apiFetch('/api/business/invoices/summary').catch(() => ({ ok: false })),
+    apiFetch('/api/business/pipeline/summary').catch(() => ({ ok: false })),
+  ]);
+  const eng = engRes.ok ? (engRes.engagements || [])[0] : null;
+  const invSummary = invRes.ok ? invRes : {};
+  const pipSummary = pipRes.ok ? pipRes : {};
+
+  const fee = eng?.fee || eng?.agreedFee || '-';
+  const dueDate = eng?.dueDate ? new Date(eng.dueDate).toLocaleDateString() : '-';
+  const engStatus = eng?.status || '-';
+  const totalPipeline = pipSummary.totalPipelineValue || 0;
+  const totalInvoiced = invSummary.totalIssued || invSummary.totalInvoiced || 0;
+  const totalPaid = invSummary.totalPaid || 0;
+  const totalOverdue = invSummary.overdueCount || 0;
+
+  el.innerHTML =
+    `<div class="biz-status-grid">` +
+      `<div class="biz-metric"><span class="biz-metric-label">Fee</span><span class="biz-metric-value">${esc(typeof fee === 'number' ? '$' + fee.toLocaleString() : String(fee))}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Due Date</span><span class="biz-metric-value">${esc(dueDate)}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Engagement</span><span class="biz-metric-value">${esc(String(engStatus).replace(/_/g,' '))}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Pipeline Value</span><span class="biz-metric-value">$${Number(totalPipeline).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Invoiced</span><span class="biz-metric-value">$${Number(totalInvoiced).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Paid</span><span class="biz-metric-value ok">$${Number(totalPaid).toLocaleString()}</span></div>` +
+      (totalOverdue > 0
+        ? `<div class="biz-metric"><span class="biz-metric-label">Overdue</span><span class="biz-metric-value err">${totalOverdue}</span></div>`
+        : '') +
+    `</div>`;
+}
+
+// ── Case Readiness Checklist ──────────────────────────────────────────────────
+async function loadCaseReadiness() {
+  const el = $('caseReadinessBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const [preDraft, qcGate, freshness] = await Promise.all([
+    apiFetch(`/api/cases/${STATE.caseId}/pre-draft-check`).catch(() => ({ ok: false })),
+    apiFetch(`/api/cases/${STATE.caseId}/qc-approval-gate`).catch(() => ({ ok: false })),
+    apiFetch(`/api/governance/freshness/${STATE.caseId}`).catch(() => ({ ok: false })),
+  ]);
+
+  const gate = preDraft.ok ? preDraft.gate : null;
+  const approval = qcGate.ok ? qcGate.gate : null;
+  const fresh = freshness.ok ? freshness : null;
+
+  const items = [];
+
+  // Pre-draft gate
+  if (gate) {
+    items.push(rdnsItem(gate.ok, 'Pre-Draft Gate', gate.ok ? 'All required facts verified' : `${gate.summary?.missingRequiredFacts || 0} missing facts, ${gate.summary?.blockerConflicts || 0} blocker conflicts`));
+    items.push(rdnsItem(
+      (gate.summary?.provenanceCoveragePct || 0) >= 80,
+      'Provenance Coverage',
+      `${gate.summary?.provenanceCoveragePct || 0}% of facts have sources`,
+      (gate.summary?.provenanceCoveragePct || 0) >= 50 && (gate.summary?.provenanceCoveragePct || 0) < 80 ? 'warn' : null
+    ));
+  }
+
+  // Freshness
+  if (fresh) {
+    const allCurrent = (fresh.stale || 0) === 0;
+    items.push(rdnsItem(allCurrent, 'Section Freshness', allCurrent ? `All ${fresh.current || 0} sections current` : `${fresh.stale || 0} stale sections`));
+  }
+
+  // QC approval gate
+  if (approval) {
+    items.push(rdnsItem(approval.ok, 'QC Approval Gate', approval.ok ? 'Ready for finalization' : (approval.message || approval.code || 'Not ready')));
+    if (approval.openBlockerCount > 0) {
+      items.push(rdnsItem(false, 'QC Blockers', `${approval.openBlockerCount} open blocker findings`));
+    }
+    if (approval.staleSectionCount > 0) {
+      items.push(rdnsItem(false, 'Stale Sections', `${approval.staleSectionCount} sections need regeneration`));
+    }
+    if (approval.contradictionSummary && approval.contradictionSummary.open > 0) {
+      items.push(rdnsItem(false, 'Contradictions', `${approval.contradictionSummary.open} open contradictions`));
+    }
+  }
+
+  if (!items.length) {
+    el.innerHTML = '<div class="hint">Load a case with generated sections to see readiness.</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="rdns-checklist">${items.join('')}</div>`;
+}
+
+function rdnsItem(pass, label, detail, override) {
+  const state = override || (pass ? 'pass' : 'fail');
+  const icon = state === 'pass' ? '&#x2713;' : state === 'warn' ? '&#x26A0;' : '&#x2717;';
+  const iconColor = state === 'pass' ? 'var(--ok)' : state === 'warn' ? 'var(--warn)' : 'var(--danger)';
+  return (
+    `<div class="rdns-item ${state}">` +
+      `<span class="rdns-icon" style="color:${iconColor}">${icon}</span>` +
+      `<span class="rdns-label">${esc(label)}</span>` +
+      `<span class="rdns-detail">${esc(detail)}</span>` +
+    `</div>`
+  );
+}
+
+// ── Missing-Facts Dashboard ───────────────────────────────────────────────────
+async function loadCaseMissingFacts() {
+  const el = $('caseMissingFactsBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/section-audit`).catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint" style="color:var(--warn)">Failed to load section audit data.</div>';
+    return;
+  }
+
+  const audits = res.sectionAudits || {};
+  const sections = Object.entries(audits).filter(([, a]) => {
+    const policy = a.policy || {};
+    const missing = policy.missingFacts || {};
+    return (missing.required?.length > 0) || (missing.recommended?.length > 0);
+  });
+
+  if (!sections.length) {
+    el.innerHTML = '<div class="hint" style="color:var(--ok)">All sections have required facts available.</div>';
+    return;
+  }
+
+  const sectionHtml = sections.map(([sectionId, audit]) => {
+    const policy = audit.policy || {};
+    const missing = policy.missingFacts || {};
+    const required = missing.required || [];
+    const recommended = missing.recommended || [];
+    const sLabel = policy.profileLabel || policy.sectionId || sectionId;
+
+    const factRows = [
+      ...required.map(path => `<div class="mf-fact-row"><span class="mf-fact-path">${esc(path)}</span><span class="mf-fact-sev required">Required</span></div>`),
+      ...recommended.map(path => `<div class="mf-fact-row"><span class="mf-fact-path">${esc(path)}</span><span class="mf-fact-sev recommended">Recommended</span></div>`),
+    ].join('');
+
+    const countLabel = required.length
+      ? `<span style="color:var(--danger);font-size:10px;font-weight:700;">${required.length} required</span>`
+      : `<span style="color:var(--warn);font-size:10px;">${recommended.length} recommended</span>`;
+
+    return (
+      `<div class="mf-section">` +
+        `<div class="mf-section-head"><span>${esc(sLabel)}</span>${countLabel}</div>` +
+        `<div class="mf-section-body">${factRows}</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  el.innerHTML = `<div class="mf-dashboard">${sectionHtml}</div>`;
+}
+
+// ── Due-Date Queue ────────────────────────────────────────────────────────────
+async function loadDueDateQueue() {
+  const el = $('dueDateQueueBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch('/api/business/engagements/upcoming').catch(() => ({ ok: false }));
+  const overdueRes = await apiFetch('/api/business/engagements/overdue').catch(() => ({ ok: false }));
+
+  const upcoming = res.ok ? (res.engagements || []) : [];
+  const overdue = overdueRes.ok ? (overdueRes.engagements || []) : [];
+  const combined = [...overdue.map(e => ({ ...e, _overdue: true })), ...upcoming];
+
+  if (!combined.length) {
+    el.innerHTML = '<div class="hint">No upcoming or overdue assignments.</div>';
+    return;
+  }
+
+  const now = Date.now();
+  el.innerHTML = `<div class="due-queue">` + combined.slice(0, 15).map(eng => {
+    const due = eng.dueDate ? new Date(eng.dueDate) : null;
+    const daysLeft = due ? Math.ceil((due - now) / 86400000) : null;
+    const isOverdue = eng._overdue || (daysLeft !== null && daysLeft < 0);
+    const isUrgent = !isOverdue && daysLeft !== null && daysLeft <= 3;
+    const itemClass = isOverdue ? 'overdue' : isUrgent ? 'urgent' : '';
+    const daysClass = isOverdue ? 'past' : (daysLeft <= 3 ? 'soon' : 'ok');
+    const daysLabel = daysLeft === null ? '-' : (isOverdue ? `${Math.abs(daysLeft)}d late` : `${daysLeft}d`);
+    const addr = eng.propertyAddress || eng.address || eng.caseId || 'Unknown';
+    const dateStr = due ? due.toLocaleDateString() : '-';
+
+    return (
+      `<div class="due-item ${itemClass}" onclick="${eng.caseId ? `loadCase('${esc(eng.caseId)}');showTab('case')` : ''}">` +
+        `<span class="due-item-addr">${esc(addr)}</span>` +
+        `<span class="due-item-date">${esc(dateStr)}</span>` +
+        `<span class="due-item-days ${daysClass}">${esc(daysLabel)}</span>` +
+      `</div>`
+    );
+  }).join('') + `</div>`;
+}
+
+// ── Pipeline Summary ──────────────────────────────────────────────────────────
+async function loadPipelineSummary() {
+  const el = $('pipelineSummaryBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch('/api/business/pipeline/summary').catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint">No pipeline data available.</div>';
+    return;
+  }
+
+  const byStage = res.byStage || {};
+  const stageOrder = ['prospect','quoted','engaged','in_progress','review','submitted','invoiced','paid','closed'];
+  const stageChips = stageOrder
+    .filter(s => (byStage[s] || 0) > 0)
+    .map(s => `<span class="pipeline-stage">${esc(s.replace(/_/g,' '))}<span class="ps-count">${byStage[s]}</span></span>`)
+    .join('');
+
+  const totalValue = res.totalPipelineValue || 0;
+  const avgDays = res.averageDaysInStage || 0;
+
+  el.innerHTML =
+    (stageChips ? `<div class="pipeline-stages">${stageChips}</div>` : '') +
+    `<div class="biz-status-grid">` +
+      `<div class="biz-metric"><span class="biz-metric-label">Pipeline Value</span><span class="biz-metric-value">$${Number(totalValue).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Avg Days/Stage</span><span class="biz-metric-value">${avgDays.toFixed(1)}</span></div>` +
+    `</div>`;
+}
+
+// ── Show business cards when case loads ───────────────────────────────────────
+function showCaseBusinessCards() {
+  const row = $('caseBusinessRow');
+  const mfCard = $('caseMissingFactsCard');
+  if (row) row.style.display = STATE.caseId ? 'flex' : 'none';
+  if (mfCard) mfCard.style.display = STATE.caseId ? 'block' : 'none';
+  if (STATE.caseId) {
+    loadCaseBusinessStatus();
+    loadCaseReadiness();
+    loadCaseMissingFacts();
+  }
+}
+
+// ── Enhanced section governance card for workspace assistant ──────────────────
+function workspaceRenderGovernanceCard(sectionId) {
+  const summary = typeof workspaceSectionPolicySummary === 'function' ? workspaceSectionPolicySummary() : {};
+  const audit = summary[sectionId];
+  if (!audit) return '';
+
+  const fs = audit.freshnessStatus || 'not_generated';
+  const fsClass = fs === 'current' ? 'current' : fs === 'stale' ? 'stale' : fs === 'regenerating' ? 'regenerating' : 'not_generated';
+  const fsLabel = fs.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // Quality bar
+  let qualityHtml = '';
+  if (audit.qualityScore !== null && audit.qualityScore !== undefined) {
+    const q = audit.qualityScore;
+    const qClass = q >= 70 ? 'high' : q >= 40 ? 'mid' : 'low';
+    const qColor = q >= 70 ? 'var(--ok)' : q >= 40 ? 'var(--warn)' : 'var(--danger)';
+    qualityHtml =
+      `<div class="gov-quality-bar">` +
+        `<div class="gov-quality-track"><div class="gov-quality-fill ${qClass}" style="width:${q}%"></div></div>` +
+        `<span class="gov-quality-label" style="color:${qColor}">${q}</span>` +
+      `</div>`;
+  }
+
+  // Dependency chips
+  let depHtml = '';
+  if (audit.requiredPaths && audit.requiredPaths.length) {
+    const chips = audit.requiredPaths.slice(0, 8).map(p => {
+      const present = !audit.missingRequiredPaths || !audit.missingRequiredPaths.includes(p);
+      return `<span class="gov-dep-chip ${present ? 'present' : 'missing'}">${esc(p.split('.').pop())}</span>`;
+    }).join('');
+    depHtml = `<div class="gov-dep-list">${chips}</div>`;
+  }
+
+  // Stale reasons
+  let staleHtml = '';
+  if (audit.staleReasons && audit.staleReasons.length) {
+    staleHtml = `<div style="font-size:10px;color:var(--warn);margin-top:4px;">${esc(audit.staleReasons.join('; '))}</div>`;
+  }
+
+  // Generation info
+  let genHtml = '';
+  if (audit.generatedAt) {
+    genHtml += `<div style="font-size:10px;color:var(--muted);margin-top:4px;">Generated: ${esc(new Date(audit.generatedAt).toLocaleString())}`;
+    if (audit.regenerationCount > 0) genHtml += ` (${audit.regenerationCount} regenerations)`;
+    genHtml += '</div>';
+  }
+
+  return (
+    `<div class="gov-card">` +
+      `<div class="gov-card-head">` +
+        `<span class="gov-card-title">Section Governance</span>` +
+        `<span class="gov-card-badge ${fsClass}">${esc(fsLabel)}</span>` +
+      `</div>` +
+      `<div style="font-size:10px;color:var(--muted);">Prompt v${esc(audit.promptVersion || '-')} | ${esc(audit.profileId || 'default')}</div>` +
+      qualityHtml +
+      depHtml +
+      staleHtml +
+      genHtml +
+      `<div style="margin-top:6px;">` +
+        `<button class="sec sm" onclick="workspaceLoadSectionAudit('${esc(sectionId)}')">Full Audit</button>` +
+      `</div>` +
+    `</div>`
+  );
+}
