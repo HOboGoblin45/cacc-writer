@@ -45,6 +45,7 @@ function showTab(name) {
   if(name==='docs')loadDocsTab();
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
+  if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
 }
 
 // ====== FORM REGISTRY ======
