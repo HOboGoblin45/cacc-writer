@@ -450,6 +450,45 @@ button.sm{padding:5px 9px;font-size:11px;}
 .recon-weight-input{width:60px;text-align:center;padding:4px;font-size:12px;font-weight:700;}
 .recon-narrative{margin-top:12px;}
 .recon-narrative textarea{min-height:120px;font-size:12px;line-height:1.5;}
+/* ── Phase 5: Learning Dashboard & Memory Health ──────────────────────────── */
+.learn-dash{display:flex;flex-direction:column;gap:12px;}
+.learn-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.learn-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+.learn-stat-value{font-size:22px;font-weight:900;font-family:var(--mono);}
+.learn-stat-value.good{color:var(--ok);}
+.learn-stat-value.mid{color:var(--warn);}
+.learn-stat-value.low{color:var(--danger);}
+.learn-stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px;}
+.learn-pattern-list{display:flex;flex-direction:column;gap:6px;}
+.learn-pattern{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.learn-pattern-type{font-size:9px;padding:1px 6px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700;text-transform:uppercase;}
+.learn-conf-bar{width:60px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.learn-conf-fill{height:100%;border-radius:2px;}
+.learn-revision-list{display:flex;flex-direction:column;gap:4px;}
+.learn-revision{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;display:flex;align-items:center;gap:8px;}
+.learn-revision-section{flex:1;font-weight:600;}
+.learn-revision-ratio{font-family:var(--mono);font-weight:800;font-size:10px;min-width:40px;text-align:right;}
+/* Memory Health */
+.mem-health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.mem-health-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+.mem-health-value{font-size:18px;font-weight:900;font-family:var(--mono);}
+.mem-health-label{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px;}
+.mem-health-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mem-health-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;margin-bottom:4px;}
+.mem-health-item.stale{border-color:rgba(245,200,66,.25);background:rgba(245,200,66,.03);}
+.mem-health-item.duplicate{border-color:rgba(100,180,255,.25);background:rgba(100,180,255,.03);}
+.mem-health-item.weak{border-color:rgba(255,92,92,.2);background:rgba(255,92,92,.03);}
+.mem-health-item-text{flex:1;font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;}
+/* Why-This-Suggestion Drawer */
+.why-drawer{border:1px solid rgba(100,180,255,.2);background:rgba(100,180,255,.03);border-radius:10px;padding:10px 12px;margin-top:8px;}
+.why-drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.why-drawer-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:#8ac4ff;}
+.why-factor{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;border-bottom:1px solid rgba(255,255,255,.04);}
+.why-factor:last-child{border-bottom:none;}
+.why-factor-name{flex:1;color:var(--muted);}
+.why-factor-value{font-weight:700;font-family:var(--mono);min-width:45px;text-align:right;}
+.why-factor-bar{width:50px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.why-factor-fill{height:100%;background:#8ac4ff;border-radius:2px;}
 </style>
 </head>
 <body>
@@ -1753,6 +1792,15 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
 
+    <!-- Learning Dashboard Card -->
+    <div class="card">
+      <div class="card-head"><h3>Learning Dashboard</h3><button class="sm sec" onclick="learnLoadDashboard()">Refresh</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Suggestion acceptance metrics, pattern confidence, and revision statistics from completed assignments.</div>
+        <div id="learnDashBody"><div class="hint">Click Refresh to load learning metrics.</div></div>
+      </div>
+    </div>
+
     <!-- Retrieval Preview Card -->
     <div class="card">
       <div class="card-head"><h3>Retrieval Preview</h3></div>
@@ -1825,6 +1873,21 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
       <div class="card-body">
         <div id="memCompList"><div class="hint">No comparable commentary memory items yet.</div></div>
+      </div>
+    </div>
+
+    <!-- Memory Health Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Memory Health</h3>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="sm sec" onclick="memHealthScan()">Scan</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Detect stale, duplicate, and low-quality memory items. Prune to keep the knowledge base clean and performant.</div>
+        <div id="memHealthStats"></div>
+        <div id="memHealthBody"><div class="hint">Click Scan to analyze memory health.</div></div>
       </div>
     </div>
 

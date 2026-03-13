@@ -4536,3 +4536,403 @@ async function valSaveReconNarrative() {
     setStatus('valReconResult', 'Failed to save narrative.', 'err');
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 5: Learning Dashboard, Why-This-Suggestion, Memory Health
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Learning Dashboard ──────────────────────────────────────────────────────
+
+async function learnLoadDashboard() {
+  const el = $('learnDashBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading learning metrics...</div>';
+
+  // Fetch acceptance rate and patterns in parallel
+  const [rateRes, patternsRes, archivesRes] = await Promise.all([
+    apiFetch('/api/learning/acceptance-rate').catch(() => null),
+    apiFetch('/api/learning/patterns?limit=20').catch(() => null),
+    STATE.caseId ? apiFetch(`/api/learning/revision-diffs/${STATE.caseId}/stats`).catch(() => null) : null,
+  ]);
+
+  let html = '<div class="learn-dash">';
+
+  // ── Acceptance / Rejection Metrics ──
+  const rate = rateRes && !rateRes.error ? rateRes : null;
+  const total = rate?.total || 0;
+  const accepted = rate?.accepted || 0;
+  const modified = rate?.modified || 0;
+  const rejected = rate?.rejected || 0;
+  const acceptRate = rate?.acceptanceRate != null ? Math.round(rate.acceptanceRate * 100) : null;
+  const modRate = rate?.modificationRate != null ? Math.round(rate.modificationRate * 100) : null;
+
+  html += `<div class="learn-stat-grid">`;
+  html += _learnStat(total, 'Total Suggestions', '');
+  html += _learnStat(accepted, 'Accepted', 'good');
+  html += _learnStat(modified, 'Modified', 'mid');
+  html += _learnStat(rejected, 'Rejected', 'low');
+  html += _learnStat(acceptRate != null ? acceptRate + '%' : '—', 'Accept Rate', acceptRate > 70 ? 'good' : acceptRate > 40 ? 'mid' : 'low');
+  html += _learnStat(modRate != null ? modRate + '%' : '—', 'Modify Rate', 'mid');
+  html += `</div>`;
+
+  // ── Learned Patterns ──
+  const patterns = (patternsRes && !patternsRes.error) ? (patternsRes.patterns || patternsRes.rows || []) : [];
+  if (patterns.length) {
+    html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:8px;">Learned Patterns (${patterns.length})</h4>`;
+    html += `<div class="learn-pattern-list">`;
+    patterns.forEach(p => {
+      const conf = p.confidence != null ? Math.round(p.confidence * 100) : 0;
+      const confClass = conf >= 70 ? 'var(--ok)' : conf >= 40 ? 'var(--warn)' : 'var(--danger)';
+      html +=
+        `<div class="learn-pattern">` +
+          `<div style="display:flex;align-items:center;gap:6px;">` +
+            `<span class="learn-pattern-type">${esc(p.patternType || p.pattern_type || '')}</span>` +
+            `<span>${esc(p.patternKey || p.pattern_key || '')}</span>` +
+          `</div>` +
+          `<div style="display:flex;align-items:center;gap:6px;">` +
+            `<div class="learn-conf-bar"><div class="learn-conf-fill" style="width:${conf}%;background:${confClass};"></div></div>` +
+            `<span style="font-size:10px;font-weight:700;font-family:var(--mono);color:${confClass};">${conf}%</span>` +
+          `</div>` +
+        `</div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="hint" style="margin-top:8px;">No learned patterns yet. Complete and archive assignments to build patterns.</div>`;
+  }
+
+  // ── Revision Diff Stats (current case) ──
+  if (archivesRes && !archivesRes.error) {
+    const diffStats = archivesRes;
+    const changed = diffStats.sectionsChanged || 0;
+    const totalSections = diffStats.totalSections || 0;
+    const avgChange = diffStats.averageChangeRatio != null ? Math.round(diffStats.averageChangeRatio * 100) : 0;
+    const mostChanged = diffStats.mostChangedSections || [];
+
+    html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:8px;">Revision Diffs (Current Case)</h4>`;
+    html += `<div class="learn-stat-grid">`;
+    html += _learnStat(changed + '/' + totalSections, 'Sections Changed', '');
+    html += _learnStat(avgChange + '%', 'Avg Change Ratio', avgChange < 30 ? 'good' : avgChange < 60 ? 'mid' : 'low');
+    html += `</div>`;
+
+    if (mostChanged.length) {
+      html += `<div class="learn-revision-list" style="margin-top:6px;">`;
+      mostChanged.forEach(s => {
+        const ratio = s.changeRatio != null ? Math.round(s.changeRatio * 100) : 0;
+        const cls = ratio < 30 ? 'good' : ratio < 60 ? 'mid' : 'low';
+        html +=
+          `<div class="learn-revision">` +
+            `<span class="learn-revision-section">${esc(s.sectionId || s.section_id || '')}</span>` +
+            `<span class="learn-revision-ratio learn-stat-value ${cls}">${ratio}%</span>` +
+          `</div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function _learnStat(value, label, cls) {
+  return (
+    `<div class="learn-stat">` +
+      `<div class="learn-stat-value ${cls}">${esc(String(value))}</div>` +
+      `<div class="learn-stat-label">${esc(label)}</div>` +
+    `</div>`
+  );
+}
+
+// ── Why This Suggestion (for workspace) ─────────────────────────────────────
+
+async function workspaceLoadWhySuggestion(fieldId) {
+  const container = $('whySuggestionDrawer_' + fieldId);
+  if (!container) return;
+  // Toggle visibility
+  if (container.style.display === 'block') { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  container.innerHTML = '<div class="hint">Loading explanation...</div>';
+  if (!STATE.caseId) { container.innerHTML = '<div class="hint">No case loaded.</div>'; return; }
+
+  // Load influence explanation for the current section
+  const sectionId = WORKSPACE_STATE?.sectionId || '';
+  const formType = STATE.formType || '';
+  const propertyType = STATE.caseRecord?.propertyType || STATE.factsObj?.subject?.propertyType || '';
+
+  const [influenceRes, historyRes] = await Promise.all([
+    apiFetch(`/api/learning/influence/${encodeURIComponent(sectionId)}?formType=${encodeURIComponent(formType)}&propertyType=${encodeURIComponent(propertyType)}`).catch(() => null),
+    apiFetch(`/api/learning/suggestion-history/${STATE.caseId}`).catch(() => null),
+  ]);
+
+  let html = '<div class="why-drawer">';
+  html += '<div class="why-drawer-head"><span class="why-drawer-title">Why This Suggestion</span></div>';
+
+  // Influence factors
+  const influence = (influenceRes && !influenceRes.error) ? influenceRes : null;
+  if (influence && influence.influenceFactors) {
+    const factors = influence.influenceFactors;
+    html += '<div style="margin-bottom:8px;">';
+    if (factors.suggestion_acceptance != null) {
+      html += _whyFactor('Suggestion Acceptance', factors.suggestion_acceptance, factors.suggestion_acceptance);
+    }
+    if (factors.modification_rate != null) {
+      html += _whyFactor('Modification Rate', factors.modification_rate, 1 - factors.modification_rate);
+    }
+    if (factors.revision_patterns != null) {
+      html += _whyFactor('Revision Patterns', factors.revision_patterns, factors.revision_patterns);
+    }
+    html += '</div>';
+  }
+
+  // Top patterns from influence
+  if (influence && influence.topPatterns && influence.topPatterns.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;">TOP PATTERNS</div>';
+    influence.topPatterns.forEach(p => {
+      const rate = p.acceptanceRate != null ? Math.round(p.acceptanceRate * 100) : 0;
+      html +=
+        `<div class="why-factor">` +
+          `<span class="why-factor-name">${esc(p.type || p.suggestionType || '')}</span>` +
+          `<span class="why-factor-value">${rate}% accepted</span>` +
+        `</div>`;
+    });
+  }
+
+  // Revision stats from influence
+  if (influence && influence.revisionStats) {
+    const rs = influence.revisionStats;
+    html += `<div style="font-size:10px;margin-top:6px;color:var(--muted);">` +
+      `Avg change ratio: <strong>${rs.averageChangeRatio != null ? Math.round(rs.averageChangeRatio * 100) + '%' : '—'}</strong> | ` +
+      `Sections changed: <strong>${rs.sectionsChanged || 0}/${rs.totalSections || 0}</strong>` +
+    `</div>`;
+  }
+
+  // Recent suggestion history for this case (field-specific)
+  const history = (historyRes && !historyRes.error) ? (historyRes.outcomes || historyRes.rows || []) : [];
+  const fieldHistory = history.filter(h => h.sectionId === sectionId || h.section_id === sectionId);
+  if (fieldHistory.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:8px;margin-bottom:4px;">RECENT DECISIONS</div>';
+    fieldHistory.slice(0, 5).forEach(h => {
+      const accepted = h.accepted;
+      const modified = h.modified;
+      const icon = accepted ? (modified ? '~' : '+') : 'x';
+      const iconColor = accepted ? 'var(--ok)' : 'var(--danger)';
+      const text = h.suggestedText || h.suggested_text || '';
+      html +=
+        `<div style="display:flex;align-items:flex-start;gap:6px;padding:2px 0;font-size:10px;">` +
+          `<span style="color:${iconColor};font-weight:900;min-width:10px;">${icon}</span>` +
+          `<span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px;">${esc(text.slice(0, 80))}</span>` +
+        `</div>`;
+    });
+  }
+
+  if (!influence && !fieldHistory.length) {
+    html += '<div class="hint">No learning data available for this section yet. Complete assignments to build history.</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function _whyFactor(name, value, barRatio) {
+  const pct = Math.round((value || 0) * 100);
+  const barWidth = Math.round((barRatio || 0) * 100);
+  return (
+    `<div class="why-factor">` +
+      `<span class="why-factor-name">${esc(name)}</span>` +
+      `<div class="why-factor-bar"><div class="why-factor-fill" style="width:${barWidth}%;"></div></div>` +
+      `<span class="why-factor-value">${pct}%</span>` +
+    `</div>`
+  );
+}
+
+// ── Memory Health Tools ─────────────────────────────────────────────────────
+
+async function memHealthScan() {
+  const statsEl = $('memHealthStats');
+  const bodyEl = $('memHealthBody');
+  if (!bodyEl) return;
+  if (statsEl) statsEl.innerHTML = '';
+  bodyEl.innerHTML = '<div class="hint">Scanning memory health...</div>';
+
+  // Fetch KB status and approved memory for analysis
+  const [kbRes, approvedRes, stagingRes] = await Promise.all([
+    apiFetch('/api/kb/status').catch(() => null),
+    apiFetch('/api/memory/approved?limit=500').catch(() => null),
+    apiFetch('/api/memory/staging/summary').catch(() => null),
+  ]);
+
+  // KB stats
+  const kb = (kbRes && !kbRes.error) ? kbRes : {};
+  const totalItems = kb.totalItems || kb.approvedCount || 0;
+  const stagingPending = stagingRes?.pending || stagingRes?.pendingCount || 0;
+
+  // Analyze approved items for health issues
+  const items = (approvedRes && !approvedRes.error) ? (approvedRes.items || approvedRes.rows || []) : [];
+
+  const now = Date.now();
+  const STALE_DAYS = 180;
+  const WEAK_QUALITY = 30;
+
+  // Detect stale items (not updated in 180+ days)
+  const staleItems = items.filter(item => {
+    const updated = item.updatedAt || item.updated_at || item.createdAt || item.created_at;
+    if (!updated) return false;
+    const age = (now - new Date(updated).getTime()) / (1000 * 60 * 60 * 24);
+    return age > STALE_DAYS;
+  });
+
+  // Detect weak items (quality score < 30)
+  const weakItems = items.filter(item => {
+    const qs = item.qualityScore ?? item.quality_score;
+    return qs != null && qs < WEAK_QUALITY;
+  });
+
+  // Detect duplicates (same text hash)
+  const hashMap = {};
+  const duplicateItems = [];
+  items.forEach(item => {
+    const hash = item.textHash || item.text_hash;
+    if (!hash) return;
+    if (hashMap[hash]) {
+      duplicateItems.push(item);
+    } else {
+      hashMap[hash] = item;
+    }
+  });
+
+  // Render stats
+  if (statsEl) {
+    statsEl.innerHTML =
+      `<div class="mem-health-grid">` +
+        _memHealthStat(totalItems, 'Total Items') +
+        _memHealthStat(stagingPending, 'Pending Review') +
+        _memHealthStat(staleItems.length, 'Stale (180d+)') +
+        _memHealthStat(duplicateItems.length, 'Duplicates') +
+        _memHealthStat(weakItems.length, 'Weak (QS<30)') +
+      `</div>`;
+  }
+
+  // Render issues
+  let html = '';
+  const totalIssues = staleItems.length + duplicateItems.length + weakItems.length;
+
+  if (totalIssues === 0) {
+    html = '<div class="hint" style="margin-top:8px;">Memory is healthy. No stale, duplicate, or weak items detected.</div>';
+  } else {
+    html += `<div style="margin-top:8px;">`;
+
+    if (staleItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--warn);margin-bottom:6px;">Stale Items (${staleItems.length})</h4>`;
+      staleItems.slice(0, 10).forEach(item => {
+        html += _memHealthItemRow(item, 'stale');
+      });
+      if (staleItems.length > 10) html += `<div class="hint">${staleItems.length - 10} more stale items...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneStale()">Archive All Stale</button></div>`;
+    }
+
+    if (duplicateItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:#8ac4ff;margin-top:10px;margin-bottom:6px;">Duplicates (${duplicateItems.length})</h4>`;
+      duplicateItems.slice(0, 10).forEach(item => {
+        html += _memHealthItemRow(item, 'duplicate');
+      });
+      if (duplicateItems.length > 10) html += `<div class="hint">${duplicateItems.length - 10} more duplicates...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneDuplicates()">Remove Duplicates</button></div>`;
+    }
+
+    if (weakItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--danger);margin-top:10px;margin-bottom:6px;">Weak Quality (${weakItems.length})</h4>`;
+      weakItems.slice(0, 10).forEach(item => {
+        const qs = item.qualityScore ?? item.quality_score ?? 0;
+        html += _memHealthItemRow(item, 'weak', `QS: ${qs}`);
+      });
+      if (weakItems.length > 10) html += `<div class="hint">${weakItems.length - 10} more weak items...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneWeak()">Archive Weak Items</button></div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function _memHealthStat(value, label) {
+  return (
+    `<div class="mem-health-stat">` +
+      `<div class="mem-health-value">${esc(String(value))}</div>` +
+      `<div class="mem-health-label">${esc(label)}</div>` +
+    `</div>`
+  );
+}
+
+function _memHealthItemRow(item, cls, extra) {
+  const text = item.text || '';
+  const bucket = item.bucket || item.source_type || '';
+  return (
+    `<div class="mem-health-item ${cls}">` +
+      `<span class="learn-pattern-type">${esc(bucket)}</span>` +
+      `<span class="mem-health-item-text">${esc(text.slice(0, 80))}</span>` +
+      (extra ? `<span style="font-size:10px;font-weight:700;font-family:var(--mono);">${esc(extra)}</span>` : '') +
+    `</div>`
+  );
+}
+
+async function memHealthPruneStale() {
+  if (!confirm('Archive all memory items older than 180 days?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Archiving stale items...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const now = Date.now();
+  const staleIds = items.filter(item => {
+    const updated = item.updatedAt || item.updated_at || item.createdAt || item.created_at;
+    return updated && (now - new Date(updated).getTime()) / (1000 * 60 * 60 * 24) > 180;
+  }).map(i => i.id);
+
+  let archived = 0;
+  for (const id of staleIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'PATCH', body: { active: false } }).catch(() => null);
+    if (r && !r.error) archived++;
+  }
+  memHealthScan();
+}
+
+async function memHealthPruneDuplicates() {
+  if (!confirm('Remove duplicate memory items (keeps the first occurrence)?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Removing duplicates...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const seen = {};
+  const dupeIds = [];
+  items.forEach(item => {
+    const hash = item.textHash || item.text_hash;
+    if (!hash) return;
+    if (seen[hash]) dupeIds.push(item.id);
+    else seen[hash] = true;
+  });
+
+  let removed = 0;
+  for (const id of dupeIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'DELETE' }).catch(() => null);
+    if (r && !r.error) removed++;
+  }
+  memHealthScan();
+}
+
+async function memHealthPruneWeak() {
+  if (!confirm('Archive all memory items with quality score below 30?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Archiving weak items...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const weakIds = items.filter(i => {
+    const qs = i.qualityScore ?? i.quality_score;
+    return qs != null && qs < 30;
+  }).map(i => i.id);
+
+  let archived = 0;
+  for (const id of weakIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'PATCH', body: { active: false } }).catch(() => null);
+    if (r && !r.error) archived++;
+  }
+  memHealthScan();
+}
