@@ -593,6 +593,36 @@ button.sm{padding:5px 9px;font-size:11px;}
 .gp-summary-pass{color:var(--ok);}
 .gp-summary-fail{color:var(--danger);}
 .gp-summary-time{color:var(--muted);font-size:11px;font-weight:400;}
+/* ── Phase 9: Valuation Desk ─────────────────────────────────────────────── */
+.val-cand{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
+.val-cand:hover{border-color:rgba(215,179,90,.3);}
+.val-cand-score{font-size:14px;font-weight:900;font-family:var(--mono);min-width:36px;text-align:center;}
+.val-cand-score.t1{color:var(--ok);}.val-cand-score.t2{color:var(--gold);}.val-cand-score.t3{color:var(--muted);}.val-cand-score.t4{color:var(--danger);}
+.val-cand-tier{font-size:8px;padding:1px 5px;border-radius:999px;border:1px solid var(--border);font-weight:800;}
+.val-cand-actions{display:flex;gap:3px;}
+.val-grid-table{width:100%;border-collapse:collapse;font-size:10px;}
+.val-grid-table th,.val-grid-table td{padding:4px 6px;border:1px solid var(--border);text-align:center;}
+.val-grid-table th{background:var(--surface);font-weight:700;text-transform:uppercase;letter-spacing:.3px;font-size:9px;}
+.val-grid-table td.val-grid-label{text-align:left;font-weight:600;min-width:100px;}
+.val-grid-table .val-grid-value{font-family:var(--mono);font-weight:700;}
+.val-adj-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
+.val-adj-cat{font-weight:700;min-width:120px;font-size:10px;}
+.val-adj-vals{display:flex;gap:12px;font-family:var(--mono);font-size:10px;}
+.val-adj-status{font-size:8px;padding:1px 5px;border-radius:999px;font-weight:800;border:1px solid;}
+.val-adj-status.approved{color:var(--ok);border-color:rgba(85,209,143,.35);}
+.val-adj-status.pending{color:var(--warn);border-color:rgba(245,200,66,.35);}
+.val-adj-status.deferred{color:var(--muted);border-color:var(--border);}
+.val-burden-bar{height:6px;border-radius:3px;background:var(--surface);overflow:hidden;margin-top:2px;}
+.val-burden-fill{height:100%;border-radius:3px;transition:width .3s;}
+.val-burden-fill.ok{background:var(--ok);}.val-burden-fill.warn{background:var(--gold);}.val-burden-fill.danger{background:var(--danger);}
+.val-approach-card{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+.val-approach-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+.val-approach-value{font-size:18px;font-weight:900;font-family:var(--mono);color:var(--gold);margin-top:2px;}
+.val-final-box{border:2px solid var(--gold);border-radius:12px;padding:12px 16px;text-align:center;background:rgba(215,179,90,.03);}
+.val-final-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.val-final-value{font-size:24px;font-weight:900;font-family:var(--mono);color:var(--gold);margin-top:4px;}
+.val-income-row,.val-cost-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
+.val-income-row span:last-child,.val-cost-row span:last-child{font-family:var(--mono);font-weight:700;}
 </style>
 </head>
 <body>
@@ -647,6 +677,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('qc')">QC Grade</div>
   <div class="tab" onclick="showTab('voice')">Voice</div>
   <div class="tab" onclick="showTab('intel')">Intel</div>
+  <div class="tab" onclick="showTab('valuation')">Valuation</div>
   <div class="tab" onclick="showTab('docs')">Docs</div>
   <div class="tab" onclick="showTab('memory')">Memory</div>
   <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
@@ -1777,6 +1808,136 @@ button.sm{padding:5px 9px;font-size:11px;}
     </div>
   </div>
 
+</div>
+
+<!-- ===== TAB: VALUATION (Phase 9 — Unified Valuation Desk) ===== -->
+<div class="page" id="tab-valuation">
+  <div class="col narrow">
+
+    <!-- Comp Candidate Queue Card -->
+    <div class="card">
+      <div class="card-head"><h3>Comp Candidates</h3><button class="ghost sm" onclick="valLoadCandidates()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Queue of comparable candidates with scoring, tier, and accept/reject/hold workflow.</div>
+        <div id="valCandidateList"><div class="hint">Build intelligence first to populate candidates.</div></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <button class="sm" onclick="valBuildIntel()">Build Intelligence</button>
+        </div>
+        <div id="valCandidateStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Approach Summary Card -->
+    <div class="card">
+      <div class="card-head"><h3>Approach Values</h3><button class="ghost sm" onclick="valLoadReconciliation()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="valApproachSummary"><div class="hint">Complete valuation approaches to see summary.</div></div>
+      </div>
+    </div>
+
+    <!-- Reconciliation Card -->
+    <div class="card">
+      <div class="card-head"><h3>Reconciliation</h3></div>
+      <div class="card-body">
+        <div id="valReconBody"><div class="hint">Set approach values and weights to reconcile.</div></div>
+        <div class="sep" style="margin:8px 0;"></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Weights</div>
+        <div style="display:flex;gap:6px;font-size:11px;margin-bottom:6px;">
+          <div><label style="font-size:10px;">Sales</label><input id="valWtSales" type="number" min="0" max="1" step="0.05" value="0.50" style="width:60px;padding:4px;font-size:11px;"/></div>
+          <div><label style="font-size:10px;">Income</label><input id="valWtIncome" type="number" min="0" max="1" step="0.05" value="0.25" style="width:60px;padding:4px;font-size:11px;"/></div>
+          <div><label style="font-size:10px;">Cost</label><input id="valWtCost" type="number" min="0" max="1" step="0.05" value="0.25" style="width:60px;padding:4px;font-size:11px;"/></div>
+        </div>
+        <div class="btnrow">
+          <button class="sm" onclick="valSaveWeights()">Save Weights</button>
+          <button class="sm sec" onclick="valCalculateFinal()">Calculate Final</button>
+        </div>
+        <div id="valFinalValue" style="margin-top:8px;"></div>
+
+        <div class="sep" style="margin:8px 0;"></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Reconciliation Memo</div>
+        <textarea id="valReconNarrative" rows="5" placeholder="Summarize approach strengths, weaknesses, and reasoning for the final value opinion..." style="font-size:11px;"></textarea>
+        <div class="btnrow">
+          <button class="sm" onclick="valSaveNarrative()">Save Memo</button>
+        </div>
+        <div id="valReconStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col wide">
+
+    <!-- Comp Grid Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Comp Grid</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="sm sec" onclick="valLoadGrid()">Refresh</button>
+          <button class="sm sec" onclick="valLoadGridSummary()">Summary</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="valGridBody"><div class="hint">Accept candidates into grid slots to build the comparison grid.</div></div>
+        <div id="valGridSummary" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Adjustment Support Notebook Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Adjustment Notebook</h3>
+        <button class="sm sec" onclick="valLoadAdjustments()">Refresh</button>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Review and document adjustment decisions per comp per category. All adjustments require visible evidence and rationale.</div>
+        <div style="margin-bottom:8px;">
+          <select id="valAdjSlot" onchange="valLoadAdjustments()" style="width:auto;min-width:100px;font-size:11px;padding:4px 8px;">
+            <option value="1">Slot 1</option><option value="2">Slot 2</option><option value="3">Slot 3</option>
+            <option value="4">Slot 4</option><option value="5">Slot 5</option><option value="6">Slot 6</option>
+          </select>
+        </div>
+        <div id="valAdjBody"><div class="hint">Select a grid slot to view adjustments.</div></div>
+        <div id="valAdjStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Burden & Contradiction Visibility Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Burden &amp; Contradictions</h3>
+        <button class="sm sec" onclick="valLoadBurden()">Refresh</button>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Net/gross adjustment burden per comp and fact contradictions affecting valuation support.</div>
+        <div id="valBurdenBody"><div class="hint">Load grid to see burden metrics.</div></div>
+        <div id="valContradictions" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Income Approach Card -->
+    <div class="card">
+      <div class="card-head"><h3>Income Approach</h3><button class="ghost sm" onclick="valLoadIncome()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="valIncomeBody"><div class="hint">Load income approach data.</div></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <button class="sm" onclick="valCalcIncome()">Calculate</button>
+        </div>
+        <div id="valIncomeStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Cost Approach Card -->
+    <div class="card">
+      <div class="card-head"><h3>Cost Approach</h3><button class="ghost sm" onclick="valLoadCost()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="valCostBody"><div class="hint">Load cost approach data.</div></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <button class="sm" onclick="valCalcCost()">Calculate</button>
+        </div>
+        <div id="valCostStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ===== TAB: DOCS (Phase 5 — Document Intelligence) ===== -->
