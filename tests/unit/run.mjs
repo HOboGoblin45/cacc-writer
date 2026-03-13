@@ -67,6 +67,7 @@ const suites = [
   'inspectionWorkflow.test.mjs',
   'exportLayer.test.mjs',
   'securityGovernance.test.mjs',
+  'securityComplete.test.mjs',
   'feedbackLoop.test.mjs',
   'contradictionLifecycle.test.mjs',
   'learningLoop.test.mjs',
