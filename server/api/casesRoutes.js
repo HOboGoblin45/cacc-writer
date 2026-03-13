@@ -96,6 +96,12 @@ import {
   FRESHNESS,
 } from '../services/sectionPolicyService.js';
 import {
+  evaluateAllSectionsFreshness,
+  evaluateSectionFreshness,
+  detectChangedFactPaths,
+  onFactsChanged,
+} from '../services/sectionFreshnessService.js';
+import {
   listInsertionRuns,
   getInsertionRun,
   getInsertionRunItems,
@@ -604,14 +610,34 @@ router.get('/:caseId/workspace', (req, res) => {
       'sca_summary', 'reconciliation', 'prior_sales', 'exposure_time',
       'cost_approach_summary', 'income_approach_summary',
     ];
+
+    // Batch freshness evaluation (one DB query + staleness check for all sections)
+    let freshnessMap = {};
+    try {
+      const freshnessResult = evaluateAllSectionsFreshness(req.params.caseId);
+      for (const s of freshnessResult.sections) {
+        freshnessMap[s.sectionId] = s;
+      }
+      workspace.sectionFreshnessSummary = freshnessResult.summary;
+    } catch {
+      workspace.sectionFreshnessSummary = { total: 0, current: 0, stale: 0, notGenerated: 0 };
+    }
+
     for (const sid of narrativeSections) {
       const pol = buildSectionPolicy(sid, projection.facts || {});
+      const fresh = freshnessMap[sid] || null;
       sectionPolicySummary[sid] = {
         profileId: pol.profileId,
         promptVersion: pol.promptVersion,
         hasBlockers: pol.missingFacts.hasBlockers,
         missingRequiredCount: pol.missingFacts.required.length,
         missingRecommendedCount: pol.missingFacts.recommended.length,
+        freshnessStatus: fresh ? fresh.freshness : 'not_generated',
+        qualityScore: fresh ? fresh.qualityScore : null,
+        regenerationCount: fresh ? fresh.regenerationCount : 0,
+        generatedAt: fresh ? fresh.generatedAt : null,
+        staleReasons: fresh ? fresh.reasons : [],
+        changedPaths: fresh ? fresh.changedPaths : [],
       };
     }
     workspace.sectionPolicySummary = sectionPolicySummary;
@@ -827,13 +853,33 @@ router.get('/:caseId/section-audit', (req, res) => {
       'income_approach_summary', 'cost_approach_summary',
     ];
 
+    // Batch freshness evaluation
+    let freshnessMap = {};
+    try {
+      const freshnessResult = evaluateAllSectionsFreshness(req.params.caseId);
+      for (const s of freshnessResult.sections) {
+        freshnessMap[s.sectionId] = s;
+      }
+    } catch { /* freshness data optional */ }
+
     for (const sectionId of sectionIds) {
       const policy = buildSectionPolicy(sectionId, facts);
-      const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts);
+      const fresh = freshnessMap[sectionId] || null;
+      const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts, {}, {
+        freshnessStatus: fresh?.freshness,
+        qualityScore: fresh?.qualityScore,
+        regenerationCount: fresh?.regenerationCount,
+      });
       sectionAudits[sectionId] = {
         policy,
         regeneratePolicy,
         promptVersion: getPromptVersion(sectionId),
+        freshnessStatus: fresh ? fresh.freshness : 'not_generated',
+        qualityScore: fresh ? fresh.qualityScore : null,
+        regenerationCount: fresh ? fresh.regenerationCount : 0,
+        generatedAt: fresh ? fresh.generatedAt : null,
+        staleReasons: fresh ? fresh.reasons : [],
+        changedPaths: fresh ? fresh.changedPaths : [],
       };
     }
 
@@ -858,7 +904,12 @@ router.get('/:caseId/section-audit/:sectionId', (req, res) => {
 
     const policy = buildSectionPolicy(sectionId, facts);
     const snapshot = buildDependencySnapshot(sectionId, facts);
-    const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts);
+    const freshness = evaluateSectionFreshness(req.params.caseId, sectionId);
+    const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts, {}, {
+      freshnessStatus: freshness.freshness,
+      qualityScore: freshness.qualityScore,
+      regenerationCount: freshness.regenerationCount,
+    });
     const staleDependents = findStaleDependentSections(sectionId);
 
     res.json({
@@ -870,6 +921,12 @@ router.get('/:caseId/section-audit/:sectionId', (req, res) => {
       regeneratePolicy,
       staleDependentSections: staleDependents,
       promptVersion: getPromptVersion(sectionId),
+      freshnessStatus: freshness.freshness,
+      qualityScore: freshness.qualityScore,
+      regenerationCount: freshness.regenerationCount,
+      generatedAt: freshness.generatedAt,
+      staleReasons: freshness.reasons,
+      changedPaths: freshness.changedPaths,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -1099,6 +1156,8 @@ router.put('/:caseId/workspace', (req, res) => {
       });
     }
 
+    const oldFacts = projection.facts || {};
+
     const result = applyWorkspacePatch({
       definition,
       projection,
@@ -1116,6 +1175,22 @@ router.put('/:caseId/workspace', (req, res) => {
       docText: projection.docText || {},
     }, { writeLegacyFiles: true });
 
+    // Fact-change cascade: detect changed paths and auto-invalidate stale sections
+    let factChangeInvalidation = null;
+    try {
+      const changedPaths = detectChangedFactPaths(oldFacts, result.facts || {});
+      if (changedPaths.length > 0) {
+        const invalidation = onFactsChanged(req.params.caseId, changedPaths);
+        factChangeInvalidation = {
+          changedPaths,
+          affectedSections: invalidation.affectedSections,
+          invalidatedSections: invalidation.invalidated,
+        };
+      }
+    } catch {
+      // Non-fatal: cascade failure should not block save
+    }
+
     res.json({
       ok: true,
       caseId: req.params.caseId,
@@ -1123,6 +1198,7 @@ router.put('/:caseId/workspace', (req, res) => {
       savedAt: result.savedAt,
       saved: result.saved,
       meta: updated.meta,
+      factChangeInvalidation,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -1512,6 +1588,10 @@ router.put('/:caseId/facts', (req, res) => {
     const meta = { ...(projection.meta || {}) };
     meta.updatedAt = new Date().toISOString();
 
+    // Detect which fact paths changed before saving
+    const oldFacts = projection.facts || {};
+    const changedPaths = detectChangedFactPaths(oldFacts, updated);
+
     saveCaseProjection({
       caseId: req.params.caseId,
       meta,
@@ -1521,7 +1601,22 @@ router.put('/:caseId/facts', (req, res) => {
       history: projection.history || {},
       docText: projection.docText || {},
     });
-    res.json({ ok: true, facts: updated });
+
+    // Auto-invalidate sections that depend on changed facts
+    let invalidation = { affectedSections: [], invalidated: [] };
+    if (changedPaths.length > 0) {
+      invalidation = onFactsChanged(req.params.caseId, changedPaths);
+    }
+
+    res.json({
+      ok: true,
+      facts: updated,
+      factChangeInvalidation: {
+        changedPaths,
+        affectedSections: invalidation.affectedSections,
+        invalidatedSections: invalidation.invalidated,
+      },
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
