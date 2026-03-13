@@ -24,6 +24,7 @@ import {
 import {
   prepareInsertionRun, executeInsertionRun,
   buildDryRunReport, resumeInsertionRun,
+  manualRollbackItem, batchRollback,
 } from '../insertion/insertionRunEngine.js';
 import { executeReplay, executeSelectiveReplay } from '../insertion/replayEngine.js';
 import { buildInsertionDiff } from '../insertion/diffEngine.js';
@@ -551,6 +552,45 @@ router.post('/cases/:caseId/insertion/runs/:runId/resume', async (req, res) => {
   } catch (err) {
     log.error('insertion:resume', { error: err.message });
     sendError(res, 500, 'INSERTION_RESUME_FAILED', err.message);
+  }
+});
+
+// ── Manual rollback endpoints ─────────────────────────────────────────────────
+
+router.post('/cases/:caseId/insertion/rollback/:itemId', async (req, res) => {
+  try {
+    const { caseId, itemId } = req.params;
+    const item = getInsertionRunItem(itemId);
+    if (!item) return sendError(res, 404, 'ITEM_NOT_FOUND', 'Insertion item not found');
+
+    const run = getInsertionRun(item.runId);
+    if (!run || run.caseId !== caseId) {
+      return sendError(res, 400, 'CASE_MISMATCH', 'Item does not belong to this case');
+    }
+
+    const verify = req.body?.verify !== false;
+    const result = await manualRollbackItem(itemId, { verify });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('insertion:manual-rollback', { error: err.message });
+    sendError(res, 500, 'ROLLBACK_FAILED', err.message);
+  }
+});
+
+router.post('/cases/:caseId/insertion/runs/:runId/rollback', async (req, res) => {
+  try {
+    const { caseId, runId } = req.params;
+    const run = getInsertionRun(runId);
+    if (!run) return sendError(res, 404, 'RUN_NOT_FOUND', 'Insertion run not found');
+    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
+
+    const verify = req.body?.verify !== false;
+    const fieldIds = Array.isArray(req.body?.fieldIds) ? req.body.fieldIds : undefined;
+    const result = await batchRollback(runId, { verify, fieldIds });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('insertion:batch-rollback', { error: err.message });
+    sendError(res, 500, 'BATCH_ROLLBACK_FAILED', err.message);
   }
 });
 
