@@ -89,6 +89,61 @@ import {
   exportConditions,
 } from '../inspection/conditionService.js';
 
+import { z } from 'zod';
+import { parsePayload } from '../utils/routeUtils.js';
+
+const createInspectionSchema = z.object({
+  inspectionDate: z.string().max(30).optional(),
+  inspectionTime: z.string().max(20).optional(),
+  inspectorName: z.string().max(200).optional(),
+  inspectionType: z.string().max(60).optional(),
+  notes: z.string().max(4000).optional(),
+}).passthrough();
+
+const updateInspectionSchema = z.object({}).passthrough();
+
+const completeInspectionSchema = z.object({
+  completionNotes: z.string().max(4000).optional(),
+}).passthrough();
+
+const rescheduleSchema = z.object({
+  newDate: z.string().max(30),
+  newTime: z.string().max(20).optional(),
+}).passthrough();
+
+const addPhotoSchema = z.object({
+  filename: z.string().max(255).optional(),
+  category: z.string().max(60).optional(),
+  caption: z.string().max(500).optional(),
+  data: z.string().optional(),
+}).passthrough();
+
+const updatePhotoSchema = z.object({}).passthrough();
+
+const reorderPhotosSchema = z.object({
+  category: z.string().max(60).optional(),
+  orderedIds: z.array(z.string().max(80)),
+}).passthrough();
+
+const addMeasurementSchema = z.object({
+  level: z.string().max(60).optional(),
+  area_type: z.string().max(60).optional(),
+  length: z.number().optional(),
+  width: z.number().optional(),
+  area: z.number().optional(),
+}).passthrough();
+
+const updateMeasurementSchema = z.object({}).passthrough();
+
+const addConditionSchema = z.object({
+  category: z.string().max(100).optional(),
+  component: z.string().max(200).optional(),
+  rating: z.string().max(40).optional(),
+  description: z.string().max(2000).optional(),
+}).passthrough();
+
+const updateConditionSchema = z.object({}).passthrough();
+
 const router = Router();
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -99,7 +154,9 @@ const router = Router();
 router.post('/cases/:caseId/inspections', (req, res) => {
   try {
     const { caseId } = req.params;
-    const result = createInspection(caseId, req.body);
+    const body = parsePayload(createInspectionSchema, req.body || {}, res);
+    if (!body) return;
+    const result = createInspection(caseId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -145,7 +202,9 @@ router.get('/cases/:caseId/inspections/:inspectionId', (req, res) => {
 router.put('/cases/:caseId/inspections/:inspectionId', (req, res) => {
   try {
     const { inspectionId } = req.params;
-    const result = updateInspection(inspectionId, req.body);
+    const body = parsePayload(updateInspectionSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updateInspection(inspectionId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -179,7 +238,9 @@ router.post('/cases/:caseId/inspections/:inspectionId/start', (req, res) => {
 router.post('/cases/:caseId/inspections/:inspectionId/complete', (req, res) => {
   try {
     const { inspectionId } = req.params;
-    const result = completeInspection(inspectionId, req.body);
+    const body = parsePayload(completeInspectionSchema, req.body || {}, res);
+    if (!body) return;
+    const result = completeInspection(inspectionId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -213,8 +274,9 @@ router.post('/cases/:caseId/inspections/:inspectionId/cancel', (req, res) => {
 router.post('/cases/:caseId/inspections/:inspectionId/reschedule', (req, res) => {
   try {
     const { inspectionId } = req.params;
-    const { newDate, newTime } = req.body || {};
-    const result = rescheduleInspection(inspectionId, newDate, newTime);
+    const body = parsePayload(rescheduleSchema, req.body || {}, res);
+    if (!body) return;
+    const result = rescheduleInspection(inspectionId, body.newDate, body.newTime);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -252,7 +314,9 @@ router.get('/cases/:caseId/inspections/:inspectionId/summary', (req, res) => {
 router.post('/cases/:caseId/inspections/:inspectionId/photos', (req, res) => {
   try {
     const { caseId, inspectionId } = req.params;
-    const result = addPhoto(inspectionId, caseId, req.body);
+    const body = parsePayload(addPhotoSchema, req.body || {}, res);
+    if (!body) return;
+    const result = addPhoto(inspectionId, caseId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -294,7 +358,9 @@ router.get('/cases/:caseId/photos', (req, res) => {
 router.put('/cases/:caseId/photos/:photoId', (req, res) => {
   try {
     const { photoId } = req.params;
-    const result = updatePhoto(photoId, req.body);
+    const body = parsePayload(updatePhotoSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updatePhoto(photoId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -328,8 +394,9 @@ router.delete('/cases/:caseId/photos/:photoId', (req, res) => {
 router.post('/cases/:caseId/inspections/:inspectionId/photos/reorder', (req, res) => {
   try {
     const { inspectionId } = req.params;
-    const { category, orderedIds } = req.body || {};
-    const result = reorderPhotos(inspectionId, category, orderedIds);
+    const body = parsePayload(reorderPhotosSchema, req.body || {}, res);
+    if (!body) return;
+    const result = reorderPhotos(inspectionId, body.category, body.orderedIds);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -350,7 +417,9 @@ router.post('/cases/:caseId/inspections/:inspectionId/photos/reorder', (req, res
 router.post('/cases/:caseId/inspections/:inspectionId/measurements', (req, res) => {
   try {
     const { caseId, inspectionId } = req.params;
-    const result = addMeasurement(inspectionId, caseId, req.body);
+    const body = parsePayload(addMeasurementSchema, req.body || {}, res);
+    if (!body) return;
+    const result = addMeasurement(inspectionId, caseId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -393,7 +462,9 @@ router.get('/cases/:caseId/inspections/:inspectionId/measurements/gla', (req, re
 router.put('/cases/:caseId/measurements/:measurementId', (req, res) => {
   try {
     const { measurementId } = req.params;
-    const result = updateMeasurement(measurementId, req.body);
+    const body = parsePayload(updateMeasurementSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updateMeasurement(measurementId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -431,7 +502,9 @@ router.delete('/cases/:caseId/measurements/:measurementId', (req, res) => {
 router.post('/cases/:caseId/inspections/:inspectionId/conditions', (req, res) => {
   try {
     const { caseId, inspectionId } = req.params;
-    const result = addCondition(inspectionId, caseId, req.body);
+    const body = parsePayload(addConditionSchema, req.body || {}, res);
+    if (!body) return;
+    const result = addCondition(inspectionId, caseId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -477,7 +550,9 @@ router.get('/cases/:caseId/inspections/:inspectionId/conditions/summary', (req, 
 router.put('/cases/:caseId/conditions/:conditionId', (req, res) => {
   try {
     const { conditionId } = req.params;
-    const result = updateCondition(conditionId, req.body);
+    const body = parsePayload(updateConditionSchema, req.body || {}, res);
+    if (!body) return;
+    const result = updateCondition(conditionId, body);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });

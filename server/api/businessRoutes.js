@@ -57,7 +57,9 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
+import { parsePayload } from '../utils/routeUtils.js';
 
 import {
   createQuote, getQuote, listQuotes, updateQuote,
@@ -83,13 +85,81 @@ import {
   getPipelineSummary, getAppraisersWorkload, syncPipelineFromCase,
 } from '../business/pipelineService.js';
 
+const createQuoteSchema = z.object({
+  clientName: z.string().max(200),
+  propertyAddress: z.string().max(500).optional(),
+  formType: z.string().max(40).optional(),
+  propertyType: z.string().max(60).optional(),
+  feeAmount: z.number().positive().optional(),
+  notes: z.string().max(2000).optional(),
+}).passthrough();
+
+const updateQuoteSchema = z.object({}).passthrough();
+
+const calculateFeeSchema = z.object({
+  formType: z.string().max(40).optional(),
+  propertyType: z.string().max(60).optional(),
+  complexity: z.string().max(40).optional(),
+}).passthrough();
+
+const convertQuoteSchema = z.object({
+  caseId: z.string().max(80).optional(),
+}).passthrough();
+
+const createEngagementSchema = z.object({
+  caseId: z.string().max(80).optional(),
+  quoteId: z.string().max(80).optional(),
+  clientName: z.string().max(200).optional(),
+  formType: z.string().max(40).optional(),
+}).passthrough();
+
+const updateEngagementSchema = z.object({}).passthrough();
+
+const feeAdjustmentSchema = z.object({
+  amount: z.number(),
+  reason: z.string().max(500).optional(),
+}).passthrough();
+
+const createInvoiceSchema = z.object({
+  engagementId: z.string().max(80).optional(),
+  amount: z.number().positive().optional(),
+}).passthrough();
+
+const updateInvoiceSchema = z.object({}).passthrough();
+
+const recordPaymentSchema = z.object({
+  amount: z.number().positive(),
+  method: z.string().max(60).optional(),
+}).passthrough();
+
+const createPipelineSchema = z.object({
+  caseId: z.string().max(80).optional(),
+  clientName: z.string().max(200).optional(),
+}).passthrough();
+
+const updatePipelineSchema = z.object({}).passthrough();
+
+const advanceStageSchema = z.object({
+  stage: z.string().max(60),
+}).passthrough();
+
+const setPrioritySchema = z.object({
+  priority: z.union([z.string().max(20), z.number()]),
+}).passthrough();
+
+const addTagSchema = z.object({
+  tag: z.string().max(80),
+}).passthrough();
+
 const router = Router();
 
 // ── Quotes ──────────────────────────────────────────────────────────────────
 
 router.post('/business/quotes', (req, res) => {
   try {
-    const quote = createQuote(req.body);
+    const body = parsePayload(createQuoteSchema, req.body || {}, res);
+    if (!body) return;
+    const quote = createQuote(body);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-create', { error: err.message });
@@ -130,7 +200,9 @@ router.get('/business/quotes/:quoteId', (req, res) => {
 
 router.put('/business/quotes/:quoteId', (req, res) => {
   try {
-    const quote = updateQuote(req.params.quoteId, req.body);
+    const body = parsePayload(updateQuoteSchema, req.body || {}, res);
+    if (!body) return;
+    const quote = updateQuote(req.params.quoteId, body);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-update', { error: err.message });
@@ -180,7 +252,9 @@ router.post('/business/quotes/:quoteId/expire', (req, res) => {
 
 router.post('/business/quotes/:quoteId/convert', (req, res) => {
   try {
-    const result = convertQuoteToCaseAndEngagement(req.params.quoteId, req.body.caseId);
+    const body = parsePayload(convertQuoteSchema, req.body || {}, res);
+    if (!body) return;
+    const result = convertQuoteToCaseAndEngagement(req.params.quoteId, body.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:quote-convert', { error: err.message });
@@ -190,7 +264,9 @@ router.post('/business/quotes/:quoteId/convert', (req, res) => {
 
 router.post('/business/quotes/calculate-fee', (req, res) => {
   try {
-    const fee = calculateFee(req.body);
+    const body = parsePayload(calculateFeeSchema, req.body || {}, res);
+    if (!body) return;
+    const fee = calculateFee(body);
     res.json({ ok: true, fee });
   } catch (err) {
     log.error('api:quote-calculate', { error: err.message });
@@ -202,7 +278,9 @@ router.post('/business/quotes/calculate-fee', (req, res) => {
 
 router.post('/business/engagements', (req, res) => {
   try {
-    const engagement = createEngagement(req.body);
+    const body = parsePayload(createEngagementSchema, req.body || {}, res);
+    if (!body) return;
+    const engagement = createEngagement(body);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-create', { error: err.message });
@@ -254,7 +332,9 @@ router.get('/business/engagements/:engId', (req, res) => {
 
 router.put('/business/engagements/:engId', (req, res) => {
   try {
-    const engagement = updateEngagement(req.params.engId, req.body);
+    const body = parsePayload(updateEngagementSchema, req.body || {}, res);
+    if (!body) return;
+    const engagement = updateEngagement(req.params.engId, body);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-update', { error: err.message });
@@ -314,7 +394,9 @@ router.post('/business/engagements/:engId/cancel', (req, res) => {
 
 router.post('/business/engagements/:engId/fee-adjustment', (req, res) => {
   try {
-    const engagement = addFeeAdjustment(req.params.engId, req.body);
+    const body = parsePayload(feeAdjustmentSchema, req.body || {}, res);
+    if (!body) return;
+    const engagement = addFeeAdjustment(req.params.engId, body);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-fee-adj', { error: err.message });
@@ -326,7 +408,9 @@ router.post('/business/engagements/:engId/fee-adjustment', (req, res) => {
 
 router.post('/business/invoices', (req, res) => {
   try {
-    const invoice = createInvoice(req.body);
+    const body = parsePayload(createInvoiceSchema, req.body || {}, res);
+    if (!body) return;
+    const invoice = createInvoice(body);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-create', { error: err.message });
@@ -377,7 +461,9 @@ router.get('/business/invoices/:invoiceId', (req, res) => {
 
 router.put('/business/invoices/:invoiceId', (req, res) => {
   try {
-    const invoice = updateInvoice(req.params.invoiceId, req.body);
+    const body = parsePayload(updateInvoiceSchema, req.body || {}, res);
+    if (!body) return;
+    const invoice = updateInvoice(req.params.invoiceId, body);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-update', { error: err.message });
@@ -397,7 +483,9 @@ router.post('/business/invoices/:invoiceId/issue', (req, res) => {
 
 router.post('/business/invoices/:invoiceId/payment', (req, res) => {
   try {
-    const invoice = recordPayment(req.params.invoiceId, req.body);
+    const body = parsePayload(recordPaymentSchema, req.body || {}, res);
+    if (!body) return;
+    const invoice = recordPayment(req.params.invoiceId, body);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-payment', { error: err.message });
@@ -469,7 +557,9 @@ router.get('/business/pipeline', (req, res) => {
 
 router.post('/business/pipeline', (req, res) => {
   try {
-    const entry = createPipelineEntry(req.body);
+    const body = parsePayload(createPipelineSchema, req.body || {}, res);
+    if (!body) return;
+    const entry = createPipelineEntry(body);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-create', { error: err.message });
@@ -490,7 +580,9 @@ router.get('/business/pipeline/:entryId', (req, res) => {
 
 router.put('/business/pipeline/:entryId', (req, res) => {
   try {
-    const entry = updatePipelineEntry(req.params.entryId, req.body);
+    const body = parsePayload(updatePipelineSchema, req.body || {}, res);
+    if (!body) return;
+    const entry = updatePipelineEntry(req.params.entryId, body);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-update', { error: err.message });
@@ -500,7 +592,9 @@ router.put('/business/pipeline/:entryId', (req, res) => {
 
 router.post('/business/pipeline/:entryId/advance', (req, res) => {
   try {
-    const entry = advanceStage(req.params.entryId, req.body.stage);
+    const body = parsePayload(advanceStageSchema, req.body || {}, res);
+    if (!body) return;
+    const entry = advanceStage(req.params.entryId, body.stage);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-advance', { error: err.message });
@@ -510,7 +604,9 @@ router.post('/business/pipeline/:entryId/advance', (req, res) => {
 
 router.post('/business/pipeline/:entryId/priority', (req, res) => {
   try {
-    const entry = setPriority(req.params.entryId, req.body.priority);
+    const body = parsePayload(setPrioritySchema, req.body || {}, res);
+    if (!body) return;
+    const entry = setPriority(req.params.entryId, body.priority);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-priority', { error: err.message });
@@ -520,7 +616,9 @@ router.post('/business/pipeline/:entryId/priority', (req, res) => {
 
 router.post('/business/pipeline/:entryId/tags', (req, res) => {
   try {
-    const entry = addTag(req.params.entryId, req.body.tag);
+    const body = parsePayload(addTagSchema, req.body || {}, res);
+    if (!body) return;
+    const entry = addTag(req.params.entryId, body.tag);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-add-tag', { error: err.message });

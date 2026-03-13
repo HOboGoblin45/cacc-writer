@@ -18,13 +18,53 @@ import {
   createTemplate, updateTemplate,
 } from '../export/bundleService.js';
 
+import { z } from 'zod';
+import { parsePayload } from '../utils/routeUtils.js';
+
+// ── Schemas ─────────────────────────────────────────────────────────────────
+
+const pdfExportSchema = z.object({
+  formType: z.string().max(40).optional(),
+  templateId: z.string().max(80).optional(),
+  options: z.record(z.unknown()).optional(),
+}).passthrough();
+
+const mismoExportSchema = z.object({
+  formType: z.string().max(40).optional(),
+  version: z.string().max(20).optional(),
+}).passthrough();
+
+const bundleSchema = z.object({
+  formats: z.array(z.string().max(20)).optional(),
+  templateId: z.string().max(80).optional(),
+}).passthrough();
+
+const deliverSchema = z.object({
+  exportJobId: z.string().min(1).max(80),
+  method: z.string().max(40).optional(),
+  recipient: z.string().max(200).optional(),
+}).passthrough();
+
+const confirmDeliverySchema = z.object({
+  method: z.string().max(40).optional(),
+}).passthrough();
+
+const createTemplateSchema = z.object({
+  name: z.string().min(1).max(200),
+  formType: z.string().max(40).optional(),
+}).passthrough();
+
+const updateTemplateSchema = z.object({}).passthrough();
+
 const router = Router();
 
 // ── PDF Export ──────────────────────────────────────────────────────────────
 
 router.post('/cases/:caseId/export/pdf', (req, res) => {
   try {
-    const result = generatePdf(req.params.caseId, req.body);
+    const body = parsePayload(pdfExportSchema, req.body || {}, res);
+    if (!body) return;
+    const result = generatePdf(req.params.caseId, body);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:export-pdf', { error: err.message });
@@ -46,7 +86,9 @@ router.get('/cases/:caseId/export/pdf/estimate', (req, res) => {
 
 router.post('/cases/:caseId/export/mismo', (req, res) => {
   try {
-    const result = generateMismo(req.params.caseId, req.body);
+    const body = parsePayload(mismoExportSchema, req.body || {}, res);
+    if (!body) return;
+    const result = generateMismo(req.params.caseId, body);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:export-mismo', { error: err.message });
@@ -68,7 +110,9 @@ router.get('/export/mismo/mapping/:formType', (req, res) => {
 
 router.post('/cases/:caseId/export/bundle', (req, res) => {
   try {
-    const bundle = createBundle(req.params.caseId, req.body);
+    const body = parsePayload(bundleSchema, req.body || {}, res);
+    if (!body) return;
+    const bundle = createBundle(req.params.caseId, body);
     res.json({ ok: true, bundle });
   } catch (err) {
     log.error('api:export-bundle', { error: err.message });
@@ -123,7 +167,9 @@ router.get('/cases/:caseId/export/jobs/:jobId/manifest', (req, res) => {
 
 router.post('/cases/:caseId/export/deliver', (req, res) => {
   try {
-    const delivery = createDeliveryRecord(req.body.exportJobId, req.body);
+    const body = parsePayload(deliverSchema, req.body || {}, res);
+    if (!body) return;
+    const delivery = createDeliveryRecord(body.exportJobId, body);
     res.json({ ok: true, delivery });
   } catch (err) {
     log.error('api:export-deliver', { error: err.message });
@@ -143,7 +189,9 @@ router.get('/cases/:caseId/export/deliveries', (req, res) => {
 
 router.post('/cases/:caseId/export/deliveries/:deliveryId/confirm', (req, res) => {
   try {
-    const delivery = confirmDelivery(req.params.deliveryId, req.body.method);
+    const body = parsePayload(confirmDeliverySchema, req.body || {}, res);
+    if (!body) return;
+    const delivery = confirmDelivery(req.params.deliveryId, body.method);
     res.json({ ok: true, delivery });
   } catch (err) {
     log.error('api:export-delivery-confirm', { error: err.message });
@@ -177,7 +225,9 @@ router.get('/export/templates', (req, res) => {
 
 router.post('/export/templates', (req, res) => {
   try {
-    const template = createTemplate(req.body);
+    const body = parsePayload(createTemplateSchema, req.body || {}, res);
+    if (!body) return;
+    const template = createTemplate(body);
     res.json({ ok: true, template });
   } catch (err) {
     log.error('api:export-template-create', { error: err.message });
@@ -187,7 +237,9 @@ router.post('/export/templates', (req, res) => {
 
 router.put('/export/templates/:templateId', (req, res) => {
   try {
-    const template = updateTemplate(req.params.templateId, req.body);
+    const body = parsePayload(updateTemplateSchema, req.body || {}, res);
+    if (!body) return;
+    const template = updateTemplate(req.params.templateId, body);
     res.json({ ok: true, template });
   } catch (err) {
     log.error('api:export-template-update', { error: err.message });

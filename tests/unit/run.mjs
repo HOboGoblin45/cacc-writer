@@ -66,6 +66,8 @@ const suites = [
   'inspectionWorkflow.test.mjs',
   'exportLayer.test.mjs',
   'securityGovernance.test.mjs',
+  'feedbackLoop.test.mjs',
+  'routeValidation.test.mjs',
 ];
 
 let totalPassed = 0;
