@@ -6406,6 +6406,7 @@ async function valEditAdj(slot, category) {
 
 async function valLoadBurden() {
   const el = $('valBurdenBody');
+  const el2 = $('valBurdenBody2');
   const cEl = $('valContradictions');
   if (!el || !activeCaseId) return;
   el.innerHTML = '<div class="hint">Loading...</div>';
@@ -6452,6 +6453,7 @@ async function valLoadBurden() {
         ).join('');
     }
   }
+  if (el2) el2.innerHTML = el.innerHTML;
 }
 
 // ── Income Approach ─────────────────────────────────────────────────────────
@@ -6488,6 +6490,8 @@ async function valLoadIncome() {
     });
   }
   el.innerHTML = html;
+  const el2 = $('valIncomeBody2');
+  if (el2) el2.innerHTML = html;
 }
 
 async function valCalcIncome() {
@@ -6531,6 +6535,8 @@ async function valLoadCost() {
   });
   html += '</div>';
   el.innerHTML = html;
+  const el2 = $('valCostBody2');
+  if (el2) el2.innerHTML = html;
 }
 
 async function valCalcCost() {
@@ -6583,10 +6589,12 @@ async function valLoadReconciliation() {
   if (d.income_weight != null) { const e = $('valWtIncome'); if (e) e.value = d.income_weight; }
   if (d.cost_weight != null) { const e = $('valWtCost'); if (e) e.value = d.cost_weight; }
 
-  // Narrative
+  // Narrative — sync both reconciliation textareas
   const narrative = d.reconciliation_narrative || d.reconciliationNarrative || '';
   const nEl = $('valReconNarrative');
+  const nEl2 = $('valReconNarrative2');
   if (nEl && narrative) nEl.value = narrative;
+  if (nEl2 && narrative) nEl2.value = narrative;
 
   // Final value
   const finalEl = $('valFinalValue');
@@ -6628,7 +6636,7 @@ async function valCalculateFinal() {
 
 async function valSaveNarrative() {
   if (!activeCaseId) return;
-  const narrative = $('valReconNarrative')?.value || '';
+  const narrative = $('valReconNarrative2')?.value || $('valReconNarrative')?.value || '';
   if (!narrative.trim()) { setStatus('valReconStatus', 'Enter a narrative first.', 'err'); return; }
   const res = await apiFetch(`/api/valuation/reconciliation/${activeCaseId}/narrative`, {
     method: 'PUT', body: { narrative }
