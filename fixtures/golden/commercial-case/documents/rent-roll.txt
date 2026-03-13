@@ -1,0 +1,48 @@
+RENT ROLL — 1400 South Grand Avenue East, Springfield, IL 62703
+As of: March 1, 2026
+Owner: Grand Avenue Properties LLC
+Property Manager: Angela Davis
+
+BUILDING A (4 units):
+Unit  Type      Size    Lease Start  Lease End    Monthly Rent  Status
+A-1   2BR/1BA   950sf   04/01/2025   03/31/2026   $1,050       Occupied
+A-2   2BR/1BA   950sf   07/01/2025   06/30/2026   $1,050       Occupied
+A-3   1BR/1BA   700sf   09/01/2025   08/31/2026   $825         Occupied
+A-4   1BR/1BA   700sf   01/01/2026   12/31/2026   $825         Occupied
+
+BUILDING B (4 units):
+Unit  Type      Size    Lease Start  Lease End    Monthly Rent  Status
+B-1   2BR/1BA   950sf   03/01/2025   02/28/2026   $1,025       Occupied*
+B-2   2BR/1BA   950sf   06/01/2025   05/31/2026   $1,050       Occupied
+B-3   3BR/2BA   1200sf  08/01/2025   07/31/2026   $1,350       Occupied
+B-4   1BR/1BA   700sf   —            —            —            VACANT
+
+BUILDING C (4 units):
+Unit  Type      Size    Lease Start  Lease End    Monthly Rent  Status
+C-1   2BR/1BA   950sf   05/01/2025   04/30/2026   $1,050       Occupied
+C-2   2BR/1BA   950sf   10/01/2025   09/30/2026   $1,075       Occupied
+C-3   3BR/2BA   1200sf  11/01/2025   10/31/2026   $1,350       Occupied
+C-4   1BR/1BA   700sf   02/01/2026   01/31/2027   $825         Occupied
+
+SUMMARY:
+  Total Units: 12
+  Occupied: 11 (91.7%)
+  Vacant: 1 (Unit B-4, 1BR/1BA — vacant since 01/15/2026, being turned)
+
+  Monthly Scheduled Rent (all units at contract): $12,250
+  Annual Scheduled Rent: $147,000
+  Current Monthly Collected (11 occupied): $11,475
+  Current Annual Collected (annualized): $137,700
+
+* Unit B-1 lease expired 02/28/2026; tenant is month-to-month pending renewal
+  at proposed $1,050/month.
+
+OTHER INCOME:
+  Laundry (2 machines per building, coin-op):  $300/month ($3,600/year)
+  Storage units (8 available, 6 rented @ $33):  $200/month ($2,400/year)
+
+  Total Other Income: $500/month ($6,000/year)
+
+SECURITY DEPOSITS HELD:
+  Range: $825 - $1,350 per unit (equal to one month's rent)
+  Total deposits held: $11,475

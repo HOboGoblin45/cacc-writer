@@ -1,0 +1,111 @@
+{
+  "assignment": {
+    "orderNumber": "GP-COMM-001",
+    "clientName": "Midwest Commercial Lending Corp",
+    "clientContact": "Brian Olsen",
+    "clientEmail": "bolsen@mwcl.example.com",
+    "intendedUse": "Mortgage lending — refinance",
+    "intendedUsers": "Midwest Commercial Lending Corp and its successors",
+    "effectiveDate": "2026-03-01",
+    "reportDueDate": "2026-03-28",
+    "feeAmount": 3500,
+    "propertyRightsAppraised": "Leased Fee",
+    "scopeOfWork": "Complete appraisal of a 12-unit apartment building using all three approaches to value. Sales Comparison, Income Capitalization, and Cost Approach required."
+  },
+  "subject": {
+    "address": "1400 South Grand Avenue East, Springfield, IL 62703",
+    "county": "Sangamon",
+    "propertyType": "Multifamily — Apartment (12 units)",
+    "legalDescription": "Lot 7, Block 12, Grand Avenue Industrial & Commercial Addition, as recorded in Plat Book 8, Page 92, Sangamon County Recorder's Office",
+    "parcelNumber": "22-04-228-007",
+    "censusTract": "0003.01",
+    "zoning": "R-3, Multi-Family Residential",
+    "zoningCompliance": "Legal conforming",
+    "highestBestUse": "Multi-family residential, as improved",
+    "floodZone": "Zone X (minimal flood hazard)",
+    "floodMapNumber": "17167C0310E",
+    "floodMapDate": "2019-09-26",
+    "ownerOfRecord": "Grand Avenue Properties LLC",
+    "yearBuilt": 1985,
+    "effectiveAge": 25,
+    "siteArea": "0.68 acres (29,621 sq ft)",
+    "siteDimensions": "148 x 200 (rectangular)",
+    "siteUtilities": {
+      "electricity": "Public (Ameren Illinois)",
+      "gas": "Public (Ameren Illinois)",
+      "water": "Public (City of Springfield)",
+      "sewer": "Public (Springfield Metro Sanitary District)"
+    },
+    "improvements": {
+      "buildingType": "2-story garden-style apartment, 3 buildings",
+      "constructionType": "Wood frame on concrete slab with crawl space",
+      "exteriorWalls": "Brick veneer over wood frame",
+      "roofType": "Hip roof, architectural shingle (replaced 2020)",
+      "totalGrossArea": 14400,
+      "totalNetRentableArea": 12960,
+      "unitMix": [
+        { "type": "1BR/1BA", "count": 4, "avgSize": 700, "monthlyRent": 825 },
+        { "type": "2BR/1BA", "count": 6, "avgSize": 950, "monthlyRent": 1050 },
+        { "type": "3BR/2BA", "count": 2, "avgSize": 1200, "monthlyRent": 1350 }
+      ],
+      "parking": "Surface lot, 18 spaces (1.5 per unit)",
+      "amenities": "On-site laundry (2 buildings), individual storage units, playground area",
+      "hvac": "Individual gas forced-air furnaces and central A/C per unit",
+      "waterHeaters": "Individual 40-gal gas per unit",
+      "condition": "Average — Functional with typical deferred maintenance for age. Common areas updated 2021. Parking lot resurfaced 2022.",
+      "quality": "Average quality, typical for suburban garden-style apartments in this market"
+    }
+  },
+  "income": {
+    "potentialGrossIncome": {
+      "unitRentalIncome": 147000,
+      "laundryIncome": 3600,
+      "storageIncome": 2400,
+      "parkingIncome": 0,
+      "totalPGI": 153000
+    },
+    "vacancyAndCollectionLoss": {
+      "rate": 0.06,
+      "amount": 9180
+    },
+    "effectiveGrossIncome": 143820,
+    "operatingExpenses": {
+      "realEstateTaxes": 18500,
+      "insurance": 8200,
+      "utilities": 7800,
+      "repairsAndMaintenance": 9600,
+      "management": 10067,
+      "reserves": 4800,
+      "lawnAndSnow": 3600,
+      "advertising": 1200,
+      "legal": 1000,
+      "totalExpenses": 64767
+    },
+    "netOperatingIncome": 79053,
+    "expenseRatio": 0.45,
+    "operatingExpensePerUnit": 5397
+  },
+  "transaction": {
+    "currentOwnerPurchaseDate": "2018-06-15",
+    "currentOwnerPurchasePrice": 780000,
+    "purposeOfAppraisal": "Refinance — existing loan maturity",
+    "currentLoanBalance": 520000,
+    "requestedLoanAmount": 650000
+  },
+  "neighborhood": {
+    "name": "South Grand / Medical District Area",
+    "location": "South-central Springfield, adjacent to SIU School of Medicine and Memorial Medical Center",
+    "builtUp": "Over 75%",
+    "growth": "Stable",
+    "propertyValues": "Stable",
+    "demandSupply": "In balance",
+    "predominantUse": "Mixed residential (single-family and multi-family) with commercial along arterials",
+    "employmentProximity": "Walking distance to Memorial Medical Center, SIU-SOM; 2 miles to State Capitol complex",
+    "boundaries": {
+      "north": "Cook Street",
+      "south": "Ash Street",
+      "east": "Martin Luther King Jr Drive",
+      "west": "First Street"
+    }
+  }
+}
