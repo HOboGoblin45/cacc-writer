@@ -412,6 +412,7 @@ async function loadCase(caseId) {
   setStatus('genStatus','Ready.','');
   _updateGenStrip();
   if(typeof workspaceOnCaseLoaded==='function')workspaceOnCaseLoaded();
+  showCaseBusinessCards();
   renderQuestionnaire([]);
   setStatus('questionnaireStatus','','');
   if(d.facts&&Object.keys(d.facts).filter(k=>k!=='extractedAt'&&k!=='updatedAt'&&k!=='workspace1004').length>0)await generateQuestions(true);
@@ -3783,3 +3784,1155 @@ setInterval(() => {
     loadCaseTimeline();
   }
 }, 60000);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 3: Governance Cards, Readiness Checklists, Missing-Facts Dashboard,
+//          Business Status Summary, Due-Date / Pipeline Dashboard
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Case Business Status ──────────────────────────────────────────────────────
+async function loadCaseBusinessStatus() {
+  const el = $('caseBusinessBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const [engRes, invRes, pipRes] = await Promise.all([
+    apiFetch('/api/business/engagements?caseId=' + STATE.caseId).catch(() => ({ ok: false })),
+    apiFetch('/api/business/invoices/summary').catch(() => ({ ok: false })),
+    apiFetch('/api/business/pipeline/summary').catch(() => ({ ok: false })),
+  ]);
+  const eng = engRes.ok ? (engRes.engagements || [])[0] : null;
+  const invSummary = invRes.ok ? invRes : {};
+  const pipSummary = pipRes.ok ? pipRes : {};
+
+  const fee = eng?.fee || eng?.agreedFee || '-';
+  const dueDate = eng?.dueDate ? new Date(eng.dueDate).toLocaleDateString() : '-';
+  const engStatus = eng?.status || '-';
+  const totalPipeline = pipSummary.totalPipelineValue || 0;
+  const totalInvoiced = invSummary.totalIssued || invSummary.totalInvoiced || 0;
+  const totalPaid = invSummary.totalPaid || 0;
+  const totalOverdue = invSummary.overdueCount || 0;
+
+  el.innerHTML =
+    `<div class="biz-status-grid">` +
+      `<div class="biz-metric"><span class="biz-metric-label">Fee</span><span class="biz-metric-value">${esc(typeof fee === 'number' ? '$' + fee.toLocaleString() : String(fee))}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Due Date</span><span class="biz-metric-value">${esc(dueDate)}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Engagement</span><span class="biz-metric-value">${esc(String(engStatus).replace(/_/g,' '))}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Pipeline Value</span><span class="biz-metric-value">$${Number(totalPipeline).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Invoiced</span><span class="biz-metric-value">$${Number(totalInvoiced).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Paid</span><span class="biz-metric-value ok">$${Number(totalPaid).toLocaleString()}</span></div>` +
+      (totalOverdue > 0
+        ? `<div class="biz-metric"><span class="biz-metric-label">Overdue</span><span class="biz-metric-value err">${totalOverdue}</span></div>`
+        : '') +
+    `</div>`;
+}
+
+// ── Case Readiness Checklist ──────────────────────────────────────────────────
+async function loadCaseReadiness() {
+  const el = $('caseReadinessBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const [preDraft, qcGate, freshness] = await Promise.all([
+    apiFetch(`/api/cases/${STATE.caseId}/pre-draft-check`).catch(() => ({ ok: false })),
+    apiFetch(`/api/cases/${STATE.caseId}/qc-approval-gate`).catch(() => ({ ok: false })),
+    apiFetch(`/api/governance/freshness/${STATE.caseId}`).catch(() => ({ ok: false })),
+  ]);
+
+  const gate = preDraft.ok ? preDraft.gate : null;
+  const approval = qcGate.ok ? qcGate.gate : null;
+  const fresh = freshness.ok ? freshness : null;
+
+  const items = [];
+
+  // Pre-draft gate
+  if (gate) {
+    items.push(rdnsItem(gate.ok, 'Pre-Draft Gate', gate.ok ? 'All required facts verified' : `${gate.summary?.missingRequiredFacts || 0} missing facts, ${gate.summary?.blockerConflicts || 0} blocker conflicts`));
+    items.push(rdnsItem(
+      (gate.summary?.provenanceCoveragePct || 0) >= 80,
+      'Provenance Coverage',
+      `${gate.summary?.provenanceCoveragePct || 0}% of facts have sources`,
+      (gate.summary?.provenanceCoveragePct || 0) >= 50 && (gate.summary?.provenanceCoveragePct || 0) < 80 ? 'warn' : null
+    ));
+  }
+
+  // Freshness
+  if (fresh) {
+    const allCurrent = (fresh.stale || 0) === 0;
+    items.push(rdnsItem(allCurrent, 'Section Freshness', allCurrent ? `All ${fresh.current || 0} sections current` : `${fresh.stale || 0} stale sections`));
+  }
+
+  // QC approval gate
+  if (approval) {
+    items.push(rdnsItem(approval.ok, 'QC Approval Gate', approval.ok ? 'Ready for finalization' : (approval.message || approval.code || 'Not ready')));
+    if (approval.openBlockerCount > 0) {
+      items.push(rdnsItem(false, 'QC Blockers', `${approval.openBlockerCount} open blocker findings`));
+    }
+    if (approval.staleSectionCount > 0) {
+      items.push(rdnsItem(false, 'Stale Sections', `${approval.staleSectionCount} sections need regeneration`));
+    }
+    if (approval.contradictionSummary && approval.contradictionSummary.open > 0) {
+      items.push(rdnsItem(false, 'Contradictions', `${approval.contradictionSummary.open} open contradictions`));
+    }
+  }
+
+  if (!items.length) {
+    el.innerHTML = '<div class="hint">Load a case with generated sections to see readiness.</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="rdns-checklist">${items.join('')}</div>`;
+}
+
+function rdnsItem(pass, label, detail, override) {
+  const state = override || (pass ? 'pass' : 'fail');
+  const icon = state === 'pass' ? '&#x2713;' : state === 'warn' ? '&#x26A0;' : '&#x2717;';
+  const iconColor = state === 'pass' ? 'var(--ok)' : state === 'warn' ? 'var(--warn)' : 'var(--danger)';
+  return (
+    `<div class="rdns-item ${state}">` +
+      `<span class="rdns-icon" style="color:${iconColor}">${icon}</span>` +
+      `<span class="rdns-label">${esc(label)}</span>` +
+      `<span class="rdns-detail">${esc(detail)}</span>` +
+    `</div>`
+  );
+}
+
+// ── Missing-Facts Dashboard ───────────────────────────────────────────────────
+async function loadCaseMissingFacts() {
+  const el = $('caseMissingFactsBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/section-audit`).catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint" style="color:var(--warn)">Failed to load section audit data.</div>';
+    return;
+  }
+
+  const audits = res.sectionAudits || {};
+  const sections = Object.entries(audits).filter(([, a]) => {
+    const policy = a.policy || {};
+    const missing = policy.missingFacts || {};
+    return (missing.required?.length > 0) || (missing.recommended?.length > 0);
+  });
+
+  if (!sections.length) {
+    el.innerHTML = '<div class="hint" style="color:var(--ok)">All sections have required facts available.</div>';
+    return;
+  }
+
+  const sectionHtml = sections.map(([sectionId, audit]) => {
+    const policy = audit.policy || {};
+    const missing = policy.missingFacts || {};
+    const required = missing.required || [];
+    const recommended = missing.recommended || [];
+    const sLabel = policy.profileLabel || policy.sectionId || sectionId;
+
+    const factRows = [
+      ...required.map(path => `<div class="mf-fact-row"><span class="mf-fact-path">${esc(path)}</span><span class="mf-fact-sev required">Required</span></div>`),
+      ...recommended.map(path => `<div class="mf-fact-row"><span class="mf-fact-path">${esc(path)}</span><span class="mf-fact-sev recommended">Recommended</span></div>`),
+    ].join('');
+
+    const countLabel = required.length
+      ? `<span style="color:var(--danger);font-size:10px;font-weight:700;">${required.length} required</span>`
+      : `<span style="color:var(--warn);font-size:10px;">${recommended.length} recommended</span>`;
+
+    return (
+      `<div class="mf-section">` +
+        `<div class="mf-section-head"><span>${esc(sLabel)}</span>${countLabel}</div>` +
+        `<div class="mf-section-body">${factRows}</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  el.innerHTML = `<div class="mf-dashboard">${sectionHtml}</div>`;
+}
+
+// ── Due-Date Queue ────────────────────────────────────────────────────────────
+async function loadDueDateQueue() {
+  const el = $('dueDateQueueBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch('/api/business/engagements/upcoming').catch(() => ({ ok: false }));
+  const overdueRes = await apiFetch('/api/business/engagements/overdue').catch(() => ({ ok: false }));
+
+  const upcoming = res.ok ? (res.engagements || []) : [];
+  const overdue = overdueRes.ok ? (overdueRes.engagements || []) : [];
+  const combined = [...overdue.map(e => ({ ...e, _overdue: true })), ...upcoming];
+
+  if (!combined.length) {
+    el.innerHTML = '<div class="hint">No upcoming or overdue assignments.</div>';
+    return;
+  }
+
+  const now = Date.now();
+  el.innerHTML = `<div class="due-queue">` + combined.slice(0, 15).map(eng => {
+    const due = eng.dueDate ? new Date(eng.dueDate) : null;
+    const daysLeft = due ? Math.ceil((due - now) / 86400000) : null;
+    const isOverdue = eng._overdue || (daysLeft !== null && daysLeft < 0);
+    const isUrgent = !isOverdue && daysLeft !== null && daysLeft <= 3;
+    const itemClass = isOverdue ? 'overdue' : isUrgent ? 'urgent' : '';
+    const daysClass = isOverdue ? 'past' : (daysLeft <= 3 ? 'soon' : 'ok');
+    const daysLabel = daysLeft === null ? '-' : (isOverdue ? `${Math.abs(daysLeft)}d late` : `${daysLeft}d`);
+    const addr = eng.propertyAddress || eng.address || eng.caseId || 'Unknown';
+    const dateStr = due ? due.toLocaleDateString() : '-';
+
+    return (
+      `<div class="due-item ${itemClass}" onclick="${eng.caseId ? `loadCase('${esc(eng.caseId)}');showTab('case')` : ''}">` +
+        `<span class="due-item-addr">${esc(addr)}</span>` +
+        `<span class="due-item-date">${esc(dateStr)}</span>` +
+        `<span class="due-item-days ${daysClass}">${esc(daysLabel)}</span>` +
+      `</div>`
+    );
+  }).join('') + `</div>`;
+}
+
+// ── Pipeline Summary ──────────────────────────────────────────────────────────
+async function loadPipelineSummary() {
+  const el = $('pipelineSummaryBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch('/api/business/pipeline/summary').catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint">No pipeline data available.</div>';
+    return;
+  }
+
+  const byStage = res.byStage || {};
+  const stageOrder = ['prospect','quoted','engaged','in_progress','review','submitted','invoiced','paid','closed'];
+  const stageChips = stageOrder
+    .filter(s => (byStage[s] || 0) > 0)
+    .map(s => `<span class="pipeline-stage">${esc(s.replace(/_/g,' '))}<span class="ps-count">${byStage[s]}</span></span>`)
+    .join('');
+
+  const totalValue = res.totalPipelineValue || 0;
+  const avgDays = res.averageDaysInStage || 0;
+
+  el.innerHTML =
+    (stageChips ? `<div class="pipeline-stages">${stageChips}</div>` : '') +
+    `<div class="biz-status-grid">` +
+      `<div class="biz-metric"><span class="biz-metric-label">Pipeline Value</span><span class="biz-metric-value">$${Number(totalValue).toLocaleString()}</span></div>` +
+      `<div class="biz-metric"><span class="biz-metric-label">Avg Days/Stage</span><span class="biz-metric-value">${avgDays.toFixed(1)}</span></div>` +
+    `</div>`;
+}
+
+// ── Show business cards when case loads ───────────────────────────────────────
+function showCaseBusinessCards() {
+  const row = $('caseBusinessRow');
+  const mfCard = $('caseMissingFactsCard');
+  if (row) row.style.display = STATE.caseId ? 'flex' : 'none';
+  if (mfCard) mfCard.style.display = STATE.caseId ? 'block' : 'none';
+  if (STATE.caseId) {
+    loadCaseBusinessStatus();
+    loadCaseReadiness();
+    loadCaseMissingFacts();
+  }
+}
+
+// ── Enhanced section governance card for workspace assistant ──────────────────
+function workspaceRenderGovernanceCard(sectionId) {
+  const summary = typeof workspaceSectionPolicySummary === 'function' ? workspaceSectionPolicySummary() : {};
+  const audit = summary[sectionId];
+  if (!audit) return '';
+
+  const fs = audit.freshnessStatus || 'not_generated';
+  const fsClass = fs === 'current' ? 'current' : fs === 'stale' ? 'stale' : fs === 'regenerating' ? 'regenerating' : 'not_generated';
+  const fsLabel = fs.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // Quality bar
+  let qualityHtml = '';
+  if (audit.qualityScore !== null && audit.qualityScore !== undefined) {
+    const q = audit.qualityScore;
+    const qClass = q >= 70 ? 'high' : q >= 40 ? 'mid' : 'low';
+    const qColor = q >= 70 ? 'var(--ok)' : q >= 40 ? 'var(--warn)' : 'var(--danger)';
+    qualityHtml =
+      `<div class="gov-quality-bar">` +
+        `<div class="gov-quality-track"><div class="gov-quality-fill ${qClass}" style="width:${q}%"></div></div>` +
+        `<span class="gov-quality-label" style="color:${qColor}">${q}</span>` +
+      `</div>`;
+  }
+
+  // Dependency chips
+  let depHtml = '';
+  if (audit.requiredPaths && audit.requiredPaths.length) {
+    const chips = audit.requiredPaths.slice(0, 8).map(p => {
+      const present = !audit.missingRequiredPaths || !audit.missingRequiredPaths.includes(p);
+      return `<span class="gov-dep-chip ${present ? 'present' : 'missing'}">${esc(p.split('.').pop())}</span>`;
+    }).join('');
+    depHtml = `<div class="gov-dep-list">${chips}</div>`;
+  }
+
+  // Stale reasons
+  let staleHtml = '';
+  if (audit.staleReasons && audit.staleReasons.length) {
+    staleHtml = `<div style="font-size:10px;color:var(--warn);margin-top:4px;">${esc(audit.staleReasons.join('; '))}</div>`;
+  }
+
+  // Generation info
+  let genHtml = '';
+  if (audit.generatedAt) {
+    genHtml += `<div style="font-size:10px;color:var(--muted);margin-top:4px;">Generated: ${esc(new Date(audit.generatedAt).toLocaleString())}`;
+    if (audit.regenerationCount > 0) genHtml += ` (${audit.regenerationCount} regenerations)`;
+    genHtml += '</div>';
+  }
+
+  return (
+    `<div class="gov-card">` +
+      `<div class="gov-card-head">` +
+        `<span class="gov-card-title">Section Governance</span>` +
+        `<span class="gov-card-badge ${fsClass}">${esc(fsLabel)}</span>` +
+      `</div>` +
+      `<div style="font-size:10px;color:var(--muted);">Prompt v${esc(audit.promptVersion || '-')} | ${esc(audit.profileId || 'default')}</div>` +
+      qualityHtml +
+      depHtml +
+      staleHtml +
+      genHtml +
+      `<div style="margin-top:6px;">` +
+        `<button class="sec sm" onclick="workspaceLoadSectionAudit('${esc(sectionId)}')">Full Audit</button>` +
+      `</div>` +
+    `</div>`
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 4: Unified Valuation Desk
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _valQueueFilter = 'all';
+
+function valDeskShowPanel(panelId) {
+  document.querySelectorAll('.val-desk-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.val-desk-tab').forEach(t => t.classList.remove('active'));
+  const panel = $('valPanel-' + panelId);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.val-desk-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + panelId + "'")) t.classList.add('active');
+  });
+  // Auto-load data for the panel
+  if (panelId === 'compQueue' && STATE.caseId) { valLoadCompGrid(); valLoadCompQueue(); }
+  if (panelId === 'adjustments' && STATE.caseId) { valLoadAdjustments(); valLoadBurden(); }
+  if (panelId === 'approaches' && STATE.caseId) { valLoadGridSummary(); valLoadIncome(); valLoadCost(); }
+  if (panelId === 'reconciliation' && STATE.caseId) { valLoadRecon(); }
+}
+
+// ── Comp Grid Status ──────────────────────────────────────────────────────────
+async function valLoadCompGrid() {
+  const el = $('valCompGridStatus');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No grid data yet.</div>';
+    return;
+  }
+  const slots = res.slots || res.grid || [];
+  const filled = Array.isArray(slots) ? slots.filter(s => s && s.address).length : 0;
+  const total = 3;
+  el.innerHTML =
+    `<div style="font-size:12px;">` +
+      `<div style="display:flex;justify-content:space-between;"><span>Grid Slots Filled</span><strong>${filled}/${total}</strong></div>` +
+      (Array.isArray(slots) ? slots.map((s, i) => {
+        if (!s || !s.address) return `<div style="padding:4px 0;color:var(--muted);font-size:11px;">Comp ${i+1}: <em>Empty</em></div>`;
+        return `<div style="padding:4px 0;font-size:11px;"><strong>Comp ${i+1}:</strong> ${esc(s.address || '')} <span style="color:var(--gold);">${s.salePrice ? '$' + Number(s.salePrice).toLocaleString() : ''}</span></div>`;
+      }).join('') : '') +
+    `</div>`;
+}
+
+// ── Comp Queue ────────────────────────────────────────────────────────────────
+async function valLoadCompQueue() {
+  const el = $('valCompQueueBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading candidates...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint">No comparable intelligence data. Build intelligence and run comp analysis first.</div>';
+    return;
+  }
+  const candidates = res.candidates || [];
+  _valRenderCompQueue(el, candidates);
+}
+
+function valFilterQueue(filter, btn) {
+  _valQueueFilter = filter;
+  document.querySelectorAll('#valPanel-compQueue .filt-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  valLoadCompQueue();
+}
+
+function _valRenderCompQueue(el, candidates) {
+  const filtered = _valQueueFilter === 'all' ? candidates
+    : candidates.filter(c => {
+      const status = (c.reviewStatus || c.status || 'pending').toLowerCase();
+      if (_valQueueFilter === 'pending') return status === 'pending' || status === 'recommended';
+      return status === _valQueueFilter;
+    });
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="hint">No ${_valQueueFilter === 'all' ? '' : _valQueueFilter + ' '}candidates.</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(c => {
+    const status = (c.reviewStatus || c.status || 'pending').toLowerCase();
+    const statusClass = status === 'accepted' ? 'accepted' : status === 'held' ? 'held' : status === 'rejected' ? 'rejected' : '';
+    const price = c.salePrice ? '$' + Number(c.salePrice).toLocaleString() : '';
+    const date = c.saleDate || c.dateOfSale || '';
+    const tier = c.tierLabel || c.tier || '';
+    const relevance = c.relevanceScore != null ? c.relevanceScore : '';
+    const addr = c.address || 'Unknown';
+    const cid = c.id || c.candidateId || '';
+    const reasonHistory = c.reasonHistory || c.rejectReasonCode || c.holdReason || '';
+
+    return (
+      `<div class="comp-queue-item ${statusClass}">` +
+        `<div class="comp-queue-head">` +
+          `<div>` +
+            `<div class="comp-queue-addr">${esc(addr)}</div>` +
+            `<div style="font-size:10px;color:var(--muted);">${esc(date)}</div>` +
+          `</div>` +
+          `<div class="comp-queue-price">${esc(price)}</div>` +
+        `</div>` +
+        `<div class="comp-queue-meta">` +
+          (tier ? `<span class="chip">${esc(tier)}</span>` : '') +
+          (relevance !== '' ? `<span class="chip">${esc(String(relevance))}</span>` : '') +
+          `<span class="chip ${status === 'accepted' ? 'ok' : status === 'rejected' ? 'err' : status === 'held' ? 'warn' : ''}">${esc(status)}</span>` +
+          (c.keyMatches ? `<span class="chip ok">${c.keyMatches} matches</span>` : '') +
+          (c.keyMismatches ? `<span class="chip warn">${c.keyMismatches} mismatches</span>` : '') +
+        `</div>` +
+        (reasonHistory ? `<div class="comp-queue-reason">${esc(String(reasonHistory))}</div>` : '') +
+        (status !== 'rejected'
+          ? `<div class="comp-queue-actions">` +
+              (status !== 'accepted' ? `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}')">Accept</button>` : '') +
+              (status !== 'held' && status !== 'accepted' ? `<button class="sec sm" onclick="workspaceHoldComparableCandidate('${esc(cid)}')">Hold</button>` : '') +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp1')">Comp 1</button>` +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp2')">Comp 2</button>` +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp3')">Comp 3</button>` +
+              `<select id="valRejectReason-${esc(cid)}" style="font-size:10px;padding:2px 4px;max-width:120px;">` +
+                `<option value="too_distant">Too distant</option>` +
+                `<option value="poor_condition">Poor condition</option>` +
+                `<option value="poor_market_match">Poor market match</option>` +
+                `<option value="atypical_sale">Atypical sale</option>` +
+                `<option value="other">Other</option>` +
+              `</select>` +
+              `<button class="ghost sm" onclick="valRejectCandidate('${esc(cid)}')">Reject</button>` +
+            `</div>`
+          : '') +
+      `</div>`
+    );
+  }).join('');
+}
+
+async function valRejectCandidate(candidateId) {
+  if (!STATE.caseId) return;
+  const sel = $('valRejectReason-' + candidateId);
+  const reasonCode = sel ? sel.value : 'other';
+  await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence/candidates/${candidateId}/reject`, {
+    method: 'POST', body: { rejectedBy: 'appraiser', reasonCode }
+  });
+  valLoadCompQueue();
+}
+
+// ── Burden Metrics ────────────────────────────────────────────────────────────
+async function valLoadBurden() {
+  const el = $('valBurdenBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok || !res.acceptedSlots?.length) {
+    el.innerHTML = '<div class="hint">Accept and load comps to see burden metrics.</div>';
+    return;
+  }
+  const slots = res.acceptedSlots;
+  el.innerHTML = slots.map(slot => {
+    const b = slot.burdenMetrics || {};
+    const stability = b.overallStabilityScore || 0;
+    const stabColor = stability >= 0.75 ? 'var(--ok)' : stability >= 0.55 ? 'var(--warn)' : 'var(--danger)';
+    const contradictions = (slot.contradictions || []);
+    return (
+      `<div class="burden-card">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong style="font-size:12px;">${esc(slot.gridSlotLabel || 'Comp')}: ${esc(slot.address || '')}</strong>` +
+          `<span class="chip" style="color:${stabColor}">${(stability * 100).toFixed(0)}% stable</span>` +
+        `</div>` +
+        _valBurdenMeter('Gross Adj', b.grossAdjustmentPercent || 0, 25) +
+        _valBurdenMeter('Net Adj', Math.abs(b.netAdjustmentPercent || 0), 15) +
+        _valBurdenMeter('Data Confidence', (b.dataConfidenceScore || 0) * 100, 0, true) +
+        _valBurdenMeter('Date Relevance', (b.dateRelevanceScore || 0) * 100, 0, true) +
+        _valBurdenMeter('Location', (b.locationConfidenceScore || 0) * 100, 0, true) +
+        `<div style="font-size:10px;color:var(--muted);margin-top:6px;">Major mismatches: ${b.majorMismatchCount || 0}</div>` +
+        (contradictions.length
+          ? `<div style="margin-top:6px;font-size:10px;">` +
+              contradictions.map(f => `<div style="color:var(--warn);padding:2px 0;"><strong>${esc(f.code || f.category || '')}</strong>: ${esc(f.message || '')}</div>`).join('') +
+            `</div>`
+          : '') +
+      `</div>`
+    );
+  }).join('');
+}
+
+function _valBurdenMeter(label, value, threshold, inverted = false) {
+  const pct = Math.min(100, Math.max(0, value));
+  const bad = inverted ? pct < 50 : pct > threshold;
+  const color = bad ? (inverted ? 'var(--danger)' : 'var(--warn)') : 'var(--ok)';
+  return (
+    `<div class="burden-meter">` +
+      `<span style="font-size:10px;color:var(--muted);min-width:80px;">${esc(label)}</span>` +
+      `<div class="burden-meter-track"><div class="burden-meter-fill" style="width:${pct}%;background:${color};"></div></div>` +
+      `<span class="burden-meter-label" style="color:${color}">${pct.toFixed(0)}%</span>` +
+    `</div>`
+  );
+}
+
+// ── Adjustment Notebook ───────────────────────────────────────────────────────
+async function valLoadAdjustments() {
+  const el = $('valAdjNotebookBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok || !res.acceptedSlots?.length) {
+    el.innerHTML = '<div class="hint">Accept comps and run analysis to see adjustment support.</div>';
+    return;
+  }
+
+  const slots = res.acceptedSlots;
+  const html = slots.map(slot => {
+    const support = slot.adjustmentSupport || [];
+    if (!support.length) return '';
+    const slotLabel = slot.gridSlotLabel || 'Comp';
+    return (
+      `<div style="margin-bottom:16px;">` +
+        `<div style="font-size:12px;font-weight:800;color:var(--gold);margin-bottom:8px;">${esc(slotLabel)}: ${esc(slot.address || '')}</div>` +
+        `<div class="adj-notebook">` +
+          support.map(adj => {
+            const amount = adj.finalAmount ?? adj.suggestedAmount ?? 0;
+            const amtClass = amount > 0 ? 'positive' : amount < 0 ? 'negative' : 'zero';
+            const amtLabel = amount === 0 ? '$0' : `${amount > 0 ? '+' : '-'}$${Math.abs(amount).toLocaleString()}`;
+            const amtColor = amount > 0 ? 'pos' : amount < 0 ? 'neg' : '';
+            const strength = adj.supportStrength || adj.strength || '';
+            const strClass = strength === 'high' ? 'high' : strength === 'medium' ? 'medium' : strength === 'low' ? 'low' : '';
+            const decision = adj.decisionStatus || '';
+            const gridSlot = slot.gridSlot || slot.gridSlotLabel || '';
+            const cat = adj.adjustmentCategory || adj.label || '';
+            return (
+              `<div class="adj-row ${amtClass}">` +
+                `<span class="adj-cat">${esc(adj.label || cat)}</span>` +
+                `<span class="adj-subj">${esc(adj.subjectValue || '-')}</span>` +
+                `<span class="adj-comp">${esc(adj.compValue || '-')}</span>` +
+                `<span class="adj-amount ${amtColor}">${esc(amtLabel)}</span>` +
+                (strength ? `<span class="adj-strength ${strClass}">${esc(strength)}</span>` : '') +
+                (decision ? `<span class="chip ${decision === 'accepted' ? 'ok' : decision === 'modified' ? 'warn' : decision === 'rejected' ? 'err' : ''}" style="font-size:9px;">${esc(decision)}</span>` : '') +
+                `<button class="ghost sm" style="font-size:9px;padding:2px 6px;" onclick="workspaceSaveAdjustmentSupportDecision('${esc(gridSlot)}','${esc(cat)}','accepted')">&#x2713;</button>` +
+                `<button class="ghost sm" style="font-size:9px;padding:2px 6px;" onclick="workspaceModifyAdjustmentSupportDecision('${esc(gridSlot)}','${esc(cat)}')">&#x270E;</button>` +
+              `</div>`
+            );
+          }).join('') +
+        `</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  el.innerHTML = html || '<div class="hint">No adjustment support records found.</div>';
+}
+
+// ── Sales Comparison Summary ──────────────────────────────────────────────────
+async function valLoadGridSummary() {
+  const el = $('valSalesBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No sales comparison data yet.</div>';
+    return;
+  }
+  const slots = res.slots || res.grid || [];
+  const indication = res.indicatedValue || res.weightedValue || null;
+  const range = res.range || {};
+
+  let html = '';
+  if (Array.isArray(slots) && slots.length) {
+    html += `<table style="width:100%;font-size:11px;border-collapse:collapse;">` +
+      `<thead><tr style="border-bottom:1px solid var(--border);">` +
+        `<th style="text-align:left;padding:4px 6px;">Comp</th>` +
+        `<th style="text-align:left;padding:4px 6px;">Address</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Sale Price</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Adj. Price</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Net %</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Gross %</th>` +
+      `</tr></thead><tbody>`;
+    for (const s of slots) {
+      if (!s || !s.address) continue;
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">` +
+        `<td style="padding:4px 6px;font-weight:700;">${esc(s.gridSlotLabel || s.slot || '')}</td>` +
+        `<td style="padding:4px 6px;">${esc(s.address || '')}</td>` +
+        `<td style="padding:4px 6px;text-align:right;font-family:var(--mono);">$${Number(s.salePrice || 0).toLocaleString()}</td>` +
+        `<td style="padding:4px 6px;text-align:right;font-family:var(--mono);color:var(--gold);">$${Number(s.adjustedPrice || s.adjustedSalePrice || 0).toLocaleString()}</td>` +
+        `<td style="padding:4px 6px;text-align:right;">${s.netAdjustmentPercent || 0}%</td>` +
+        `<td style="padding:4px 6px;text-align:right;">${s.grossAdjustmentPercent || 0}%</td>` +
+      `</tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  if (indication) {
+    html += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(85,209,143,.3);border-radius:8px;background:rgba(85,209,143,.04);">` +
+      `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Indicated Value</div>` +
+      `<div style="font-size:20px;font-weight:900;color:var(--ok);font-family:var(--mono);">$${Number(indication).toLocaleString()}</div>` +
+      (range.low && range.high ? `<div style="font-size:10px;color:var(--muted);">Range: $${Number(range.low).toLocaleString()} - $${Number(range.high).toLocaleString()}</div>` : '') +
+    `</div>`;
+  }
+
+  html += `<div class="btnrow" style="margin-top:8px;"><button class="sm" onclick="valCalcSales()">Calculate Indication</button></div>`;
+  el.innerHTML = html || '<div class="hint">No grid data.</div>';
+}
+
+async function valCalcSales() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (res) valLoadGridSummary();
+}
+
+// ── Income Approach ───────────────────────────────────────────────────────────
+async function valLoadIncome() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/income/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) return;
+  if (res.monthlyRent) $('valIncomeRent').value = res.monthlyRent;
+  if (res.grm) $('valIncomeGrm').value = res.grm;
+  if (res.indicatedValue) {
+    setStatus('valIncomeResult', `Indicated: $${Number(res.indicatedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+async function valCalcIncome() {
+  if (!STATE.caseId) return;
+  const rent = parseFloat($('valIncomeRent').value);
+  const grm = parseFloat($('valIncomeGrm').value);
+  if (!rent || !grm) { setStatus('valIncomeResult', 'Enter rent and GRM', 'err'); return; }
+  setStatus('valIncomeResult', 'Calculating...', 'warn');
+  await apiFetch(`/api/valuation/income/${STATE.caseId}/rent-comps`, {
+    method: 'PUT', body: { rentComps: [{ monthlyRent: rent }] }
+  }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/income/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.indicatedValue || rent * grm * 12;
+    setStatus('valIncomeResult', `Indicated: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    const val = rent * grm;
+    setStatus('valIncomeResult', `Indicated (local): $${Number(val).toLocaleString()}`, 'ok');
+  }
+}
+
+// ── Cost Approach ─────────────────────────────────────────────────────────────
+async function valLoadCost() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/cost/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) return;
+  if (res.siteValue) $('valCostSite').value = res.siteValue;
+  if (res.dwellingCostNew || res.replacementCost) $('valCostDwelling').value = res.dwellingCostNew || res.replacementCost;
+  if (res.depreciation || res.totalDepreciation) $('valCostDepr').value = res.depreciation || res.totalDepreciation;
+  if (res.indicatedValue) {
+    setStatus('valCostResult', `Indicated: $${Number(res.indicatedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+async function valCalcCost() {
+  if (!STATE.caseId) return;
+  const site = parseFloat($('valCostSite').value);
+  const dwelling = parseFloat($('valCostDwelling').value);
+  const depr = parseFloat($('valCostDepr').value) || 0;
+  if (!site || !dwelling) { setStatus('valCostResult', 'Enter site value and dwelling cost', 'err'); return; }
+  setStatus('valCostResult', 'Calculating...', 'warn');
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/land`, { method: 'PUT', body: { siteValue: site } }).catch(() => null);
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/replacement`, { method: 'PUT', body: { dwellingCostNew: dwelling } }).catch(() => null);
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/depreciation`, { method: 'PUT', body: { totalDepreciation: depr } }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/cost/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.indicatedValue || (site + dwelling - depr);
+    setStatus('valCostResult', `Indicated: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    const val = site + dwelling - depr;
+    setStatus('valCostResult', `Indicated (local): $${Number(val).toLocaleString()}`, 'ok');
+  }
+}
+
+// ── Reconciliation ────────────────────────────────────────────────────────────
+async function valLoadRecon() {
+  const apprEl = $('valReconApproaches');
+  if (!apprEl || !STATE.caseId) return;
+  apprEl.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) {
+    apprEl.innerHTML = '<div class="hint">No reconciliation data yet. Calculate approach values first.</div>';
+    return;
+  }
+
+  const approaches = [
+    { name: 'Sales Comparison', key: 'salesComparison', value: res.salesComparisonValue || res.salesComparison?.value, weight: res.salesComparisonWeight || res.weights?.salesComparison || 0 },
+    { name: 'Income Approach', key: 'income', value: res.incomeValue || res.income?.value, weight: res.incomeWeight || res.weights?.income || 0 },
+    { name: 'Cost Approach', key: 'cost', value: res.costValue || res.cost?.value, weight: res.costWeight || res.weights?.cost || 0 },
+  ];
+
+  apprEl.innerHTML = approaches.map(a => (
+    `<div class="recon-approach">` +
+      `<div class="recon-approach-head">` +
+        `<span class="recon-approach-name">${esc(a.name)}</span>` +
+        `<span class="recon-approach-value">${a.value ? '$' + Number(a.value).toLocaleString() : '-'}</span>` +
+      `</div>` +
+      `<div class="recon-weight-row">` +
+        `<span style="font-size:10px;color:var(--muted);">Weight:</span>` +
+        `<input class="recon-weight-input" type="text" value="${a.weight}" data-recon-key="${a.key}" onchange="valUpdateWeight(this)"/>` +
+        `<span style="font-size:10px;color:var(--muted);">%</span>` +
+      `</div>` +
+    `</div>`
+  )).join('');
+
+  // Load narrative
+  if (res.narrative) {
+    const narEl = $('valReconNarrative');
+    if (narEl) narEl.value = res.narrative;
+  }
+
+  // Show final value if available
+  if (res.finalValue || res.weightedValue) {
+    setStatus('valReconResult', `Final Value: $${Number(res.finalValue || res.weightedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+function valUpdateWeight(input) {
+  // Weights are saved when reconciliation is calculated
+}
+
+async function valCalcRecon() {
+  if (!STATE.caseId) return;
+  setStatus('valReconResult', 'Calculating...', 'warn');
+  // Gather weights from inputs
+  const weights = {};
+  document.querySelectorAll('[data-recon-key]').forEach(input => {
+    weights[input.dataset.reconKey] = parseFloat(input.value) || 0;
+  });
+  await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/weights`, {
+    method: 'PUT', body: weights
+  }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.finalValue || res.weightedValue || res.indicatedValue || 0;
+    setStatus('valReconResult', `Final Value: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    setStatus('valReconResult', 'Could not calculate. Ensure approach values are saved.', 'err');
+  }
+}
+
+async function valSaveReconNarrative() {
+  if (!STATE.caseId) return;
+  const narrative = $('valReconNarrative').value.trim();
+  if (!narrative) { setStatus('valReconResult', 'Enter a narrative first.', 'err'); return; }
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/narrative`, {
+    method: 'PUT', body: { narrative }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valReconResult', 'Narrative saved.', 'ok');
+  } else {
+    setStatus('valReconResult', 'Failed to save narrative.', 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 5: Learning Dashboard, Why-This-Suggestion, Memory Health
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Learning Dashboard ──────────────────────────────────────────────────────
+
+async function learnLoadDashboard() {
+  const el = $('learnDashBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading learning metrics...</div>';
+
+  // Fetch acceptance rate and patterns in parallel
+  const [rateRes, patternsRes, archivesRes] = await Promise.all([
+    apiFetch('/api/learning/acceptance-rate').catch(() => null),
+    apiFetch('/api/learning/patterns?limit=20').catch(() => null),
+    STATE.caseId ? apiFetch(`/api/learning/revision-diffs/${STATE.caseId}/stats`).catch(() => null) : null,
+  ]);
+
+  let html = '<div class="learn-dash">';
+
+  // ── Acceptance / Rejection Metrics ──
+  const rate = rateRes && !rateRes.error ? rateRes : null;
+  const total = rate?.total || 0;
+  const accepted = rate?.accepted || 0;
+  const modified = rate?.modified || 0;
+  const rejected = rate?.rejected || 0;
+  const acceptRate = rate?.acceptanceRate != null ? Math.round(rate.acceptanceRate * 100) : null;
+  const modRate = rate?.modificationRate != null ? Math.round(rate.modificationRate * 100) : null;
+
+  html += `<div class="learn-stat-grid">`;
+  html += _learnStat(total, 'Total Suggestions', '');
+  html += _learnStat(accepted, 'Accepted', 'good');
+  html += _learnStat(modified, 'Modified', 'mid');
+  html += _learnStat(rejected, 'Rejected', 'low');
+  html += _learnStat(acceptRate != null ? acceptRate + '%' : '—', 'Accept Rate', acceptRate > 70 ? 'good' : acceptRate > 40 ? 'mid' : 'low');
+  html += _learnStat(modRate != null ? modRate + '%' : '—', 'Modify Rate', 'mid');
+  html += `</div>`;
+
+  // ── Learned Patterns ──
+  const patterns = (patternsRes && !patternsRes.error) ? (patternsRes.patterns || patternsRes.rows || []) : [];
+  if (patterns.length) {
+    html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:8px;">Learned Patterns (${patterns.length})</h4>`;
+    html += `<div class="learn-pattern-list">`;
+    patterns.forEach(p => {
+      const conf = p.confidence != null ? Math.round(p.confidence * 100) : 0;
+      const confClass = conf >= 70 ? 'var(--ok)' : conf >= 40 ? 'var(--warn)' : 'var(--danger)';
+      html +=
+        `<div class="learn-pattern">` +
+          `<div style="display:flex;align-items:center;gap:6px;">` +
+            `<span class="learn-pattern-type">${esc(p.patternType || p.pattern_type || '')}</span>` +
+            `<span>${esc(p.patternKey || p.pattern_key || '')}</span>` +
+          `</div>` +
+          `<div style="display:flex;align-items:center;gap:6px;">` +
+            `<div class="learn-conf-bar"><div class="learn-conf-fill" style="width:${conf}%;background:${confClass};"></div></div>` +
+            `<span style="font-size:10px;font-weight:700;font-family:var(--mono);color:${confClass};">${conf}%</span>` +
+          `</div>` +
+        `</div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="hint" style="margin-top:8px;">No learned patterns yet. Complete and archive assignments to build patterns.</div>`;
+  }
+
+  // ── Revision Diff Stats (current case) ──
+  if (archivesRes && !archivesRes.error) {
+    const diffStats = archivesRes;
+    const changed = diffStats.sectionsChanged || 0;
+    const totalSections = diffStats.totalSections || 0;
+    const avgChange = diffStats.averageChangeRatio != null ? Math.round(diffStats.averageChangeRatio * 100) : 0;
+    const mostChanged = diffStats.mostChangedSections || [];
+
+    html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:8px;">Revision Diffs (Current Case)</h4>`;
+    html += `<div class="learn-stat-grid">`;
+    html += _learnStat(changed + '/' + totalSections, 'Sections Changed', '');
+    html += _learnStat(avgChange + '%', 'Avg Change Ratio', avgChange < 30 ? 'good' : avgChange < 60 ? 'mid' : 'low');
+    html += `</div>`;
+
+    if (mostChanged.length) {
+      html += `<div class="learn-revision-list" style="margin-top:6px;">`;
+      mostChanged.forEach(s => {
+        const ratio = s.changeRatio != null ? Math.round(s.changeRatio * 100) : 0;
+        const cls = ratio < 30 ? 'good' : ratio < 60 ? 'mid' : 'low';
+        html +=
+          `<div class="learn-revision">` +
+            `<span class="learn-revision-section">${esc(s.sectionId || s.section_id || '')}</span>` +
+            `<span class="learn-revision-ratio learn-stat-value ${cls}">${ratio}%</span>` +
+          `</div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function _learnStat(value, label, cls) {
+  return (
+    `<div class="learn-stat">` +
+      `<div class="learn-stat-value ${cls}">${esc(String(value))}</div>` +
+      `<div class="learn-stat-label">${esc(label)}</div>` +
+    `</div>`
+  );
+}
+
+// ── Why This Suggestion (for workspace) ─────────────────────────────────────
+
+async function workspaceLoadWhySuggestion(fieldId) {
+  const container = $('whySuggestionDrawer_' + fieldId);
+  if (!container) return;
+  // Toggle visibility
+  if (container.style.display === 'block') { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  container.innerHTML = '<div class="hint">Loading explanation...</div>';
+  if (!STATE.caseId) { container.innerHTML = '<div class="hint">No case loaded.</div>'; return; }
+
+  // Load influence explanation for the current section
+  const sectionId = WORKSPACE_STATE?.sectionId || '';
+  const formType = STATE.formType || '';
+  const propertyType = STATE.caseRecord?.propertyType || STATE.factsObj?.subject?.propertyType || '';
+
+  const [influenceRes, historyRes] = await Promise.all([
+    apiFetch(`/api/learning/influence/${encodeURIComponent(sectionId)}?formType=${encodeURIComponent(formType)}&propertyType=${encodeURIComponent(propertyType)}`).catch(() => null),
+    apiFetch(`/api/learning/suggestion-history/${STATE.caseId}`).catch(() => null),
+  ]);
+
+  let html = '<div class="why-drawer">';
+  html += '<div class="why-drawer-head"><span class="why-drawer-title">Why This Suggestion</span></div>';
+
+  // Influence factors
+  const influence = (influenceRes && !influenceRes.error) ? influenceRes : null;
+  if (influence && influence.influenceFactors) {
+    const factors = influence.influenceFactors;
+    html += '<div style="margin-bottom:8px;">';
+    if (factors.suggestion_acceptance != null) {
+      html += _whyFactor('Suggestion Acceptance', factors.suggestion_acceptance, factors.suggestion_acceptance);
+    }
+    if (factors.modification_rate != null) {
+      html += _whyFactor('Modification Rate', factors.modification_rate, 1 - factors.modification_rate);
+    }
+    if (factors.revision_patterns != null) {
+      html += _whyFactor('Revision Patterns', factors.revision_patterns, factors.revision_patterns);
+    }
+    html += '</div>';
+  }
+
+  // Top patterns from influence
+  if (influence && influence.topPatterns && influence.topPatterns.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;">TOP PATTERNS</div>';
+    influence.topPatterns.forEach(p => {
+      const rate = p.acceptanceRate != null ? Math.round(p.acceptanceRate * 100) : 0;
+      html +=
+        `<div class="why-factor">` +
+          `<span class="why-factor-name">${esc(p.type || p.suggestionType || '')}</span>` +
+          `<span class="why-factor-value">${rate}% accepted</span>` +
+        `</div>`;
+    });
+  }
+
+  // Revision stats from influence
+  if (influence && influence.revisionStats) {
+    const rs = influence.revisionStats;
+    html += `<div style="font-size:10px;margin-top:6px;color:var(--muted);">` +
+      `Avg change ratio: <strong>${rs.averageChangeRatio != null ? Math.round(rs.averageChangeRatio * 100) + '%' : '—'}</strong> | ` +
+      `Sections changed: <strong>${rs.sectionsChanged || 0}/${rs.totalSections || 0}</strong>` +
+    `</div>`;
+  }
+
+  // Recent suggestion history for this case (field-specific)
+  const history = (historyRes && !historyRes.error) ? (historyRes.outcomes || historyRes.rows || []) : [];
+  const fieldHistory = history.filter(h => h.sectionId === sectionId || h.section_id === sectionId);
+  if (fieldHistory.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:8px;margin-bottom:4px;">RECENT DECISIONS</div>';
+    fieldHistory.slice(0, 5).forEach(h => {
+      const accepted = h.accepted;
+      const modified = h.modified;
+      const icon = accepted ? (modified ? '~' : '+') : 'x';
+      const iconColor = accepted ? 'var(--ok)' : 'var(--danger)';
+      const text = h.suggestedText || h.suggested_text || '';
+      html +=
+        `<div style="display:flex;align-items:flex-start;gap:6px;padding:2px 0;font-size:10px;">` +
+          `<span style="color:${iconColor};font-weight:900;min-width:10px;">${icon}</span>` +
+          `<span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px;">${esc(text.slice(0, 80))}</span>` +
+        `</div>`;
+    });
+  }
+
+  if (!influence && !fieldHistory.length) {
+    html += '<div class="hint">No learning data available for this section yet. Complete assignments to build history.</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function _whyFactor(name, value, barRatio) {
+  const pct = Math.round((value || 0) * 100);
+  const barWidth = Math.round((barRatio || 0) * 100);
+  return (
+    `<div class="why-factor">` +
+      `<span class="why-factor-name">${esc(name)}</span>` +
+      `<div class="why-factor-bar"><div class="why-factor-fill" style="width:${barWidth}%;"></div></div>` +
+      `<span class="why-factor-value">${pct}%</span>` +
+    `</div>`
+  );
+}
+
+// ── Memory Health Tools ─────────────────────────────────────────────────────
+
+async function memHealthScan() {
+  const statsEl = $('memHealthStats');
+  const bodyEl = $('memHealthBody');
+  if (!bodyEl) return;
+  if (statsEl) statsEl.innerHTML = '';
+  bodyEl.innerHTML = '<div class="hint">Scanning memory health...</div>';
+
+  // Fetch KB status and approved memory for analysis
+  const [kbRes, approvedRes, stagingRes] = await Promise.all([
+    apiFetch('/api/kb/status').catch(() => null),
+    apiFetch('/api/memory/approved?limit=500').catch(() => null),
+    apiFetch('/api/memory/staging/summary').catch(() => null),
+  ]);
+
+  // KB stats
+  const kb = (kbRes && !kbRes.error) ? kbRes : {};
+  const totalItems = kb.totalItems || kb.approvedCount || 0;
+  const stagingPending = stagingRes?.pending || stagingRes?.pendingCount || 0;
+
+  // Analyze approved items for health issues
+  const items = (approvedRes && !approvedRes.error) ? (approvedRes.items || approvedRes.rows || []) : [];
+
+  const now = Date.now();
+  const STALE_DAYS = 180;
+  const WEAK_QUALITY = 30;
+
+  // Detect stale items (not updated in 180+ days)
+  const staleItems = items.filter(item => {
+    const updated = item.updatedAt || item.updated_at || item.createdAt || item.created_at;
+    if (!updated) return false;
+    const age = (now - new Date(updated).getTime()) / (1000 * 60 * 60 * 24);
+    return age > STALE_DAYS;
+  });
+
+  // Detect weak items (quality score < 30)
+  const weakItems = items.filter(item => {
+    const qs = item.qualityScore ?? item.quality_score;
+    return qs != null && qs < WEAK_QUALITY;
+  });
+
+  // Detect duplicates (same text hash)
+  const hashMap = {};
+  const duplicateItems = [];
+  items.forEach(item => {
+    const hash = item.textHash || item.text_hash;
+    if (!hash) return;
+    if (hashMap[hash]) {
+      duplicateItems.push(item);
+    } else {
+      hashMap[hash] = item;
+    }
+  });
+
+  // Render stats
+  if (statsEl) {
+    statsEl.innerHTML =
+      `<div class="mem-health-grid">` +
+        _memHealthStat(totalItems, 'Total Items') +
+        _memHealthStat(stagingPending, 'Pending Review') +
+        _memHealthStat(staleItems.length, 'Stale (180d+)') +
+        _memHealthStat(duplicateItems.length, 'Duplicates') +
+        _memHealthStat(weakItems.length, 'Weak (QS<30)') +
+      `</div>`;
+  }
+
+  // Render issues
+  let html = '';
+  const totalIssues = staleItems.length + duplicateItems.length + weakItems.length;
+
+  if (totalIssues === 0) {
+    html = '<div class="hint" style="margin-top:8px;">Memory is healthy. No stale, duplicate, or weak items detected.</div>';
+  } else {
+    html += `<div style="margin-top:8px;">`;
+
+    if (staleItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--warn);margin-bottom:6px;">Stale Items (${staleItems.length})</h4>`;
+      staleItems.slice(0, 10).forEach(item => {
+        html += _memHealthItemRow(item, 'stale');
+      });
+      if (staleItems.length > 10) html += `<div class="hint">${staleItems.length - 10} more stale items...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneStale()">Archive All Stale</button></div>`;
+    }
+
+    if (duplicateItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:#8ac4ff;margin-top:10px;margin-bottom:6px;">Duplicates (${duplicateItems.length})</h4>`;
+      duplicateItems.slice(0, 10).forEach(item => {
+        html += _memHealthItemRow(item, 'duplicate');
+      });
+      if (duplicateItems.length > 10) html += `<div class="hint">${duplicateItems.length - 10} more duplicates...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneDuplicates()">Remove Duplicates</button></div>`;
+    }
+
+    if (weakItems.length) {
+      html += `<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--danger);margin-top:10px;margin-bottom:6px;">Weak Quality (${weakItems.length})</h4>`;
+      weakItems.slice(0, 10).forEach(item => {
+        const qs = item.qualityScore ?? item.quality_score ?? 0;
+        html += _memHealthItemRow(item, 'weak', `QS: ${qs}`);
+      });
+      if (weakItems.length > 10) html += `<div class="hint">${weakItems.length - 10} more weak items...</div>`;
+      html += `<div class="mem-health-actions"><button class="sm sec" onclick="memHealthPruneWeak()">Archive Weak Items</button></div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function _memHealthStat(value, label) {
+  return (
+    `<div class="mem-health-stat">` +
+      `<div class="mem-health-value">${esc(String(value))}</div>` +
+      `<div class="mem-health-label">${esc(label)}</div>` +
+    `</div>`
+  );
+}
+
+function _memHealthItemRow(item, cls, extra) {
+  const text = item.text || '';
+  const bucket = item.bucket || item.source_type || '';
+  return (
+    `<div class="mem-health-item ${cls}">` +
+      `<span class="learn-pattern-type">${esc(bucket)}</span>` +
+      `<span class="mem-health-item-text">${esc(text.slice(0, 80))}</span>` +
+      (extra ? `<span style="font-size:10px;font-weight:700;font-family:var(--mono);">${esc(extra)}</span>` : '') +
+    `</div>`
+  );
+}
+
+async function memHealthPruneStale() {
+  if (!confirm('Archive all memory items older than 180 days?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Archiving stale items...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const now = Date.now();
+  const staleIds = items.filter(item => {
+    const updated = item.updatedAt || item.updated_at || item.createdAt || item.created_at;
+    return updated && (now - new Date(updated).getTime()) / (1000 * 60 * 60 * 24) > 180;
+  }).map(i => i.id);
+
+  let archived = 0;
+  for (const id of staleIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'PATCH', body: { active: false } }).catch(() => null);
+    if (r && !r.error) archived++;
+  }
+  memHealthScan();
+}
+
+async function memHealthPruneDuplicates() {
+  if (!confirm('Remove duplicate memory items (keeps the first occurrence)?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Removing duplicates...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const seen = {};
+  const dupeIds = [];
+  items.forEach(item => {
+    const hash = item.textHash || item.text_hash;
+    if (!hash) return;
+    if (seen[hash]) dupeIds.push(item.id);
+    else seen[hash] = true;
+  });
+
+  let removed = 0;
+  for (const id of dupeIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'DELETE' }).catch(() => null);
+    if (r && !r.error) removed++;
+  }
+  memHealthScan();
+}
+
+async function memHealthPruneWeak() {
+  if (!confirm('Archive all memory items with quality score below 30?')) return;
+  const bodyEl = $('memHealthBody');
+  if (bodyEl) bodyEl.innerHTML = '<div class="hint">Archiving weak items...</div>';
+  const res = await apiFetch('/api/memory/approved?limit=500').catch(() => null);
+  const items = (res && !res.error) ? (res.items || res.rows || []) : [];
+  const weakIds = items.filter(i => {
+    const qs = i.qualityScore ?? i.quality_score;
+    return qs != null && qs < 30;
+  }).map(i => i.id);
+
+  let archived = 0;
+  for (const id of weakIds) {
+    const r = await apiFetch(`/api/memory/approved/${id}`, { method: 'PATCH', body: { active: false } }).catch(() => null);
+    if (r && !r.error) archived++;
+  }
+  memHealthScan();
+}

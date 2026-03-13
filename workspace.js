@@ -1765,9 +1765,12 @@ function workspaceRenderAssistant() {
   const qc = WORKSPACE_STATE.payload?.qc || {};
   if (!field) {
     assistantTitle.textContent = 'Section Summary';
+    const govCard = typeof workspaceRenderGovernanceCard === 'function'
+      ? workspaceRenderGovernanceCard(currentSection?.id)
+      : '';
     body.innerHTML =
       comparableWorkspacePanel +
-      workspaceRenderSectionAuditPanel(currentSection?.id) +
+      (govCard || workspaceRenderSectionAuditPanel(currentSection?.id)) +
       workspaceRenderContradictionGraphPanel(currentSection?.id, 6) +
       insertionPanel +
       workspaceRenderFreshnessSummaryPanel() +
@@ -1828,7 +1831,9 @@ function workspaceRenderAssistant() {
           `<div class="btnrow">` +
             `<button class="sm" onclick="workspaceApplySuggestion('${field.fieldId}')">Use Suggestion</button>` +
             `${canAcceptSuggestion ? `<button class="sec sm" onclick="workspaceAcceptSuggestedEvidence('${field.fieldId}')">Accept Evidence</button>` : ''}` +
+            `<button class="ghost sm" onclick="workspaceLoadWhySuggestion('${field.fieldId}')" title="Why this suggestion?">Why?</button>` +
           `</div>` +
+          `<div id="whySuggestionDrawer_${field.fieldId}" style="display:none;"></div>` +
         `</div>` +
       `</div>`
     );
