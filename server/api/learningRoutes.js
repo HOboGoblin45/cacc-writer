@@ -49,6 +49,36 @@ import {
   closeFeedbackLoop,
 } from '../learning/feedbackLoopService.js';
 
+import { z } from 'zod';
+import { parsePayload } from '../utils/routeUtils.js';
+
+// ── Schemas ─────────────────────────────────────────────────────────────────
+
+const archiveSchema = z.object({
+  autoLearn: z.boolean().optional(),
+}).passthrough();
+
+const applyPatternSchema = z.object({
+  caseId: z.string().min(1).max(80),
+  appliedContext: z.string().max(4000).optional(),
+}).passthrough();
+
+const applicationOutcomeSchema = z.object({
+  outcome: z.enum(['accepted', 'rejected', 'ignored']),
+}).passthrough();
+
+const feedbackLinkSchema = z.object({
+  sectionId: z.string().min(1).max(80),
+  formType: z.string().min(1).max(40),
+  generatedSectionId: z.string().max(80).optional(),
+  propertyType: z.string().max(60).optional(),
+  marketArea: z.string().max(200).optional(),
+}).passthrough();
+
+const batchSuccessRatesSchema = z.object({
+  patternIds: z.array(z.string().max(80)).min(1),
+}).passthrough();
+
 const router = Router();
 
 // ── POST /cases/:caseId/archive ──────────────────────────────────────────────
@@ -201,16 +231,13 @@ router.post('/learning/learn/:archiveId', (req, res) => {
 router.post('/learning/patterns/:patternId/apply', (req, res) => {
   try {
     const { patternId } = req.params;
-    const { caseId, appliedContext } = req.body || {};
-
-    if (!caseId) {
-      return res.status(400).json({ ok: false, error: 'caseId is required' });
-    }
+    const body = parsePayload(applyPatternSchema, req.body || {}, res);
+    if (!body) return;
 
     const result = recordPatternApplication({
       patternId,
-      caseId,
-      appliedContext: appliedContext || 'manual application',
+      caseId: body.caseId,
+      appliedContext: body.appliedContext || 'manual application',
     });
 
     res.json({ ok: true, applicationId: result.id });
@@ -225,17 +252,11 @@ router.post('/learning/patterns/:patternId/apply', (req, res) => {
 router.post('/learning/applications/:id/outcome', (req, res) => {
   try {
     const { id } = req.params;
-    const { outcome } = req.body || {};
+    const body = parsePayload(applicationOutcomeSchema, req.body || {}, res);
+    if (!body) return;
 
-    if (!outcome || !['accepted', 'rejected', 'ignored'].includes(outcome)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'outcome must be one of: accepted, rejected, ignored',
-      });
-    }
-
-    recordApplicationOutcome(id, outcome);
-    res.json({ ok: true, applicationId: id, outcome });
+    recordApplicationOutcome(id, body.outcome);
+    res.json({ ok: true, applicationId: id, outcome: body.outcome });
   } catch (err) {
     log.error('api:application-outcome', { id: req.params.id, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
@@ -247,19 +268,16 @@ router.post('/learning/applications/:id/outcome', (req, res) => {
 router.post('/cases/:caseId/feedback-loop/link', (req, res) => {
   try {
     const { caseId } = req.params;
-    const { sectionId, generatedSectionId, formType, propertyType, marketArea } = req.body || {};
-
-    if (!sectionId || !formType) {
-      return res.status(400).json({ ok: false, error: 'sectionId and formType are required' });
-    }
+    const body = parsePayload(feedbackLinkSchema, req.body || {}, res);
+    if (!body) return;
 
     const result = linkGenerationToPatterns({
       caseId,
-      sectionId,
-      generatedSectionId,
-      formType,
-      propertyType,
-      marketArea,
+      sectionId: body.sectionId,
+      generatedSectionId: body.generatedSectionId,
+      formType: body.formType,
+      propertyType: body.propertyType,
+      marketArea: body.marketArea,
     });
 
     res.json({ ok: true, ...result });
@@ -299,12 +317,10 @@ router.get('/learning/patterns/:patternId/success-rate', (req, res) => {
 // Get success rates for multiple patterns (batch).
 router.post('/learning/patterns/success-rates', (req, res) => {
   try {
-    const { patternIds } = req.body || {};
-    if (!Array.isArray(patternIds) || patternIds.length === 0) {
-      return res.status(400).json({ ok: false, error: 'patternIds array is required' });
-    }
+    const body = parsePayload(batchSuccessRatesSchema, req.body || {}, res);
+    if (!body) return;
 
-    const result = getBatchPatternSuccessRates(patternIds);
+    const result = getBatchPatternSuccessRates(body.patternIds);
     res.json({ ok: true, rates: result });
   } catch (err) {
     log.error('api:batch-success-rates', { error: err.message });
