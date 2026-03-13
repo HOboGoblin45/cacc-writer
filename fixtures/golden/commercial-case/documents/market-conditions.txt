@@ -1,0 +1,83 @@
+SPRINGFIELD, IL — MULTIFAMILY MARKET CONDITIONS SUMMARY
+Prepared from CoStar, ILHMA, and Local Market Data — Q4 2025 / Q1 2026
+
+SUBMARKET: South Springfield / Medical District
+Property Type: Multi-Family (5+ units)
+
+MARKET OVERVIEW:
+  Springfield MSA Population (2025 est.): 209,000
+  Sangamon County Unemployment (Jan 2026): 4.2%
+  Major Employment Sectors: State Government, Healthcare, Education
+  Major Employers (proximity to subject):
+    - Memorial Medical Center (0.3 miles)
+    - SIU School of Medicine (0.5 miles)
+    - State Capitol Complex (2.0 miles)
+    - Lincoln Land Community College (3.5 miles)
+
+MULTIFAMILY MARKET DATA (Springfield MSA):
+
+                        Q1 2025   Q2 2025   Q3 2025   Q4 2025
+Average Vacancy Rate      5.8%      5.4%      5.2%      5.6%
+Average Asking Rent/Unit  $985     $1,005    $1,020    $1,030
+Avg Rent/SF               $1.05     $1.07     $1.08     $1.10
+Units Under Construction    48        72        72        36
+Net Absorption (units)      32        45        38        28
+
+RENT TRENDS BY UNIT TYPE (Subject Submarket):
+  1BR/1BA: $775 - $875/month (avg $825)
+  2BR/1BA: $975 - $1,100/month (avg $1,050)
+  3BR/2BA: $1,250 - $1,400/month (avg $1,325)
+
+  12-month rent growth: +3.2% (submarket average)
+  Direction: Stable to increasing
+  Concessions: Minimal — occasional half-month free on 12+ month leases
+
+VACANCY:
+  Submarket vacancy rate: 5.6%
+  Stabilized vacancy assumption: 5-7%
+  Subject current vacancy: 8.3% (1 of 12 units)
+  Subject historical average: ~6%
+
+CAP RATE DATA (Garden-Style Apartments, Springfield MSA):
+  Range (trailing 12 months): 7.8% - 9.2%
+  Average: 8.5%
+  Trend: Stable (slight compression from 2024)
+  Source: CoStar, verified against local broker surveys
+
+  Comparable cap rates:
+    2200 Yale Blvd sale (10 units, Oct 2025): 8.7%
+    815 N Fifth St sale (16 units, Aug 2025): 8.2%
+    1050 S MacArthur sale (12 units, Dec 2025): 8.5%
+
+EXPENSE RATIOS (Comparable Properties, 10-20 unit range):
+  Operating expense ratio range: 38% - 48% of EGI
+  Typical: 42% - 45%
+  Subject (2025 actual): 40.4%
+  Per-unit expense range: $4,500 - $5,800
+  Subject (2025 actual): $4,799/unit
+
+GRM DATA:
+  Gross Rent Multiplier range: 5.8 - 7.2
+  Typical: 6.2 - 6.8
+  Subject PGI-based GRM at current asking: ~6.1 (based on $940K value est.)
+
+INVESTMENT MARKET:
+  Transaction volume (Springfield MSA, trailing 12 months):
+    Multifamily sales (5+ units): 14 transactions
+    Total volume: ~$18.5 million
+    Average price per unit: $78,000 - $95,000
+    Buyer profile: Local/regional investors, some 1031 exchange buyers
+
+SUPPLY PIPELINE:
+  Units under construction (Springfield MSA): 36
+  Planned/permitted: 48
+  No large-scale projects within 1 mile of subject
+  New construction rents significantly higher ($1,400-$1,800 for 2BR)
+  Limited competition from new supply in subject's price tier
+
+SUMMARY:
+The Springfield multifamily market is stable with moderate rent growth
+and balanced vacancy. The subject property operates within market norms
+for rents, vacancy, and expenses. Cap rates have stabilized in the
+mid-8% range for comparable garden-style product. Tenant demand is
+supported by proximity to major healthcare and government employers.
