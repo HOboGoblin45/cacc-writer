@@ -2560,6 +2560,24 @@ const sections = [
     ],
   },
   {
+    id: 'qc_review',
+    label: 'QC Review',
+    pageHint: 'Workspace QA',
+    description: 'Case record QA summary, contradiction review, and appraiser sign-off notes.',
+    fields: [
+      textareaField('qc_review_notes', 'QC Review Notes', 'workspace1004.qcReview.notes', {
+        page: null,
+        group: 'Review',
+        rows: 4,
+      }),
+      textareaField('qc_resolution_notes', 'Issue Resolution Notes', 'workspace1004.qcReview.resolutionNotes', {
+        page: null,
+        group: 'Review',
+        rows: 4,
+      }),
+    ],
+  },
+  {
     id: 'subject_property_addendum',
     label: 'Subject Property Addendum',
     pageHint: 'Subject addendum page',
@@ -3500,24 +3518,6 @@ const sections = [
       textareaField('sria_rental_analysis', 'Rental Analysis Comments', 'workspace1004.smallResIncomeAddendum.rentalSummary.analysisComments', {
         page: 19,
         group: 'Narrative',
-        rows: 4,
-      }),
-    ],
-  },
-  {
-    id: 'qc_review',
-    label: 'QC Review',
-    pageHint: 'Workspace QA',
-    description: 'Case record QA summary, contradiction review, and appraiser sign-off notes.',
-    fields: [
-      textareaField('qc_review_notes', 'QC Review Notes', 'workspace1004.qcReview.notes', {
-        page: null,
-        group: 'Review',
-        rows: 4,
-      }),
-      textareaField('qc_resolution_notes', 'Issue Resolution Notes', 'workspace1004.qcReview.resolutionNotes', {
-        page: null,
-        group: 'Review',
         rows: 4,
       }),
     ],
