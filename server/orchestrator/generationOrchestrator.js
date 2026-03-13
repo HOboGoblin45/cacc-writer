@@ -64,6 +64,7 @@ import {
   getGeneratedSectionsForRun,
 } from '../db/repositories/generationRepo.js';
 import { resolveSectionPolicy, buildDependencySnapshot } from '../sectionFactory/sectionPolicyService.js';
+import { emitCaseEvent } from '../operations/auditLogger.js';
 
 const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
 const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
@@ -523,7 +524,17 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       caseId,
       reason: 'forceGateBypass=true',
     });
+    emitCaseEvent(caseId, 'generation.gate_bypassed', 'Pre-draft gate bypassed by user', {
+      blockerCount: gateCheck.gate?.blockers?.length || 0,
+      blockerTypes: (gateCheck.gate?.blockers || []).map(b => b.type),
+    }, { severity: 'warning' });
   }
+
+  emitCaseEvent(caseId, 'generation.started', 'Full-draft generation started', {
+    runId,
+    formType: formType || 'unknown',
+    gateBypassed: !!gateCheck.bypassed,
+  });
 
   try {
     // ── 2. Transition to preparing — build assignment context ────────────────
@@ -781,6 +792,15 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       grade:        draftPackage.metrics?.performanceGrade,
     });
 
+    emitCaseEvent(caseId, 'generation.completed', 'Full-draft generation completed', {
+      runId,
+      status: finalStatus,
+      totalDurationMs: Date.now() - tTotal,
+      successCount,
+      errorCount,
+      grade: draftPackage.metrics?.performanceGrade,
+    });
+
     return {
       ok:           true,
       runId,
@@ -798,6 +818,12 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       error:   err.message,
       totalMs,
     });
+
+    emitCaseEvent(caseId, 'generation.failed', 'Full-draft generation failed', {
+      runId,
+      error: err.message,
+      totalDurationMs: totalMs,
+    }, { severity: 'error' });
 
     return {
       ok:           false,

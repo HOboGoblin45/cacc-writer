@@ -648,6 +648,8 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
   if (!body) return;
 
   try {
+    res.setHeader('X-Deprecated', 'true');
+    res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
 
@@ -718,6 +720,8 @@ router.post('/:caseId/insert-all', (req, res) => {
   if (!body) return;
 
   try {
+    res.setHeader('X-Deprecated', 'true');
+    res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
     const { formType } = runtime;
