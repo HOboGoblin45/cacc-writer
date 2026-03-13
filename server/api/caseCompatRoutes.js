@@ -41,6 +41,7 @@ import {
 } from '../destinationRegistry.js';
 import { evaluateInsertionQcGate } from '../insertion/insertionRunEngine.js';
 import { buildReviewMessages } from '../promptBuilder.js';
+import { onSectionApproved, onSectionRejected } from '../learning/feedbackLoopService.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 
@@ -409,11 +410,23 @@ router.post('/:caseId/feedback', async (req, res) => {
       }
     }
 
+    // Propagate outcome to learning system feedback loop
+    let feedbackLoopResult = null;
+    try {
+      if (isApproved) {
+        feedbackLoopResult = onSectionApproved(req.params.caseId, sid);
+      } else if (body.rating === 'down' || body.action === 'reject') {
+        feedbackLoopResult = onSectionRejected(req.params.caseId, sid);
+      }
+    } catch (flErr) {
+      log.warn('feedback:feedback-loop-failed', { error: flErr.message, fieldId: sid });
+    }
+
     const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = new Date().toISOString();
     saveCaseRuntime(req.params.caseId, runtime, { meta });
 
-    res.json({ ok: true, saved: true, count: feedbackItems.length, savedToKB });
+    res.json({ ok: true, saved: true, count: feedbackItems.length, savedToKB, feedbackLoop: feedbackLoopResult });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
