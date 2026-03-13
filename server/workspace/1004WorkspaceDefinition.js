@@ -2560,6 +2560,951 @@ const sections = [
     ],
   },
   {
+    id: 'subject_property_addendum',
+    label: 'Subject Property Addendum',
+    pageHint: 'Subject addendum page',
+    description: 'Additional site details, FEMA flood detail, soil/environmental conditions.',
+    fields: [
+      textField('spa_borrower', 'Borrower', 'workspace1004.subjectPropertyAddendum.borrower', {
+        page: 15,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('spa_file_number', 'File No.', 'workspace1004.subjectPropertyAddendum.fileNumber', {
+        page: 15,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('spa_property_address', 'Property Address', 'workspace1004.subjectPropertyAddendum.propertyAddress', {
+        suggestionPath: 'subject.address',
+        syncPaths: ['subject.address'],
+        page: 15,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('spa_case_number', 'Case No.', 'workspace1004.subjectPropertyAddendum.caseNumber', {
+        page: 15,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('spa_city', 'City', 'workspace1004.subjectPropertyAddendum.city', {
+        suggestionPath: 'subject.city',
+        syncPaths: ['subject.city'],
+        page: 15,
+        group: 'Header',
+        width: 'quarter',
+      }),
+      textField('spa_state', 'State', 'workspace1004.subjectPropertyAddendum.state', {
+        suggestionPath: 'subject.state',
+        syncPaths: ['subject.state'],
+        page: 15,
+        group: 'Header',
+        width: 'quarter',
+      }),
+      textField('spa_zip', 'Zip', 'workspace1004.subjectPropertyAddendum.zip', {
+        suggestionPath: 'subject.zip',
+        syncPaths: ['subject.zip'],
+        page: 15,
+        group: 'Header',
+        width: 'quarter',
+      }),
+      textField('spa_lender', 'Lender', 'workspace1004.subjectPropertyAddendum.lender', {
+        page: 15,
+        group: 'Header',
+        width: 'quarter',
+      }),
+      // --- Additional Site Details ---
+      textField('spa_lot_size_acres', 'Lot Size (Acres)', 'workspace1004.subjectPropertyAddendum.lotSizeAcres', {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'quarter',
+      }),
+      textField('spa_lot_size_sqft', 'Lot Size (Sq. Ft.)', 'workspace1004.subjectPropertyAddendum.lotSizeSqft', {
+        suggestionPath: 'subject.siteSize',
+        syncPaths: ['subject.siteSize'],
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'quarter',
+      }),
+      textField('spa_lot_frontage', 'Lot Frontage', 'workspace1004.subjectPropertyAddendum.lotFrontage', {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'quarter',
+      }),
+      textField('spa_lot_depth', 'Lot Depth', 'workspace1004.subjectPropertyAddendum.lotDepth', {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'quarter',
+      }),
+      textField('spa_landscaping', 'Landscaping', 'workspace1004.subjectPropertyAddendum.landscaping', {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'half',
+      }),
+      textField('spa_driveway_surface', 'Driveway Surface', 'workspace1004.subjectPropertyAddendum.drivewaySurface', {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'half',
+      }),
+      selectField('spa_apparent_easements', 'Apparent Easements', 'workspace1004.subjectPropertyAddendum.apparentEasements', yesNoUnknown, {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'third',
+      }),
+      textareaField('spa_easement_description', 'Easement Description', 'workspace1004.subjectPropertyAddendum.easementDescription', {
+        page: 15,
+        group: 'Additional Site Details',
+        rows: 3,
+      }),
+      selectField('spa_encroachments', 'Encroachments', 'workspace1004.subjectPropertyAddendum.encroachments', yesNoUnknown, {
+        page: 15,
+        group: 'Additional Site Details',
+        width: 'third',
+      }),
+      textareaField('spa_encroachment_description', 'Encroachment Description', 'workspace1004.subjectPropertyAddendum.encroachmentDescription', {
+        page: 15,
+        group: 'Additional Site Details',
+        rows: 3,
+      }),
+      // --- FEMA Flood Detail ---
+      selectField('spa_fema_flood_zone', 'FEMA Special Flood Hazard Area', 'workspace1004.subjectPropertyAddendum.fema.floodHazardArea', yesNoUnknown, {
+        suggestionPath: 'subject.floodZone',
+        page: 15,
+        group: 'FEMA Flood',
+        width: 'third',
+      }),
+      textField('spa_fema_zone', 'FEMA Flood Zone', 'workspace1004.subjectPropertyAddendum.fema.zone', {
+        suggestionPath: 'subject.floodZone',
+        page: 15,
+        group: 'FEMA Flood',
+        width: 'third',
+      }),
+      textField('spa_fema_map_number', 'FEMA Map Number', 'workspace1004.subjectPropertyAddendum.fema.mapNumber', {
+        page: 15,
+        group: 'FEMA Flood',
+        width: 'third',
+      }),
+      textField('spa_fema_map_date', 'FEMA Map Date', 'workspace1004.subjectPropertyAddendum.fema.mapDate', {
+        page: 15,
+        group: 'FEMA Flood',
+        width: 'third',
+      }),
+      selectField('spa_flood_insurance_required', 'Flood Insurance Required', 'workspace1004.subjectPropertyAddendum.fema.floodInsuranceRequired', yesNoUnknown, {
+        page: 15,
+        group: 'FEMA Flood',
+        width: 'third',
+      }),
+      textareaField('spa_flood_comments', 'Flood Zone Comments', 'workspace1004.subjectPropertyAddendum.fema.comments', {
+        page: 15,
+        group: 'FEMA Flood',
+        rows: 3,
+      }),
+      // --- Soil / Environmental ---
+      textField('spa_soil_type', 'Soil Type', 'workspace1004.subjectPropertyAddendum.soil.type', {
+        page: 15,
+        group: 'Soil / Environmental',
+        width: 'third',
+      }),
+      selectField('spa_soil_stability', 'Soil Stability Adequate', 'workspace1004.subjectPropertyAddendum.soil.stabilityAdequate', yesNoUnknown, {
+        page: 15,
+        group: 'Soil / Environmental',
+        width: 'third',
+      }),
+      selectField('spa_environmental_hazards', 'Environmental Hazards Observed', 'workspace1004.subjectPropertyAddendum.environmental.hazardsObserved', yesNoUnknown, {
+        page: 15,
+        group: 'Soil / Environmental',
+        width: 'third',
+      }),
+      textareaField('spa_environmental_description', 'Environmental Hazards Description', 'workspace1004.subjectPropertyAddendum.environmental.description', {
+        page: 15,
+        group: 'Soil / Environmental',
+        rows: 3,
+      }),
+      selectField('spa_special_assessments', 'Special Assessments', 'workspace1004.subjectPropertyAddendum.specialAssessments.present', yesNoUnknown, {
+        page: 15,
+        group: 'Soil / Environmental',
+        width: 'third',
+      }),
+      textareaField('spa_special_assessments_description', 'Special Assessments Description', 'workspace1004.subjectPropertyAddendum.specialAssessments.description', {
+        page: 15,
+        group: 'Soil / Environmental',
+        rows: 3,
+      }),
+      textareaField('spa_additional_site_comments', 'Additional Site Comments', 'workspace1004.subjectPropertyAddendum.additionalComments', {
+        page: 15,
+        group: 'Narrative',
+        rows: 4,
+      }),
+    ],
+  },
+  {
+    id: 'pud_condo_addendum',
+    label: 'PUD / Condo Addendum',
+    pageHint: 'PUD / Condo addendum page',
+    description: 'PUD and condominium project details, HOA information, and project analysis.',
+    fields: [
+      textField('pca_borrower', 'Borrower', 'workspace1004.pudCondoAddendum.borrower', {
+        page: 16,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('pca_file_number', 'File No.', 'workspace1004.pudCondoAddendum.fileNumber', {
+        page: 16,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('pca_property_address', 'Property Address', 'workspace1004.pudCondoAddendum.propertyAddress', {
+        suggestionPath: 'subject.address',
+        syncPaths: ['subject.address'],
+        page: 16,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('pca_case_number', 'Case No.', 'workspace1004.pudCondoAddendum.caseNumber', {
+        page: 16,
+        group: 'Header',
+        width: 'half',
+      }),
+      // --- Project Information ---
+      textField('pca_project_name', 'Project Name', 'workspace1004.pudCondoAddendum.projectName', {
+        page: 16,
+        group: 'Project Information',
+        width: 'full',
+      }),
+      textField('pca_hoa_name', 'HOA Name', 'workspace1004.pudCondoAddendum.hoaName', {
+        page: 16,
+        group: 'Project Information',
+        width: 'half',
+      }),
+      textField('pca_hoa_contact', 'HOA Contact', 'workspace1004.pudCondoAddendum.hoaContact', {
+        page: 16,
+        group: 'Project Information',
+        width: 'half',
+      }),
+      textField('pca_hoa_phone', 'HOA Phone', 'workspace1004.pudCondoAddendum.hoaPhone', {
+        page: 16,
+        group: 'Project Information',
+        width: 'third',
+      }),
+      textField('pca_hoa_dues', 'HOA Dues ($)', 'workspace1004.pudCondoAddendum.hoaDues', {
+        page: 16,
+        group: 'Project Information',
+        width: 'third',
+      }),
+      selectField('pca_hoa_dues_period', 'HOA Dues Period', 'workspace1004.pudCondoAddendum.hoaDuesPeriod', hoaPeriodChoices, {
+        page: 16,
+        group: 'Project Information',
+        width: 'third',
+      }),
+      textField('pca_special_assessment_amount', 'Special Assessment Amount', 'workspace1004.pudCondoAddendum.specialAssessmentAmount', {
+        page: 16,
+        group: 'Project Information',
+        width: 'third',
+      }),
+      textareaField('pca_special_assessment_description', 'Special Assessment Description', 'workspace1004.pudCondoAddendum.specialAssessmentDescription', {
+        page: 16,
+        group: 'Project Information',
+        rows: 3,
+      }),
+      // --- Unit / Phase counts ---
+      textField('pca_total_phases', 'Total Number of Phases', 'workspace1004.pudCondoAddendum.totalPhases', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_total_units', 'Total Number of Units', 'workspace1004.pudCondoAddendum.totalUnits', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_units_complete', 'Units Complete', 'workspace1004.pudCondoAddendum.unitsComplete', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_units_sold', 'Units Sold', 'workspace1004.pudCondoAddendum.unitsSold', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_units_rented', 'Units Rented', 'workspace1004.pudCondoAddendum.unitsRented', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_units_for_sale', 'Units for Sale', 'workspace1004.pudCondoAddendum.unitsForSale', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_units_owner_occupied', 'Units Owner Occupied', 'workspace1004.pudCondoAddendum.unitsOwnerOccupied', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      textField('pca_owner_occupancy_percent', 'Owner Occupancy %', 'workspace1004.pudCondoAddendum.ownerOccupancyPercent', {
+        page: 16,
+        group: 'Unit Counts',
+        width: 'quarter',
+      }),
+      // --- Condo-specific fields ---
+      selectField('pca_developer_controls_hoa', 'Developer / Builder Controls HOA?', 'workspace1004.pudCondoAddendum.developerControlsHoa', yesNoUnknown, {
+        page: 16,
+        group: 'Condo Details',
+        width: 'half',
+      }),
+      selectField('pca_created_by_conversion', 'Project Created by Conversion?', 'workspace1004.pudCondoAddendum.createdByConversion', yesNoUnknown, {
+        page: 16,
+        group: 'Condo Details',
+        width: 'half',
+      }),
+      textField('pca_conversion_date', 'Conversion Date', 'workspace1004.pudCondoAddendum.conversionDate', {
+        page: 16,
+        group: 'Condo Details',
+        width: 'third',
+      }),
+      selectField('pca_common_elements_complete', 'Common Elements Complete?', 'workspace1004.pudCondoAddendum.commonElementsComplete', yesNoUnknown, {
+        page: 16,
+        group: 'Condo Details',
+        width: 'third',
+      }),
+      selectField('pca_common_elements_leased', 'Common Elements Leased to HOA?', 'workspace1004.pudCondoAddendum.commonElementsLeased', yesNoUnknown, {
+        page: 16,
+        group: 'Condo Details',
+        width: 'third',
+      }),
+      textareaField('pca_common_elements_description', 'Common Elements and Recreational Facilities', 'workspace1004.pudCondoAddendum.commonElementsDescription', {
+        page: 16,
+        group: 'Condo Details',
+        rows: 3,
+      }),
+      textareaField('pca_rental_terms', 'Rental Terms and Options', 'workspace1004.pudCondoAddendum.rentalTerms', {
+        page: 16,
+        group: 'Condo Details',
+        rows: 3,
+      }),
+      selectField('pca_litigation_pending', 'Litigation Pending?', 'workspace1004.pudCondoAddendum.litigationPending', yesNoUnknown, {
+        page: 16,
+        group: 'Condo Details',
+        width: 'third',
+      }),
+      textareaField('pca_litigation_description', 'Litigation Description', 'workspace1004.pudCondoAddendum.litigationDescription', {
+        page: 16,
+        group: 'Condo Details',
+        rows: 3,
+      }),
+      textField('pca_budget_adequate_year', 'Budget Adequate for Year', 'workspace1004.pudCondoAddendum.budgetAdequateYear', {
+        page: 16,
+        group: 'Financial',
+        width: 'quarter',
+      }),
+      textField('pca_reserve_fund_balance', 'Reserve Fund Balance', 'workspace1004.pudCondoAddendum.reserveFundBalance', {
+        page: 16,
+        group: 'Financial',
+        width: 'quarter',
+      }),
+      selectField('pca_reserve_study_performed', 'Reserve Study Performed?', 'workspace1004.pudCondoAddendum.reserveStudyPerformed', yesNoUnknown, {
+        page: 16,
+        group: 'Financial',
+        width: 'quarter',
+      }),
+      textField('pca_reserve_study_date', 'Reserve Study Date', 'workspace1004.pudCondoAddendum.reserveStudyDate', {
+        page: 16,
+        group: 'Financial',
+        width: 'quarter',
+      }),
+      textareaField('pca_project_comments', 'Project Comments', 'workspace1004.pudCondoAddendum.projectComments', {
+        page: 16,
+        group: 'Narrative',
+        rows: 4,
+      }),
+    ],
+  },
+  {
+    id: 'cost_approach_addendum',
+    label: 'Cost Approach Addendum',
+    pageHint: 'Cost approach addendum page',
+    description: 'Detailed land value, replacement cost new, depreciation breakdown, and site improvements.',
+    fields: [
+      textField('caa_borrower', 'Borrower', 'workspace1004.costApproachAddendum.borrower', {
+        page: 17,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('caa_file_number', 'File No.', 'workspace1004.costApproachAddendum.fileNumber', {
+        page: 17,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('caa_property_address', 'Property Address', 'workspace1004.costApproachAddendum.propertyAddress', {
+        suggestionPath: 'subject.address',
+        syncPaths: ['subject.address'],
+        page: 17,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('caa_case_number', 'Case No.', 'workspace1004.costApproachAddendum.caseNumber', {
+        page: 17,
+        group: 'Header',
+        width: 'half',
+      }),
+      // --- Land Value ---
+      textField('caa_land_value_opinion', 'Opinion of Land Value', 'workspace1004.costApproachAddendum.landValue.opinion', {
+        page: 17,
+        group: 'Land Value',
+        width: 'third',
+      }),
+      textField('caa_land_value_source', 'Land Value Data Source', 'workspace1004.costApproachAddendum.landValue.dataSource', {
+        page: 17,
+        group: 'Land Value',
+        width: 'third',
+      }),
+      textField('caa_land_value_effective_date', 'Land Value Effective Date', 'workspace1004.costApproachAddendum.landValue.effectiveDate', {
+        page: 17,
+        group: 'Land Value',
+        width: 'third',
+      }),
+      textField('caa_land_comp1_address', 'Land Comp 1 Address', 'workspace1004.costApproachAddendum.landComps.comp1.address', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'half',
+      }),
+      textField('caa_land_comp1_price', 'Land Comp 1 Price', 'workspace1004.costApproachAddendum.landComps.comp1.price', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textField('caa_land_comp1_size', 'Land Comp 1 Size', 'workspace1004.costApproachAddendum.landComps.comp1.size', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textField('caa_land_comp2_address', 'Land Comp 2 Address', 'workspace1004.costApproachAddendum.landComps.comp2.address', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'half',
+      }),
+      textField('caa_land_comp2_price', 'Land Comp 2 Price', 'workspace1004.costApproachAddendum.landComps.comp2.price', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textField('caa_land_comp2_size', 'Land Comp 2 Size', 'workspace1004.costApproachAddendum.landComps.comp2.size', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textField('caa_land_comp3_address', 'Land Comp 3 Address', 'workspace1004.costApproachAddendum.landComps.comp3.address', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'half',
+      }),
+      textField('caa_land_comp3_price', 'Land Comp 3 Price', 'workspace1004.costApproachAddendum.landComps.comp3.price', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textField('caa_land_comp3_size', 'Land Comp 3 Size', 'workspace1004.costApproachAddendum.landComps.comp3.size', {
+        page: 17,
+        group: 'Land Comparables',
+        width: 'quarter',
+      }),
+      textareaField('caa_land_value_support', 'Land Value Support Narrative', 'workspace1004.costApproachAddendum.landValue.supportNarrative', {
+        page: 17,
+        group: 'Land Value',
+        rows: 4,
+      }),
+      // --- Replacement Cost New ---
+      textField('caa_replacement_cost_new', 'Replacement Cost New', 'workspace1004.costApproachAddendum.replacementCost.total', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_sqft', 'Replacement Cost Sq. Ft.', 'workspace1004.costApproachAddendum.replacementCost.sqft', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_rate', 'Replacement Cost Rate / Sq. Ft.', 'workspace1004.costApproachAddendum.replacementCost.ratePerSqft', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_source', 'Cost Data Source', 'workspace1004.costApproachAddendum.replacementCost.source', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'half',
+      }),
+      textField('caa_rcn_effective_date', 'Cost Data Effective Date', 'workspace1004.costApproachAddendum.replacementCost.effectiveDate', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'half',
+      }),
+      textField('caa_rcn_garage', 'Garage / Carport Cost', 'workspace1004.costApproachAddendum.replacementCost.garageCost', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_site_improvements', 'Site Improvements Cost', 'workspace1004.costApproachAddendum.replacementCost.siteImprovementsCost', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_other', 'Other Cost Components', 'workspace1004.costApproachAddendum.replacementCost.otherCost', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'third',
+      }),
+      textField('caa_rcn_total_all', 'Total Estimated Cost New', 'workspace1004.costApproachAddendum.replacementCost.totalEstimated', {
+        page: 17,
+        group: 'Replacement Cost',
+        width: 'half',
+      }),
+      // --- Depreciation ---
+      textField('caa_depreciation_physical', 'Physical Depreciation', 'workspace1004.costApproachAddendum.depreciation.physical', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textField('caa_depreciation_functional', 'Functional Depreciation', 'workspace1004.costApproachAddendum.depreciation.functional', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textField('caa_depreciation_external', 'External Depreciation', 'workspace1004.costApproachAddendum.depreciation.external', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textField('caa_depreciation_total', 'Total Depreciation', 'workspace1004.costApproachAddendum.depreciation.total', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textField('caa_depreciation_percent', 'Depreciation %', 'workspace1004.costApproachAddendum.depreciation.percent', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textField('caa_remaining_economic_life', 'Remaining Economic Life (Yrs)', 'workspace1004.costApproachAddendum.depreciation.remainingEconomicLife', {
+        page: 17,
+        group: 'Depreciation',
+        width: 'third',
+      }),
+      textareaField('caa_depreciation_comments', 'Depreciation Comments', 'workspace1004.costApproachAddendum.depreciation.comments', {
+        page: 17,
+        group: 'Depreciation',
+        rows: 3,
+      }),
+      // --- Improvements Summary ---
+      textField('caa_depreciated_cost_improvements', 'Depreciated Cost of Improvements', 'workspace1004.costApproachAddendum.summary.depreciatedCostOfImprovements', {
+        page: 17,
+        group: 'Summary',
+        width: 'half',
+      }),
+      textField('caa_as_is_site_improvements', 'As-Is Value of Site Improvements', 'workspace1004.costApproachAddendum.summary.asIsSiteImprovements', {
+        page: 17,
+        group: 'Summary',
+        width: 'half',
+      }),
+      textField('caa_indicated_value', 'Indicated Value by Cost Approach', 'workspace1004.costApproachAddendum.summary.indicatedValue', {
+        page: 17,
+        group: 'Summary',
+        width: 'half',
+      }),
+      textareaField('caa_cost_approach_comments', 'Cost Approach Addendum Comments', 'workspace1004.costApproachAddendum.summary.comments', {
+        page: 17,
+        group: 'Narrative',
+        rows: 4,
+      }),
+    ],
+  },
+  {
+    id: 'income_approach_addendum',
+    label: 'Income Approach Addendum',
+    pageHint: 'Income approach addendum page',
+    description: 'Monthly market rent, GRM, operating expenses, and income approach support.',
+    fields: [
+      textField('iaa_borrower', 'Borrower', 'workspace1004.incomeApproachAddendum.borrower', {
+        page: 18,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('iaa_file_number', 'File No.', 'workspace1004.incomeApproachAddendum.fileNumber', {
+        page: 18,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('iaa_property_address', 'Property Address', 'workspace1004.incomeApproachAddendum.propertyAddress', {
+        suggestionPath: 'subject.address',
+        syncPaths: ['subject.address'],
+        page: 18,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('iaa_case_number', 'Case No.', 'workspace1004.incomeApproachAddendum.caseNumber', {
+        page: 18,
+        group: 'Header',
+        width: 'half',
+      }),
+      // --- Market Rent ---
+      textField('iaa_monthly_market_rent', 'Estimated Monthly Market Rent', 'workspace1004.incomeApproachAddendum.monthlyMarketRent', {
+        page: 18,
+        group: 'Market Rent',
+        width: 'third',
+      }),
+      textField('iaa_annual_gross_rent', 'Annual Gross Rent', 'workspace1004.incomeApproachAddendum.annualGrossRent', {
+        page: 18,
+        group: 'Market Rent',
+        width: 'third',
+      }),
+      textField('iaa_rent_data_source', 'Rent Data Source', 'workspace1004.incomeApproachAddendum.rentDataSource', {
+        page: 18,
+        group: 'Market Rent',
+        width: 'third',
+      }),
+      // --- GRM ---
+      textField('iaa_grm', 'Gross Rent Multiplier (GRM)', 'workspace1004.incomeApproachAddendum.grm', {
+        page: 18,
+        group: 'GRM',
+        width: 'third',
+      }),
+      textField('iaa_grm_data_source', 'GRM Data Source', 'workspace1004.incomeApproachAddendum.grmDataSource', {
+        page: 18,
+        group: 'GRM',
+        width: 'third',
+      }),
+      textField('iaa_indicated_value_grm', 'Indicated Value by GRM', 'workspace1004.incomeApproachAddendum.indicatedValueByGrm', {
+        page: 18,
+        group: 'GRM',
+        width: 'third',
+      }),
+      // --- Operating Expenses ---
+      textField('iaa_vacancy_loss', 'Vacancy / Collection Loss', 'workspace1004.incomeApproachAddendum.operatingExpenses.vacancyLoss', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'third',
+      }),
+      textField('iaa_vacancy_loss_percent', 'Vacancy Loss %', 'workspace1004.incomeApproachAddendum.operatingExpenses.vacancyLossPercent', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'third',
+      }),
+      textField('iaa_effective_gross_income', 'Effective Gross Income', 'workspace1004.incomeApproachAddendum.operatingExpenses.effectiveGrossIncome', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'third',
+      }),
+      textField('iaa_taxes', 'Real Estate Taxes', 'workspace1004.incomeApproachAddendum.operatingExpenses.taxes', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_insurance', 'Insurance', 'workspace1004.incomeApproachAddendum.operatingExpenses.insurance', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_maintenance', 'Maintenance / Repairs', 'workspace1004.incomeApproachAddendum.operatingExpenses.maintenance', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_management', 'Management', 'workspace1004.incomeApproachAddendum.operatingExpenses.management', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_utilities', 'Utilities', 'workspace1004.incomeApproachAddendum.operatingExpenses.utilities', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_reserves', 'Replacement Reserves', 'workspace1004.incomeApproachAddendum.operatingExpenses.reserves', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_other_expenses', 'Other Expenses', 'workspace1004.incomeApproachAddendum.operatingExpenses.otherExpenses', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_total_operating_expenses', 'Total Operating Expenses', 'workspace1004.incomeApproachAddendum.operatingExpenses.totalExpenses', {
+        page: 18,
+        group: 'Operating Expenses',
+        width: 'quarter',
+      }),
+      textField('iaa_net_operating_income', 'Net Operating Income', 'workspace1004.incomeApproachAddendum.netOperatingIncome', {
+        page: 18,
+        group: 'Income Summary',
+        width: 'third',
+      }),
+      textField('iaa_cap_rate', 'Capitalization Rate', 'workspace1004.incomeApproachAddendum.capRate', {
+        page: 18,
+        group: 'Income Summary',
+        width: 'third',
+      }),
+      textField('iaa_indicated_value', 'Indicated Value by Income Approach', 'workspace1004.incomeApproachAddendum.indicatedValue', {
+        page: 18,
+        group: 'Income Summary',
+        width: 'third',
+      }),
+      textareaField('iaa_income_comments', 'Income Approach Addendum Comments', 'workspace1004.incomeApproachAddendum.comments', {
+        page: 18,
+        group: 'Narrative',
+        rows: 4,
+      }),
+    ],
+  },
+  {
+    id: 'small_residential_income_addendum',
+    label: 'Small Residential Income Addendum',
+    pageHint: 'Small residential income property addendum',
+    description: 'Unit details, utility information, and rental analysis for 2-4 unit properties.',
+    fields: [
+      textField('sria_borrower', 'Borrower', 'workspace1004.smallResIncomeAddendum.borrower', {
+        page: 19,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('sria_file_number', 'File No.', 'workspace1004.smallResIncomeAddendum.fileNumber', {
+        page: 19,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('sria_property_address', 'Property Address', 'workspace1004.smallResIncomeAddendum.propertyAddress', {
+        suggestionPath: 'subject.address',
+        syncPaths: ['subject.address'],
+        page: 19,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('sria_case_number', 'Case No.', 'workspace1004.smallResIncomeAddendum.caseNumber', {
+        page: 19,
+        group: 'Header',
+        width: 'half',
+      }),
+      textField('sria_number_of_units', 'Number of Units', 'workspace1004.smallResIncomeAddendum.numberOfUnits', {
+        page: 19,
+        group: 'Property Summary',
+        width: 'quarter',
+      }),
+      // --- Unit 1 ---
+      textField('sria_unit1_rooms', 'Unit 1 Room Count', 'workspace1004.smallResIncomeAddendum.unit1.rooms', {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      textField('sria_unit1_bedrooms', 'Unit 1 Bedrooms', 'workspace1004.smallResIncomeAddendum.unit1.bedrooms', {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      textField('sria_unit1_baths', 'Unit 1 Baths', 'workspace1004.smallResIncomeAddendum.unit1.baths', {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      textField('sria_unit1_sqft', 'Unit 1 Sq. Ft.', 'workspace1004.smallResIncomeAddendum.unit1.sqft', {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      textField('sria_unit1_rent', 'Unit 1 Monthly Rent', 'workspace1004.smallResIncomeAddendum.unit1.monthlyRent', {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      selectField('sria_unit1_occupied', 'Unit 1 Occupied', 'workspace1004.smallResIncomeAddendum.unit1.occupied', yesNoUnknown, {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      selectField('sria_unit1_owner_tenant', 'Unit 1 Occupant', 'workspace1004.smallResIncomeAddendum.unit1.occupant', occupantChoices, {
+        page: 19,
+        group: 'Unit 1',
+        width: 'quarter',
+      }),
+      // --- Unit 2 ---
+      textField('sria_unit2_rooms', 'Unit 2 Room Count', 'workspace1004.smallResIncomeAddendum.unit2.rooms', {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      textField('sria_unit2_bedrooms', 'Unit 2 Bedrooms', 'workspace1004.smallResIncomeAddendum.unit2.bedrooms', {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      textField('sria_unit2_baths', 'Unit 2 Baths', 'workspace1004.smallResIncomeAddendum.unit2.baths', {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      textField('sria_unit2_sqft', 'Unit 2 Sq. Ft.', 'workspace1004.smallResIncomeAddendum.unit2.sqft', {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      textField('sria_unit2_rent', 'Unit 2 Monthly Rent', 'workspace1004.smallResIncomeAddendum.unit2.monthlyRent', {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      selectField('sria_unit2_occupied', 'Unit 2 Occupied', 'workspace1004.smallResIncomeAddendum.unit2.occupied', yesNoUnknown, {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      selectField('sria_unit2_owner_tenant', 'Unit 2 Occupant', 'workspace1004.smallResIncomeAddendum.unit2.occupant', occupantChoices, {
+        page: 19,
+        group: 'Unit 2',
+        width: 'quarter',
+      }),
+      // --- Unit 3 ---
+      textField('sria_unit3_rooms', 'Unit 3 Room Count', 'workspace1004.smallResIncomeAddendum.unit3.rooms', {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      textField('sria_unit3_bedrooms', 'Unit 3 Bedrooms', 'workspace1004.smallResIncomeAddendum.unit3.bedrooms', {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      textField('sria_unit3_baths', 'Unit 3 Baths', 'workspace1004.smallResIncomeAddendum.unit3.baths', {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      textField('sria_unit3_sqft', 'Unit 3 Sq. Ft.', 'workspace1004.smallResIncomeAddendum.unit3.sqft', {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      textField('sria_unit3_rent', 'Unit 3 Monthly Rent', 'workspace1004.smallResIncomeAddendum.unit3.monthlyRent', {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      selectField('sria_unit3_occupied', 'Unit 3 Occupied', 'workspace1004.smallResIncomeAddendum.unit3.occupied', yesNoUnknown, {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      selectField('sria_unit3_owner_tenant', 'Unit 3 Occupant', 'workspace1004.smallResIncomeAddendum.unit3.occupant', occupantChoices, {
+        page: 19,
+        group: 'Unit 3',
+        width: 'quarter',
+      }),
+      // --- Unit 4 ---
+      textField('sria_unit4_rooms', 'Unit 4 Room Count', 'workspace1004.smallResIncomeAddendum.unit4.rooms', {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      textField('sria_unit4_bedrooms', 'Unit 4 Bedrooms', 'workspace1004.smallResIncomeAddendum.unit4.bedrooms', {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      textField('sria_unit4_baths', 'Unit 4 Baths', 'workspace1004.smallResIncomeAddendum.unit4.baths', {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      textField('sria_unit4_sqft', 'Unit 4 Sq. Ft.', 'workspace1004.smallResIncomeAddendum.unit4.sqft', {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      textField('sria_unit4_rent', 'Unit 4 Monthly Rent', 'workspace1004.smallResIncomeAddendum.unit4.monthlyRent', {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      selectField('sria_unit4_occupied', 'Unit 4 Occupied', 'workspace1004.smallResIncomeAddendum.unit4.occupied', yesNoUnknown, {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      selectField('sria_unit4_owner_tenant', 'Unit 4 Occupant', 'workspace1004.smallResIncomeAddendum.unit4.occupant', occupantChoices, {
+        page: 19,
+        group: 'Unit 4',
+        width: 'quarter',
+      }),
+      // --- Utility Information ---
+      selectField('sria_electricity_paid_by', 'Electricity Paid By', 'workspace1004.smallResIncomeAddendum.utilities.electricityPaidBy', [
+        { value: '', label: 'Unknown' },
+        { value: 'owner', label: 'Owner' },
+        { value: 'tenant', label: 'Tenant' },
+      ], {
+        page: 19,
+        group: 'Utility Information',
+        width: 'third',
+      }),
+      selectField('sria_gas_paid_by', 'Gas Paid By', 'workspace1004.smallResIncomeAddendum.utilities.gasPaidBy', [
+        { value: '', label: 'Unknown' },
+        { value: 'owner', label: 'Owner' },
+        { value: 'tenant', label: 'Tenant' },
+      ], {
+        page: 19,
+        group: 'Utility Information',
+        width: 'third',
+      }),
+      selectField('sria_water_paid_by', 'Water / Sewer Paid By', 'workspace1004.smallResIncomeAddendum.utilities.waterPaidBy', [
+        { value: '', label: 'Unknown' },
+        { value: 'owner', label: 'Owner' },
+        { value: 'tenant', label: 'Tenant' },
+      ], {
+        page: 19,
+        group: 'Utility Information',
+        width: 'third',
+      }),
+      selectField('sria_trash_paid_by', 'Trash Paid By', 'workspace1004.smallResIncomeAddendum.utilities.trashPaidBy', [
+        { value: '', label: 'Unknown' },
+        { value: 'owner', label: 'Owner' },
+        { value: 'tenant', label: 'Tenant' },
+      ], {
+        page: 19,
+        group: 'Utility Information',
+        width: 'third',
+      }),
+      textField('sria_other_utilities', 'Other Utilities', 'workspace1004.smallResIncomeAddendum.utilities.otherUtilities', {
+        page: 19,
+        group: 'Utility Information',
+        width: 'half',
+      }),
+      // --- Rental Summary ---
+      textField('sria_total_monthly_rent', 'Total Monthly Rent', 'workspace1004.smallResIncomeAddendum.rentalSummary.totalMonthlyRent', {
+        page: 19,
+        group: 'Rental Summary',
+        width: 'third',
+      }),
+      textField('sria_annual_gross_income', 'Annual Gross Income', 'workspace1004.smallResIncomeAddendum.rentalSummary.annualGrossIncome', {
+        page: 19,
+        group: 'Rental Summary',
+        width: 'third',
+      }),
+      textField('sria_grm', 'GRM', 'workspace1004.smallResIncomeAddendum.rentalSummary.grm', {
+        page: 19,
+        group: 'Rental Summary',
+        width: 'third',
+      }),
+      textField('sria_indicated_value', 'Indicated Value', 'workspace1004.smallResIncomeAddendum.rentalSummary.indicatedValue', {
+        page: 19,
+        group: 'Rental Summary',
+        width: 'third',
+      }),
+      textareaField('sria_rental_analysis', 'Rental Analysis Comments', 'workspace1004.smallResIncomeAddendum.rentalSummary.analysisComments', {
+        page: 19,
+        group: 'Narrative',
+        rows: 4,
+      }),
+    ],
+  },
+  {
     id: 'qc_review',
     label: 'QC Review',
     pageHint: 'Workspace QA',
@@ -2672,6 +3617,11 @@ export function fieldCompletenessAudit() {
       uspap_addendum: 'Complete - header, reporting option, prior services, certifications, appraiser signature (name/license/state/expiration), supervisory appraiser (name/license/state/expiration/other/state#), inspection levels',
       dimension_addendum: 'Complete - header, area summary grid, measurement worksheet grid, notes',
       photo_addendum: 'Complete - header, photo captions, photo dates, notes',
+      subject_property_addendum: 'Complete - additional site details, FEMA flood detail, soil/environmental, special assessments',
+      pud_condo_addendum: 'Complete - project info, HOA dues, unit counts, condo details, financial reserves, litigation',
+      cost_approach_addendum: 'Complete - land value, land comparables, replacement cost new, depreciation breakdown, site improvements',
+      income_approach_addendum: 'Complete - monthly market rent, GRM, operating expenses, NOI, cap rate',
+      small_residential_income_addendum: 'Complete - unit details (1-4), utility info, rental summary',
       qc_review: 'Complete - QC review notes, issue resolution notes',
     },
   };
