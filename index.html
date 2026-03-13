@@ -395,6 +395,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('intel')">Intel</div>
   <div class="tab" onclick="showTab('docs')">Docs</div>
   <div class="tab" onclick="showTab('memory')">Memory</div>
+  <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
 </div>
 
 <!-- ===== TAB: CASE ===== -->
@@ -1540,6 +1541,175 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
       <div class="card-body">
         <div id="memCompList"><div class="hint">No comparable commentary memory items yet.</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB: PIPELINE (Cloudflare Data Pipeline) ===== -->
+<div class="page" id="tab-pipeline">
+  <div class="col narrow">
+
+    <!-- Settings Card -->
+    <div class="card">
+      <div class="card-head"><h3>Cloudflare Settings</h3></div>
+      <div class="card-body">
+        <label>Account ID</label>
+        <input id="dpAccountId" type="text" placeholder="Cloudflare Account ID" oninput="PIPELINE_STATE.cloudflareAccountId=this.value"/>
+        <label>API Token</label>
+        <input id="dpApiToken" type="text" placeholder="Browser Rendering API Token" oninput="PIPELINE_STATE.cloudflareApiToken=this.value" style="font-family:var(--mono);"/>
+        <div class="row2" style="margin-top:8px;">
+          <div>
+            <label>Max Pages/Crawl</label>
+            <input id="dpMaxPages" type="text" value="25" oninput="PIPELINE_STATE.maxPagesPerCrawl=parseInt(this.value)||25"/>
+          </div>
+          <div>
+            <label>Cache TTL (s)</label>
+            <input id="dpMaxAge" type="text" value="86400" oninput="PIPELINE_STATE.defaultMaxAge=parseInt(this.value)||86400"/>
+          </div>
+        </div>
+        <div style="margin-top:6px;">
+          <label><input type="checkbox" id="dpPreferStatic" checked onchange="PIPELINE_STATE.preferStaticFetch=this.checked" style="width:auto;margin-right:6px;accent-color:var(--gold);">Prefer static fetch (free during beta)</label>
+        </div>
+        <div class="btnrow">
+          <button class="sm" onclick="dpSaveSettings()">Save Settings</button>
+          <button class="sm sec" onclick="dpTestConnection()">Test Connection</button>
+        </div>
+        <div id="dpConnStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Active Jobs Card -->
+    <div class="card">
+      <div class="card-head"><h3>Active Jobs</h3><button class="sm ghost" onclick="dpRenderJobs()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="dpJobList"><div class="hint">No active jobs.</div></div>
+      </div>
+    </div>
+
+    <!-- Usage Card -->
+    <div class="card">
+      <div class="card-head"><h3>Session Usage</h3></div>
+      <div class="card-body">
+        <div id="dpUsageDisplay" style="font-size:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Browser time:</span><span id="dpUsageTime">0.0s</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="color:var(--muted);">Est. cost:</span><span id="dpUsageCost">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="color:var(--muted);">Jobs run:</span><span id="dpUsageJobs">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets Card -->
+    <div class="card">
+      <div class="card-head"><h3>Crawl Presets</h3></div>
+      <div class="card-body">
+        <select id="dpPresetSelect" onchange="dpApplyPreset(this.value)" style="margin-bottom:8px;">
+          <option value="">-- Select preset --</option>
+          <option value="mcLeanCountyAssessor">McLean County Assessor</option>
+          <option value="realtorCom">Realtor.com Listing</option>
+          <option value="zillowListing">Zillow Listing</option>
+          <option value="marketDataStatic">Market Data (static)</option>
+          <option value="cityZoning">City/Municipal Zoning</option>
+        </select>
+        <div id="dpPresetInfo" class="hint"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col wide">
+
+    <!-- Subject Property Card -->
+    <div class="card">
+      <div class="card-head"><h3>Subject Property</h3></div>
+      <div class="card-body">
+        <label>Subject Property URL</label>
+        <input id="dpSubjectUrl" type="text" placeholder="https://assessor.example.com/property/12345" oninput="PIPELINE_STATE.subjectUrl=this.value"/>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+          <label style="margin:0;font-size:11px;color:var(--muted);">Source:</label>
+          <label style="margin:0;font-size:12px;"><input type="radio" name="dpSubjectSource" value="assessor" checked onchange="PIPELINE_STATE.subjectSourceType='assessor'" style="width:auto;margin-right:4px;accent-color:var(--gold);">Assessor</label>
+          <label style="margin:0;font-size:12px;"><input type="radio" name="dpSubjectSource" value="listing" onchange="PIPELINE_STATE.subjectSourceType='listing'" style="width:auto;margin-right:4px;accent-color:var(--gold);">MLS</label>
+          <label style="margin:0;font-size:12px;"><input type="radio" name="dpSubjectSource" value="custom" onchange="PIPELINE_STATE.subjectSourceType='custom'" style="width:auto;margin-right:4px;accent-color:var(--gold);">Custom</label>
+        </div>
+        <div class="btnrow">
+          <button onclick="dpCrawlSubject()">Crawl Subject</button>
+          <button class="sec" onclick="dpQuickExtractSubject()">Quick Extract</button>
+        </div>
+        <div id="dpSubjectStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Comparable Sales Card -->
+    <div class="card">
+      <div class="card-head"><h3>Comparable Sales</h3><button class="sm ghost" onclick="dpAddCompSlot()">+ Add Comp</button></div>
+      <div class="card-body">
+        <div id="dpCompSlots">
+          <div class="dp-comp-row" data-comp="0"><label>Comp 1</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 1 URL..." oninput="PIPELINE_STATE.compUrls[0]=this.value"/><button class="sm" onclick="dpCrawlComp(0)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(0)" title="Quick Extract">QE</button></div></div>
+          <div class="dp-comp-row" data-comp="1"><label>Comp 2</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 2 URL..." oninput="PIPELINE_STATE.compUrls[1]=this.value"/><button class="sm" onclick="dpCrawlComp(1)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(1)" title="Quick Extract">QE</button></div></div>
+          <div class="dp-comp-row" data-comp="2"><label>Comp 3</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 3 URL..." oninput="PIPELINE_STATE.compUrls[2]=this.value"/><button class="sm" onclick="dpCrawlComp(2)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(2)" title="Quick Extract">QE</button></div></div>
+          <div class="dp-comp-row" data-comp="3"><label>Comp 4</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 4 URL..." oninput="PIPELINE_STATE.compUrls[3]=this.value"/><button class="sm" onclick="dpCrawlComp(3)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(3)" title="Quick Extract">QE</button></div></div>
+          <div class="dp-comp-row" data-comp="4"><label>Comp 5</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 5 URL..." oninput="PIPELINE_STATE.compUrls[4]=this.value"/><button class="sm" onclick="dpCrawlComp(4)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(4)" title="Quick Extract">QE</button></div></div>
+          <div class="dp-comp-row" data-comp="5"><label>Comp 6</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp 6 URL..." oninput="PIPELINE_STATE.compUrls[5]=this.value"/><button class="sm" onclick="dpCrawlComp(5)" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(5)" title="Quick Extract">QE</button></div></div>
+        </div>
+        <div id="dpCompStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Market Area Research Card -->
+    <div class="card">
+      <div class="card-head"><h3>Market Area Research</h3></div>
+      <div class="card-body">
+        <label>Market Data URL</label>
+        <div style="display:flex;gap:6px;"><input id="dpMarketUrl" type="text" placeholder="Market/neighborhood data URL" oninput="PIPELINE_STATE.marketUrl=this.value"/><button class="sm" onclick="dpCrawlMarket()">Crawl</button></div>
+        <label>Custom Crawl URL</label>
+        <div style="display:flex;gap:6px;"><input id="dpCustomUrl" type="text" placeholder="Any URL..." oninput="PIPELINE_STATE.customUrl=this.value"/><button class="sm" onclick="dpCrawlCustom()">Crawl</button></div>
+        <div class="row2" style="margin-top:6px;">
+          <div><label>Depth</label><input id="dpCrawlDepth" type="text" value="2"/></div>
+          <div><label>Page Limit</label><input id="dpCrawlLimit" type="text" value="25"/></div>
+        </div>
+        <div><label>Include Pattern</label><input id="dpIncludePattern" type="text" placeholder="e.g. */property/*"/></div>
+        <div id="dpMarketStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Extracted Data Preview Card -->
+    <div class="card">
+      <div class="card-head"><h3>Extracted Data Preview</h3><button class="sm sec" onclick="dpRunCompAnalysis()">Run Analysis</button></div>
+      <div class="card-body">
+        <div id="dpExtractedPreview"><div class="hint">No data extracted yet. Crawl a subject or comp URL to see results here.</div></div>
+      </div>
+    </div>
+
+    <!-- Data Verification Card -->
+    <div class="card">
+      <div class="card-head"><h3>Data Verification</h3><button class="sm sec" onclick="dpDetectConflicts()">Check Conflicts</button></div>
+      <div class="card-body">
+        <div id="dpVerification"><div class="hint">Extract data from a source to verify fields. USPAP requires appraiser verification of all data used in reports.</div></div>
+        <div id="dpConflicts" style="margin-top:8px;"></div>
+        <div class="btnrow" style="display:none;" id="dpVerifyActions">
+          <button class="sm" onclick="dpMarkAllVerified()">Mark All Verified</button>
+          <button class="sm sec" onclick="dpExportVerificationLog()">Verification Log</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comp Analysis Results Card -->
+    <div class="card" id="dpAnalysisCard" style="display:none;">
+      <div class="card-head"><h3>Comparable Analysis</h3></div>
+      <div class="card-body">
+        <div id="dpAnalysisResults"></div>
+      </div>
+    </div>
+
+    <!-- Actions Card -->
+    <div class="card">
+      <div class="card-head"><h3>Actions</h3></div>
+      <div class="card-body">
+        <div class="btnrow">
+          <button onclick="dpPushToCase()">Push All Data to Report Fields</button>
+          <button class="sec" onclick="dpExportRawJSON()">Export Raw JSON</button>
+        </div>
+        <div id="dpPushStatus" class="status"></div>
       </div>
     </div>
 
@@ -3345,7 +3515,47 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 
 </style>
 <link rel="stylesheet" href="styles.css"/>
+<style>
+/* ── Data Pipeline Tab Styles ────────────────────────────────────────────────── */
+.dp-comp-row{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.dp-comp-row:last-child{border-bottom:none;}
+.dp-comp-row label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;}
+.dp-comp-row div{display:flex;gap:6px;align-items:center;}
+.dp-comp-row input{flex:1;}
+#tab-pipeline .dp-job-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;}
+#tab-pipeline .dp-job-item:last-child{border-bottom:none;}
+#tab-pipeline .dp-job-icon{width:18px;text-align:center;font-size:14px;flex-shrink:0;}
+#tab-pipeline .dp-job-label{flex:1;font-weight:600;}
+#tab-pipeline .dp-job-meta{font-size:10px;color:var(--muted);font-family:var(--mono);}
+#tab-pipeline .dp-preview-row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;}
+#tab-pipeline .dp-preview-row:last-child{border-bottom:none;}
+#tab-pipeline .dp-preview-label{font-weight:700;color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;cursor:pointer;}
+#tab-pipeline .dp-preview-fields{color:var(--muted);font-size:11px;}
+#tab-pipeline .dp-preview-detail{display:none;margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.15);font-family:var(--mono);font-size:10px;white-space:pre-wrap;max-height:200px;overflow:auto;}
+#tab-pipeline .dp-preview-detail.open{display:block;}
+#tab-pipeline .dp-verify-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+#tab-pipeline .dp-verify-row:last-child{border-bottom:none;}
+#tab-pipeline .dp-verify-row input[type=checkbox]{width:auto;accent-color:var(--gold);}
+#tab-pipeline .dp-verify-field{font-weight:600;min-width:120px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+#tab-pipeline .dp-verify-value{flex:1;font-family:var(--mono);font-size:11px;}
+#tab-pipeline .dp-verify-conflict{color:var(--warn);font-size:10px;margin-left:4px;}
+#tab-pipeline .dp-verify-actions{display:flex;gap:4px;}
+#tab-pipeline .dp-conflict-item{padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:12px;background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);}
+#tab-pipeline .dp-conflict-field{font-weight:700;color:var(--warn);}
+#tab-pipeline .dp-conflict-values{font-size:11px;color:var(--muted);margin-top:4px;}
+#tab-pipeline .dp-analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:8px 0;}
+#tab-pipeline .dp-analysis-cell{text-align:center;padding:10px 8px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid var(--border);}
+#tab-pipeline .dp-analysis-cell .dp-cell-num{font-size:20px;font-weight:900;line-height:1;color:var(--gold);}
+#tab-pipeline .dp-analysis-cell .dp-cell-label{font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-top:3px;}
+#tab-pipeline .dp-adj-grid{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;}
+#tab-pipeline .dp-adj-grid th,#tab-pipeline .dp-adj-grid td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:right;}
+#tab-pipeline .dp-adj-grid th{font-size:10px;text-transform:uppercase;color:var(--muted);text-align:right;font-weight:700;}
+#tab-pipeline .dp-adj-grid th:first-child,#tab-pipeline .dp-adj-grid td:first-child{text-align:left;}
+#tab-pipeline .dp-adj-grid .dp-adj-positive{color:var(--ok);}
+#tab-pipeline .dp-adj-grid .dp-adj-negative{color:var(--danger);}
+</style>
 <script src="app.js"></script>
 <script src="workspace.js"></script>
+<script src="dataPipeline.js"></script>
 </body>
 </html>
