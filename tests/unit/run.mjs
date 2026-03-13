@@ -68,6 +68,8 @@ const suites = [
   'securityGovernance.test.mjs',
   'feedbackLoop.test.mjs',
   'routeValidation.test.mjs',
+  'stuckStateDetector.test.mjs',
+  'authMiddleware.test.mjs',
 ];
 
 let totalPassed = 0;

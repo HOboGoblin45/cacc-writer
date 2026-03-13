@@ -40,6 +40,7 @@ import { initPhase12Schema } from '../migration/phase12Schema.js';
 import { initPhase13Schema } from '../migration/phase13Schema.js';
 import { initPhase14Schema } from '../migration/phase14Schema.js';
 import { initPhase15Schema } from '../migration/phase15Schema.js';
+import { initPhase16Schema } from '../migration/phase16Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -819,6 +820,13 @@ export function initSchema(db) {
     initPhase15Schema(db);
   } catch (err) {
     log.error('schema:phase15-init', { error: err.message });
+  }
+
+  // Run Phase 16 schema additions (contradiction resolution persistence)
+  try {
+    initPhase16Schema(db);
+  } catch (err) {
+    log.error('schema:phase16-init', { error: err.message });
   }
 }
 

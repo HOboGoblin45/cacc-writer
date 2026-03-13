@@ -5,17 +5,19 @@
  *
  * Manages the lifecycle of contradiction resolution:
  *   - resolve: the contradiction has been addressed (e.g. fact corrected)
- *   - dismiss: the appraiser acknowledges and intentionally dismisses
+ *   - dismiss: the appraiser intentionally accepts the inconsistency
  *   - acknowledge: noted but deferred for later resolution
  *   - reopen: previously resolved/dismissed contradiction needs re-review
  *
- * Resolution state is persisted per case and survives workspace rebuilds.
+ * Resolution state is persisted in the contradiction_resolutions DB table.
  * The contradiction graph builds items; this service tracks their disposition.
  *
  * Resolution decisions are auditable: who, when, why, and what action.
  */
 
-import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
+import { randomUUID } from 'crypto';
+import { getDb } from '../db/database.js';
+import { emitCaseEvent } from '../operations/auditLogger.js';
 
 // ── Resolution statuses ──────────────────────────────────────────────────────
 
@@ -26,190 +28,250 @@ export const RESOLUTION_STATUS = {
   ACKNOWLEDGED: 'acknowledged',
 };
 
-// ── Resolution store access ──────────────────────────────────────────────────
-// Resolutions are stored in the case projection under provenance.contradictionResolutions
+// ── DB helpers ───────────────────────────────────────────────────────────────
 
-function getResolutions(caseId) {
-  const projection = getCaseProjection(caseId);
-  if (!projection) return {};
-  return projection.provenance?.contradictionResolutions || {};
+function getRow(caseId, contradictionId) {
+  const db = getDb();
+  return db.prepare(
+    'SELECT * FROM contradiction_resolutions WHERE case_id = ? AND contradiction_id = ?'
+  ).get(caseId, contradictionId) || null;
 }
 
-function saveResolutions(caseId, resolutions) {
-  const projection = getCaseProjection(caseId);
-  if (!projection) return;
-  if (!projection.provenance) projection.provenance = {};
-  projection.provenance.contradictionResolutions = resolutions;
-  saveCaseProjection(caseId, projection);
+function getAllRows(caseId) {
+  const db = getDb();
+  return db.prepare(
+    'SELECT * FROM contradiction_resolutions WHERE case_id = ?'
+  ).all(caseId);
+}
+
+function upsertRow(record) {
+  const db = getDb();
+  db.prepare(`
+    INSERT OR REPLACE INTO contradiction_resolutions
+      (id, case_id, contradiction_id, status, actor, note, reason, history_json, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    record.id,
+    record.case_id,
+    record.contradiction_id,
+    record.status,
+    record.actor,
+    record.note,
+    record.reason,
+    record.history_json,
+    record.created_at,
+    record.updated_at,
+  );
+}
+
+function rowToRecord(row) {
+  if (!row) return null;
+  return {
+    contradictionId: row.contradiction_id,
+    status: row.status,
+    actor: row.actor,
+    note: row.note || '',
+    reason: row.reason || '',
+    history: JSON.parse(row.history_json || '[]'),
+  };
 }
 
 // ── Resolution actions ───────────────────────────────────────────────────────
 
 /**
  * Resolve a contradiction — the underlying issue has been fixed.
- *
- * @param {string} caseId
- * @param {string} contradictionId
- * @param {object} params
- * @param {string} params.actor - who resolved it
- * @param {string} [params.note] - resolution note
- * @returns {object} resolution record
  */
 export function resolveContradiction(caseId, contradictionId, { actor, note }) {
-  const resolutions = getResolutions(caseId);
-  const record = {
+  const existing = getRow(caseId, contradictionId);
+  const existingHistory = existing ? JSON.parse(existing.history_json || '[]') : [];
+  const now = new Date().toISOString();
+  const actorVal = actor || 'appraiser';
+  const noteVal = note || '';
+
+  const history = [
+    ...existingHistory,
+    { action: 'resolve', actor: actorVal, note: noteVal, at: now },
+  ];
+
+  upsertRow({
+    id: existing?.id || randomUUID(),
+    case_id: caseId,
+    contradiction_id: contradictionId,
+    status: RESOLUTION_STATUS.RESOLVED,
+    actor: actorVal,
+    note: noteVal,
+    reason: existing?.reason || '',
+    history_json: JSON.stringify(history),
+    created_at: existing?.created_at || now,
+    updated_at: now,
+  });
+
+  emitCaseEvent(caseId, 'contradiction.resolved', `Contradiction ${contradictionId} resolved`, {
+    contradictionId, actor: actorVal, note: noteVal,
+  });
+
+  return {
     contradictionId,
     status: RESOLUTION_STATUS.RESOLVED,
-    actor: actor || 'appraiser',
-    note: note || '',
-    resolvedAt: new Date().toISOString(),
-    history: [
-      ...(resolutions[contradictionId]?.history || []),
-      {
-        action: 'resolve',
-        actor: actor || 'appraiser',
-        note: note || '',
-        at: new Date().toISOString(),
-      },
-    ],
+    actor: actorVal,
+    note: noteVal,
+    resolvedAt: now,
+    history,
   };
-  resolutions[contradictionId] = record;
-  saveResolutions(caseId, resolutions);
-  return record;
 }
 
 /**
  * Dismiss a contradiction — appraiser intentionally accepts the inconsistency.
- *
- * @param {string} caseId
- * @param {string} contradictionId
- * @param {object} params
- * @param {string} params.actor
- * @param {string} params.reason - mandatory dismissal reason
- * @returns {object} resolution record
  */
 export function dismissContradiction(caseId, contradictionId, { actor, reason }) {
-  const resolutions = getResolutions(caseId);
-  const record = {
+  const existing = getRow(caseId, contradictionId);
+  const existingHistory = existing ? JSON.parse(existing.history_json || '[]') : [];
+  const now = new Date().toISOString();
+  const actorVal = actor || 'appraiser';
+  const reasonVal = reason || '';
+
+  const history = [
+    ...existingHistory,
+    { action: 'dismiss', actor: actorVal, reason: reasonVal, at: now },
+  ];
+
+  upsertRow({
+    id: existing?.id || randomUUID(),
+    case_id: caseId,
+    contradiction_id: contradictionId,
+    status: RESOLUTION_STATUS.DISMISSED,
+    actor: actorVal,
+    note: existing?.note || '',
+    reason: reasonVal,
+    history_json: JSON.stringify(history),
+    created_at: existing?.created_at || now,
+    updated_at: now,
+  });
+
+  emitCaseEvent(caseId, 'contradiction.dismissed', `Contradiction ${contradictionId} dismissed`, {
+    contradictionId, actor: actorVal, reason: reasonVal,
+  });
+
+  return {
     contradictionId,
     status: RESOLUTION_STATUS.DISMISSED,
-    actor: actor || 'appraiser',
-    reason: reason || '',
-    dismissedAt: new Date().toISOString(),
-    history: [
-      ...(resolutions[contradictionId]?.history || []),
-      {
-        action: 'dismiss',
-        actor: actor || 'appraiser',
-        reason: reason || '',
-        at: new Date().toISOString(),
-      },
-    ],
+    actor: actorVal,
+    reason: reasonVal,
+    dismissedAt: now,
+    history,
   };
-  resolutions[contradictionId] = record;
-  saveResolutions(caseId, resolutions);
-  return record;
 }
 
 /**
  * Acknowledge a contradiction — noted, deferred for later.
- *
- * @param {string} caseId
- * @param {string} contradictionId
- * @param {object} params
- * @param {string} params.actor
- * @param {string} [params.note]
- * @returns {object} resolution record
  */
 export function acknowledgeContradiction(caseId, contradictionId, { actor, note }) {
-  const resolutions = getResolutions(caseId);
-  const record = {
+  const existing = getRow(caseId, contradictionId);
+  const existingHistory = existing ? JSON.parse(existing.history_json || '[]') : [];
+  const now = new Date().toISOString();
+  const actorVal = actor || 'appraiser';
+  const noteVal = note || '';
+
+  const history = [
+    ...existingHistory,
+    { action: 'acknowledge', actor: actorVal, note: noteVal, at: now },
+  ];
+
+  upsertRow({
+    id: existing?.id || randomUUID(),
+    case_id: caseId,
+    contradiction_id: contradictionId,
+    status: RESOLUTION_STATUS.ACKNOWLEDGED,
+    actor: actorVal,
+    note: noteVal,
+    reason: existing?.reason || '',
+    history_json: JSON.stringify(history),
+    created_at: existing?.created_at || now,
+    updated_at: now,
+  });
+
+  emitCaseEvent(caseId, 'contradiction.acknowledged', `Contradiction ${contradictionId} acknowledged`, {
+    contradictionId, actor: actorVal, note: noteVal,
+  });
+
+  return {
     contradictionId,
     status: RESOLUTION_STATUS.ACKNOWLEDGED,
-    actor: actor || 'appraiser',
-    note: note || '',
-    acknowledgedAt: new Date().toISOString(),
-    history: [
-      ...(resolutions[contradictionId]?.history || []),
-      {
-        action: 'acknowledge',
-        actor: actor || 'appraiser',
-        note: note || '',
-        at: new Date().toISOString(),
-      },
-    ],
+    actor: actorVal,
+    note: noteVal,
+    acknowledgedAt: now,
+    history,
   };
-  resolutions[contradictionId] = record;
-  saveResolutions(caseId, resolutions);
-  return record;
 }
 
 /**
  * Reopen a previously resolved or dismissed contradiction.
- *
- * @param {string} caseId
- * @param {string} contradictionId
- * @param {object} params
- * @param {string} params.actor
- * @param {string} [params.reason]
- * @returns {object} resolution record
  */
 export function reopenContradiction(caseId, contradictionId, { actor, reason }) {
-  const resolutions = getResolutions(caseId);
-  const record = {
+  const existing = getRow(caseId, contradictionId);
+  const existingHistory = existing ? JSON.parse(existing.history_json || '[]') : [];
+  const now = new Date().toISOString();
+  const actorVal = actor || 'appraiser';
+  const reasonVal = reason || '';
+
+  const history = [
+    ...existingHistory,
+    { action: 'reopen', actor: actorVal, reason: reasonVal, at: now },
+  ];
+
+  upsertRow({
+    id: existing?.id || randomUUID(),
+    case_id: caseId,
+    contradiction_id: contradictionId,
+    status: RESOLUTION_STATUS.OPEN,
+    actor: actorVal,
+    note: existing?.note || '',
+    reason: reasonVal,
+    history_json: JSON.stringify(history),
+    created_at: existing?.created_at || now,
+    updated_at: now,
+  });
+
+  emitCaseEvent(caseId, 'contradiction.reopened', `Contradiction ${contradictionId} reopened`, {
+    contradictionId, actor: actorVal, reason: reasonVal,
+  });
+
+  return {
     contradictionId,
     status: RESOLUTION_STATUS.OPEN,
-    actor: actor || 'appraiser',
-    reopenedAt: new Date().toISOString(),
-    history: [
-      ...(resolutions[contradictionId]?.history || []),
-      {
-        action: 'reopen',
-        actor: actor || 'appraiser',
-        reason: reason || '',
-        at: new Date().toISOString(),
-      },
-    ],
+    actor: actorVal,
+    reopenedAt: now,
+    history,
   };
-  resolutions[contradictionId] = record;
-  saveResolutions(caseId, resolutions);
-  return record;
 }
 
 // ── Query helpers ────────────────────────────────────────────────────────────
 
 /**
  * Get the resolution status for a specific contradiction.
- *
- * @param {string} caseId
- * @param {string} contradictionId
- * @returns {object|null} resolution record or null if not yet addressed
  */
 export function getContradictionResolution(caseId, contradictionId) {
-  const resolutions = getResolutions(caseId);
-  return resolutions[contradictionId] || null;
+  return rowToRecord(getRow(caseId, contradictionId));
 }
 
 /**
  * Get all resolution records for a case.
- *
- * @param {string} caseId
  * @returns {object} map of contradictionId → resolution record
  */
 export function getAllResolutions(caseId) {
-  return getResolutions(caseId);
+  const rows = getAllRows(caseId);
+  const map = {};
+  for (const row of rows) {
+    map[row.contradiction_id] = rowToRecord(row);
+  }
+  return map;
 }
 
 /**
  * Merge resolution status into a contradiction graph's items array.
- * Adds `resolution` property to each item.
- *
- * @param {string} caseId
- * @param {object[]} graphItems - contradiction items array
- * @returns {object[]} items with resolution status attached
  */
 export function mergeResolutionStatus(caseId, graphItems) {
-  const resolutions = getResolutions(caseId);
+  const resolutions = getAllResolutions(caseId);
   return (graphItems || []).map(item => ({
     ...item,
     resolution: resolutions[item.id] || { status: RESOLUTION_STATUS.OPEN },
@@ -218,13 +280,9 @@ export function mergeResolutionStatus(caseId, graphItems) {
 
 /**
  * Compute a summary of resolution progress for a case.
- *
- * @param {string} caseId
- * @param {object[]} graphItems
- * @returns {object} resolution summary
  */
 export function buildResolutionSummary(caseId, graphItems) {
-  const resolutions = getResolutions(caseId);
+  const resolutions = getAllResolutions(caseId);
   const total = (graphItems || []).length;
   let open = 0;
   let resolved = 0;

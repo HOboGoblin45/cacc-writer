@@ -21,6 +21,7 @@ import { runTransientCleanup } from './server/operations/retentionManager.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
 import { getDb } from './server/db/database.js';
 import { MODEL } from './server/openaiClient.js';
+import { requireAuth } from './server/middleware/authMiddleware.js';
 
 import healthRouter from './server/api/healthRoutes.js';
 import casesRouter from './server/api/casesRoutes.js';
@@ -82,6 +83,8 @@ app.get('/favicon.ico', (_q, r) => {
   r.setHeader('Cache-Control', 'public, max-age=86400');
   r.send(svg);
 });
+
+app.use(requireAuth);
 
 app.use('/api', healthRouter);
 app.use('/api/cases', casesRouter);

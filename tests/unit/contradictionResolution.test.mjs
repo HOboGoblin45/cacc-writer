@@ -2,29 +2,11 @@
  * tests/unit/contradictionResolution.test.mjs
  * ---------------------------------------------
  * Unit tests for the contradiction resolution workflow service (Phase E).
+ * Tests both the query helpers and the DB-backed resolution actions.
  */
 
 import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
-import fs from 'node:fs';
-
-// Set up temp case directory before importing modules
-const tmpDir = path.join(os.tmpdir(), `cacc-cres-test-${Date.now()}`);
-fs.mkdirSync(tmpDir, { recursive: true });
-const caseDir = path.join(tmpDir, 'case-resolution-test');
-fs.mkdirSync(caseDir, { recursive: true });
-process.env.CACC_DATA_DIR = tmpDir;
-
-// Write initial case projection
-const initialProjection = {
-  facts: { subject: { city: { value: 'Chicago' } } },
-  provenance: {},
-  meta: { formType: '1004' },
-};
-fs.writeFileSync(path.join(caseDir, 'canonical_record.json'), JSON.stringify(initialProjection));
-fs.writeFileSync(path.join(caseDir, 'facts.json'), JSON.stringify(initialProjection.facts));
-fs.writeFileSync(path.join(caseDir, 'meta.json'), JSON.stringify(initialProjection.meta));
+import { getDb } from '../../server/db/database.js';
 
 import {
   resolveContradiction,
@@ -45,17 +27,19 @@ let failed = 0;
 function test(name, fn) {
   try {
     fn();
-    console.log(`  ✓  ${name}`);
+    console.log(`  OK   ${name}`);
     passed++;
   } catch (err) {
-    console.error(`  ✗  ${name}`);
-    console.error('     ', err.message);
+    console.error(`  FAIL ${name}`);
+    console.error('       ' + err.message);
     failed++;
   }
 }
 
 console.log(suiteName);
 console.log('─'.repeat(60));
+
+const testCase = 'cres-test-01';
 
 // ── RESOLUTION_STATUS constants ─────────────────────────────────────────────
 
@@ -101,12 +85,99 @@ test('buildResolutionSummary handles empty items', () => {
   assert.equal(summary.completionPercent, 100);
 });
 
+// ── DB-backed resolution actions ────────────────────────────────────────────
+
+test('resolveContradiction creates a resolved record in DB', () => {
+  const result = resolveContradiction(testCase, 'contra-1', { actor: 'tester', note: 'Fixed the date' });
+  assert.equal(result.status, 'resolved');
+  assert.equal(result.actor, 'tester');
+  assert.equal(result.note, 'Fixed the date');
+  assert.ok(result.resolvedAt);
+  assert.ok(result.history.length >= 1);
+  assert.equal(result.history[result.history.length - 1].action, 'resolve');
+});
+
+test('getContradictionResolution returns the resolved record', () => {
+  const record = getContradictionResolution(testCase, 'contra-1');
+  assert.ok(record);
+  assert.equal(record.status, 'resolved');
+  assert.equal(record.actor, 'tester');
+});
+
+test('dismissContradiction creates a dismissed record', () => {
+  const result = dismissContradiction(testCase, 'contra-2', { actor: 'appraiser', reason: 'Acceptable variance' });
+  assert.equal(result.status, 'dismissed');
+  assert.equal(result.reason, 'Acceptable variance');
+  assert.ok(result.history.length >= 1);
+});
+
+test('acknowledgeContradiction creates an acknowledged record', () => {
+  const result = acknowledgeContradiction(testCase, 'contra-3', { actor: 'reviewer', note: 'Will fix later' });
+  assert.equal(result.status, 'acknowledged');
+  assert.equal(result.note, 'Will fix later');
+});
+
+test('reopenContradiction changes status back to open', () => {
+  const result = reopenContradiction(testCase, 'contra-1', { actor: 'supervisor', reason: 'Needs re-review' });
+  assert.equal(result.status, 'open');
+  assert.ok(result.history.length >= 2); // resolve + reopen
+});
+
+test('getAllResolutions returns map of all resolutions for case', () => {
+  const all = getAllResolutions(testCase);
+  assert.ok(all['contra-1']);
+  assert.ok(all['contra-2']);
+  assert.ok(all['contra-3']);
+  assert.equal(all['contra-1'].status, 'open');
+  assert.equal(all['contra-2'].status, 'dismissed');
+  assert.equal(all['contra-3'].status, 'acknowledged');
+});
+
+test('mergeResolutionStatus reflects DB state for resolved items', () => {
+  const items = [
+    { id: 'contra-1' },
+    { id: 'contra-2' },
+    { id: 'contra-3' },
+    { id: 'contra-4' }, // not in DB
+  ];
+  const merged = mergeResolutionStatus(testCase, items);
+  assert.equal(merged[0].resolution.status, 'open');       // reopened
+  assert.equal(merged[1].resolution.status, 'dismissed');
+  assert.equal(merged[2].resolution.status, 'acknowledged');
+  assert.equal(merged[3].resolution.status, 'open');        // not in DB
+});
+
+test('buildResolutionSummary reflects mixed statuses', () => {
+  const items = [
+    { id: 'contra-1' },
+    { id: 'contra-2' },
+    { id: 'contra-3' },
+    { id: 'contra-4' },
+  ];
+  const summary = buildResolutionSummary(testCase, items);
+  assert.equal(summary.total, 4);
+  assert.equal(summary.open, 2);        // contra-1 (reopened) + contra-4
+  assert.equal(summary.dismissed, 1);    // contra-2
+  assert.equal(summary.acknowledged, 1); // contra-3
+  assert.equal(summary.resolved, 0);
+  assert.equal(summary.allAddressed, false);
+  assert.equal(summary.completionPercent, 25); // only dismissed counts (1/4)
+});
+
+test('resolveContradiction accumulates history across actions', () => {
+  // contra-1 was: resolve → reopen, now resolve again
+  const result = resolveContradiction(testCase, 'contra-1', { actor: 'appraiser', note: 'Fixed for real' });
+  assert.equal(result.status, 'resolved');
+  assert.ok(result.history.length >= 3); // resolve, reopen, resolve
+  const actions = result.history.map(h => h.action);
+  assert.ok(actions.includes('resolve'));
+  assert.ok(actions.includes('reopen'));
+});
+
 // ── Summary ─────────────────────────────────────────────────────────────────
 
 console.log('─'.repeat(60));
-console.log(`${passed} passed, ${failed} failed`);
-
-// Cleanup
-try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+console.log(`${suiteName}: ${passed} passed, ${failed} failed`);
+console.log('─'.repeat(60));
 
 if (failed > 0) process.exit(1);

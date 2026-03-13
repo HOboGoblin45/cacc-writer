@@ -59,6 +59,15 @@ import {
 } from '../operations/retentionManager.js';
 import { buildCaseExportManifest, exportCaseManifest, getSupportBundleData } from '../operations/exportEnhancer.js';
 import { buildDashboard, buildLightDashboard } from '../operations/dashboardBuilder.js';
+import {
+  detectStuckStates,
+  failStuckGenerationRun,
+  failStuckExtractionJob,
+} from '../operations/stuckStateDetector.js';
+import { getDbPath } from '../db/database.js';
+import { emitSystemEvent } from '../operations/auditLogger.js';
+import fs from 'fs';
+import path from 'path';
 import log from '../logger.js';
 
 const router = Router();
@@ -347,6 +356,84 @@ router.get('/operations/dashboard/light', (req, res) => {
   } catch (err) {
     log.error('api:dashboard-light', { error: err.message });
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Database Backup ──────────────────────────────────────────────────────────
+
+router.post('/operations/backup', (req, res) => {
+  try {
+    const dbPath = getDbPath();
+    const backupDir = path.join(path.dirname(dbPath), 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupPath = path.join(backupDir, `cacc-writer-${timestamp}.db`);
+    fs.copyFileSync(dbPath, backupPath);
+
+    const stats = fs.statSync(backupPath);
+    emitSystemEvent('system.backup_created', 'Database backup created', {
+      path: backupPath,
+      sizeBytes: stats.size,
+    });
+
+    res.json({ ok: true, path: backupPath, sizeBytes: stats.size, createdAt: new Date().toISOString() });
+  } catch (err) {
+    log.error('api:backup', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/operations/backups', (req, res) => {
+  try {
+    const dbPath = getDbPath();
+    const backupDir = path.join(path.dirname(dbPath), 'backups');
+    if (!fs.existsSync(backupDir)) {
+      return res.json({ ok: true, backups: [] });
+    }
+    const files = fs.readdirSync(backupDir)
+      .filter(f => f.endsWith('.db'))
+      .map(f => {
+        const st = fs.statSync(path.join(backupDir, f));
+        return { filename: f, sizeBytes: st.size, createdAt: st.birthtime.toISOString() };
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    res.json({ ok: true, backups: files });
+  } catch (err) {
+    log.error('api:backups-list', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Stuck State Detection ────────────────────────────────────────────────────
+
+router.get('/operations/stuck-states', (req, res) => {
+  try {
+    const result = detectStuckStates();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:stuck-states', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/operations/stuck-states/fail-run/:runId', (req, res) => {
+  try {
+    const result = failStuckGenerationRun(req.params.runId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:fail-stuck-run', { runId: req.params.runId, error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/operations/stuck-states/fail-extraction/:jobId', (req, res) => {
+  try {
+    const result = failStuckExtractionJob(req.params.jobId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:fail-stuck-extraction', { jobId: req.params.jobId, error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
   }
 });
 

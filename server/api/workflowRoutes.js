@@ -47,6 +47,7 @@ import {
   LOCATION_CONTEXT_FIELDS,
 } from '../neighborhoodContext.js';
 import log from '../logger.js';
+import { emitCaseEvent } from '../operations/auditLogger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
@@ -185,6 +186,8 @@ function persistWorkflowOutputs(caseId, projection, results = {}) {
 
 router.post('/workflow/run', ensureAI, async (req, res) => {
   try {
+    res.setHeader('X-Deprecated', 'true');
+    res.setHeader('X-Deprecation-Notice', 'Use POST /api/cases/:caseId/generate-full-draft instead');
     const body = parsePayload(workflowRunSchema, req.body || {}, res);
     if (!body) return;
     if (rejectBypassWhenDisabled(req, res)) return;
@@ -290,6 +293,12 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
       persistWorkflowOutputs(caseId, projection, results);
     }
 
+    emitCaseEvent(caseId, 'generation.legacy_run', 'Legacy workflow/run generation completed', {
+      fieldsAttempted: targetFields.length,
+      fieldsSucceeded: Object.keys(results).length,
+      deprecated: true,
+    });
+
     res.json({ ok: true, results, errors, formType, fieldsAttempted: targetFields.length });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -298,6 +307,8 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
 
 router.post('/workflow/run-batch', ensureAI, async (req, res) => {
   try {
+    res.setHeader('X-Deprecated', 'true');
+    res.setHeader('X-Deprecation-Notice', 'Use POST /api/cases/:caseId/generate-full-draft instead');
     const body = parsePayload(workflowRunBatchSchema, req.body || {}, res);
     if (!body) return;
     if (rejectBypassWhenDisabled(req, res)) return;
