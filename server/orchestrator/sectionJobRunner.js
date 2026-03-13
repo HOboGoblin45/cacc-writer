@@ -453,6 +453,15 @@ export async function runSectionJob({
   const projection = getCaseProjection(caseId);
   const facts = projection?.facts || {};
 
+  // ── Build pipeline data context (crawled data from Cloudflare pipeline) ───
+  let pipelineDataContext = null;
+  try {
+    const { buildPipelineContext } = await import('../dataPipeline/pipelineContextBuilder.js');
+    pipelineDataContext = buildPipelineContext(caseId, sectionDef.id);
+  } catch {
+    // Pipeline module not available or no crawled data — non-fatal
+  }
+
   // ── Build assignment meta ──────────────────────────────────────────────────
   const assignmentMeta = buildAssignmentMetaFromContext(context);
 
@@ -488,7 +497,7 @@ export async function runSectionJob({
     examples:       otherExamples,
     assignmentMeta,
     systemHint:     profile.systemHint,
-    extraContext:   [analysisContext, priorSectionsContext, voiceContextBlock, compCommentaryBlock]
+    extraContext:   [analysisContext, priorSectionsContext, voiceContextBlock, compCommentaryBlock, pipelineDataContext]
                       .filter(Boolean).join('\n\n') || null,
   });
 

@@ -44,6 +44,7 @@ import { initPhase16Schema } from '../migration/phase16Schema.js';
 import { initPhase17Schema } from '../migration/phase17Schema.js';
 import { initPhase18Schema } from '../migration/phase18Schema.js';
 import { initPhase19Schema } from '../migration/phase19Schema.js';
+import { initPipelineSchema } from '../migration/pipelineSchema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -851,6 +852,13 @@ export function initSchema(db) {
     initPhase19Schema(db);
   } catch (err) {
     log.error('schema:phase19-init', { error: err.message });
+  }
+
+  // Run Pipeline schema additions (Cloudflare data pipeline)
+  try {
+    initPipelineSchema(db);
+  } catch (err) {
+    log.error('schema:pipeline-init', { error: err.message });
   }
 }
 
