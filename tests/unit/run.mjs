@@ -61,15 +61,20 @@ const suites = [
   'reportQueue.test.mjs',
   'contradictionResolution.test.mjs',
   'valuationCalculator.test.mjs',
+  'valuationWorkspace.test.mjs',
   'learningSystem.test.mjs',
   'businessOps.test.mjs',
   'inspectionWorkflow.test.mjs',
   'exportLayer.test.mjs',
   'securityGovernance.test.mjs',
+  'securityComplete.test.mjs',
   'feedbackLoop.test.mjs',
+  'contradictionLifecycle.test.mjs',
+  'learningLoop.test.mjs',
   'routeValidation.test.mjs',
   'stuckStateDetector.test.mjs',
   'authMiddleware.test.mjs',
+  'sectionGovernance.test.mjs',
 ];
 
 let totalPassed = 0;

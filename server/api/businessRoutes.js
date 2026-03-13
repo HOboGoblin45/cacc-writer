@@ -85,6 +85,18 @@ import {
   getPipelineSummary, getAppraisersWorkload, syncPipelineFromCase,
 } from '../business/pipelineService.js';
 
+import {
+  createTenant, getTenant, listTenants, updateTenant,
+} from '../business/tenantService.js';
+
+import {
+  createFlag, getFlag, listFlags, enableFlag, disableFlag,
+} from '../business/featureFlagService.js';
+
+import {
+  recordBillingEvent, getBillingHistory, getBillingSummary,
+} from '../business/billingService.js';
+
 const createQuoteSchema = z.object({
   clientName: z.string().max(200),
   propertyAddress: z.string().max(500).optional(),
@@ -642,6 +654,140 @@ router.post('/business/pipeline/sync/:caseId', (req, res) => {
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-sync', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Tenants ──────────────────────────────────────────────────────────────────
+
+router.get('/business/tenants', (req, res) => {
+  try {
+    const tenants = listTenants(req.query);
+    res.json({ ok: true, tenants });
+  } catch (err) {
+    log.error('api:tenant-list', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/business/tenants', (req, res) => {
+  try {
+    const result = createTenant(req.body || {});
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:tenant-create', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/business/tenants/:id', (req, res) => {
+  try {
+    const tenant = getTenant(req.params.id);
+    if (!tenant) return res.status(404).json({ ok: false, error: 'Tenant not found' });
+    res.json({ ok: true, tenant });
+  } catch (err) {
+    log.error('api:tenant-get', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/business/tenants/:id', (req, res) => {
+  try {
+    const result = updateTenant(req.params.id, req.body || {});
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:tenant-update', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Feature Flags ────────────────────────────────────────────────────────────
+
+router.get('/business/feature-flags', (req, res) => {
+  try {
+    const flags = listFlags(req.query.tenantId);
+    res.json({ ok: true, flags });
+  } catch (err) {
+    log.error('api:feature-flag-list', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/business/feature-flags/:key', (req, res) => {
+  try {
+    const flag = getFlag(req.params.key);
+    if (!flag) return res.status(404).json({ ok: false, error: 'Flag not found' });
+    res.json({ ok: true, flag });
+  } catch (err) {
+    log.error('api:feature-flag-get', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/business/feature-flags', (req, res) => {
+  try {
+    const result = createFlag(req.body || {});
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:feature-flag-create', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/business/feature-flags/:key/enable', (req, res) => {
+  try {
+    const result = enableFlag(req.params.key, req.body?.tenantId);
+    if (result.error) return res.status(404).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:feature-flag-enable', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/business/feature-flags/:key/disable', (req, res) => {
+  try {
+    const result = disableFlag(req.params.key, req.body?.tenantId);
+    if (result.error) return res.status(404).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:feature-flag-disable', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Billing ──────────────────────────────────────────────────────────────────
+
+router.get('/business/billing/:tenantId', (req, res) => {
+  try {
+    const history = getBillingHistory(req.params.tenantId, req.query);
+    res.json({ ok: true, history });
+  } catch (err) {
+    log.error('api:billing-history', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/business/billing/:tenantId/summary', (req, res) => {
+  try {
+    const summary = getBillingSummary(req.params.tenantId, req.query.period);
+    res.json({ ok: true, summary });
+  } catch (err) {
+    log.error('api:billing-summary', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/business/billing/event', (req, res) => {
+  try {
+    const result = recordBillingEvent(req.body || {});
+    if (result.error) return res.status(400).json({ ok: false, error: result.error });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:billing-event', { error: err.message });
     res.status(400).json({ ok: false, error: err.message });
   }
 });

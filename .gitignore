@@ -6,6 +6,7 @@ voice_pdfs/**/*.PDF
 benchmarks/phase-c/latest-results.json
 
 # Runtime artifacts
+data/*.db
 data/*.db-shm
 data/*.db-wal
 logs/*.log

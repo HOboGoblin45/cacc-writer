@@ -50,6 +50,23 @@ import {
   closeFeedbackLoop,
 } from '../learning/feedbackLoopService.js';
 
+import {
+  getRevisionDiffs,
+  getDiffStats,
+} from '../learning/revisionDiffService.js';
+
+import {
+  recordSuggestionOutcome,
+  getSuggestionHistory,
+  getSuggestionAcceptanceRate,
+  getRankedSuggestions,
+} from '../learning/suggestionRankingService.js';
+
+import {
+  getInfluenceExplanation,
+  getCaseLearningReport,
+} from '../learning/learningExplanationService.js';
+
 import { z } from 'zod';
 import { parsePayload } from '../utils/routeUtils.js';
 
@@ -331,6 +348,128 @@ router.post('/learning/patterns/success-rates', (req, res) => {
     res.json({ ok: true, rates: result });
   } catch (err) {
     log.error('api:batch-success-rates', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/revision-diffs/:caseId ─────────────────────────────────────
+// Get all revision diffs for a case.
+router.get('/learning/revision-diffs/:caseId', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const diffs = getRevisionDiffs(caseId);
+    res.json({ ok: true, diffs, count: diffs.length });
+  } catch (err) {
+    log.error('api:revision-diffs', { caseId: req.params.caseId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/revision-diffs/:caseId/stats ──────────────────────────────
+// Get revision diff stats for a case.
+router.get('/learning/revision-diffs/:caseId/stats', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const stats = getDiffStats(caseId);
+    res.json({ ok: true, stats });
+  } catch (err) {
+    log.error('api:revision-diff-stats', { caseId: req.params.caseId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /learning/suggestion-outcome ────────────────────────────────────────
+// Record a suggestion outcome (accepted/rejected/modified).
+router.post('/learning/suggestion-outcome', (req, res) => {
+  try {
+    const body = req.body || {};
+    const { caseId, suggestionId, ...outcome } = body;
+    if (!caseId || !outcome.sectionId) {
+      return res.status(400).json({ ok: false, error: 'caseId and sectionId are required' });
+    }
+    const result = recordSuggestionOutcome(caseId, suggestionId, outcome);
+    if (result.error) {
+      return res.status(400).json({ ok: false, error: result.error });
+    }
+    res.json({ ok: true, outcome: result });
+  } catch (err) {
+    log.error('api:suggestion-outcome', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/suggestion-history/:caseId ─────────────────────────────────
+// Get all suggestion outcomes for a case.
+router.get('/learning/suggestion-history/:caseId', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const history = getSuggestionHistory(caseId);
+    res.json({ ok: true, history, count: history.length });
+  } catch (err) {
+    log.error('api:suggestion-history', { caseId: req.params.caseId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/acceptance-rate ────────────────────────────────────────────
+// Get suggestion acceptance rate with optional filters.
+router.get('/learning/acceptance-rate', (req, res) => {
+  try {
+    const filters = {
+      sectionId: req.query.sectionId || undefined,
+      suggestionType: req.query.suggestionType || undefined,
+      formType: req.query.formType || undefined,
+      propertyType: req.query.propertyType || undefined,
+    };
+    const rate = getSuggestionAcceptanceRate(filters);
+    res.json({ ok: true, ...rate });
+  } catch (err) {
+    log.error('api:acceptance-rate', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/ranked-suggestions/:sectionId ──────────────────────────────
+// Get historically-ranked suggestions for a section.
+router.get('/learning/ranked-suggestions/:sectionId', (req, res) => {
+  try {
+    const { sectionId } = req.params;
+    const formType = req.query.formType || undefined;
+    const context = {
+      propertyType: req.query.propertyType || undefined,
+    };
+    const ranked = getRankedSuggestions(sectionId, formType, context);
+    res.json({ ok: true, suggestions: ranked, count: ranked.length });
+  } catch (err) {
+    log.error('api:ranked-suggestions', { sectionId: req.params.sectionId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/influence/:sectionId ───────────────────────────────────────
+// Get learned influence explanation for a section.
+router.get('/learning/influence/:sectionId', (req, res) => {
+  try {
+    const { sectionId } = req.params;
+    const formType = req.query.formType || undefined;
+    const propertyType = req.query.propertyType || undefined;
+    const explanation = getInfluenceExplanation(sectionId, formType, propertyType);
+    res.json({ ok: true, ...explanation });
+  } catch (err) {
+    log.error('api:influence-explanation', { sectionId: req.params.sectionId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/case-report/:caseId ────────────────────────────────────────
+// Get full case learning report.
+router.get('/learning/case-report/:caseId', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const report = getCaseLearningReport(caseId);
+    res.json({ ok: true, report });
+  } catch (err) {
+    log.error('api:case-learning-report', { caseId: req.params.caseId, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
