@@ -40,6 +40,15 @@ import {
   getLearningEnhancedSuggestions,
 } from '../learning/learningBoostProvider.js';
 
+import {
+  linkGenerationToPatterns,
+  onSectionApproved,
+  onSectionRejected,
+  getPatternSuccessRate,
+  getBatchPatternSuccessRates,
+  closeFeedbackLoop,
+} from '../learning/feedbackLoopService.js';
+
 const router = Router();
 
 // ── POST /cases/:caseId/archive ──────────────────────────────────────────────
@@ -63,10 +72,19 @@ router.post('/cases/:caseId/archive', (req, res) => {
       }
     }
 
+    // Close all pending feedback loops for this case
+    let feedbackResult = null;
+    try {
+      feedbackResult = closeFeedbackLoop(caseId);
+    } catch (err) {
+      log.warn('learning:feedback-loop-close-failed', { caseId, error: err.message });
+    }
+
     res.json({
       ok: true,
       archive: result,
       learning: learningResult,
+      feedbackLoop: feedbackResult,
     });
   } catch (err) {
     log.error('api:archive-assignment', { caseId: req.params.caseId, error: err.message });
@@ -220,6 +238,76 @@ router.post('/learning/applications/:id/outcome', (req, res) => {
     res.json({ ok: true, applicationId: id, outcome });
   } catch (err) {
     log.error('api:application-outcome', { id: req.params.id, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /cases/:caseId/feedback-loop/link ───────────────────────────────────
+// Link a generation to relevant learned patterns.
+router.post('/cases/:caseId/feedback-loop/link', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const { sectionId, generatedSectionId, formType, propertyType, marketArea } = req.body || {};
+
+    if (!sectionId || !formType) {
+      return res.status(400).json({ ok: false, error: 'sectionId and formType are required' });
+    }
+
+    const result = linkGenerationToPatterns({
+      caseId,
+      sectionId,
+      generatedSectionId,
+      formType,
+      propertyType,
+      marketArea,
+    });
+
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:feedback-loop-link', { caseId: req.params.caseId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /cases/:caseId/feedback-loop/close ──────────────────────────────────
+// Manually close all pending feedback loops for a case.
+router.post('/cases/:caseId/feedback-loop/close', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const result = closeFeedbackLoop(caseId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:feedback-loop-close', { caseId: req.params.caseId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /learning/patterns/:patternId/success-rate ───────────────────────────
+// Get the success rate for a specific pattern.
+router.get('/learning/patterns/:patternId/success-rate', (req, res) => {
+  try {
+    const { patternId } = req.params;
+    const result = getPatternSuccessRate(patternId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    log.error('api:pattern-success-rate', { patternId: req.params.patternId, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /learning/patterns/success-rates ────────────────────────────────────
+// Get success rates for multiple patterns (batch).
+router.post('/learning/patterns/success-rates', (req, res) => {
+  try {
+    const { patternIds } = req.body || {};
+    if (!Array.isArray(patternIds) || patternIds.length === 0) {
+      return res.status(400).json({ ok: false, error: 'patternIds array is required' });
+    }
+
+    const result = getBatchPatternSuccessRates(patternIds);
+    res.json({ ok: true, rates: result });
+  } catch (err) {
+    log.error('api:batch-success-rates', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
