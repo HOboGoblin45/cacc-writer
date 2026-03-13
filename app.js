@@ -46,6 +46,7 @@ function showTab(name) {
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
+  if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
 }
 
 // ====== FORM REGISTRY ======
@@ -4935,4 +4936,359 @@ async function memHealthPruneWeak() {
     if (r && !r.error) archived++;
   }
   memHealthScan();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 6: System Reliability — Backup Scheduler, Restore Verification, Audit Log
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _sysAuditOffset = 0;
+const _sysAuditLimit = 50;
+
+function sysOnTabOpen() {
+  sysLoadHealth();
+  sysLoadSchedule();
+  sysLoadBackups();
+  sysLoadDR();
+}
+
+// ── System Health ───────────────────────────────────────────────────────────
+
+async function sysLoadHealth() {
+  const el = $('sysHealthBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Checking...</div>';
+  const res = await apiFetch('/api/operations/health/diagnostics').catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">Could not load diagnostics.</div>';
+    return;
+  }
+
+  const checks = res.checks || res;
+  const dbStats = res.dbStats || {};
+  let html = '<div class="sys-stat-grid">';
+
+  // Service statuses
+  const services = ['database', 'documentStorage', 'orchestrator', 'qcEngine', 'aciAgent', 'rqAgent'];
+  services.forEach(svc => {
+    const status = checks[svc]?.status || checks[svc] || 'unknown';
+    const cls = status === 'healthy' ? 'healthy' : status === 'degraded' ? 'degraded' : 'unavailable';
+    const label = svc.replace(/([A-Z])/g, ' $1').trim();
+    html += `<div class="sys-stat"><div class="sys-stat-value ${cls}">${esc(status)}</div><div class="sys-stat-label">${esc(label)}</div></div>`;
+  });
+
+  // DB stats
+  if (dbStats.dbSizeMB != null) {
+    html += `<div class="sys-stat"><div class="sys-stat-value">${dbStats.dbSizeMB}</div><div class="sys-stat-label">DB Size (MB)</div></div>`;
+  }
+  if (dbStats.tableCount != null) {
+    html += `<div class="sys-stat"><div class="sys-stat-value">${dbStats.tableCount}</div><div class="sys-stat-label">Tables</div></div>`;
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Backup Schedule ─────────────────────────────────────────────────────────
+
+async function sysLoadSchedule() {
+  const el = $('sysScheduleBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch('/api/security/backups/schedule').catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No schedule configured.</div>';
+    return;
+  }
+  const sched = res.schedule || res;
+  // Populate form fields
+  const enabledEl = $('sysSchedEnabled');
+  const intervalEl = $('sysSchedInterval');
+  const retentionEl = $('sysSchedRetention');
+  const maxEl = $('sysSchedMax');
+  if (enabledEl) enabledEl.value = sched.enabled ? '1' : '0';
+  if (intervalEl) intervalEl.value = sched.interval_hours || sched.intervalHours || 24;
+  if (retentionEl) retentionEl.value = sched.retention_days || sched.retentionDays || 30;
+  if (maxEl) maxEl.value = sched.max_backups || sched.maxBackups || 10;
+
+  const statusText = sched.enabled ? 'Active' : 'Disabled';
+  const statusCls = sched.enabled ? 'ok' : '';
+  el.innerHTML =
+    `<div style="font-size:11px;">` +
+      `<div>Status: <strong class="${statusCls}">${statusText}</strong></div>` +
+      `<div>Every <strong>${sched.interval_hours || sched.intervalHours || 24}h</strong> · Keep <strong>${sched.retention_days || sched.retentionDays || 30} days</strong> · Max <strong>${sched.max_backups || sched.maxBackups || 10}</strong></div>` +
+    `</div>`;
+}
+
+async function sysSaveSchedule() {
+  const enabled = $('sysSchedEnabled')?.value === '1';
+  const interval_hours = parseInt($('sysSchedInterval')?.value) || 24;
+  const retention_days = parseInt($('sysSchedRetention')?.value) || 30;
+  const max_backups = parseInt($('sysSchedMax')?.value) || 10;
+  const res = await apiFetch('/api/security/backups/schedule', {
+    method: 'PUT',
+    body: { enabled, interval_hours, retention_days, max_backups }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('sysScheduleStatus', 'Schedule saved.', 'ok');
+    sysLoadSchedule();
+  } else {
+    setStatus('sysScheduleStatus', 'Failed to save schedule.', 'err');
+  }
+}
+
+// ── Backup History ──────────────────────────────────────────────────────────
+
+async function sysLoadBackups() {
+  const el = $('sysBackupList');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading backups...</div>';
+  const res = await apiFetch('/api/security/backups').catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No backups found.</div>';
+    return;
+  }
+  const backups = res.backups || res.rows || [];
+  if (!backups.length) {
+    el.innerHTML = '<div class="hint">No backups yet. Click Create Backup to make one.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="bkp-list">' + backups.map(b => {
+    const status = b.status || 'pending';
+    const statusCls = status === 'verified' ? 'verified' : status === 'failed' ? 'failed' : 'pending';
+    const sizeMB = b.file_size_bytes ? (b.file_size_bytes / (1024 * 1024)).toFixed(1) + ' MB' : '—';
+    const date = b.created_at ? new Date(b.created_at).toLocaleString() : '—';
+    const id = b.id || '';
+    return (
+      `<div class="bkp-item">` +
+        `<div class="bkp-item-icon">${status === 'verified' ? '&#x2705;' : '&#x1F4BE;'}</div>` +
+        `<div class="bkp-item-info">` +
+          `<div class="bkp-item-name">${esc(b.backup_type || 'manual')} — ${esc(date)}</div>` +
+          `<div class="bkp-item-meta">${esc(sizeMB)} · ${esc(b.file_hash ? b.file_hash.slice(0, 12) + '...' : 'no hash')}</div>` +
+        `</div>` +
+        `<span class="bkp-item-status ${statusCls}">${esc(status)}</span>` +
+        `<div class="bkp-item-actions">` +
+          `<button class="ghost sm" onclick="sysVerifyBackup('${esc(id)}')" title="Verify integrity">Verify</button>` +
+          `<button class="ghost sm" onclick="sysStartRestore('${esc(id)}')" title="Start restore workflow">Restore</button>` +
+        `</div>` +
+      `</div>`
+    );
+  }).join('') + '</div>';
+}
+
+async function sysCreateBackup() {
+  setStatus('sysBackupStatus', 'Creating backup...', '');
+  const res = await apiFetch('/api/security/backups/create', { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('sysBackupStatus', 'Backup created successfully.', 'ok');
+    sysLoadBackups();
+  } else {
+    setStatus('sysBackupStatus', 'Backup failed: ' + (res?.error || 'unknown error'), 'err');
+  }
+}
+
+async function sysVerifyBackup(backupId) {
+  setStatus('sysBackupStatus', 'Verifying...', '');
+  const res = await apiFetch(`/api/security/backups/${backupId}/verify`, { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    const valid = res.valid !== false;
+    setStatus('sysBackupStatus', valid ? 'Backup verified — integrity OK.' : 'Verification failed: ' + (res.reason || 'corrupt'), valid ? 'ok' : 'err');
+    sysLoadBackups();
+  } else {
+    setStatus('sysBackupStatus', 'Verification failed.', 'err');
+  }
+}
+
+// ── Restore Verification Workflow ───────────────────────────────────────────
+
+async function sysStartRestore(backupId) {
+  const el = $('sysRestoreBody');
+  if (!el) return;
+  el.innerHTML =
+    `<div class="restore-steps">` +
+      `<div class="restore-step active" id="restoreStep1">` +
+        `<div class="restore-step-num">1</div>` +
+        `<div style="flex:1;"><strong>Verify Backup Integrity</strong><div style="font-size:10px;color:var(--muted);">Checking file hash, size, and table counts...</div></div>` +
+      `</div>` +
+      `<div class="restore-step" id="restoreStep2">` +
+        `<div class="restore-step-num">2</div>` +
+        `<div style="flex:1;"><strong>Review Backup Contents</strong><div style="font-size:10px;color:var(--muted);">Inspect what will be restored.</div></div>` +
+      `</div>` +
+      `<div class="restore-step" id="restoreStep3">` +
+        `<div class="restore-step-num">3</div>` +
+        `<div style="flex:1;"><strong>Confirm & Restore</strong><div style="font-size:10px;color:var(--muted);">Final confirmation before overwrite.</div></div>` +
+      `</div>` +
+    `</div>`;
+
+  // Step 1: Verify
+  const verifyRes = await apiFetch(`/api/security/backups/${backupId}/verify`, { method: 'POST', body: {} }).catch(() => null);
+  const step1 = $('restoreStep1');
+  const step2 = $('restoreStep2');
+  const step3 = $('restoreStep3');
+
+  if (!verifyRes || verifyRes.error || verifyRes.valid === false) {
+    if (step1) { step1.className = 'restore-step'; step1.querySelector('div:last-child').innerHTML = '<strong>Verify Backup Integrity</strong><div style="font-size:10px;color:var(--danger);">Verification failed. Cannot proceed.</div>'; }
+    setStatus('sysRestoreStatus', 'Backup failed verification. Choose a different backup.', 'err');
+    return;
+  }
+
+  if (step1) step1.className = 'restore-step done';
+  if (step2) step2.className = 'restore-step active';
+
+  // Step 2: Show backup details
+  const backup = verifyRes.backup || verifyRes;
+  const tables = backup.table_counts_json ? (typeof backup.table_counts_json === 'string' ? JSON.parse(backup.table_counts_json) : backup.table_counts_json) : {};
+  const sizeMB = backup.file_size_bytes ? (backup.file_size_bytes / (1024 * 1024)).toFixed(1) + ' MB' : '—';
+  const date = backup.created_at ? new Date(backup.created_at).toLocaleString() : '—';
+
+  let detailHtml =
+    `<div style="font-size:11px;padding:6px 0;">` +
+      `<div><strong>Created:</strong> ${esc(date)}</div>` +
+      `<div><strong>Size:</strong> ${esc(sizeMB)}</div>` +
+      `<div><strong>Tables:</strong></div>`;
+  Object.entries(tables).forEach(([table, count]) => {
+    detailHtml += `<div style="padding-left:12px;font-size:10px;color:var(--muted);">${esc(table)}: <strong>${count}</strong></div>`;
+  });
+  detailHtml +=
+    `</div>` +
+    `<div class="btnrow"><button class="sm" onclick="sysConfirmRestore('${esc(backupId)}')">Confirm Restore</button><button class="sec sm" onclick="sysCancelRestore()">Cancel</button></div>`;
+
+  if (step2) step2.querySelector('div:last-child').innerHTML = '<strong>Review Backup Contents</strong>' + detailHtml;
+}
+
+async function sysConfirmRestore(backupId) {
+  if (!confirm('This will restore the database from backup. Current data will be overwritten. Proceed?')) return;
+  const step2 = $('restoreStep2');
+  const step3 = $('restoreStep3');
+  if (step2) step2.className = 'restore-step done';
+  if (step3) step3.className = 'restore-step active';
+
+  setStatus('sysRestoreStatus', 'Restoring...', '');
+  const res = await apiFetch(`/api/security/backups/${backupId}/restore`, { method: 'POST', body: {} }).catch(() => null);
+  if (res && !res.error) {
+    if (step3) step3.className = 'restore-step done';
+    setStatus('sysRestoreStatus', 'Restore complete. Status: ' + (res.status || 'done'), 'ok');
+  } else {
+    setStatus('sysRestoreStatus', 'Restore failed: ' + (res?.error || 'unknown'), 'err');
+  }
+}
+
+function sysCancelRestore() {
+  const el = $('sysRestoreBody');
+  if (el) el.innerHTML = '<div class="hint">Restore cancelled. Select a backup to try again.</div>';
+  setStatus('sysRestoreStatus', '', '');
+}
+
+// ── Disaster Recovery Status ────────────────────────────────────────────────
+
+async function sysLoadDR() {
+  const el = $('sysDRBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Checking DR readiness...</div>';
+  const res = await apiFetch('/api/security/dr-status').catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">Could not load DR status.</div>';
+    return;
+  }
+
+  const dr = res.status || res;
+  const checks = dr.checks || [];
+  const overall = dr.ready || dr.overall || 'unknown';
+  const overallCls = overall === true || overall === 'ready' ? 'healthy' : 'degraded';
+
+  let html = `<div style="font-size:12px;margin-bottom:8px;">Overall: <strong class="sys-stat-value ${overallCls}" style="font-size:12px;">${overall === true ? 'READY' : esc(String(overall).toUpperCase())}</strong></div>`;
+  html += '<div class="dr-status">';
+
+  if (Array.isArray(checks) && checks.length) {
+    checks.forEach(c => {
+      const ok = c.passed || c.ok;
+      const icon = ok ? '<span style="color:var(--ok);">&#x2713;</span>' : '<span style="color:var(--danger);">&#x2717;</span>';
+      html += `<div class="dr-check"><div class="dr-check-icon">${icon}</div><span>${esc(c.label || c.name || '')}</span></div>`;
+    });
+  } else if (typeof dr === 'object') {
+    Object.entries(dr).forEach(([key, val]) => {
+      if (key === 'ready' || key === 'overall') return;
+      const ok = val === true || val === 'ok' || val === 'healthy';
+      const icon = ok ? '<span style="color:var(--ok);">&#x2713;</span>' : '<span style="color:var(--danger);">&#x2717;</span>';
+      html += `<div class="dr-check"><div class="dr-check-icon">${icon}</div><span>${esc(key.replace(/_/g, ' '))}: ${esc(String(val))}</span></div>`;
+    });
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Audit Log Viewer ────────────────────────────────────────────────────────
+
+async function sysLoadAuditLog() {
+  const el = $('sysAuditBody');
+  if (!el) return;
+  el.innerHTML = '<div class="hint">Loading audit events...</div>';
+
+  const category = $('sysAuditCategory')?.value || '';
+  const severity = $('sysAuditSeverity')?.value || '';
+  const since = $('sysAuditSince')?.value || '';
+
+  let qs = `?limit=${_sysAuditLimit}&offset=${_sysAuditOffset}`;
+  if (category) qs += '&category=' + encodeURIComponent(category);
+  if (severity) qs += '&severity=' + encodeURIComponent(severity);
+  if (since) qs += '&since=' + encodeURIComponent(since);
+
+  const res = await apiFetch('/api/operations/audit' + qs).catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No audit events found.</div>';
+    return;
+  }
+
+  const events = res.events || res.rows || [];
+  const total = res.total || events.length;
+
+  if (!events.length) {
+    el.innerHTML = '<div class="hint">No matching audit events.</div>';
+    _sysRenderAuditPager(total);
+    return;
+  }
+
+  el.innerHTML = '<div class="audit-log-list">' + events.map(e => {
+    const icon = _sysAuditIcon(e.category || e.event_type || '');
+    const time = e.created_at ? new Date(e.created_at).toLocaleString() : '';
+    const caseLabel = e.case_id ? ` · Case ${esc(e.case_id.slice(0, 8))}` : '';
+    return (
+      `<div class="audit-event">` +
+        `<div class="audit-event-icon">${icon}</div>` +
+        `<div class="audit-event-body">` +
+          `<div class="audit-event-summary">${esc(e.summary || '')}</div>` +
+          `<div class="audit-event-meta">${esc(time)}${caseLabel}</div>` +
+        `</div>` +
+        `<span class="audit-event-type">${esc(e.event_type || '')}</span>` +
+      `</div>`
+    );
+  }).join('') + '</div>';
+
+  _sysRenderAuditPager(total);
+}
+
+function _sysRenderAuditPager(total) {
+  const pager = $('sysAuditPager');
+  if (!pager) return;
+  const hasPrev = _sysAuditOffset > 0;
+  const hasNext = _sysAuditOffset + _sysAuditLimit < total;
+  pager.innerHTML =
+    (hasPrev ? `<button class="sm sec" onclick="sysAuditPage(-1)">&#x25C0; Prev</button>` : '') +
+    `<span style="font-size:10px;color:var(--muted);padding:4px;">Showing ${_sysAuditOffset + 1}–${Math.min(_sysAuditOffset + _sysAuditLimit, total)} of ${total}</span>` +
+    (hasNext ? `<button class="sm sec" onclick="sysAuditPage(1)">Next &#x25B6;</button>` : '');
+}
+
+function sysAuditPage(dir) {
+  _sysAuditOffset = Math.max(0, _sysAuditOffset + dir * _sysAuditLimit);
+  sysLoadAuditLog();
+}
+
+function _sysAuditIcon(category) {
+  const icons = {
+    case: '&#x1F4C1;', document: '&#x1F4C4;', generation: '&#x2699;', memory: '&#x1F9E0;',
+    qc: '&#x2705;', insertion: '&#x1F4E5;', system: '&#x1F5A5;', security: '&#x1F512;'
+  };
+  return icons[category] || '&#x25CF;';
 }
