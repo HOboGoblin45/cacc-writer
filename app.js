@@ -4094,3 +4094,445 @@ function workspaceRenderGovernanceCard(sectionId) {
     `</div>`
   );
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 4: Unified Valuation Desk
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _valQueueFilter = 'all';
+
+function valDeskShowPanel(panelId) {
+  document.querySelectorAll('.val-desk-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.val-desk-tab').forEach(t => t.classList.remove('active'));
+  const panel = $('valPanel-' + panelId);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.val-desk-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + panelId + "'")) t.classList.add('active');
+  });
+  // Auto-load data for the panel
+  if (panelId === 'compQueue' && STATE.caseId) { valLoadCompGrid(); valLoadCompQueue(); }
+  if (panelId === 'adjustments' && STATE.caseId) { valLoadAdjustments(); valLoadBurden(); }
+  if (panelId === 'approaches' && STATE.caseId) { valLoadGridSummary(); valLoadIncome(); valLoadCost(); }
+  if (panelId === 'reconciliation' && STATE.caseId) { valLoadRecon(); }
+}
+
+// ── Comp Grid Status ──────────────────────────────────────────────────────────
+async function valLoadCompGrid() {
+  const el = $('valCompGridStatus');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No grid data yet.</div>';
+    return;
+  }
+  const slots = res.slots || res.grid || [];
+  const filled = Array.isArray(slots) ? slots.filter(s => s && s.address).length : 0;
+  const total = 3;
+  el.innerHTML =
+    `<div style="font-size:12px;">` +
+      `<div style="display:flex;justify-content:space-between;"><span>Grid Slots Filled</span><strong>${filled}/${total}</strong></div>` +
+      (Array.isArray(slots) ? slots.map((s, i) => {
+        if (!s || !s.address) return `<div style="padding:4px 0;color:var(--muted);font-size:11px;">Comp ${i+1}: <em>Empty</em></div>`;
+        return `<div style="padding:4px 0;font-size:11px;"><strong>Comp ${i+1}:</strong> ${esc(s.address || '')} <span style="color:var(--gold);">${s.salePrice ? '$' + Number(s.salePrice).toLocaleString() : ''}</span></div>`;
+      }).join('') : '') +
+    `</div>`;
+}
+
+// ── Comp Queue ────────────────────────────────────────────────────────────────
+async function valLoadCompQueue() {
+  const el = $('valCompQueueBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading candidates...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok) {
+    el.innerHTML = '<div class="hint">No comparable intelligence data. Build intelligence and run comp analysis first.</div>';
+    return;
+  }
+  const candidates = res.candidates || [];
+  _valRenderCompQueue(el, candidates);
+}
+
+function valFilterQueue(filter, btn) {
+  _valQueueFilter = filter;
+  document.querySelectorAll('#valPanel-compQueue .filt-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  valLoadCompQueue();
+}
+
+function _valRenderCompQueue(el, candidates) {
+  const filtered = _valQueueFilter === 'all' ? candidates
+    : candidates.filter(c => {
+      const status = (c.reviewStatus || c.status || 'pending').toLowerCase();
+      if (_valQueueFilter === 'pending') return status === 'pending' || status === 'recommended';
+      return status === _valQueueFilter;
+    });
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="hint">No ${_valQueueFilter === 'all' ? '' : _valQueueFilter + ' '}candidates.</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(c => {
+    const status = (c.reviewStatus || c.status || 'pending').toLowerCase();
+    const statusClass = status === 'accepted' ? 'accepted' : status === 'held' ? 'held' : status === 'rejected' ? 'rejected' : '';
+    const price = c.salePrice ? '$' + Number(c.salePrice).toLocaleString() : '';
+    const date = c.saleDate || c.dateOfSale || '';
+    const tier = c.tierLabel || c.tier || '';
+    const relevance = c.relevanceScore != null ? c.relevanceScore : '';
+    const addr = c.address || 'Unknown';
+    const cid = c.id || c.candidateId || '';
+    const reasonHistory = c.reasonHistory || c.rejectReasonCode || c.holdReason || '';
+
+    return (
+      `<div class="comp-queue-item ${statusClass}">` +
+        `<div class="comp-queue-head">` +
+          `<div>` +
+            `<div class="comp-queue-addr">${esc(addr)}</div>` +
+            `<div style="font-size:10px;color:var(--muted);">${esc(date)}</div>` +
+          `</div>` +
+          `<div class="comp-queue-price">${esc(price)}</div>` +
+        `</div>` +
+        `<div class="comp-queue-meta">` +
+          (tier ? `<span class="chip">${esc(tier)}</span>` : '') +
+          (relevance !== '' ? `<span class="chip">${esc(String(relevance))}</span>` : '') +
+          `<span class="chip ${status === 'accepted' ? 'ok' : status === 'rejected' ? 'err' : status === 'held' ? 'warn' : ''}">${esc(status)}</span>` +
+          (c.keyMatches ? `<span class="chip ok">${c.keyMatches} matches</span>` : '') +
+          (c.keyMismatches ? `<span class="chip warn">${c.keyMismatches} mismatches</span>` : '') +
+        `</div>` +
+        (reasonHistory ? `<div class="comp-queue-reason">${esc(String(reasonHistory))}</div>` : '') +
+        (status !== 'rejected'
+          ? `<div class="comp-queue-actions">` +
+              (status !== 'accepted' ? `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}')">Accept</button>` : '') +
+              (status !== 'held' && status !== 'accepted' ? `<button class="sec sm" onclick="workspaceHoldComparableCandidate('${esc(cid)}')">Hold</button>` : '') +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp1')">Comp 1</button>` +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp2')">Comp 2</button>` +
+              `<button class="sm" onclick="workspaceAcceptComparableCandidate('${esc(cid)}','comp3')">Comp 3</button>` +
+              `<select id="valRejectReason-${esc(cid)}" style="font-size:10px;padding:2px 4px;max-width:120px;">` +
+                `<option value="too_distant">Too distant</option>` +
+                `<option value="poor_condition">Poor condition</option>` +
+                `<option value="poor_market_match">Poor market match</option>` +
+                `<option value="atypical_sale">Atypical sale</option>` +
+                `<option value="other">Other</option>` +
+              `</select>` +
+              `<button class="ghost sm" onclick="valRejectCandidate('${esc(cid)}')">Reject</button>` +
+            `</div>`
+          : '') +
+      `</div>`
+    );
+  }).join('');
+}
+
+async function valRejectCandidate(candidateId) {
+  if (!STATE.caseId) return;
+  const sel = $('valRejectReason-' + candidateId);
+  const reasonCode = sel ? sel.value : 'other';
+  await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence/candidates/${candidateId}/reject`, {
+    method: 'POST', body: { rejectedBy: 'appraiser', reasonCode }
+  });
+  valLoadCompQueue();
+}
+
+// ── Burden Metrics ────────────────────────────────────────────────────────────
+async function valLoadBurden() {
+  const el = $('valBurdenBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok || !res.acceptedSlots?.length) {
+    el.innerHTML = '<div class="hint">Accept and load comps to see burden metrics.</div>';
+    return;
+  }
+  const slots = res.acceptedSlots;
+  el.innerHTML = slots.map(slot => {
+    const b = slot.burdenMetrics || {};
+    const stability = b.overallStabilityScore || 0;
+    const stabColor = stability >= 0.75 ? 'var(--ok)' : stability >= 0.55 ? 'var(--warn)' : 'var(--danger)';
+    const contradictions = (slot.contradictions || []);
+    return (
+      `<div class="burden-card">` +
+        `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+          `<strong style="font-size:12px;">${esc(slot.gridSlotLabel || 'Comp')}: ${esc(slot.address || '')}</strong>` +
+          `<span class="chip" style="color:${stabColor}">${(stability * 100).toFixed(0)}% stable</span>` +
+        `</div>` +
+        _valBurdenMeter('Gross Adj', b.grossAdjustmentPercent || 0, 25) +
+        _valBurdenMeter('Net Adj', Math.abs(b.netAdjustmentPercent || 0), 15) +
+        _valBurdenMeter('Data Confidence', (b.dataConfidenceScore || 0) * 100, 0, true) +
+        _valBurdenMeter('Date Relevance', (b.dateRelevanceScore || 0) * 100, 0, true) +
+        _valBurdenMeter('Location', (b.locationConfidenceScore || 0) * 100, 0, true) +
+        `<div style="font-size:10px;color:var(--muted);margin-top:6px;">Major mismatches: ${b.majorMismatchCount || 0}</div>` +
+        (contradictions.length
+          ? `<div style="margin-top:6px;font-size:10px;">` +
+              contradictions.map(f => `<div style="color:var(--warn);padding:2px 0;"><strong>${esc(f.code || f.category || '')}</strong>: ${esc(f.message || '')}</div>`).join('') +
+            `</div>`
+          : '') +
+      `</div>`
+    );
+  }).join('');
+}
+
+function _valBurdenMeter(label, value, threshold, inverted = false) {
+  const pct = Math.min(100, Math.max(0, value));
+  const bad = inverted ? pct < 50 : pct > threshold;
+  const color = bad ? (inverted ? 'var(--danger)' : 'var(--warn)') : 'var(--ok)';
+  return (
+    `<div class="burden-meter">` +
+      `<span style="font-size:10px;color:var(--muted);min-width:80px;">${esc(label)}</span>` +
+      `<div class="burden-meter-track"><div class="burden-meter-fill" style="width:${pct}%;background:${color};"></div></div>` +
+      `<span class="burden-meter-label" style="color:${color}">${pct.toFixed(0)}%</span>` +
+    `</div>`
+  );
+}
+
+// ── Adjustment Notebook ───────────────────────────────────────────────────────
+async function valLoadAdjustments() {
+  const el = $('valAdjNotebookBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/cases/${STATE.caseId}/comparable-intelligence`).catch(() => ({ ok: false }));
+  if (!res.ok || !res.acceptedSlots?.length) {
+    el.innerHTML = '<div class="hint">Accept comps and run analysis to see adjustment support.</div>';
+    return;
+  }
+
+  const slots = res.acceptedSlots;
+  const html = slots.map(slot => {
+    const support = slot.adjustmentSupport || [];
+    if (!support.length) return '';
+    const slotLabel = slot.gridSlotLabel || 'Comp';
+    return (
+      `<div style="margin-bottom:16px;">` +
+        `<div style="font-size:12px;font-weight:800;color:var(--gold);margin-bottom:8px;">${esc(slotLabel)}: ${esc(slot.address || '')}</div>` +
+        `<div class="adj-notebook">` +
+          support.map(adj => {
+            const amount = adj.finalAmount ?? adj.suggestedAmount ?? 0;
+            const amtClass = amount > 0 ? 'positive' : amount < 0 ? 'negative' : 'zero';
+            const amtLabel = amount === 0 ? '$0' : `${amount > 0 ? '+' : '-'}$${Math.abs(amount).toLocaleString()}`;
+            const amtColor = amount > 0 ? 'pos' : amount < 0 ? 'neg' : '';
+            const strength = adj.supportStrength || adj.strength || '';
+            const strClass = strength === 'high' ? 'high' : strength === 'medium' ? 'medium' : strength === 'low' ? 'low' : '';
+            const decision = adj.decisionStatus || '';
+            const gridSlot = slot.gridSlot || slot.gridSlotLabel || '';
+            const cat = adj.adjustmentCategory || adj.label || '';
+            return (
+              `<div class="adj-row ${amtClass}">` +
+                `<span class="adj-cat">${esc(adj.label || cat)}</span>` +
+                `<span class="adj-subj">${esc(adj.subjectValue || '-')}</span>` +
+                `<span class="adj-comp">${esc(adj.compValue || '-')}</span>` +
+                `<span class="adj-amount ${amtColor}">${esc(amtLabel)}</span>` +
+                (strength ? `<span class="adj-strength ${strClass}">${esc(strength)}</span>` : '') +
+                (decision ? `<span class="chip ${decision === 'accepted' ? 'ok' : decision === 'modified' ? 'warn' : decision === 'rejected' ? 'err' : ''}" style="font-size:9px;">${esc(decision)}</span>` : '') +
+                `<button class="ghost sm" style="font-size:9px;padding:2px 6px;" onclick="workspaceSaveAdjustmentSupportDecision('${esc(gridSlot)}','${esc(cat)}','accepted')">&#x2713;</button>` +
+                `<button class="ghost sm" style="font-size:9px;padding:2px 6px;" onclick="workspaceModifyAdjustmentSupportDecision('${esc(gridSlot)}','${esc(cat)}')">&#x270E;</button>` +
+              `</div>`
+            );
+          }).join('') +
+        `</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  el.innerHTML = html || '<div class="hint">No adjustment support records found.</div>';
+}
+
+// ── Sales Comparison Summary ──────────────────────────────────────────────────
+async function valLoadGridSummary() {
+  const el = $('valSalesBody');
+  if (!el || !STATE.caseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (!res || res.error) {
+    el.innerHTML = '<div class="hint">No sales comparison data yet.</div>';
+    return;
+  }
+  const slots = res.slots || res.grid || [];
+  const indication = res.indicatedValue || res.weightedValue || null;
+  const range = res.range || {};
+
+  let html = '';
+  if (Array.isArray(slots) && slots.length) {
+    html += `<table style="width:100%;font-size:11px;border-collapse:collapse;">` +
+      `<thead><tr style="border-bottom:1px solid var(--border);">` +
+        `<th style="text-align:left;padding:4px 6px;">Comp</th>` +
+        `<th style="text-align:left;padding:4px 6px;">Address</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Sale Price</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Adj. Price</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Net %</th>` +
+        `<th style="text-align:right;padding:4px 6px;">Gross %</th>` +
+      `</tr></thead><tbody>`;
+    for (const s of slots) {
+      if (!s || !s.address) continue;
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">` +
+        `<td style="padding:4px 6px;font-weight:700;">${esc(s.gridSlotLabel || s.slot || '')}</td>` +
+        `<td style="padding:4px 6px;">${esc(s.address || '')}</td>` +
+        `<td style="padding:4px 6px;text-align:right;font-family:var(--mono);">$${Number(s.salePrice || 0).toLocaleString()}</td>` +
+        `<td style="padding:4px 6px;text-align:right;font-family:var(--mono);color:var(--gold);">$${Number(s.adjustedPrice || s.adjustedSalePrice || 0).toLocaleString()}</td>` +
+        `<td style="padding:4px 6px;text-align:right;">${s.netAdjustmentPercent || 0}%</td>` +
+        `<td style="padding:4px 6px;text-align:right;">${s.grossAdjustmentPercent || 0}%</td>` +
+      `</tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  if (indication) {
+    html += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(85,209,143,.3);border-radius:8px;background:rgba(85,209,143,.04);">` +
+      `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Indicated Value</div>` +
+      `<div style="font-size:20px;font-weight:900;color:var(--ok);font-family:var(--mono);">$${Number(indication).toLocaleString()}</div>` +
+      (range.low && range.high ? `<div style="font-size:10px;color:var(--muted);">Range: $${Number(range.low).toLocaleString()} - $${Number(range.high).toLocaleString()}</div>` : '') +
+    `</div>`;
+  }
+
+  html += `<div class="btnrow" style="margin-top:8px;"><button class="sm" onclick="valCalcSales()">Calculate Indication</button></div>`;
+  el.innerHTML = html || '<div class="hint">No grid data.</div>';
+}
+
+async function valCalcSales() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/grid/${STATE.caseId}/summary`).catch(() => null);
+  if (res) valLoadGridSummary();
+}
+
+// ── Income Approach ───────────────────────────────────────────────────────────
+async function valLoadIncome() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/income/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) return;
+  if (res.monthlyRent) $('valIncomeRent').value = res.monthlyRent;
+  if (res.grm) $('valIncomeGrm').value = res.grm;
+  if (res.indicatedValue) {
+    setStatus('valIncomeResult', `Indicated: $${Number(res.indicatedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+async function valCalcIncome() {
+  if (!STATE.caseId) return;
+  const rent = parseFloat($('valIncomeRent').value);
+  const grm = parseFloat($('valIncomeGrm').value);
+  if (!rent || !grm) { setStatus('valIncomeResult', 'Enter rent and GRM', 'err'); return; }
+  setStatus('valIncomeResult', 'Calculating...', 'warn');
+  await apiFetch(`/api/valuation/income/${STATE.caseId}/rent-comps`, {
+    method: 'PUT', body: { rentComps: [{ monthlyRent: rent }] }
+  }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/income/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.indicatedValue || rent * grm * 12;
+    setStatus('valIncomeResult', `Indicated: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    const val = rent * grm;
+    setStatus('valIncomeResult', `Indicated (local): $${Number(val).toLocaleString()}`, 'ok');
+  }
+}
+
+// ── Cost Approach ─────────────────────────────────────────────────────────────
+async function valLoadCost() {
+  if (!STATE.caseId) return;
+  const res = await apiFetch(`/api/valuation/cost/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) return;
+  if (res.siteValue) $('valCostSite').value = res.siteValue;
+  if (res.dwellingCostNew || res.replacementCost) $('valCostDwelling').value = res.dwellingCostNew || res.replacementCost;
+  if (res.depreciation || res.totalDepreciation) $('valCostDepr').value = res.depreciation || res.totalDepreciation;
+  if (res.indicatedValue) {
+    setStatus('valCostResult', `Indicated: $${Number(res.indicatedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+async function valCalcCost() {
+  if (!STATE.caseId) return;
+  const site = parseFloat($('valCostSite').value);
+  const dwelling = parseFloat($('valCostDwelling').value);
+  const depr = parseFloat($('valCostDepr').value) || 0;
+  if (!site || !dwelling) { setStatus('valCostResult', 'Enter site value and dwelling cost', 'err'); return; }
+  setStatus('valCostResult', 'Calculating...', 'warn');
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/land`, { method: 'PUT', body: { siteValue: site } }).catch(() => null);
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/replacement`, { method: 'PUT', body: { dwellingCostNew: dwelling } }).catch(() => null);
+  await apiFetch(`/api/valuation/cost/${STATE.caseId}/depreciation`, { method: 'PUT', body: { totalDepreciation: depr } }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/cost/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.indicatedValue || (site + dwelling - depr);
+    setStatus('valCostResult', `Indicated: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    const val = site + dwelling - depr;
+    setStatus('valCostResult', `Indicated (local): $${Number(val).toLocaleString()}`, 'ok');
+  }
+}
+
+// ── Reconciliation ────────────────────────────────────────────────────────────
+async function valLoadRecon() {
+  const apprEl = $('valReconApproaches');
+  if (!apprEl || !STATE.caseId) return;
+  apprEl.innerHTML = '<div class="hint">Loading...</div>';
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}`).catch(() => null);
+  if (!res || res.error) {
+    apprEl.innerHTML = '<div class="hint">No reconciliation data yet. Calculate approach values first.</div>';
+    return;
+  }
+
+  const approaches = [
+    { name: 'Sales Comparison', key: 'salesComparison', value: res.salesComparisonValue || res.salesComparison?.value, weight: res.salesComparisonWeight || res.weights?.salesComparison || 0 },
+    { name: 'Income Approach', key: 'income', value: res.incomeValue || res.income?.value, weight: res.incomeWeight || res.weights?.income || 0 },
+    { name: 'Cost Approach', key: 'cost', value: res.costValue || res.cost?.value, weight: res.costWeight || res.weights?.cost || 0 },
+  ];
+
+  apprEl.innerHTML = approaches.map(a => (
+    `<div class="recon-approach">` +
+      `<div class="recon-approach-head">` +
+        `<span class="recon-approach-name">${esc(a.name)}</span>` +
+        `<span class="recon-approach-value">${a.value ? '$' + Number(a.value).toLocaleString() : '-'}</span>` +
+      `</div>` +
+      `<div class="recon-weight-row">` +
+        `<span style="font-size:10px;color:var(--muted);">Weight:</span>` +
+        `<input class="recon-weight-input" type="text" value="${a.weight}" data-recon-key="${a.key}" onchange="valUpdateWeight(this)"/>` +
+        `<span style="font-size:10px;color:var(--muted);">%</span>` +
+      `</div>` +
+    `</div>`
+  )).join('');
+
+  // Load narrative
+  if (res.narrative) {
+    const narEl = $('valReconNarrative');
+    if (narEl) narEl.value = res.narrative;
+  }
+
+  // Show final value if available
+  if (res.finalValue || res.weightedValue) {
+    setStatus('valReconResult', `Final Value: $${Number(res.finalValue || res.weightedValue).toLocaleString()}`, 'ok');
+  }
+}
+
+function valUpdateWeight(input) {
+  // Weights are saved when reconciliation is calculated
+}
+
+async function valCalcRecon() {
+  if (!STATE.caseId) return;
+  setStatus('valReconResult', 'Calculating...', 'warn');
+  // Gather weights from inputs
+  const weights = {};
+  document.querySelectorAll('[data-recon-key]').forEach(input => {
+    weights[input.dataset.reconKey] = parseFloat(input.value) || 0;
+  });
+  await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/weights`, {
+    method: 'PUT', body: weights
+  }).catch(() => null);
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/calculate`).catch(() => null);
+  if (res && !res.error) {
+    const val = res.finalValue || res.weightedValue || res.indicatedValue || 0;
+    setStatus('valReconResult', `Final Value: $${Number(val).toLocaleString()}`, 'ok');
+  } else {
+    setStatus('valReconResult', 'Could not calculate. Ensure approach values are saved.', 'err');
+  }
+}
+
+async function valSaveReconNarrative() {
+  if (!STATE.caseId) return;
+  const narrative = $('valReconNarrative').value.trim();
+  if (!narrative) { setStatus('valReconResult', 'Enter a narrative first.', 'err'); return; }
+  const res = await apiFetch(`/api/valuation/reconciliation/${STATE.caseId}/narrative`, {
+    method: 'PUT', body: { narrative }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('valReconResult', 'Narrative saved.', 'ok');
+  } else {
+    setStatus('valReconResult', 'Failed to save narrative.', 'err');
+  }
+}
