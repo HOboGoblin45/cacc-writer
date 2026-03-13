@@ -75,6 +75,7 @@ const suites = [
   'stuckStateDetector.test.mjs',
   'authMiddleware.test.mjs',
   'sectionGovernance.test.mjs',
+  'dataPipeline.test.mjs',
 ];
 
 let totalPassed = 0;

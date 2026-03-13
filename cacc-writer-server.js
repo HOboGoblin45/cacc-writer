@@ -45,6 +45,7 @@ import securityRouter from './server/api/securityRoutes.js';
 import valuationRouter from './server/api/valuationRoutes.js';
 import contradictionLifecycleRouter from './server/api/contradictionLifecycleRoutes.js';
 import sectionGovernanceRouter from './server/api/sectionGovernanceRoutes.js';
+import dataPipelineRouter from './server/api/dataPipelineRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -80,6 +81,7 @@ app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
 app.get('/workspace.js', (_q, r) => r.sendFile(path.join(__dirname, 'workspace.js')));
 app.get('/styles.css', (_q, r) => r.sendFile(path.join(__dirname, 'styles.css')));
 app.get('/phase8.css', (_q, r) => r.sendFile(path.join(__dirname, 'phase8.css')));
+app.get('/dataPipeline.js', (_q, r) => r.sendFile(path.join(__dirname, 'dataPipeline.js')));
 app.get('/favicon.ico', (_q, r) => {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0b1020"/><text x="16" y="23" font-family="Arial" font-size="20" font-weight="bold" fill="#d7b35a" text-anchor="middle">C</text></svg>';
   r.setHeader('Content-Type', 'image/svg+xml');
@@ -111,6 +113,7 @@ app.use('/api', securityRouter);
 app.use('/api', valuationRouter);
 app.use('/api', contradictionLifecycleRouter);
 app.use('/api', sectionGovernanceRouter);
+app.use('/api', dataPipelineRouter);
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);
