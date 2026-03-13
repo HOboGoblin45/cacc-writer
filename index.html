@@ -533,6 +533,52 @@ button.sm{padding:5px 9px;font-size:11px;}
 .dr-status{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px;}
 .dr-check{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;}
 .dr-check-icon{min-width:14px;text-align:center;}
+/* ── Phase 7: Inspection Capture ──────────────────────────────────────────── */
+.insp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:border-color .15s;}
+.insp-item:hover{border-color:rgba(215,179,90,.3);}
+.insp-item.active{border-color:var(--gold);background:rgba(215,179,90,.04);}
+.insp-item-status{font-size:9px;padding:2px 6px;border-radius:999px;font-weight:800;border:1px solid;}
+.insp-item-status.scheduled{color:var(--muted);border-color:var(--border);}
+.insp-item-status.in_progress{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
+.insp-item-status.completed{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.photo-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s;}
+.photo-card:hover{border-color:rgba(215,179,90,.3);}
+.photo-card-img{width:100%;height:100px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted);overflow:hidden;}
+.photo-card-img img{width:100%;height:100%;object-fit:cover;}
+.photo-card-info{padding:6px 8px;font-size:10px;}
+.photo-card-label{font-weight:700;font-size:11px;margin-bottom:2px;}
+.photo-card-meta{color:var(--muted);}
+.photo-card-tag{display:inline-block;font-size:8px;padding:1px 5px;border-radius:999px;border:1px solid var(--border);margin-right:3px;margin-top:2px;}
+.checklist-group{margin-bottom:10px;}
+.checklist-group-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-bottom:4px;}
+.checklist-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;}
+.checklist-item input[type="checkbox"]{width:auto;accent-color:var(--gold);}
+.meas-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;}
+.meas-row-label{font-weight:700;min-width:80px;}
+.meas-row-dim{font-family:var(--mono);color:var(--gold);}
+.meas-row-area{font-family:var(--mono);font-weight:700;}
+.cond-item{display:flex;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;}
+.cond-sev{font-size:9px;padding:2px 6px;border-radius:999px;font-weight:800;border:1px solid;height:fit-content;}
+.cond-sev.good{color:var(--ok);border-color:rgba(85,209,143,.35);}
+.cond-sev.fair{color:var(--warn);border-color:rgba(245,200,66,.35);}
+.cond-sev.poor{color:var(--danger);border-color:rgba(255,92,92,.35);}
+/* ── Phase 7: Insertion Reliability Panel ─────────────────────────────────── */
+.ins-run-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
+.ins-run-item:hover{border-color:rgba(215,179,90,.3);}
+.ins-field-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;margin-bottom:3px;font-size:10px;}
+.ins-field-status{font-size:8px;padding:1px 5px;border-radius:999px;font-weight:800;border:1px solid;}
+.ins-field-status.verified{color:var(--ok);border-color:rgba(85,209,143,.35);}
+.ins-field-status.pending{color:var(--warn);border-color:rgba(245,200,66,.35);}
+.ins-field-status.failed{color:var(--danger);border-color:rgba(255,92,92,.35);}
+.ins-field-status.clipboard{color:var(--muted);border-color:var(--border);}
+/* ── Pipeline fact cards ──────────────────────────────────────────────────── */
+.fact-card{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
+.fact-card:hover{border-color:rgba(215,179,90,.3);}
+.fact-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.fact-card-field{font-weight:700;}
+.fact-card-value{font-family:var(--mono);color:var(--gold);}
+.fact-card-prov{font-size:9px;color:var(--muted);}
+.fact-card-conflict{font-size:9px;color:var(--danger);font-weight:700;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -590,6 +636,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('docs')">Docs</div>
   <div class="tab" onclick="showTab('memory')">Memory</div>
   <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
+  <div class="tab" onclick="showTab('inspect')">Inspect</div>
   <div class="tab" onclick="showTab('system')">System</div>
 </div>
 
@@ -1338,6 +1385,19 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
       </div>
 
+      <!-- Insertion Reliability Panel -->
+      <div class="gen-insp-card">
+        <div class="gen-insp-head">Insertion Status <button class="ghost sm" onclick="insLoadReliability()" style="float:right;font-size:10px;">&#x21BB;</button></div>
+        <div class="gen-insp-body">
+          <div id="insReliabilityBody"><div class="hint">Run an insertion to see readback verification status.</div></div>
+          <div class="btnrow" style="margin-top:6px;">
+            <button class="ghost sm" onclick="insShowRunHistory()">Run History</button>
+            <button class="ghost sm" onclick="insReplayFailed()">Replay Failed</button>
+          </div>
+          <div id="insReliabilityStatus" class="status"></div>
+        </div>
+      </div>
+
     </div><!-- /.gen-inspector -->
   </div><!-- /.gen-layout -->
 </div><!-- /#tab-generate -->
@@ -2080,11 +2140,32 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
 
-    <!-- Extracted Data Preview Card -->
+    <!-- Extracted Fact Cards -->
     <div class="card">
-      <div class="card-head"><h3>Extracted Data Preview</h3><button class="sm sec" onclick="dpRunCompAnalysis()">Run Analysis</button></div>
+      <div class="card-head">
+        <h3>Extracted Fact Cards</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="sm sec" onclick="dpRunCompAnalysis()">Run Analysis</button>
+          <button class="sm sec" onclick="dpCheckDuplicates()">Detect Dupes</button>
+        </div>
+      </div>
       <div class="card-body">
-        <div id="dpExtractedPreview"><div class="hint">No data extracted yet. Crawl a subject or comp URL to see results here.</div></div>
+        <div id="dpExtractedPreview"><div class="hint">No data extracted yet. Crawl a subject or comp URL to see structured fact cards with provenance.</div></div>
+        <div id="dpDupeResults" style="margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- Verification Queue Card -->
+    <div class="card">
+      <div class="card-head"><h3>Verification Queue</h3><button class="sm sec" onclick="dpLoadVerificationQueue()">Refresh</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">USPAP requires appraiser verification of all web-sourced data before use in reports.</div>
+        <div id="dpVerifQueue"><div class="hint">Extract data from a source to populate the verification queue.</div></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <button class="sm" onclick="dpVerifyAll()">Verify All</button>
+          <button class="sm sec" onclick="dpRejectUnverified()">Reject Unverified</button>
+        </div>
+        <div id="dpVerifStatus" class="status"></div>
       </div>
     </div>
 
@@ -2118,6 +2199,106 @@ button.sm{padding:5px 9px;font-size:11px;}
           <button class="sec" onclick="dpExportRawJSON()">Export Raw JSON</button>
         </div>
         <div id="dpPushStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB: INSPECT (Phase 7 — Inspection Capture) ===== -->
+<div class="page" id="tab-inspect">
+  <div class="col narrow">
+
+    <!-- Inspection Management Card -->
+    <div class="card">
+      <div class="card-head"><h3>Inspections</h3><button class="ghost sm" onclick="inspLoadList()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:8px;">Manage field inspections for the active case.</div>
+        <div class="btnrow">
+          <button class="sm" onclick="inspCreate()">New Inspection</button>
+        </div>
+        <div id="inspListBody"><div class="hint">Select a case first.</div></div>
+        <div id="inspListStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Checklist Templates Card -->
+    <div class="card">
+      <div class="card-head"><h3>Checklist Templates</h3></div>
+      <div class="card-body">
+        <select id="inspChecklistType" onchange="inspLoadChecklist()" style="margin-bottom:8px;">
+          <option value="interior">Interior Rooms</option>
+          <option value="exterior">Exterior Components</option>
+          <option value="site">Site / Improvements</option>
+          <option value="mechanical">Mechanical Systems</option>
+        </select>
+        <div id="inspChecklistBody"></div>
+      </div>
+    </div>
+
+    <!-- Condition Findings Card -->
+    <div class="card">
+      <div class="card-head"><h3>Condition Findings</h3><button class="ghost sm" onclick="inspLoadConditions()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="inspCondBody"><div class="hint">Start an inspection to log condition findings.</div></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <button class="sm" onclick="inspAddCondition()">Add Finding</button>
+        </div>
+        <div id="inspCondStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col wide">
+
+    <!-- Photo Capture Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Photo Capture</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="sm" onclick="inspAddPhotoFile()">Upload File</button>
+          <button class="sm sec" onclick="inspAddPhotoUrl()">Add URL / Dropbox</button>
+          <button class="sm sec" onclick="inspLoadPhotos()">Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <input type="file" id="inspPhotoFileInput" accept="image/*" multiple style="display:none;" onchange="inspHandleFileUpload(this)"/>
+        <div id="inspPhotoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
+          <div class="hint">No photos yet. Upload files or paste Dropbox/URL links.</div>
+        </div>
+        <div id="inspPhotoStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Measurements Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Measurements</h3>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="sm" onclick="inspAddMeasurement()">Add</button>
+          <button class="sm sec" onclick="inspCalcGLA()">Calculate GLA</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="inspMeasBody"><div class="hint">Add room measurements for GLA calculation.</div></div>
+        <div id="inspGLAResult" style="margin-top:6px;"></div>
+        <div id="inspMeasStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Inspection Summary Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Inspection Summary</h3>
+        <button class="sm sec" onclick="inspBuildSummary()">Build Summary</button>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Generates a structured summary from photos, measurements, and conditions for injection into generation prompt context.</div>
+        <div id="inspSummaryBody"><div class="hint">Complete inspection capture first, then build summary.</div></div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="sm" onclick="inspPushToContext()" style="display:none;" id="inspPushBtn">Push to Prompt Context</button>
+        </div>
+        <div id="inspSummaryStatus" class="status"></div>
       </div>
     </div>
 
