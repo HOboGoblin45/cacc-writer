@@ -42,6 +42,7 @@ import { initPhase14Schema } from '../migration/phase14Schema.js';
 import { initPhase15Schema } from '../migration/phase15Schema.js';
 import { initPhase16Schema } from '../migration/phase16Schema.js';
 import { initPhase17Schema } from '../migration/phase17Schema.js';
+import { initPhase19Schema } from '../migration/phase19Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -835,6 +836,13 @@ export function initSchema(db) {
     initPhase17Schema(db);
   } catch (err) {
     log.error('schema:phase17-init', { error: err.message });
+  }
+
+  // Run Phase 19 schema additions (security completion & productization)
+  try {
+    initPhase19Schema(db);
+  } catch (err) {
+    log.error('schema:phase19-init', { error: err.message });
   }
 }
 
