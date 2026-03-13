@@ -104,7 +104,13 @@ Reference: `docs/DEFINITION_OF_DONE.md` defines what 100% means.
 | Revision-diff learning | Accepted (Phase J) | `revisionDiffService.js` |
 | Suggestion ranking from finalized work | Accepted (Phase J) | `suggestionRankingService.js` |
 | Learning explanation per section | Accepted (Phase J) | `learningExplanationService.js` |
-| Learning dashboard (acceptance/rejection metrics) | **Needed** | — |
+| Learning dashboard (acceptance/rejection metrics) | Done (Phase 11) | `app.js` Learning tab |
+| Suggestion history & outcome tracking UI | Done (Phase 11) | `app.js` Learning tab |
+| Learned patterns explorer with confidence | Done (Phase 11) | `app.js` Learning tab |
+| Influence explainability per section | Done (Phase 11) | `app.js` Learning tab |
+| Ranked suggestions by acceptance rate | Done (Phase 11) | `app.js` Learning tab |
+| Revision diff stats visualization | Done (Phase 11) | `app.js` Learning tab |
+| Archive & feedback loop controls | Done (Phase 11) | `app.js` Learning tab |
 | "Why this suggestion" drawer in workspace | **Needed** | — |
 | Memory health tools (stale/duplicate/weak pruning) | **Needed** | — |
 
@@ -114,10 +120,10 @@ Reference: `docs/DEFINITION_OF_DONE.md` defines what 100% means.
 | Electron desktop packaging | Done | `desktop/*` |
 | RBAC/auth/encryption | Accepted (Phase K) | `server/security/*` |
 | Backup/restore | Accepted (Phase K) | `backupRestoreService.js` |
+| Machine migration runbook | Done (Phase 12) | `docs/MIGRATION_RUNBOOK.md` |
 | Backup scheduler UI | **Needed** | — |
 | Restore verification workflow | **Needed** | — |
 | Audit-log viewer for critical events | **Needed** | — |
-| Machine migration runbook | **Needed** | — |
 
 ### Inspection Capture (DoD #2, #3, #10)
 | Feature | Status | Module |
