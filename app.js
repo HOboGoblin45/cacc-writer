@@ -46,6 +46,7 @@ function showTab(name) {
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
   if(name==='valuation' && typeof valOnTabOpen==='function')valOnTabOpen();
+  if(name==='governance' && typeof govOnTabOpen==='function')govOnTabOpen();
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
   if(name==='inspect' && typeof inspOnTabOpen==='function')inspOnTabOpen();
   if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
@@ -6636,4 +6637,433 @@ async function valSaveNarrative() {
   } else {
     setStatus('valReconStatus', res?.error || 'Failed.', 'err');
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 10: Governance Dashboard — Section Freshness, Missing Facts,
+//           Case Status & Pipeline, Dependency Graph
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const PIPELINE_STAGES_ORDER = ['intake', 'extracting', 'generating', 'review', 'approved', 'inserting', 'complete'];
+let _govSections = [];
+let _govDependencyGraph = null;
+
+function govOnTabOpen() {
+  govLoadCaseStatus();
+  govLoadSections();
+  govLoadFreshness();
+  govLoadRuns();
+}
+
+// ── Case Status & Pipeline ──────────────────────────────────────────────────
+
+async function govLoadCaseStatus() {
+  const el = $('govCaseStatusBody');
+  const pEl = $('govPipelineBody');
+  if (!el || !activeCaseId) { if (el) el.innerHTML = '<div class="hint">Select a case.</div>'; return; }
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">Failed to load case.</div>'; return; }
+
+  const meta = res.meta || res;
+  const status = meta.status || 'active';
+  const pipeline = meta.pipeline_stage || meta.pipelineStage || 'intake';
+  const workflow = meta.workflow_status || meta.workflowStatus || '—';
+
+  el.innerHTML = `<div style="font-size:12px;">` +
+    `<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted);">Status</span><strong>${esc(status)}</strong></div>` +
+    `<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted);">Workflow</span><strong>${esc(workflow)}</strong></div>` +
+    `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Address</span><strong>${esc(meta.address || '—')}</strong></div>` +
+  `</div>`;
+
+  // Pipeline strip
+  if (pEl) {
+    const idx = PIPELINE_STAGES_ORDER.indexOf(pipeline);
+    pEl.innerHTML = '<div class="gov-pipeline-strip">' +
+      PIPELINE_STAGES_ORDER.map((stage, i) => {
+        const cls = i < idx ? 'done' : i === idx ? 'active' : 'pending';
+        return `<span class="gov-pipeline-stage ${cls}">${esc(stage)}</span>`;
+      }).join('<span style="color:var(--muted);font-size:10px;">›</span>') +
+    '</div>';
+  }
+}
+
+async function govAdvancePipeline(nextStage) {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/cases/${activeCaseId}/pipeline`, {
+    method: 'PATCH', body: { pipeline_stage: nextStage }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('govPipelineStatus', `Pipeline → ${nextStage}`, 'ok');
+    govLoadCaseStatus();
+  } else {
+    setStatus('govPipelineStatus', res?.error || 'Transition failed.', 'err');
+  }
+}
+
+// ── Section Governance ──────────────────────────────────────────────────────
+
+async function govLoadSections() {
+  const el = $('govSectionsBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/governance/sections/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No governance data. Generate sections first.</div>'; return; }
+
+  _govSections = res.sections || res || [];
+  _govDependencyGraph = res.dependencyGraph || res.dependency_graph || null;
+  govRenderSections();
+}
+
+function govRenderSections() {
+  const el = $('govSectionsBody');
+  if (!el) return;
+  const filter = $('govFilterFreshness')?.value || 'all';
+  let sections = Array.isArray(_govSections) ? _govSections : [];
+
+  if (filter !== 'all') {
+    sections = sections.filter(s => {
+      const f = s.freshness_status || s.freshnessStatus || 'not_generated';
+      return f === filter || (filter === 'not_generated' && !s.freshness_status && !s.freshnessStatus);
+    });
+  }
+
+  if (!sections.length) { el.innerHTML = `<div class="hint">No sections match filter "${filter}".</div>`; return; }
+
+  el.innerHTML = sections.map(s => {
+    const id = s.section_id || s.sectionId || s.id || '—';
+    const label = s.label || id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const freshness = s.freshness_status || s.freshnessStatus || 'not_generated';
+    const quality = s.quality_score || s.qualityScore;
+    const qualStr = quality != null ? (quality * 100).toFixed(0) + '%' : '—';
+    const regenCount = s.regeneration_count || s.regenerationCount || 0;
+    const staleReason = s.stale_reason || s.staleReason || '';
+    const profile = s.generator_profile || s.generatorProfile || '';
+    return `<div class="gov-section ${esc(freshness)}" onclick="govShowSectionDetail('${esc(id)}')">` +
+      `<div style="flex:1;">` +
+        `<div style="font-weight:700;">${esc(label)}</div>` +
+        `<div style="font-size:10px;color:var(--muted);">${esc(profile)}${regenCount ? ' · regen ×' + regenCount : ''}${staleReason ? ' · ' + esc(staleReason) : ''}</div>` +
+      `</div>` +
+      `<div style="font-family:var(--mono);font-size:11px;min-width:32px;text-align:right;">${qualStr}</div>` +
+      `<span class="gov-fresh-badge ${esc(freshness)}">${esc(freshness.replace(/_/g, ' '))}</span>` +
+    `</div>`;
+  }).join('');
+}
+
+async function govShowSectionDetail(sectionId) {
+  const card = $('govSectionDetailCard');
+  const titleEl = $('govSectionDetailTitle');
+  const bodyEl = $('govSectionDetailBody');
+  if (!card || !bodyEl || !activeCaseId) return;
+
+  card.style.display = '';
+  titleEl.textContent = sectionId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  bodyEl.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/governance/sections/${activeCaseId}/${sectionId}`).catch(() => null);
+  if (!res || res.error) { bodyEl.innerHTML = '<div class="hint">No detail available.</div>'; return; }
+
+  const s = res.section || res;
+  const freshness = s.freshness_status || s.freshnessStatus || 'not_generated';
+  const quality = s.quality_score || s.qualityScore;
+  const promptVer = s.prompt_version || s.promptVersion || '—';
+  const staleReason = s.stale_reason || s.staleReason || '—';
+  const staleSince = s.stale_since || s.staleSince || '—';
+  const regenCount = s.regeneration_count || s.regenerationCount || 0;
+  const generatedAt = s.generated_at || s.generatedAt || '—';
+
+  // Parse dependency snapshot
+  let depSnapshot = s.dependency_snapshot_json || s.dependencySnapshotJson;
+  if (typeof depSnapshot === 'string') try { depSnapshot = JSON.parse(depSnapshot); } catch(e) { depSnapshot = null; }
+
+  // Parse policy
+  let policy = s.section_policy_json || s.sectionPolicyJson;
+  if (typeof policy === 'string') try { policy = JSON.parse(policy); } catch(e) { policy = null; }
+
+  let html = '<div style="font-size:11px;">';
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Freshness</span><span class="gov-fresh-badge ${esc(freshness)}">${esc(freshness)}</span></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Quality Score</span><strong>${quality != null ? (quality * 100).toFixed(0) + '%' : '—'}</strong></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Prompt Version</span><span style="font-family:var(--mono);">${esc(promptVer)}</span></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Generated At</span><span>${esc(String(generatedAt))}</span></div>`;
+  html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--muted);">Regenerations</span><strong>${regenCount}</strong></div>`;
+  if (freshness === 'stale') {
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--danger);">Stale Reason</span><span>${esc(staleReason)}</span></div>`;
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--danger);">Stale Since</span><span>${esc(String(staleSince))}</span></div>`;
+  }
+
+  // Dependency snapshot
+  if (depSnapshot && typeof depSnapshot === 'object') {
+    html += '<div class="sep" style="margin:6px 0;"></div>';
+    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Dependency Snapshot</div>';
+    const paths = Object.keys(depSnapshot);
+    paths.slice(0, 12).forEach(p => {
+      const val = depSnapshot[p];
+      html += `<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:10px;"><span class="gov-fact-path">${esc(p)}</span><span style="font-weight:600;">${esc(String(val != null ? val : '—')).slice(0, 40)}</span></div>`;
+    });
+    if (paths.length > 12) html += `<div style="font-size:10px;color:var(--muted);">…and ${paths.length - 12} more</div>`;
+  }
+
+  html += '</div>';
+  html += '<div class="sep" style="margin:8px 0;"></div>';
+  html += '<div class="btnrow">';
+  html += `<button class="sm" onclick="govInvalidateSection('${esc(sectionId)}')">Mark Stale</button>`;
+  html += `<button class="sm sec" onclick="govInvalidateDownstream('${esc(sectionId)}')">Invalidate Downstream</button>`;
+  html += '</div>';
+
+  bodyEl.innerHTML = html;
+}
+
+async function govInvalidateSection(sectionId) {
+  if (!activeCaseId) return;
+  const reason = prompt('Invalidation reason:', 'manual_review');
+  if (!reason) return;
+  const res = await apiFetch(`/api/governance/sections/${activeCaseId}/${sectionId}/invalidate`, {
+    method: 'POST', body: { reason }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('govActionStatus', `${sectionId} marked stale.`, 'ok');
+    govLoadSections();
+    govLoadFreshness();
+  } else {
+    setStatus('govActionStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+async function govInvalidateDownstream(sectionId) {
+  if (!activeCaseId) return;
+  const res = await apiFetch(`/api/governance/sections/${activeCaseId}/invalidate-downstream`, {
+    method: 'POST', body: { sectionId }
+  }).catch(() => null);
+  if (res && !res.error) {
+    setStatus('govActionStatus', `Downstream of ${sectionId} invalidated.`, 'ok');
+    govLoadSections();
+    govLoadFreshness();
+  } else {
+    setStatus('govActionStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+async function govInvalidateAll() {
+  if (!activeCaseId) return;
+  const stale = (_govSections || []).filter(s => {
+    const f = s.freshness_status || s.freshnessStatus;
+    return f === 'stale';
+  });
+  if (!stale.length) { setStatus('govActionStatus', 'No stale sections.', ''); return; }
+  for (const s of stale) {
+    const id = s.section_id || s.sectionId || s.id;
+    await apiFetch(`/api/governance/sections/${activeCaseId}/${id}/invalidate`, {
+      method: 'POST', body: { reason: 'bulk_invalidation' }
+    }).catch(() => null);
+  }
+  setStatus('govActionStatus', `${stale.length} sections invalidated.`, 'ok');
+  govLoadSections();
+  govLoadFreshness();
+}
+
+async function govCheckFreshness() {
+  if (!activeCaseId) return;
+  setStatus('govActionStatus', 'Re-evaluating freshness...', '');
+  const res = await apiFetch(`/api/governance/freshness/${activeCaseId}`).catch(() => null);
+  if (res && !res.error) {
+    setStatus('govActionStatus', 'Freshness re-evaluated.', 'ok');
+    govLoadSections();
+    govLoadFreshness();
+  } else {
+    setStatus('govActionStatus', res?.error || 'Failed.', 'err');
+  }
+}
+
+// ── Freshness Summary ───────────────────────────────────────────────────────
+
+async function govLoadFreshness() {
+  const el = $('govFreshnessSummary');
+  if (!el || !activeCaseId) return;
+
+  const res = await apiFetch(`/api/governance/freshness/${activeCaseId}`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No freshness data.</div>'; return; }
+
+  const summary = res.summary || res;
+  const total = summary.total || 0;
+  const current = summary.current || 0;
+  const stale = summary.stale || 0;
+  const regenerating = summary.regenerating || 0;
+  const notGenerated = summary.not_generated || summary.notGenerated || (total - current - stale - regenerating);
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+
+  // Donut-style summary
+  const ringBg = `conic-gradient(var(--ok) 0% ${pct}%, var(--danger) ${pct}% ${pct + (total > 0 ? Math.round((stale / total) * 100) : 0)}%, var(--gold) ${pct + (total > 0 ? Math.round((stale / total) * 100) : 0)}% ${pct + (total > 0 ? Math.round(((stale + regenerating) / total) * 100) : 0)}%, var(--surface) ${pct + (total > 0 ? Math.round(((stale + regenerating) / total) * 100) : 0)}% 100%)`;
+
+  el.innerHTML = `<div class="gov-donut">` +
+    `<div class="gov-donut-ring" style="background:${ringBg};">${pct}%</div>` +
+    `<div class="gov-donut-labels">` +
+      `<div><span style="color:var(--ok);">●</span> Current: <strong>${current}</strong></div>` +
+      `<div><span style="color:var(--danger);">●</span> Stale: <strong>${stale}</strong></div>` +
+      `<div><span style="color:var(--gold);">●</span> Regenerating: <strong>${regenerating}</strong></div>` +
+      `<div><span style="color:var(--muted);">●</span> Not Generated: <strong>${notGenerated}</strong></div>` +
+      `<div style="margin-top:3px;font-weight:700;">Total: ${total}</div>` +
+    `</div>` +
+  `</div>`;
+}
+
+// ── Missing Facts Dashboard ─────────────────────────────────────────────────
+
+const GOV_SECTION_IDS = [
+  'offering_history', 'contract', 'neighborhood_description', 'market_conditions',
+  'site_description', 'improvements_description', 'highest_best_use',
+  'sales_comparison_summary', 'reconciliation', 'additional_comments'
+];
+
+async function govLoadMissingFacts() {
+  const el = $('govMissingFactsBody');
+  const sumEl = $('govMissingFactsSummary');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Checking all sections...</div>';
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}/missing-facts`, {
+    method: 'POST', body: { fieldIds: GOV_SECTION_IDS }
+  }).catch(() => null);
+
+  if (!res || res.error) { el.innerHTML = '<div class="hint">Failed to check missing facts.</div>'; return; }
+
+  const results = res.results || res;
+  let totalReq = 0, totalRec = 0, blockedSections = 0;
+
+  let html = '';
+  const entries = Array.isArray(results) ? results : Object.entries(results).map(([k, v]) => ({ fieldId: k, ...v }));
+
+  entries.forEach(entry => {
+    const fieldId = entry.fieldId || entry.field_id || entry.sectionId || '—';
+    const required = entry.required || [];
+    const recommended = entry.recommended || [];
+    const hasBlockers = entry.hasBlockers || required.length > 0;
+    const label = fieldId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    totalReq += required.length;
+    totalRec += recommended.length;
+    if (hasBlockers) blockedSections++;
+
+    if (!required.length && !recommended.length) {
+      html += `<div class="gov-fact-section"><span>${esc(label)}</span><span style="color:var(--ok);font-size:10px;">Complete</span></div>`;
+      return;
+    }
+
+    html += `<div class="gov-fact-section ${hasBlockers ? 'has-blockers' : ''}">` +
+      `<span>${esc(label)}</span>` +
+      `<span style="font-size:10px;">${required.length ? `<span class="gov-fact-req">${required.length} required</span>` : ''}${recommended.length ? ` <span class="gov-fact-rec">${recommended.length} recommended</span>` : ''}</span>` +
+    `</div>`;
+
+    required.forEach(path => {
+      html += `<div class="gov-fact-row"><span class="gov-fact-req">REQUIRED</span> <span class="gov-fact-path">${esc(path)}</span></div>`;
+    });
+    recommended.forEach(path => {
+      html += `<div class="gov-fact-row"><span class="gov-fact-rec">RECOMMENDED</span> <span class="gov-fact-path">${esc(path)}</span></div>`;
+    });
+  });
+
+  el.innerHTML = html || '<div class="hint">No sections to check.</div>';
+
+  if (sumEl) {
+    sumEl.innerHTML = `<div style="font-size:11px;display:flex;gap:16px;">` +
+      `<div><span style="color:var(--danger);font-weight:700;">${totalReq}</span> required gaps</div>` +
+      `<div><span style="color:var(--gold);font-weight:700;">${totalRec}</span> recommended gaps</div>` +
+      `<div><span style="font-weight:700;">${blockedSections}</span> blocked sections</div>` +
+    `</div>`;
+  }
+}
+
+// ── Dependency Graph ────────────────────────────────────────────────────────
+
+async function govLoadDependencyGraph() {
+  const el = $('govDepGraphBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  // Use cached graph from section load, or fetch fresh
+  if (!_govDependencyGraph) {
+    const res = await apiFetch(`/api/governance/sections/${activeCaseId}`).catch(() => null);
+    if (res) _govDependencyGraph = res.dependencyGraph || res.dependency_graph;
+  }
+
+  if (!_govDependencyGraph) { el.innerHTML = '<div class="hint">No dependency data available.</div>'; return; }
+
+  const graph = _govDependencyGraph;
+  const nodes = graph.nodes || Object.keys(graph);
+
+  if (Array.isArray(graph) || typeof graph !== 'object') {
+    el.innerHTML = '<div class="hint">Dependency graph format not recognized.</div>';
+    return;
+  }
+
+  let html = '<div style="font-size:11px;">';
+  const entries = graph.nodes ? graph.nodes : Object.entries(graph);
+
+  if (Array.isArray(entries)) {
+    entries.forEach(entry => {
+      const [nodeId, nodeData] = Array.isArray(entry) ? entry : [entry.id || entry.sectionId, entry];
+      if (!nodeId) return;
+      const upstream = nodeData?.upstream || nodeData?.dependsOn || [];
+      const downstream = nodeData?.downstream || nodeData?.dependents || [];
+      const label = String(nodeId).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+      html += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);">`;
+      html += `<div style="font-weight:700;margin-bottom:3px;">${esc(label)}</div>`;
+
+      if (upstream.length) {
+        html += `<div style="font-size:10px;color:var(--muted);margin-bottom:2px;">Depends on:</div>`;
+        html += upstream.map(u => `<span class="gov-dep-node">${esc(String(u).replace(/_/g, ' '))}</span>`).join('<span class="gov-dep-arrow">→</span>');
+        html += ` <span class="gov-dep-arrow">→</span> <span class="gov-dep-node" style="border-color:var(--gold);">${esc(label)}</span>`;
+      }
+
+      if (downstream.length) {
+        html += `<div style="font-size:10px;color:var(--muted);margin-top:3px;margin-bottom:2px;">Feeds into:</div>`;
+        html += `<span class="gov-dep-node" style="border-color:var(--gold);">${esc(label)}</span> <span class="gov-dep-arrow">→</span> `;
+        html += downstream.map(d => `<span class="gov-dep-node">${esc(String(d).replace(/_/g, ' '))}</span>`).join('<span class="gov-dep-arrow">,</span> ');
+      }
+
+      if (!upstream.length && !downstream.length) {
+        html += `<div style="font-size:10px;color:var(--muted);">No dependencies</div>`;
+      }
+
+      html += `</div>`;
+    });
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Generation Runs ─────────────────────────────────────────────────────────
+
+async function govLoadRuns() {
+  const el = $('govRunsBody');
+  if (!el || !activeCaseId) return;
+  el.innerHTML = '<div class="hint">Loading...</div>';
+
+  const res = await apiFetch(`/api/cases/${activeCaseId}/generation-runs`).catch(() => null);
+  if (!res || res.error) { el.innerHTML = '<div class="hint">No generation runs.</div>'; return; }
+
+  const runs = res.runs || res || [];
+  if (!runs.length) { el.innerHTML = '<div class="hint">No generation runs recorded.</div>'; return; }
+
+  el.innerHTML = runs.slice(0, 10).map(r => {
+    const status = r.status || '—';
+    const statusColor = status === 'COMPLETE' ? 'var(--ok)' : status === 'FAILED' ? 'var(--danger)' : 'var(--gold)';
+    const total = r.section_count || r.sectionCount || 0;
+    const success = r.success_count || r.successCount || 0;
+    const errors = r.error_count || r.errorCount || 0;
+    const started = r.started_at || r.startedAt || r.created_at || '';
+    const elapsed = r.elapsed_ms || r.elapsedMs;
+    return `<div class="gov-run-item">` +
+      `<div style="display:flex;justify-content:space-between;align-items:center;">` +
+        `<span class="gov-run-status" style="color:${statusColor};border-color:${statusColor};">${esc(status)}</span>` +
+        `<span style="font-size:10px;color:var(--muted);">${esc(String(started).slice(0, 19))}</span>` +
+      `</div>` +
+      `<div style="font-size:10px;margin-top:3px;">` +
+        `${success}/${total} sections${errors ? ` · <span style="color:var(--danger);">${errors} errors</span>` : ''}` +
+        `${elapsed ? ` · ${(elapsed / 1000).toFixed(1)}s` : ''}` +
+      `</div>` +
+    `</div>`;
+  }).join('');
 }
