@@ -623,6 +623,59 @@ button.sm{padding:5px 9px;font-size:11px;}
 .val-final-value{font-size:24px;font-weight:900;font-family:var(--mono);color:var(--gold);margin-top:4px;}
 .val-income-row,.val-cost-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
 .val-income-row span:last-child,.val-cost-row span:last-child{font-family:var(--mono);font-weight:700;}
+/* ── Phase 10: Governance Dashboard ──────────────────────────────────────── */
+.gov-section{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:border-color .15s;}
+.gov-section:hover{border-color:rgba(215,179,90,.3);}
+.gov-section.current{border-left:3px solid var(--ok);}
+.gov-section.stale{border-left:3px solid var(--danger);}
+.gov-section.regenerating{border-left:3px solid var(--gold);}
+.gov-section.not_generated{border-left:3px solid var(--muted);}
+.gov-fresh-badge{font-size:8px;padding:2px 6px;border-radius:999px;font-weight:800;border:1px solid;white-space:nowrap;}
+.gov-fresh-badge.current{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.gov-fresh-badge.stale{color:var(--danger);border-color:rgba(240,80,80,.35);background:rgba(240,80,80,.08);}
+.gov-fresh-badge.regenerating{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
+.gov-fresh-badge.not_generated{color:var(--muted);border-color:var(--border);}
+.gov-pipeline-stage{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;border:1px solid;}
+.gov-pipeline-stage.active{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
+.gov-pipeline-stage.done{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.gov-pipeline-stage.pending{color:var(--muted);border-color:var(--border);}
+.gov-pipeline-strip{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.gov-fact-row{padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
+.gov-fact-path{font-family:var(--mono);font-size:10px;}
+.gov-fact-req{color:var(--danger);font-weight:700;}
+.gov-fact-rec{color:var(--gold);font-weight:600;}
+.gov-fact-section{font-weight:700;padding:6px 8px;font-size:11px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.gov-fact-section.has-blockers{background:rgba(240,80,80,.04);}
+.gov-dep-node{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:10px;margin:2px;transition:border-color .15s;}
+.gov-dep-node:hover{border-color:rgba(215,179,90,.3);}
+.gov-dep-arrow{color:var(--muted);font-size:12px;margin:0 2px;}
+.gov-run-item{padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
+.gov-run-status{font-size:9px;padding:1px 5px;border-radius:999px;font-weight:800;border:1px solid;}
+.gov-donut{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.gov-donut-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;font-family:var(--mono);}
+.gov-donut-labels{font-size:11px;}
+/* ── Phase 11: Learning Dashboard ────────────────────────────────────────── */
+.lrn-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:8px;}
+.lrn-stat{border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+.lrn-stat-val{font-size:20px;font-weight:900;font-family:var(--mono);color:var(--gold);}
+.lrn-stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px;}
+.lrn-pattern{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;transition:border-color .15s;cursor:pointer;}
+.lrn-pattern:hover{border-color:rgba(215,179,90,.3);}
+.lrn-conf{font-size:13px;font-weight:900;font-family:var(--mono);min-width:36px;text-align:center;}
+.lrn-conf.high{color:var(--ok);}.lrn-conf.mid{color:var(--gold);}.lrn-conf.low{color:var(--danger);}
+.lrn-type-badge{font-size:8px;padding:2px 6px;border-radius:999px;font-weight:800;border:1px solid var(--border);white-space:nowrap;}
+.lrn-sugg-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
+.lrn-outcome{font-size:8px;padding:2px 6px;border-radius:999px;font-weight:800;border:1px solid;}
+.lrn-outcome.accepted{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+.lrn-outcome.modified{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
+.lrn-outcome.rejected{color:var(--danger);border-color:rgba(240,80,80,.35);background:rgba(240,80,80,.08);}
+.lrn-bar{height:6px;border-radius:3px;background:var(--surface);overflow:hidden;margin-top:2px;}
+.lrn-bar-fill{height:100%;border-radius:3px;transition:width .3s;}
+.lrn-bar-fill.ok{background:var(--ok);}.lrn-bar-fill.warn{background:var(--gold);}.lrn-bar-fill.danger{background:var(--danger);}
+.lrn-influence{padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:11px;}
+.lrn-influence-factor{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
+.lrn-diff-section{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
+.lrn-diff-ratio{font-size:13px;font-weight:900;font-family:var(--mono);min-width:40px;text-align:center;}
 </style>
 </head>
 <body>
@@ -682,6 +735,8 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('memory')">Memory</div>
   <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
   <div class="tab" onclick="showTab('inspect')">Inspect</div>
+  <div class="tab" onclick="showTab('governance')">Governance</div>
+  <div class="tab" onclick="showTab('learning')">Learning</div>
   <div class="tab" onclick="showTab('system')">System</div>
 </div>
 
@@ -2475,6 +2530,259 @@ button.sm{padding:5px 9px;font-size:11px;}
           <button class="sm" onclick="inspPushToContext()" style="display:none;" id="inspPushBtn">Push to Prompt Context</button>
         </div>
         <div id="inspSummaryStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB: GOVERNANCE (Phase 10 — Section Governance, Missing Facts, Case Status) ===== -->
+<div class="page" id="tab-governance">
+  <div class="col narrow">
+
+    <!-- Case Status & Pipeline Card -->
+    <div class="card">
+      <div class="card-head"><h3>Case Status</h3><button class="ghost sm" onclick="govLoadCaseStatus()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="govCaseStatusBody"><div class="hint">Select a case to view status.</div></div>
+        <div class="sep" style="margin:8px 0;"></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Pipeline Stage</div>
+        <div id="govPipelineBody"><div class="hint">—</div></div>
+        <div class="sep" style="margin:8px 0;"></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Advance Pipeline</div>
+        <div class="btnrow" style="flex-wrap:wrap;">
+          <button class="sm" onclick="govAdvancePipeline('extracting')">Extracting</button>
+          <button class="sm" onclick="govAdvancePipeline('generating')">Generating</button>
+          <button class="sm" onclick="govAdvancePipeline('review')">Review</button>
+          <button class="sm sec" onclick="govAdvancePipeline('approved')">Approved</button>
+          <button class="sm sec" onclick="govAdvancePipeline('inserting')">Inserting</button>
+          <button class="sm sec" onclick="govAdvancePipeline('complete')">Complete</button>
+        </div>
+        <div id="govPipelineStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Freshness Summary Card -->
+    <div class="card">
+      <div class="card-head"><h3>Freshness Summary</h3><button class="ghost sm" onclick="govLoadFreshness()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="govFreshnessSummary"><div class="hint">Load governance to see section freshness.</div></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="card">
+      <div class="card-head"><h3>Governance Actions</h3></div>
+      <div class="card-body">
+        <div class="btnrow" style="flex-wrap:wrap;">
+          <button class="sm" onclick="govInvalidateAll()">Invalidate All Stale</button>
+          <button class="sm sec" onclick="govCheckFreshness()">Re-evaluate All</button>
+        </div>
+        <div class="hint" style="margin-top:6px;">Invalidation cascades to downstream dependencies.</div>
+        <div id="govActionStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Generation Runs Card -->
+    <div class="card">
+      <div class="card-head"><h3>Generation Runs</h3><button class="ghost sm" onclick="govLoadRuns()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="govRunsBody"><div class="hint">No generation runs.</div></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col wide">
+
+    <!-- Section Governance Dashboard Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Section Governance</h3>
+        <div style="display:flex;gap:6px;">
+          <select id="govFilterFreshness" onchange="govRenderSections()" style="width:auto;min-width:80px;font-size:11px;padding:4px 8px;">
+            <option value="all">All</option>
+            <option value="current">Current</option>
+            <option value="stale">Stale</option>
+            <option value="not_generated">Not Generated</option>
+          </select>
+          <button class="sm sec" onclick="govLoadSections()">Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Section freshness status with dependency graph. Click a section to see details and invalidation options.</div>
+        <div id="govSectionsBody"><div class="hint">Load governance data to see sections.</div></div>
+      </div>
+    </div>
+
+    <!-- Section Detail Panel -->
+    <div class="card" id="govSectionDetailCard" style="display:none;">
+      <div class="card-head">
+        <h3 id="govSectionDetailTitle">Section Detail</h3>
+        <button class="ghost sm" onclick="$('govSectionDetailCard').style.display='none'">&#x2715;</button>
+      </div>
+      <div class="card-body">
+        <div id="govSectionDetailBody"></div>
+      </div>
+    </div>
+
+    <!-- Missing Facts Dashboard Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Missing Facts Dashboard</h3>
+        <button class="sm sec" onclick="govLoadMissingFacts()">Check All Sections</button>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Required and recommended facts per section. <strong style="color:var(--danger);">Red</strong> = required blocker. <strong style="color:var(--gold);">Gold</strong> = recommended.</div>
+        <div id="govMissingFactsBody"><div class="hint">Run missing facts check to identify gaps.</div></div>
+        <div id="govMissingFactsSummary" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Dependency Graph Card -->
+    <div class="card">
+      <div class="card-head"><h3>Dependency Graph</h3><button class="sm sec" onclick="govLoadDependencyGraph()">Load</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Upstream and downstream dependencies between sections. Invalidation cascades follow downstream edges.</div>
+        <div id="govDepGraphBody"><div class="hint">Load governance data to see dependency graph.</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB: LEARNING (Phase 11 — Learning Dashboard & Suggestion Explainability) ===== -->
+<div class="page" id="tab-learning">
+  <div class="col narrow">
+
+    <!-- Acceptance Rate Overview Card -->
+    <div class="card">
+      <div class="card-head"><h3>Suggestion Metrics</h3><button class="ghost sm" onclick="lrnLoadAcceptanceRate()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="lrnAcceptanceBody"><div class="hint">Load metrics to see suggestion acceptance rates.</div></div>
+      </div>
+    </div>
+
+    <!-- Case Learning Report Card -->
+    <div class="card">
+      <div class="card-head"><h3>Case Learning Report</h3><button class="ghost sm" onclick="lrnLoadCaseReport()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="lrnCaseReportBody"><div class="hint">Select a case to view its learning report.</div></div>
+      </div>
+    </div>
+
+    <!-- Revision Diff Stats Card -->
+    <div class="card">
+      <div class="card-head"><h3>Revision Diffs</h3><button class="ghost sm" onclick="lrnLoadDiffStats()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Which sections get edited most by appraisers after AI generation.</div>
+        <div id="lrnDiffBody"><div class="hint">Load revision stats.</div></div>
+      </div>
+    </div>
+
+    <!-- Archive & Learn Card -->
+    <div class="card">
+      <div class="card-head"><h3>Archive &amp; Learn</h3></div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Archive a completed case to extract learned patterns for future use.</div>
+        <div class="btnrow">
+          <button class="sm" onclick="lrnArchiveCase()">Archive Case</button>
+          <button class="sm sec" onclick="lrnCloseFeedbackLoop()">Close Feedback Loop</button>
+        </div>
+        <div id="lrnArchiveStatus" class="status"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col wide">
+
+    <!-- Learned Patterns Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Learned Patterns</h3>
+        <div style="display:flex;gap:6px;">
+          <select id="lrnPatternFilter" onchange="lrnLoadPatterns()" style="width:auto;min-width:100px;font-size:11px;padding:4px 8px;">
+            <option value="">All Types</option>
+            <option value="comp_acceptance">Comp Acceptance</option>
+            <option value="adjustment">Adjustment</option>
+            <option value="narrative_edit">Narrative Edit</option>
+            <option value="reconciliation">Reconciliation</option>
+          </select>
+          <button class="sm sec" onclick="lrnLoadPatterns()">Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Patterns extracted from archived assignments. Confidence adjusts based on appraiser feedback (±0.05 per outcome).</div>
+        <div id="lrnPatternsBody"><div class="hint">No patterns yet. Archive completed assignments to extract patterns.</div></div>
+      </div>
+    </div>
+
+    <!-- Pattern Detail Panel -->
+    <div class="card" id="lrnPatternDetailCard" style="display:none;">
+      <div class="card-head">
+        <h3 id="lrnPatternDetailTitle">Pattern Detail</h3>
+        <button class="ghost sm" onclick="$('lrnPatternDetailCard').style.display='none'">&#x2715;</button>
+      </div>
+      <div class="card-body">
+        <div id="lrnPatternDetailBody"></div>
+      </div>
+    </div>
+
+    <!-- Suggestion History Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Suggestion History</h3>
+        <button class="sm sec" onclick="lrnLoadSuggestionHistory()">Refresh</button>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Track whether AI suggestions were accepted, modified, or rejected. Outcomes feed back into pattern confidence.</div>
+        <div id="lrnSuggestionBody"><div class="hint">No suggestion outcomes recorded yet.</div></div>
+      </div>
+    </div>
+
+    <!-- Influence Explainability Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Influence Explainability</h3>
+        <div style="display:flex;gap:6px;">
+          <select id="lrnInfluenceSection" style="width:auto;min-width:140px;font-size:11px;padding:4px 8px;">
+            <option value="neighborhood_description">Neighborhood Description</option>
+            <option value="market_conditions">Market Conditions</option>
+            <option value="site_description">Site Description</option>
+            <option value="improvements_description">Improvements Description</option>
+            <option value="highest_best_use">Highest & Best Use</option>
+            <option value="sales_comparison_summary">Sales Comparison Summary</option>
+            <option value="reconciliation">Reconciliation</option>
+            <option value="offering_history">Offering History</option>
+            <option value="contract">Contract</option>
+            <option value="additional_comments">Additional Comments</option>
+          </select>
+          <button class="sm" onclick="lrnLoadInfluence()">Explain</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">See how learned patterns influence generation for each section. Every suggestion includes transparent reasoning.</div>
+        <div id="lrnInfluenceBody"><div class="hint">Select a section and click Explain to see influence factors.</div></div>
+      </div>
+    </div>
+
+    <!-- Ranked Suggestions Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Ranked Suggestions</h3>
+        <div style="display:flex;gap:6px;">
+          <select id="lrnRankedSection" style="width:auto;min-width:140px;font-size:11px;padding:4px 8px;">
+            <option value="neighborhood_description">Neighborhood Description</option>
+            <option value="market_conditions">Market Conditions</option>
+            <option value="improvements_description">Improvements Description</option>
+            <option value="sales_comparison_summary">Sales Comparison</option>
+            <option value="reconciliation">Reconciliation</option>
+          </select>
+          <button class="sm" onclick="lrnLoadRanked()">Load</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="hint" style="margin-bottom:6px;">Suggestions ranked by historical acceptance rate. Higher acceptance = recommended first.</div>
+        <div id="lrnRankedBody"><div class="hint">Select a section and click Load.</div></div>
       </div>
     </div>
 
