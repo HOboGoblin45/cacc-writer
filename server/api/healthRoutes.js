@@ -62,7 +62,7 @@ import {
   createSupportBundle,
   listExports,
 } from '../backupExport.js';
-import { MODEL } from '../openaiClient.js';
+import { MODEL, probeOpenAIAuth } from '../openaiClient.js';
 import { getDb } from '../db/database.js';
 import { detectStuckStates } from '../operations/stuckStateDetector.js';
 import { probeAciAgent, probeRqAgent } from './agentHealth.js';
@@ -126,7 +126,8 @@ router.get('/health/detailed', async (_req, res) => {
       }
     } catch { /* non-fatal */ }
 
-    const [aciProbe, rqProbe] = await Promise.all([
+    const [openAIProbe, aciProbe, rqProbe] = await Promise.all([
+      probeOpenAIAuth(),
       probeAciAgent(ACI_AGENT_URL),
       probeRqAgent(RQ_AGENT_URL),
     ]);
@@ -137,6 +138,7 @@ router.get('/health/detailed', async (_req, res) => {
       model:    MODEL,
       uptimeS:  Math.round(process.uptime()),
       aiKeySet: Boolean(process.env.OPENAI_API_KEY),
+      ai: openAIProbe,
       kb: {
         totalExamples:      Array.isArray(kbIndex.examples) ? kbIndex.examples.length : 0,
         counts:             kbIndex.counts || {},
@@ -193,11 +195,13 @@ router.get('/health/services', async (_req, res) => {
     }
 
     // Probe agents
-    const [aciProbe, rqProbe] = await Promise.all([
+    const [openAIProbe, aciProbe, rqProbe] = await Promise.all([
+      probeOpenAIAuth(),
       probeAciAgent(ACI_AGENT_URL),
       probeRqAgent(RQ_AGENT_URL),
     ]);
 
+    const openAIStatus = !openAIProbe.configured ? 'offline' : openAIProbe.ready ? 'healthy' : 'degraded';
     const aciStatus = !aciProbe.reachable ? 'offline' : aciProbe.ready ? 'healthy' : 'degraded';
     const rqStatus = !rqProbe.reachable ? 'offline' : rqProbe.ready ? 'healthy' : 'degraded';
 
@@ -205,6 +209,7 @@ router.get('/health/services', async (_req, res) => {
       ok: true,
       services: {
         server:             { status: 'healthy',                    detail: `port ${PORT}, model ${MODEL}` },
+        openAI:             { status: openAIStatus, detail: openAIProbe.reason || MODEL },
         aciAgent:           { status: aciStatus, detail: aciProbe.reason || ACI_AGENT_URL },
         rqAgent:            { status: rqStatus,  detail: rqProbe.reason || RQ_AGENT_URL },
         knowledgeBase:      { status: kbStatus,  detail: kbDetail },
