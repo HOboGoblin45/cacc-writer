@@ -1,0 +1,9 @@
+RESIDENTIAL SALES CONTRACT
+Property Address: 123 Test Street, Bloomington, IL 61701
+Purchase Price: $455,000
+Contract Date: 01/15/2026
+Closing Date: 03/01/2026
+Seller Credit: $5,000
+Financing Type: Conventional
+Buyer: Jordan Harper
+Seller: Beacon Homes LLC

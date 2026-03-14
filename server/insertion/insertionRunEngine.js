@@ -18,6 +18,7 @@ import { resolveMapping, resolveAllMappings, inferTargetSoftware } from './desti
 import { formatForDestination } from './formatters/index.js';
 import { verifyInsertion, readInsertionField } from './verificationEngine.js';
 import { decideFallback, copyToClipboard } from './fallbackHandler.js';
+import { callAgentInsert } from './agentClient.js';
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -343,6 +344,7 @@ export async function processItem(item, run, profile, agentBaseUrl) {
   if (readbackEnabled) {
     preInsertSnapshot = await readInsertionField({
       agentFieldKey: mapping.agentFieldKey || item.fieldId,
+      formType: item.formType,
       targetSoftware: item.targetSoftware,
       agentBaseUrl,
       timeout: profile?.config?.timeout || 10000,
@@ -363,13 +365,13 @@ export async function processItem(item, run, profile, agentBaseUrl) {
   while (attemptCount < (item.maxAttempts || 3)) {
     attemptCount++;
     try {
-      insertResult = await callAgentInsert(
-        mapping.agentFieldKey || item.fieldId,
-        formatResult.formattedText,
-        item.targetSoftware,
+      insertResult = await callAgentInsert({
+        fieldId: mapping.agentFieldKey || item.fieldId,
+        text: formatResult.formattedText,
+        formType: item.formType,
         agentBaseUrl,
-        profile?.config?.timeout || 15000
-      );
+        timeout: profile?.config?.timeout || 15000,
+      });
 
       if (insertResult.success) {
         attemptLog.push({
@@ -471,9 +473,11 @@ export async function processItem(item, run, profile, agentBaseUrl) {
       fieldId: item.fieldId,
       agentFieldKey: mapping.agentFieldKey || item.fieldId,
       formattedText: formatResult.formattedText,
+      formType: item.formType,
       targetSoftware: item.targetSoftware,
       agentBaseUrl,
       verificationMode: mapping.verificationMode,
+      targetRect: insertResult?.diagnostics?.tx32_rect || null,
       timeout: profile?.config?.timeout || 10000,
     });
 
@@ -626,13 +630,13 @@ async function rollbackInsertedField({
 
   try {
     const rollbackText = preInsertSnapshot.rawValue || '';
-    const result = await callAgentInsert(
-      mapping.agentFieldKey || item.fieldId,
-      rollbackText,
-      item.targetSoftware,
+    const result = await callAgentInsert({
+      fieldId: mapping.agentFieldKey || item.fieldId,
+      text: rollbackText,
+      formType: item.formType,
       agentBaseUrl,
-      profile?.config?.timeout || 15000
-    );
+      timeout: profile?.config?.timeout || 15000,
+    });
 
     if (!result.success) {
       return {
@@ -697,13 +701,13 @@ export async function manualRollbackItem(itemId, options = {}) {
   const rollbackText = item.preinsertRaw || item.preinsert_raw || '';
 
   try {
-    const result = await callAgentInsert(
-      mapping.agentFieldKey || item.fieldId,
-      rollbackText,
-      run.targetSoftware,
+    const result = await callAgentInsert({
+      fieldId: mapping.agentFieldKey || item.fieldId,
+      text: rollbackText,
+      formType: run.formType,
       agentBaseUrl,
-      profile?.config?.timeout || 15000,
-    );
+      timeout: profile?.config?.timeout || 15000,
+    });
 
     if (!result.success) {
       updateInsertionRunItem(itemId, {
@@ -724,12 +728,13 @@ export async function manualRollbackItem(itemId, options = {}) {
     if (options.verify !== false && supportsReadback(profile, mapping)) {
       try {
         verificationResult = await verifyInsertion({
-          fieldKey: mapping.agentFieldKey || item.fieldId,
-          expectedText: rollbackText,
+          fieldId: item.fieldId,
+          agentFieldKey: mapping.agentFieldKey || item.fieldId,
+          formattedText: rollbackText,
+          formType: run.formType,
           targetSoftware: run.targetSoftware,
           agentBaseUrl,
           timeout: profile?.config?.timeout || 10000,
-          mapping,
         });
       } catch {
         verificationResult = { status: 'unreadable' };
@@ -1117,46 +1122,6 @@ export function getInsertionReplayPackage(runId) {
   if (!run) return null;
   if (run.replayPackage && Array.isArray(run.replayPackage.items)) return run.replayPackage;
   return buildInsertionReplayPackage({ run, items: getInsertionRunItems(runId) });
-}
-
-// ── Agent Communication ───────────────────────────────────────────────────────
-
-/**
- * Call the agent's /insert endpoint.
- *
- * @param {string} fieldKey - Agent field key
- * @param {string} text - Formatted text to insert
- * @param {'aci' | 'real_quantum'} targetSoftware
- * @param {string} agentBaseUrl
- * @param {number} timeout
- * @returns {Promise<Object>}
- */
-async function callAgentInsert(fieldKey, text, targetSoftware, agentBaseUrl, timeout) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(`${agentBaseUrl}/insert`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        field: fieldKey,
-        text: text,
-        clear_first: true,
-      }),
-      signal: controller.signal,
-    });
-
-    const data = await response.json();
-    return {
-      success: !!data.success,
-      message: data.message || data.error || '',
-      errorCode: data.success ? null : 'insertion_rejected',
-      ...data,
-    };
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 /**

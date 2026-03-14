@@ -72,6 +72,9 @@ AGENT_PORT         = int(_cfg.get('agent_port', 5180))
 TX32_CONTENT_MIN_H = 120
 TX32_TITLE_MAX_H   = 70
 TX32_MIN_W         = 80
+LABEL_STOPWORDS    = frozenset({
+    'comment', 'comments', 'analysis', 'description', 'desc', 'narrative',
+})
 
 log = logging.getLogger('cacc_agent')
 
@@ -139,6 +142,10 @@ def load_learned() -> dict:
 
 def save_learned(form_type: str, field_id: str, data: dict) -> None:
     global _learned
+    if not data.get('verified', False):
+        log.info(f"Learned target skipped for {form_type}::{field_id} "
+                 f"(verification did not pass)")
+        return
     targets  = load_learned()
     key      = f'{form_type}::{field_id}'
     existing = targets.get(key, {})
@@ -210,6 +217,14 @@ def window_signature(win32_win) -> str:
 def normalize(text: str) -> str:
     return re.sub(r'[\s\-_/\.]+', ' ', (text or '').lower()).strip()
 
+
+def _label_words(text: str, *, drop_stopwords: bool = True) -> list[str]:
+    words = [w for w in normalize(text).split() if len(w) > 2]
+    if not drop_stopwords:
+        return words
+    filtered = [w for w in words if w not in LABEL_STOPWORDS]
+    return filtered or words
+
 def score_label(candidate: str, target: str) -> int:
     """Score label match 0–100."""
     if not candidate or not target:
@@ -220,8 +235,8 @@ def score_label(candidate: str, target: str) -> int:
         return 100
     if t in c or c in t:
         return 80
-    t_words = [w for w in t.split() if len(w) > 3]
-    c_words  = set(c.split())
+    t_words = _label_words(t)
+    c_words = set(_label_words(c)) or set(_label_words(c, drop_stopwords=False))
     if t_words and all(w in c_words for w in t_words):
         return 60
     overlap = sum(1 for w in t_words if w in c_words)
@@ -392,6 +407,12 @@ def find_tx32_by_label(win32_win, label: str,
         log.info(f"  TX32 label-proximity: score={best_score} via={best_method}")
         return best_ctrl, best_score, best_method
 
+    titled_sections = [t for t in titles if (t.get('text') or '').strip()]
+    if titled_sections and len(content) > 1:
+        log.warning("  TX32 ambiguous view: visible titled sections exist but no "
+                    f"reliable match for '{label}'")
+        return None, best_score, 'ambiguous_visible_sections'
+
     # No strong label match — prefer ACIFullAddendumView (primary editor)
     # over ACIAddendumView (section list items)
     full_addendum = [c for c in content
@@ -422,6 +443,38 @@ def read_tx32(ctrl) -> str:
     except Exception:
         return ''
 
+
+def find_tx32_by_rect(win32_win, rect: dict | None, tolerance: int = 24):
+    """Find a content TX32 whose rectangle closely matches the provided rect."""
+    if not rect:
+        return None
+    try:
+        left = int(rect.get('left'))
+        top = int(rect.get('top'))
+        width = int(rect.get('width'))
+        height = int(rect.get('height'))
+    except Exception:
+        return None
+
+    disc = discover_tx32(win32_win)
+    best = None
+    best_delta = None
+    for entry in disc['content_controls']:
+        try:
+            r = entry['rect']
+            delta = (
+                abs(r.left - left)
+                + abs(r.top - top)
+                + abs((r.right - r.left) - width)
+                + abs((r.bottom - r.top) - height)
+            )
+            if delta <= tolerance * 4 and (best_delta is None or delta < best_delta):
+                best = entry['ctrl']
+                best_delta = delta
+        except Exception:
+            continue
+    return best
+
 # ── Tab navigation ────────────────────────────────────────────────────────────
 
 _SKIP_CLS = frozenset({'TX32', 'ACIPaneTitle', 'Edit',
@@ -437,7 +490,11 @@ _SKIP_CLS = frozenset({'TX32', 'ACIPaneTitle', 'Edit',
 # TODO Phase 3: discover tab order dynamically from ACIPaneTitle changes.
 
 _TAB_ORDER = {
-    '1004':  ['Neig', 'Site', 'Impro', 'Sales', 'Reco', 'Cost', 'Income', 'Addend'],
+    # Live 1004 addendum strip order observed in ACI test session:
+    # Subject, Contract, Neighborhood, Site, Improvements, Sales,
+    # Reconciliation, Additional, Cost, Income, PUD, ...
+    '1004':  ['Subj', 'Contr', 'Neig', 'Site', 'Impro', 'Sales',
+              'Reco', 'Additi', 'Cost', 'Income', 'PUD'],
     '1025':  ['Neig', 'Site', 'Impro', 'Income', 'Sales', 'Reco', 'Cost', 'Addend'],
     '1073':  ['Neig', 'Site', 'Impro', 'Sales', 'Reco', 'Cost', 'Income', 'Addend'],
     '1004c': ['Neig', 'Site', 'Impro', 'Sales', 'Reco', 'Cost', 'Income', 'Addend'],
@@ -555,6 +612,11 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     if not tab_name:
         return True
     tl = tab_name.lower()
+
+    # ACI often leaves an addendum overlay active. If we don't dismiss it first,
+    # section-tab clicks can land on the wrong visible pane while the main form
+    # never actually changes tabs.
+    navigate_to_main_form(win32_win)
 
     # 1. ACISectionTabs child windows (text-based)
     try:
@@ -883,6 +945,9 @@ def insert_field(app, field_cfg: dict, text: str,
 
     # 0. Learned target
     learned = get_learned(form_type, field_id) if field_id else None
+    if learned and not learned.get('verified'):
+        log.info(f"  [0] Ignoring unverified learned target for {field_id}")
+        learned = None
     if learned:
         log.info(f"  [0] Learned target (n={learned.get('success_count',0)} "
                  f"strategy={learned.get('strategy','')})")

@@ -353,7 +353,7 @@ def test_field():
         try:
             win32_win = app32.top_window()
             if tab_name:
-                core.navigate_tab(win32_win, tab_name)
+                core.navigate_tab(win32_win, tab_name, form_type)
                 time.sleep(0.4)
             ctrl, score, method = core.find_tx32_by_label(
                 win32_win, field_label, aliases)
@@ -420,7 +420,7 @@ def probe():
     win32_win     = app32.top_window()
     tab_navigated = False
     if tab_name:
-        tab_navigated = core.navigate_tab(win32_win, tab_name)
+        tab_navigated = core.navigate_tab(win32_win, tab_name, form_type)
         if tab_navigated:
             time.sleep(0.5)
 
@@ -523,7 +523,7 @@ def read_field():
     """
     Phase 2: Read current text from a field without inserting.
 
-    Request:  { fieldId, formType }
+    Request:  { fieldId, formType, targetRect? }
     Response: { ok, fieldId, fieldLabel, text, method }
     """
     data      = request.get_json(force=True, silent=True) or {}
@@ -540,6 +540,7 @@ def read_field():
     field_label = field_cfg.get('label', field_id)
     tab_name    = field_cfg.get('tab_name', '')
     aliases     = field_cfg.get('aliases', [])
+    target_rect = data.get('targetRect')
 
     app32 = core.connect_win32()
     if not app32:
@@ -547,10 +548,14 @@ def read_field():
 
     win32_win = app32.top_window()
     if tab_name:
-        core.navigate_tab(win32_win, tab_name)
+        core.navigate_tab(win32_win, tab_name, form_type)
         time.sleep(0.5)
 
-    ctrl, score, method = core.find_tx32_by_label(win32_win, field_label, aliases)
+    ctrl = core.find_tx32_by_rect(win32_win, target_rect)
+    score = None
+    method = 'tx32_rect_match'
+    if ctrl is None:
+        ctrl, score, method = core.find_tx32_by_label(win32_win, field_label, aliases)
     if ctrl is None:
         return jsonify({
             'ok': False, 'fieldId': field_id, 'fieldLabel': field_label,

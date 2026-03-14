@@ -43,7 +43,14 @@ import {
   getRunResult,
   getGeneratedSectionsForRun,
 } from '../orchestrator/generationOrchestrator.js';
-import { RUN_STATUS } from '../db/repositories/generationRepo.js';
+import {
+  RUN_STATUS,
+  getRunById,
+  persistDraftPackage,
+  getJobIdForSection,
+  saveGeneratedSection,
+  updateGeneratedSectionReview,
+} from '../db/repositories/generationRepo.js';
 import {
   runSectionJob,
 } from '../orchestrator/sectionJobRunner.js';
@@ -170,6 +177,30 @@ function _setRunResult(runId, result) {
     _runResults.delete(oldestKey);
   }
   _runResults.set(runId, result);
+}
+
+function _syncCachedRunSection(runId, sectionId, text) {
+  const cached = _runResults.get(runId);
+  if (!cached) return;
+
+  const nextDraftPackage = {
+    ...(cached.draftPackage || {}),
+    sections: {
+      ...((cached.draftPackage || {}).sections || {}),
+      [sectionId]: {
+        ...(((cached.draftPackage || {}).sections || {})[sectionId] || {}),
+        sectionId,
+        ok: true,
+        error: null,
+        text,
+      },
+    },
+  };
+
+  _setRunResult(runId, {
+    ...cached,
+    draftPackage: nextDraftPackage,
+  });
 }
 
 function toSectionIds(fields) {
@@ -1133,6 +1164,115 @@ router.get('/generation/runs/:runId/result', (req, res) => {
       retrieval:   status.retrieval,
       fromCache:   false,
       source:      'sqlite-fallback',
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
+  const runId = trimText(req.params.runId, 80);
+  const sectionId = trimText(req.params.sectionId, 80);
+  const text = trimText(req.body?.text, 16000);
+  const requestedStatus = trimText(req.body?.sectionStatus, 40).toLowerCase();
+  const sectionStatus = ['approved', 'reviewed'].includes(requestedStatus) ? requestedStatus : 'reviewed';
+
+  if (!runId || !sectionId || !text) {
+    return res.status(400).json({ ok: false, error: 'runId, sectionId, and text are required' });
+  }
+
+  try {
+    const run = getRunById(runId);
+    if (!run) return res.status(404).json({ ok: false, error: `Run not found: ${runId}` });
+
+    let updated = updateGeneratedSectionReview({
+      runId,
+      sectionId,
+      text,
+      approved: sectionStatus === 'approved',
+    });
+
+    if (!updated) {
+      const jobId = getJobIdForSection(runId, sectionId);
+      if (!jobId) {
+        return res.status(404).json({
+          ok: false,
+          error: `Generated section not found for run ${runId}: ${sectionId}`,
+        });
+      }
+
+      saveGeneratedSection({
+        jobId,
+        runId,
+        caseId: run.case_id,
+        sectionId,
+        formType: run.form_type,
+        text,
+        examplesUsed: 0,
+      });
+
+      updated = updateGeneratedSectionReview({
+        runId,
+        sectionId,
+        text,
+        approved: sectionStatus === 'approved',
+      });
+    }
+
+    if (!updated) {
+      return res.status(404).json({
+        ok: false,
+        error: `Generated section not found for run ${runId}: ${sectionId}`,
+      });
+    }
+
+    const projection = getCaseProjection(run.case_id);
+    if (projection) {
+      persistGeneratedOutputs({
+        caseId: run.case_id,
+        projection,
+        results: {
+          [sectionId]: {
+            ...(projection.outputs?.[sectionId] || {}),
+            title: projection.outputs?.[sectionId]?.title || getSectionDef(run.form_type, sectionId)?.label || sectionId,
+            text,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        statuses: { [sectionId]: sectionStatus },
+        trackHistory: true,
+      });
+    }
+
+    const runResult = getRunResult(runId);
+    if (runResult?.draftPackage) {
+      const nextDraftPackage = {
+        ...runResult.draftPackage,
+        sections: {
+          ...(runResult.draftPackage.sections || {}),
+          [sectionId]: {
+            ...((runResult.draftPackage.sections || {})[sectionId] || {}),
+            sectionId,
+            ok: true,
+            error: null,
+            text,
+          },
+        },
+      };
+      persistDraftPackage(runId, nextDraftPackage);
+      _syncCachedRunSection(runId, sectionId, text);
+    } else {
+      _syncCachedRunSection(runId, sectionId, text);
+    }
+
+    res.json({
+      ok: true,
+      runId,
+      caseId: run.case_id,
+      sectionId,
+      sectionStatus,
+      approved: sectionStatus === 'approved',
+      charCount: text.length,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
