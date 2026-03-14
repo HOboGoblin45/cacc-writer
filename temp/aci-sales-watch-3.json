@@ -1,0 +1,6346 @@
+[
+  {
+    "ts": 1773456442.1227338,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456442.4592485,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456442.785567,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456443.1171389,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456443.453258,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456443.7885222,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456444.117643,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456444.4543283,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456444.7874405,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456445.1214242,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456445.4522712,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456445.7823856,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456446.1167607,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456446.4503622,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456446.798707,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456447.1449873,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456447.4704247,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456447.8076415,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456448.1451616,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456448.4814146,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456448.80758,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456449.1362514,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456449.472063,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456449.8111458,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456450.14605,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456450.4730003,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456450.8044777,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456451.1491697,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456451.481148,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456451.814458,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456452.155184,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456452.4942546,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456452.834661,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456453.1650076,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456453.5054805,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456453.8521054,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456454.1854813,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456454.5422285,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456454.8932364,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456455.223205,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456455.5640929,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456455.9137142,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456456.2493238,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456456.588353,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456456.923154,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456457.2486935,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456457.5880208,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456457.9190006,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456458.2632928,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456458.5938573,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456458.93704,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456459.2863197,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456459.636378,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456459.990531,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456460.3343256,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456460.6913083,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456461.0216022,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456461.371471,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456461.71521,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456462.0509667,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456462.3812742,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456462.7070765,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456463.0466788,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456463.3853552,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456463.7277837,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456464.0596673,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456464.4063206,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456464.7495182,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456465.075854,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456465.4199328,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456465.7541363,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456466.0989802,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456466.4345953,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456466.771407,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456467.1170163,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456467.4570444,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456467.7925832,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456468.1474195,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456468.485743,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456468.834546,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456469.1696947,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456469.533793,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456469.8794868,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456470.2086525,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456470.5624635,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456470.9180682,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456471.2866497,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456471.6294606,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456471.9732425,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456472.3142974,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456472.668427,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456473.0224717,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456473.3754663,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456473.7200036,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456474.0558407,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456474.3989265,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456474.738722,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456475.0705676,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456475.4106407,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456475.7440042,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456476.0863702,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456476.4292305,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456476.7731006,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  },
+  {
+    "ts": 1773456477.1699798,
+    "foreground": {
+      "hwnd": 6884032,
+      "title": "C:\\Users\\ccres\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "class_name": "CASCADIA_HOSTING_WINDOW_CLASS"
+    },
+    "foreground_is_aci": false,
+    "pane_titles": [
+      {
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "top_texts": [
+      {
+        "class": "OWL_Window",
+        "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+        "top": 58,
+        "left": -6
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "Main",
+        "top": 61,
+        "left": -1
+      },
+      {
+        "class": "OWL_Window",
+        "text": "Harbor",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "OWL_Window:F",
+        "text": "BorderSlip",
+        "top": 64,
+        "left": 1
+      },
+      {
+        "class": "ComboBox",
+        "text": "100%",
+        "top": 65,
+        "left": 826
+      },
+      {
+        "class": "Edit",
+        "text": "100%",
+        "top": 69,
+        "left": 830
+      },
+      {
+        "class": "ACIPaneTitle",
+        "text": "Thumbnails",
+        "top": 96,
+        "left": 130
+      }
+    ],
+    "tx32": []
+  }
+]

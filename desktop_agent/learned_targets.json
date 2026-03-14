@@ -4,18 +4,18 @@
     "fieldId": "neighborhood_description",
     "label": "Neighborhood Description",
     "tabName": "Neig",
-    "strategy": "learned:tx32:label_proximity:Neighborhood",
+    "strategy": "learned:tx32:aci_full_addendum_view",
     "tx32_rect": {
-      "left": 1031,
-      "top": 735,
-      "width": 825,
-      "height": 271
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 873
     },
     "label_matched": "Neighborhood Description",
-    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
-    "success_count": 13,
-    "last_success": "2026-03-09T09:27:33.224614",
-    "verified": true
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 14,
+    "last_success": "2026-03-13T20:46:46.032042",
+    "verified": false
   },
   "1004::market_conditions": {
     "formType": "1004",
@@ -27,12 +27,12 @@
       "left": 1007,
       "top": 109,
       "width": 849,
-      "height": 247
+      "height": 873
     },
     "label_matched": "Market Conditions Comments",
-    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
-    "success_count": 6,
-    "last_success": "2026-03-09T09:27:37.195565",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 7,
+    "last_success": "2026-03-13T20:46:58.567840",
     "verified": false
   },
   "1004::reconciliation": {
@@ -45,12 +45,84 @@
       "left": 1007,
       "top": 109,
       "width": 849,
-      "height": 873
+      "height": 247
     },
     "label_matched": "Reconciliation Comments",
-    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
-    "success_count": 2,
-    "last_success": "2026-03-09T09:17:20.632849",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 3,
+    "last_success": "2026-03-13T20:47:33.816331",
+    "verified": false
+  },
+  "1004::offering_history": {
+    "formType": "1004",
+    "fieldId": "offering_history",
+    "label": "Offering History",
+    "tabName": "Sales",
+    "strategy": "tx32:label_proximity:Offering History Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 873
+    },
+    "label_matched": "Offering History",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 1,
+    "last_success": "2026-03-13T20:46:21.265550",
+    "verified": false
+  },
+  "1004::contract_analysis": {
+    "formType": "1004",
+    "fieldId": "contract_analysis",
+    "label": "Contract Analysis",
+    "tabName": "Sales",
+    "strategy": "tx32:label_proximity:Contract Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 873
+    },
+    "label_matched": "Contract Analysis",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 1,
+    "last_success": "2026-03-13T20:46:34.415763",
+    "verified": false
+  },
+  "1004::site_comments": {
+    "formType": "1004",
+    "fieldId": "site_comments",
+    "label": "Site Comments",
+    "tabName": "Site",
+    "strategy": "tx32:label_proximity:Site Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 407
+    },
+    "label_matched": "Site Comments",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 1,
+    "last_success": "2026-03-13T20:47:10.699822",
+    "verified": false
+  },
+  "1004::improvements_condition": {
+    "formType": "1004",
+    "fieldId": "improvements_condition",
+    "label": "Improvements Comments",
+    "tabName": "Impro",
+    "strategy": "tx32:label_proximity:Improvements Comments",
+    "tx32_rect": {
+      "left": 1007,
+      "top": 109,
+      "width": 849,
+      "height": 247
+    },
+    "label_matched": "Improvements Comments",
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "success_count": 1,
+    "last_success": "2026-03-13T20:47:22.286526",
     "verified": false
   }
 }

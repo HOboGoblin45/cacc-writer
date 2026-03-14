@@ -1,0 +1,645 @@
+{
+  "runAt": "2026-03-14T01:29:49.571Z",
+  "baseUrl": "http://localhost:5178",
+  "options": {
+    "allowDryRunInsertion": false,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": false,
+      "rq": false
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Residential 1004 Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\1004-case",
+      "formType": "1004",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "680e312f",
+      "generationRunId": "c03cd817-b5ae-487c-b0e9-3f405b3c1b0b",
+      "qcRunId": "caca4b51-943b-49ae-9ed4-17e57eac736f",
+      "insertionRunId": null,
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case 680e312f"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-order-sheet.pdf -> order_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-contract.pdf -> contract"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-mls-sheet.pdf -> mls_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 15 fact(s), rejected 16"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 15 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 12 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 18 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run c03cd817-b5ae-487c-b0e9-3f405b3c1b0b"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 3 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "insertion_status",
+          "status": "failed",
+          "detail": "Live insertion could not be validated because the ACI agent is offline",
+          "payload": {
+            "agentAvailable": false,
+            "targetAgentKey": "aci"
+          }
+        }
+      ],
+      "error": {
+        "step": "insertion_status",
+        "message": "Live insertion could not be validated because the ACI agent is offline",
+        "payload": {
+          "agentAvailable": false,
+          "targetAgentKey": "aci"
+        }
+      }
+    },
+    {
+      "fixture": "Commercial Narrative Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\commercial-case",
+      "formType": "commercial",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "a0412cc8",
+      "generationRunId": "43092eba-abc9-4d43-a054-0ca8ba5390bf",
+      "qcRunId": "422063d4-1ce3-4808-9a8e-02b8cfedfa5f",
+      "insertionRunId": null,
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case a0412cc8"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-engagement-letter.pdf -> engagement_letter"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-property-summary.pdf -> mls_sheet"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 7 fact(s), rejected 13"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 7 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 6 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 11 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 43092eba-abc9-4d43-a054-0ca8ba5390bf"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 5 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "failed",
+          "detail": "QC produced 1 blocker finding(s)",
+          "payload": {
+            "ok": true,
+            "qcRunId": "422063d4-1ce3-4808-9a8e-02b8cfedfa5f",
+            "summary": {
+              "totalFindings": 10,
+              "severityCounts": {
+                "blocker": 1,
+                "high": 5,
+                "medium": 4,
+                "low": 0,
+                "advisory": 0
+              },
+              "categoryCounts": {
+                "completeness": 5,
+                "placeholder": 1,
+                "section_quality": 4
+              },
+              "draftReadiness": "not_ready",
+              "readinessLabel": "Not Ready",
+              "readinessDescription": "Critical issues detected. Draft should not be inserted without fixes.",
+              "readinessColor": "red",
+              "affectedSections": [
+                "hbu_as_improved",
+                "market_rent_analysis",
+                "neighborhood",
+                "market_conditions",
+                "site",
+                "improvements",
+                "income_approach",
+                "sales_comparison",
+                "reconciliation"
+              ],
+              "clearedSections": [
+                "improvement_description",
+                "introduction",
+                "market_area",
+                "neighborhood_description",
+                "site_description",
+                "hbu_analysis"
+              ],
+              "fieldsNeedingAttention": [
+                {
+                  "fieldId": "market_rent_analysis",
+                  "findingCount": 2
+                },
+                {
+                  "fieldId": "hbu_as_improved",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "neighborhood",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "market_conditions",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "site",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "improvements",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "income_approach",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "sales_comparison",
+                  "findingCount": 1
+                },
+                {
+                  "fieldId": "reconciliation",
+                  "findingCount": 1
+                }
+              ],
+              "missingCommentaryFamilies": [
+                {
+                  "ruleId": "REQ-003",
+                  "message": "Required commentary \"neighborhood\" is missing or insufficient.",
+                  "canonicalFieldIds": [
+                    "neighborhood"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "message": "Required commentary \"market_conditions\" is missing or insufficient.",
+                  "canonicalFieldIds": [
+                    "market_conditions"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "message": "Required commentary \"site\" is missing or insufficient.",
+                  "canonicalFieldIds": [
+                    "site"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "message": "Required commentary \"improvements\" is missing or insufficient.",
+                  "canonicalFieldIds": [
+                    "improvements"
+                  ]
+                }
+              ],
+              "crossSectionConflicts": [],
+              "placeholderIssues": [
+                {
+                  "ruleId": "PLH-001",
+                  "message": "1 unresolved placeholder(s) in \"market_rent_analysis\".",
+                  "sectionIds": [
+                    "market_rent_analysis"
+                  ]
+                }
+              ],
+              "topReviewRisks": [
+                {
+                  "ruleId": "REQ-001",
+                  "severity": "blocker",
+                  "category": "completeness",
+                  "message": "Required section \"Highest and Best Use — As Improved\" is missing from the draft.",
+                  "sectionIds": [
+                    "hbu_as_improved"
+                  ]
+                },
+                {
+                  "ruleId": "PLH-001",
+                  "severity": "high",
+                  "category": "placeholder",
+                  "message": "1 unresolved placeholder(s) in \"market_rent_analysis\".",
+                  "sectionIds": [
+                    "market_rent_analysis"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "severity": "high",
+                  "category": "completeness",
+                  "message": "Required commentary \"neighborhood\" is missing or insufficient.",
+                  "sectionIds": [
+                    "neighborhood"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "severity": "high",
+                  "category": "completeness",
+                  "message": "Required commentary \"market_conditions\" is missing or insufficient.",
+                  "sectionIds": [
+                    "market_conditions"
+                  ]
+                },
+                {
+                  "ruleId": "REQ-003",
+                  "severity": "high",
+                  "category": "completeness",
+                  "message": "Required commentary \"site\" is missing or insufficient.",
+                  "sectionIds": [
+                    "site"
+                  ]
+                }
+              ]
+            },
+            "draftReadiness": "not_ready",
+            "severityCounts": {
+              "blocker": 1,
+              "high": 5,
+              "medium": 4,
+              "low": 0,
+              "advisory": 0
+            },
+            "totalFindings": 10,
+            "status": "complete",
+            "duration": 10
+          }
+        }
+      ],
+      "error": {
+        "step": "qc_summary",
+        "message": "QC produced 1 blocker finding(s)",
+        "payload": {
+          "ok": true,
+          "qcRunId": "422063d4-1ce3-4808-9a8e-02b8cfedfa5f",
+          "summary": {
+            "totalFindings": 10,
+            "severityCounts": {
+              "blocker": 1,
+              "high": 5,
+              "medium": 4,
+              "low": 0,
+              "advisory": 0
+            },
+            "categoryCounts": {
+              "completeness": 5,
+              "placeholder": 1,
+              "section_quality": 4
+            },
+            "draftReadiness": "not_ready",
+            "readinessLabel": "Not Ready",
+            "readinessDescription": "Critical issues detected. Draft should not be inserted without fixes.",
+            "readinessColor": "red",
+            "affectedSections": [
+              "hbu_as_improved",
+              "market_rent_analysis",
+              "neighborhood",
+              "market_conditions",
+              "site",
+              "improvements",
+              "income_approach",
+              "sales_comparison",
+              "reconciliation"
+            ],
+            "clearedSections": [
+              "improvement_description",
+              "introduction",
+              "market_area",
+              "neighborhood_description",
+              "site_description",
+              "hbu_analysis"
+            ],
+            "fieldsNeedingAttention": [
+              {
+                "fieldId": "market_rent_analysis",
+                "findingCount": 2
+              },
+              {
+                "fieldId": "hbu_as_improved",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "neighborhood",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "market_conditions",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "site",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "improvements",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "income_approach",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "sales_comparison",
+                "findingCount": 1
+              },
+              {
+                "fieldId": "reconciliation",
+                "findingCount": 1
+              }
+            ],
+            "missingCommentaryFamilies": [
+              {
+                "ruleId": "REQ-003",
+                "message": "Required commentary \"neighborhood\" is missing or insufficient.",
+                "canonicalFieldIds": [
+                  "neighborhood"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "message": "Required commentary \"market_conditions\" is missing or insufficient.",
+                "canonicalFieldIds": [
+                  "market_conditions"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "message": "Required commentary \"site\" is missing or insufficient.",
+                "canonicalFieldIds": [
+                  "site"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "message": "Required commentary \"improvements\" is missing or insufficient.",
+                "canonicalFieldIds": [
+                  "improvements"
+                ]
+              }
+            ],
+            "crossSectionConflicts": [],
+            "placeholderIssues": [
+              {
+                "ruleId": "PLH-001",
+                "message": "1 unresolved placeholder(s) in \"market_rent_analysis\".",
+                "sectionIds": [
+                  "market_rent_analysis"
+                ]
+              }
+            ],
+            "topReviewRisks": [
+              {
+                "ruleId": "REQ-001",
+                "severity": "blocker",
+                "category": "completeness",
+                "message": "Required section \"Highest and Best Use — As Improved\" is missing from the draft.",
+                "sectionIds": [
+                  "hbu_as_improved"
+                ]
+              },
+              {
+                "ruleId": "PLH-001",
+                "severity": "high",
+                "category": "placeholder",
+                "message": "1 unresolved placeholder(s) in \"market_rent_analysis\".",
+                "sectionIds": [
+                  "market_rent_analysis"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "severity": "high",
+                "category": "completeness",
+                "message": "Required commentary \"neighborhood\" is missing or insufficient.",
+                "sectionIds": [
+                  "neighborhood"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "severity": "high",
+                "category": "completeness",
+                "message": "Required commentary \"market_conditions\" is missing or insufficient.",
+                "sectionIds": [
+                  "market_conditions"
+                ]
+              },
+              {
+                "ruleId": "REQ-003",
+                "severity": "high",
+                "category": "completeness",
+                "message": "Required commentary \"site\" is missing or insufficient.",
+                "sectionIds": [
+                  "site"
+                ]
+              }
+            ]
+          },
+          "draftReadiness": "not_ready",
+          "severityCounts": {
+            "blocker": 1,
+            "high": 5,
+            "medium": 4,
+            "low": 0,
+            "advisory": 0
+          },
+          "totalFindings": 10,
+          "status": "complete",
+          "duration": 10
+        }
+      }
+    }
+  ]
+}

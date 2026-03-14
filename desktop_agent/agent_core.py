@@ -32,6 +32,7 @@ except ImportError:
 try:
     import win32gui
     import win32con
+    import win32process
     WIN32_AVAILABLE = True
 except ImportError:
     WIN32_AVAILABLE = False
@@ -96,6 +97,19 @@ def capture_screenshot(label: str) -> str | None:
 
 _map_cache: dict = {}
 
+
+def _load_optional_field_map(path: str) -> dict:
+    try:
+        with open(path) as f:
+            raw = json.load(f)
+        return {k: v for k, v in raw.items() if not k.startswith('_')}
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError as e:
+        log.error(f"Field map JSON error {path}: {e}")
+        return {}
+
+
 def load_field_map(form_type: str) -> dict:
     if form_type in _map_cache:
         return _map_cache[form_type]
@@ -104,6 +118,18 @@ def load_field_map(form_type: str) -> dict:
         with open(path) as f:
             raw = json.load(f)
         fm = {k: v for k, v in raw.items() if not k.startswith('_')}
+        surface_path = os.path.join(FIELD_MAPS_DIR, f'{form_type}_surface.json')
+        surface_map = _load_optional_field_map(surface_path)
+        if surface_map:
+            for field_id, profile in surface_map.items():
+                base = fm.get(field_id, {})
+                if isinstance(base, dict):
+                    merged = dict(profile)
+                    merged.update(base)
+                    fm[field_id] = merged
+                else:
+                    fm[field_id] = profile
+            log.info(f"Field surface map: {surface_path} ({len(surface_map)} fields)")
         _map_cache[form_type] = fm
         log.info(f"Field map: {path} ({len(fm)} fields)")
         return fm
@@ -139,6 +165,10 @@ def load_learned() -> dict:
 
 def save_learned(form_type: str, field_id: str, data: dict) -> None:
     global _learned
+    if not data.get('verified', False):
+        log.info(f"Learned target skipped for {form_type}::{field_id} "
+                 f"(verification did not pass)")
+        return
     targets  = load_learned()
     key      = f'{form_type}::{field_id}'
     existing = targets.get(key, {})
@@ -194,10 +224,45 @@ def bring_to_foreground(win32_win) -> None:
     try:
         hwnd = win32_win.handle
         win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+        fg_hwnd = win32gui.GetForegroundWindow()
+        if fg_hwnd and fg_hwnd != hwnd:
+            try:
+                current_tid = win32process.GetWindowThreadProcessId(fg_hwnd)[0]
+                target_tid = win32process.GetWindowThreadProcessId(hwnd)[0]
+                if current_tid and target_tid and current_tid != target_tid:
+                    win32process.AttachThreadInput(current_tid, target_tid, True)
+                    try:
+                        win32gui.BringWindowToTop(hwnd)
+                        win32gui.SetForegroundWindow(hwnd)
+                    finally:
+                        win32process.AttachThreadInput(current_tid, target_tid, False)
+            except Exception:
+                pass
         win32gui.SetForegroundWindow(hwnd)
         time.sleep(0.3)
     except Exception as e:
         log.debug(f"SetForegroundWindow: {e}")
+
+
+def get_foreground_window_info() -> dict:
+    if not WIN32_AVAILABLE:
+        return {'hwnd': None, 'title': '', 'class_name': ''}
+    try:
+        hwnd = win32gui.GetForegroundWindow()
+        return {
+            'hwnd': hwnd,
+            'title': win32gui.GetWindowText(hwnd) or '',
+            'class_name': win32gui.GetClassName(hwnd) or '',
+        }
+    except Exception:
+        return {'hwnd': None, 'title': '', 'class_name': ''}
+
+
+def is_foreground_window(win32_win) -> bool:
+    try:
+        return get_foreground_window_info().get('hwnd') == win32_win.handle
+    except Exception:
+        return False
 
 def window_signature(win32_win) -> str:
     try:
@@ -446,7 +511,8 @@ _TAB_ORDER = {
 
 
 def _navigate_tab_by_position(win32_win, tab_name: str,
-                               form_type: str = '1004') -> bool:
+                               form_type: str = '1004',
+                               tab_ratio: float | None = None) -> bool:
     """
     Click ACISectionTabs at the calculated X position for the target tab.
 
@@ -466,7 +532,7 @@ def _navigate_tab_by_position(win32_win, tab_name: str,
             tab_idx = i
             break
 
-    if tab_idx is None:
+    if tab_ratio is None and tab_idx is None:
         log.debug(f"  Tab '{tab_name}' not in known order for form {form_type}")
         return False
 
@@ -474,22 +540,34 @@ def _navigate_tab_by_position(win32_win, tab_name: str,
         # Bring window to foreground before clicking owner-drawn tabs
         bring_to_foreground(win32_win)
         time.sleep(0.2)
+        if not is_foreground_window(win32_win):
+            fg = get_foreground_window_info()
+            log.warning(f"  Cannot click tab '{tab_name}': ACI is not foreground "
+                        f"(foreground='{fg.get('title','')[:80]}')")
+            return False
 
         tabs_ctrl = win32_win.child_window(class_name='ACISectionTabs')
         r         = tabs_ctrl.rectangle()
         ctrl_w    = r.right - r.left
         ctrl_h    = r.bottom - r.top
-        n_tabs    = len(order)
-        tab_w     = ctrl_w / n_tabs
-        # Click at the center of the target tab
-        click_x   = int(tab_idx * tab_w + tab_w / 2)
+        if tab_ratio is not None:
+            click_x = int(ctrl_w * max(0.0, min(1.0, tab_ratio)))
+            tab_w = None
+        else:
+            n_tabs    = len(order)
+            tab_w     = ctrl_w / n_tabs
+            click_x   = int(tab_idx * tab_w + tab_w / 2)
         click_y   = int(ctrl_h / 2)
         tabs_ctrl.click_input(coords=(click_x, click_y))
         # Give ACI time to redraw the section
         time.sleep(0.8)
-        log.info(f"  Tab '{tab_name}' via position click "
-                 f"(idx={tab_idx} x={click_x} ctrl_w={ctrl_w} "
-                 f"tab_w={tab_w:.0f} form={form_type})")
+        if tab_ratio is not None:
+            log.info(f"  Tab '{tab_name}' via measured ratio click "
+                     f"(ratio={tab_ratio:.3f} x={click_x} ctrl_w={ctrl_w} form={form_type})")
+        else:
+            log.info(f"  Tab '{tab_name}' via position click "
+                     f"(idx={tab_idx} x={click_x} ctrl_w={ctrl_w} "
+                     f"tab_w={tab_w:.0f} form={form_type})")
         return True
     except Exception as e:
         log.debug(f"  Tab position click failed: {e}")
@@ -519,6 +597,11 @@ def navigate_to_main_form(win32_win) -> bool:
             # Try pressing Escape to dismiss addendum
             bring_to_foreground(win32_win)
             time.sleep(0.2)
+            if not is_foreground_window(win32_win):
+                fg = get_foreground_window_info()
+                log.warning("  Cannot return to main form because ACI is not foreground "
+                            f"(foreground='{fg.get('title','')[:80]}')")
+                return False
             send_keys('{ESC}')
             time.sleep(0.5)
             # Try clicking the ACIFormView area directly
@@ -541,7 +624,8 @@ def navigate_to_main_form(win32_win) -> bool:
     return False
 
 
-def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
+def navigate_tab(win32_win, tab_name: str, form_type: str = '1004',
+                 tab_ratio: float | None = None) -> bool:
     """
     Navigate to a section tab. Returns True if a click was sent.
 
@@ -600,7 +684,7 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     # 4. Position-based click on ACISectionTabs (owner-drawn tabs — PRIMARY for ACI)
     # ACI confirmed: ACISectionTabs has no child windows for tab buttons.
     # Tabs are painted directly on the control surface.
-    if _navigate_tab_by_position(win32_win, tab_name, form_type):
+    if _navigate_tab_by_position(win32_win, tab_name, form_type, tab_ratio):
         return True
 
     log.warning(f"  Tab '{tab_name}' not found by any strategy")
@@ -633,6 +717,22 @@ def _ins_tx32(field_cfg: dict, text: str) -> tuple:
         return False, 'tx32_unavailable', None, {}
 
     diag = {}
+    surface_keys = (
+        'visual_tab_label',
+        'page_cluster',
+        'pdf_anchor_text',
+        'adjacent_anchor_text',
+        'content_kind',
+        'expected_elements',
+        'live_calibration_status',
+    )
+    surface_profile = {
+        key: field_cfg.get(key)
+        for key in surface_keys
+        if field_cfg.get(key) not in (None, '', [])
+    }
+    if surface_profile:
+        diag['surface_profile'] = surface_profile
     try:
         app32 = connect_win32()
         if not app32:
@@ -640,11 +740,20 @@ def _ins_tx32(field_cfg: dict, text: str) -> tuple:
 
         win = app32.top_window()
         bring_to_foreground(win)
+        if not is_foreground_window(win):
+            fg = get_foreground_window_info()
+            return False, 'tx32_not_foreground', None, {
+                'aci_title': window_signature(win),
+                'foreground_title': fg.get('title', ''),
+                'foreground_class': fg.get('class_name', ''),
+            }
 
         tab = (field_cfg.get('tab_name') or '').strip()
+        tab_ratio = field_cfg.get('visual_tab_ratio')
         if tab:
-            nav_ok = navigate_tab(win, tab)
+            nav_ok = navigate_tab(win, tab, form_type, tab_ratio)
             diag['tab_name']      = tab
+            diag['tab_ratio']     = tab_ratio
             diag['tab_navigated'] = nav_ok
             if nav_ok:
                 time.sleep(0.5)
@@ -883,6 +992,9 @@ def insert_field(app, field_cfg: dict, text: str,
 
     # 0. Learned target
     learned = get_learned(form_type, field_id) if field_id else None
+    if learned and not learned.get('verified'):
+        log.info(f"  [0] Ignoring unverified learned target for {field_id}")
+        learned = None
     if learned:
         log.info(f"  [0] Learned target (n={learned.get('success_count',0)} "
                  f"strategy={learned.get('strategy','')})")

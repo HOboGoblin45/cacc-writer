@@ -1,0 +1,14 @@
+{"ts":"2026-03-14T01:45:52.944Z","level":"warn","msg":"openai:retry","attempt":1,"delay":1000,"model":"gpt-4.1","error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 30000, Requested 4385. Please try again in 8.77s. Visit https://platform.openai.com/account/rate-limits to learn more."}
+{"ts":"2026-03-14T01:45:56.011Z","level":"warn","msg":"openai:retry","attempt":2,"delay":2000,"model":"gpt-4.1","error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 30000, Requested 4385. Please try again in 8.77s. Visit https://platform.openai.com/account/rate-limits to learn more."}
+{"ts":"2026-03-14T01:46:00.050Z","level":"error","msg":"openai:call-error","model":"gpt-4.1","error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 28455, Requested 4385. Please try again in 5.68s. Visit https://platform.openai.com/account/rate-limits to learn more.","status":429}
+{"ts":"2026-03-14T01:46:00.051Z","level":"error","msg":"sectionJobRunner:attempt-failed","sectionId":"reconciliation","attempt":1,"error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 28455, Requested 4385. Please try again in 5.68s. Visit https://platform.openai.com/account/rate-limits to learn more."}
+{"ts":"2026-03-14T01:46:02.513Z","level":"warn","msg":"openai:retry","attempt":1,"delay":1000,"model":"gpt-4.1","error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 27222, Requested 4385. Please try again in 3.214s. Visit https://platform.openai.com/account/rate-limits to learn more."}
+{"ts":"2026-03-14T01:46:05.414Z","level":"warn","msg":"openai:retry","attempt":2,"delay":2000,"model":"gpt-4.1","error":"429 Rate limit reached for gpt-4.1 in organization org-zYxLEFzcfMVHaCygS2nHtcqq on tokens per min (TPM): Limit 30000, Used 25767, Requested 4385. Please try again in 304ms. Visit https://platform.openai.com/account/rate-limits to learn more."}
+{"ts":"2026-03-14T01:47:36.769Z","level":"warn","msg":"export:qc-history","caseId":"54b6e201","error":"no such column: findings_count"}
+{"ts":"2026-03-14T01:47:36.770Z","level":"warn","msg":"export:insertion-runs","caseId":"54b6e201","error":"no such column: destination"}
+{"ts":"2026-03-14T01:47:36.787Z","level":"warn","msg":"export:qc-history","caseId":"54b6e201","error":"no such column: findings_count"}
+{"ts":"2026-03-14T01:47:36.788Z","level":"warn","msg":"export:insertion-runs","caseId":"54b6e201","error":"no such column: destination"}
+Warning: Indexing all PDF objects
+Warning: Indexing all PDF objects
+Warning: Indexing all PDF objects
+Warning: Indexing all PDF objects

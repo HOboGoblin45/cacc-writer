@@ -1,0 +1,197 @@
+[agent] 20:44:59 INFO: ============================================================
+[agent] 20:44:59 INFO: CACC Writer — ACI Desktop Agent  (Phase 2)
+[agent] 20:44:59 INFO: Port:       5180
+[agent] 20:44:59 INFO: pywinauto:  True
+[agent] 20:44:59 INFO: pyperclip:  True
+[agent] 20:44:59 INFO: win32:      True
+[agent] 20:44:59 INFO: PIL:        True
+[agent] 20:44:59 INFO: ACI pattern: .*ACI.*
+[agent] 20:44:59 INFO: Field maps: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps
+[agent] 20:44:59 INFO: Learned:    C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\learned_targets.json
+[agent] 20:44:59 INFO: ============================================================
+[agent] 20:44:59 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1004.json (12 fields)
+[agent] 20:44:59 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1025.json (8 fields)
+[agent] 20:44:59 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1073.json (7 fields)
+[agent] 20:44:59 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1004c.json (7 fields)
+[agent] 20:44:59 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\commercial.json (8 fields)
+[agent] 20:44:59 INFO: Learned targets: 3 entries
+[agent] 20:44:59 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5180
+[agent] 20:44:59 INFO: [33mPress CTRL+C to quit[0m
+[agent] 20:45:22 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:22] "GET /health HTTP/1.1" 200 -
+[agent] 20:45:22 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:22] "GET /list-windows HTTP/1.1" 200 -
+[agent] 20:45:44 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:44] "GET /health HTTP/1.1" 200 -
+[agent] 20:45:44 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:44] "GET /list-windows HTTP/1.1" 200 -
+[agent] 20:45:44 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:44] "GET /health HTTP/1.1" 200 -
+[agent] 20:45:45 INFO: 127.0.0.1 - - [13/Mar/2026 20:45:45] "GET /list-windows HTTP/1.1" 200 -
+[agent] 20:46:11 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:11] "GET /health HTTP/1.1" 200 -
+[agent] 20:46:11 INFO: INSERT 'Offering History' (id=offering_history form=1004 chars=608)
+[agent] 20:46:11 INFO:   Attempt 1/3
+[agent] 20:46:12 INFO:   label='Offering History' tab='Sales' aliases=['Prior Sales History', 'Offering History Comments', 'Prior Listing History']
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:13 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:14 INFO:   TX32 label-proximity: score=60 via=label_proximity:Offering History Comments
+[agent] 20:46:14 INFO:   TX32: left=1007 top=109 h=873 score=60 via=label_proximity:Offering History Comments
+[agent] 20:46:15 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Offering History Comments)
+[agent] 20:46:21 WARNING:   Verify: no control found for 'Offering History'
+[agent] 20:46:21 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_offering_history_20260313_204621.png
+[agent] 20:46:21 INFO: Learned: 1004::offering_history (n=1)
+[agent] 20:46:21 INFO:   DONE: method=tx32:label_proximity:Offering History Comments verified=False verifyMethod=no_control_found
+[agent] 20:46:21 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:21] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:22 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:23 INFO:   TX32 label-proximity: score=60 via=label_proximity:Offering History Comments
+[agent] 20:46:23 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:23] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:46:23 INFO: INSERT 'Contract Analysis' (id=contract_analysis form=1004 chars=939)
+[agent] 20:46:23 INFO:   Attempt 1/3
+[agent] 20:46:23 INFO:   label='Contract Analysis' tab='Sales' aliases=['Contract Comments', 'Purchase Contract Analysis', 'Contract']
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:25 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:26 INFO:   TX32 label-proximity: score=60 via=label_proximity:Contract Comments
+[agent] 20:46:26 INFO:   TX32: left=1007 top=109 h=873 score=60 via=label_proximity:Contract Comments
+[agent] 20:46:28 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Contract Comments)
+[agent] 20:46:34 WARNING:   Verify: no control found for 'Contract Analysis'
+[agent] 20:46:34 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_contract_analysis_20260313_204634.png
+[agent] 20:46:34 INFO: Learned: 1004::contract_analysis (n=1)
+[agent] 20:46:34 INFO:   DONE: method=tx32:label_proximity:Contract Comments verified=False verifyMethod=no_control_found
+[agent] 20:46:34 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:34] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:35 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:36 INFO:   TX32 label-proximity: score=60 via=label_proximity:Contract Comments
+[agent] 20:46:36 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:36] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:46:36 INFO: INSERT 'Neighborhood Description' (id=neighborhood_description form=1004 chars=387)
+[agent] 20:46:36 INFO:   Attempt 1/3
+[agent] 20:46:36 INFO:   label='Neighborhood Description' tab='Neig' aliases=['Neighborhood Desc', 'Neighborhood', 'Neigh Description']
+[agent] 20:46:36 INFO:   [0] Learned target (n=13 strategy=learned:tx32:label_proximity:Neighborhood)
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:38 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:39 INFO:   TX32 ACIFullAddendumView fallback: h=873
+[agent] 20:46:39 INFO:   TX32: left=1007 top=109 h=873 score=40 via=aci_full_addendum_view
+[agent] 20:46:40 INFO:   \u2713 TX32 insert (score=40 via=aci_full_addendum_view)
+[agent] 20:46:45 WARNING:   Verify: no control found for 'Neighborhood Description'
+[agent] 20:46:46 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_neighborhood_description_20260313_204645.png
+[agent] 20:46:46 INFO: Learned: 1004::neighborhood_description (n=14)
+[agent] 20:46:46 INFO:   DONE: method=learned:tx32:aci_full_addendum_view verified=False verifyMethod=no_control_found
+[agent] 20:46:46 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:46] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:47 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:48 INFO:   TX32 ACIFullAddendumView fallback: h=873
+[agent] 20:46:48 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:48] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:46:48 INFO: INSERT 'Market Conditions Comments' (id=market_conditions form=1004 chars=932)
+[agent] 20:46:48 INFO:   Attempt 1/3
+[agent] 20:46:48 INFO:   label='Market Conditions Comments' tab='Neig' aliases=['Market Conditions', 'Market Conditions Addendum', 'Market Cond']
+[agent] 20:46:48 INFO:   [0] Learned target (n=6 strategy=learned:tx32:label_proximity:Market Conditions Comments)
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:46:50 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:46:50 INFO:   TX32 label-proximity: score=60 via=label_proximity:Market Conditions Comments
+[agent] 20:46:50 INFO:   TX32: left=1007 top=109 h=873 score=60 via=label_proximity:Market Conditions Comments
+[agent] 20:46:52 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Market Conditions Comments)
+[agent] 20:46:58 WARNING:   Verify: no control found for 'Market Conditions Comments'
+[agent] 20:46:58 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_market_conditions_20260313_204658.png
+[agent] 20:46:58 INFO: Learned: 1004::market_conditions (n=7)
+[agent] 20:46:58 INFO:   DONE: method=learned:tx32:label_proximity:Market Conditions Comments verified=False verifyMethod=no_control_found
+[agent] 20:46:58 INFO: 127.0.0.1 - - [13/Mar/2026 20:46:58] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:00 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:00 INFO:   TX32 label-proximity: score=60 via=label_proximity:Market Conditions Comments
+[agent] 20:47:00 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:00] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:47:00 INFO: INSERT 'Site Comments' (id=site_comments form=1004 chars=377)
+[agent] 20:47:01 INFO:   Attempt 1/3
+[agent] 20:47:01 INFO:   label='Site Comments' tab='Site' aliases=['Site', 'Site Description', 'Site Comment']
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:03 INFO:   Tab 'Site' via position click (idx=1 x=159 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:03 INFO:   TX32 label-proximity: score=60 via=label_proximity:Site Comments
+[agent] 20:47:03 INFO:   TX32: left=1007 top=109 h=407 score=60 via=label_proximity:Site Comments
+[agent] 20:47:04 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Site Comments)
+[agent] 20:47:10 WARNING:   Verify: no control found for 'Site Comments'
+[agent] 20:47:10 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_site_comments_20260313_204710.png
+[agent] 20:47:10 INFO: Learned: 1004::site_comments (n=1)
+[agent] 20:47:10 INFO:   DONE: method=tx32:label_proximity:Site Comments verified=False verifyMethod=no_control_found
+[agent] 20:47:10 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:10] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:12 INFO:   Tab 'Site' via position click (idx=1 x=159 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:12 INFO:   TX32 label-proximity: score=120 via=label_proximity:Site Comments
+[agent] 20:47:12 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:12] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:47:12 INFO: INSERT 'Improvements Comments' (id=improvements_condition form=1004 chars=484)
+[agent] 20:47:12 INFO:   Attempt 1/3
+[agent] 20:47:13 INFO:   label='Improvements Comments' tab='Impro' aliases=['Improvements', 'Improvements Condition', 'Condition of Improvements', 'Subject Improvements']
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:14 INFO:   Tab 'Impro' via position click (idx=2 x=266 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:15 INFO:   TX32 label-proximity: score=60 via=label_proximity:Improvements Comments
+[agent] 20:47:15 INFO:   TX32: left=1007 top=109 h=247 score=60 via=label_proximity:Improvements Comments
+[agent] 20:47:16 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Improvements Comments)
+[agent] 20:47:22 WARNING:   Verify: no control found for 'Improvements Comments'
+[agent] 20:47:22 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_improvements_condition_20260313_204722.png
+[agent] 20:47:22 INFO: Learned: 1004::improvements_condition (n=1)
+[agent] 20:47:22 INFO:   DONE: method=tx32:label_proximity:Improvements Comments verified=False verifyMethod=no_control_found
+[agent] 20:47:22 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:22] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:23 INFO:   Tab 'Impro' via position click (idx=2 x=266 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:24 INFO:   TX32 label-proximity: score=60 via=label_proximity:Improvements Comments
+[agent] 20:47:24 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:24] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:47:24 INFO: INSERT 'Reconciliation Comments' (id=reconciliation form=1004 chars=500)
+[agent] 20:47:24 INFO:   Attempt 1/3
+[agent] 20:47:24 INFO:   label='Reconciliation Comments' tab='Reco' aliases=['Reconciliation', 'Final Reconciliation', 'Value Reconciliation']
+[agent] 20:47:24 INFO:   [0] Learned target (n=2 strategy=learned:tx32:label_proximity:Reconciliation Comments)
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:26 INFO:   Tab 'Reco' via position click (idx=4 x=479 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:26 INFO:   TX32 label-proximity: score=60 via=label_proximity:Reconciliation Comments
+[agent] 20:47:26 INFO:   TX32: left=1007 top=109 h=247 score=60 via=label_proximity:Reconciliation Comments
+[agent] 20:47:27 INFO:   \u2713 TX32 insert (score=60 via=label_proximity:Reconciliation Comments)
+[agent] 20:47:33 WARNING:   Verify: no control found for 'Reconciliation Comments'
+[agent] 20:47:33 INFO: Screenshot: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\screenshots\verify_fail_reconciliation_20260313_204733.png
+[agent] 20:47:33 INFO: Learned: 1004::reconciliation (n=3)
+[agent] 20:47:33 INFO:   DONE: method=learned:tx32:label_proximity:Reconciliation Comments verified=False verifyMethod=no_control_found
+[agent] 20:47:33 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:33] "POST /insert HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:47:35 INFO:   Tab 'Reco' via position click (idx=4 x=479 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:47:35 INFO:   TX32 label-proximity: score=60 via=label_proximity:Reconciliation Comments
+[agent] 20:47:35 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:35] "POST /read-field HTTP/1.1" 200 -
+[agent] 20:47:36 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:36] "GET /health HTTP/1.1" 200 -
+[agent] 20:47:36 INFO: 127.0.0.1 - - [13/Mar/2026 20:47:36] "GET /health HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:53:09 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:09 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:09 INFO:   Tab 'Site' via position click (idx=1 x=159 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:09 INFO:   Tab 'Neig' via position click (idx=0 x=53 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:10 INFO:   TX32 label-proximity: score=120 via=label_proximity:Neighborhood Description
+[agent] 20:53:10 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:10] "POST /probe HTTP/1.1" 200 -
+[agent] 20:53:10 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:10] "GET /dump-controls?tab=Neig HTTP/1.1" 200 -
+[agent] 20:53:10 INFO:   TX32 label-proximity: score=120 via=label_proximity:Site Comments
+[agent] 20:53:10 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:10] "POST /probe HTTP/1.1" 200 -
+[agent] 20:53:11 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:11] "GET /calibrate?tab=Neig HTTP/1.1" 200 -
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+C:\Users\ccres\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+  warnings.warn(
+[agent] 20:53:34 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:34 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:34 INFO:   Tab 'Sales' via position click (idx=3 x=373 ctrl_w=853 tab_w=107 form=1004)
+[agent] 20:53:35 INFO:   TX32 label-proximity: score=60 via=label_proximity:Offering History Comments
+[agent] 20:53:35 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:35] "POST /probe HTTP/1.1" 200 -
+[agent] 20:53:35 INFO:   TX32 label-proximity: score=60 via=label_proximity:Contract Comments
+[agent] 20:53:35 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:35] "POST /probe HTTP/1.1" 200 -
+[agent] 20:53:35 INFO: 127.0.0.1 - - [13/Mar/2026 20:53:35] "GET /dump-controls?tab=Sales HTTP/1.1" 200 -
