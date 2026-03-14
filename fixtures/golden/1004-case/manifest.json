@@ -1,0 +1,190 @@
+{
+  "name": "Residential 1004 Golden Path",
+  "formType": "1004",
+  "createCase": {
+    "address": "123 Test Street, Bloomington, IL 61701",
+    "borrower": "Jordan Harper",
+    "formType": "1004",
+    "notes": "Golden path regression fixture for residential 1004 assignments."
+  },
+  "casePatch": {
+    "clientName": "First Community Bank",
+    "lenderName": "First Community Bank",
+    "amcName": "CACC Internal",
+    "assignmentPurpose": "Purchase",
+    "loanProgram": "Conventional",
+    "propertyType": "Single Family",
+    "occupancyType": "Owner Occupied",
+    "reportConditionMode": "as_is",
+    "subjectCondition": "C3",
+    "marketType": "suburban",
+    "city": "Bloomington",
+    "county": "McLean",
+    "state": "IL",
+    "marketArea": "East Bloomington",
+    "neighborhood": "East Bloomington"
+  },
+  "documents": [
+    {
+      "filename": "1004-order-sheet.pdf",
+      "docTypeHint": "appraisal_order",
+      "contentFile": "documents/order_sheet.txt"
+    },
+    {
+      "filename": "1004-contract.pdf",
+      "docTypeHint": "purchase_contract",
+      "contentFile": "documents/contract.txt"
+    },
+    {
+      "filename": "1004-mls-sheet.pdf",
+      "docTypeHint": "mls_sheet",
+      "contentFile": "documents/mls_sheet.txt"
+    },
+    {
+      "filename": "1004-tax-record.pdf",
+      "docTypeHint": "tax_record",
+      "contentFile": "documents/assessor_record.txt"
+    },
+    {
+      "filename": "1004-zoning-letter.pdf",
+      "contentFile": "documents/zoning_document.txt"
+    }
+  ],
+  "review": {
+    "minExtractedFacts": 8,
+    "minAcceptedFacts": 5,
+    "rejectPendingSections": true,
+    "acceptPaths": [
+      "subject.gla",
+      "subject.yearBuilt",
+      "subject.parcelNumber",
+      "contract.salePrice",
+      "contract.contractDate",
+      "contract.closingDate",
+      "contract.concessions",
+      "market.listPrice",
+      "market.dom",
+      "site.zoning",
+      "site.permittedUse",
+      "assignment.clientName",
+      "assignment.lenderName",
+      "assignment.effectiveDate"
+    ]
+  },
+  "manualFacts": {
+    "subject": {
+      "address": { "value": "123 Test Street", "confidence": "high", "source": "fixture_operator" },
+      "city": { "value": "Bloomington", "confidence": "high", "source": "fixture_operator" },
+      "county": { "value": "McLean", "confidence": "high", "source": "fixture_operator" },
+      "state": { "value": "IL", "confidence": "high", "source": "fixture_operator" },
+      "parcelId": { "value": "21-15-406-018", "confidence": "high", "source": "fixture_operator" },
+      "gla": { "value": "2148", "confidence": "high", "source": "fixture_operator" },
+      "beds": { "value": "4", "confidence": "high", "source": "fixture_operator" },
+      "baths": { "value": "2.5", "confidence": "high", "source": "fixture_operator" },
+      "yearBuilt": { "value": "2008", "confidence": "high", "source": "fixture_operator" },
+      "siteSize": { "value": "0.24 acre", "confidence": "high", "source": "fixture_operator" },
+      "zoning": { "value": "R-1", "confidence": "high", "source": "fixture_operator" },
+      "condition": { "value": "C3", "confidence": "high", "source": "fixture_operator" },
+      "quality": { "value": "Q4", "confidence": "high", "source": "fixture_operator" },
+      "style": { "value": "Two-story", "confidence": "high", "source": "fixture_operator" },
+      "garage": { "value": "2-car attached", "confidence": "high", "source": "fixture_operator" },
+      "basement": { "value": "Partial finished basement", "confidence": "high", "source": "fixture_operator" }
+    },
+    "contract": {
+      "contractPrice": { "value": "455000", "confidence": "high", "source": "fixture_operator" },
+      "contractDate": { "value": "01/15/2026", "confidence": "high", "source": "fixture_operator" },
+      "closingDate": { "value": "03/01/2026", "confidence": "high", "source": "fixture_operator" },
+      "sellerConcessions": { "value": "$5,000 seller credit toward closing costs", "confidence": "high", "source": "fixture_operator" },
+      "financing": { "value": "Conventional", "confidence": "high", "source": "fixture_operator" },
+      "daysOnMarket": { "value": "12", "confidence": "high", "source": "fixture_operator" },
+      "offeringHistory": { "value": "Listed 01/03/2026 at $459,900; under contract 01/15/2026 at $455,000.", "confidence": "high", "source": "fixture_operator" }
+    },
+    "market": {
+      "trend": { "value": "Stable to slightly increasing", "confidence": "high", "source": "fixture_operator" },
+      "trendStat": { "value": "Median sale prices in the subject market increased approximately 3.2% over the prior 12 months.", "confidence": "high", "source": "fixture_operator" },
+      "trendStatSource": { "value": "Local MLS paired-sales and 12-month market snapshot dated 02/01/2026.", "confidence": "high", "source": "fixture_operator" },
+      "typicalDOM": { "value": "21", "confidence": "high", "source": "fixture_operator" },
+      "exposureTime": { "value": "30 to 60 days", "confidence": "high", "source": "fixture_operator" },
+      "priceRange": { "value": "$380,000 to $520,000", "confidence": "high", "source": "fixture_operator" }
+    },
+    "neighborhood": {
+      "boundaries": { "value": "Veterans Parkway on the west, Hershey Road on the east, Empire Street on the north, and Oakland Avenue on the south.", "confidence": "high", "source": "fixture_operator" },
+      "description": { "value": "Established suburban residential neighborhood consisting primarily of one- and two-story single-family homes built from the late 1990s through the 2010s.", "confidence": "high", "source": "fixture_operator" },
+      "landUse": { "value": "Predominantly single-family residential with supporting neighborhood commercial uses along major arterials.", "confidence": "high", "source": "fixture_operator" },
+      "builtUp": { "value": "Mostly built out", "confidence": "high", "source": "fixture_operator" }
+    },
+    "comps": [
+      {
+        "address": { "value": "118 Oak Ridge Drive", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "462000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "12/20/2025", "confidence": "high", "source": "fixture_operator" },
+        "gla": { "value": "2205", "confidence": "high", "source": "fixture_operator" },
+        "dom": { "value": "10", "confidence": "high", "source": "fixture_operator" },
+        "adjustments": { "value": "Adjusted for location, GLA, condition, basement finish, and garage utility.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "245 Maple Hollow Lane", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "448500", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "11/14/2025", "confidence": "high", "source": "fixture_operator" },
+        "gla": { "value": "2090", "confidence": "high", "source": "fixture_operator" },
+        "dom": { "value": "16", "confidence": "high", "source": "fixture_operator" },
+        "adjustments": { "value": "Adjusted for site size, GLA, overall condition, and updates.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "307 Hawthorne Court", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "469900", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "01/05/2026", "confidence": "high", "source": "fixture_operator" },
+        "gla": { "value": "2288", "confidence": "high", "source": "fixture_operator" },
+        "dom": { "value": "8", "confidence": "high", "source": "fixture_operator" },
+        "adjustments": { "value": "Adjusted for market conditions, GLA, basement finish, and site utility.", "confidence": "high", "source": "fixture_operator" }
+      }
+    ],
+    "assignment": {
+      "intendedUse": { "value": "Support a first mortgage lending decision.", "confidence": "high", "source": "fixture_operator" },
+      "intendedUser": { "value": "First Community Bank and secondary market participants as allowed by the engagement.", "confidence": "high", "source": "fixture_operator" },
+      "effectiveDate": { "value": "02/10/2026", "confidence": "high", "source": "fixture_operator" }
+    }
+  },
+  "manualFactSources": {
+    "subject.address": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Confirmed subject street address from fixture packet.", "note": "Operator-completed fixture fact." },
+    "subject.city": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Subject city confirmed as Bloomington.", "note": "Operator-completed fixture fact." },
+    "subject.county": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Subject county confirmed as McLean.", "note": "Operator-completed fixture fact." },
+    "subject.gla": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Finished living area confirmed at 2,148 square feet.", "note": "Operator-completed fixture fact." },
+    "subject.beds": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Fixture packet confirms four bedrooms.", "note": "Operator-completed fixture fact." },
+    "subject.baths": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Fixture packet confirms two and one-half baths.", "note": "Operator-completed fixture fact." },
+    "subject.siteSize": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Site size confirmed at 0.24 acre.", "note": "Operator-completed fixture fact." },
+    "subject.parcelId": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Parcel number 21-15-406-018 confirmed from county data.", "note": "Operator-completed fixture fact." },
+    "subject.zoning": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Zoning classification R-1 per zoning letter.", "note": "Operator-completed fixture fact." },
+    "subject.condition": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Overall condition rated C3 based on fixture inspection summary.", "note": "Operator-completed fixture fact." },
+    "subject.quality": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Overall quality rated Q4 based on fixture inspection summary.", "note": "Operator-completed fixture fact." },
+    "contract.contractPrice": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Purchase price confirmed at $455,000.", "note": "Operator-completed fixture fact." },
+    "contract.contractDate": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Contract date 01/15/2026.", "note": "Operator-completed fixture fact." },
+    "contract.closingDate": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Closing date 03/01/2026.", "note": "Operator-completed fixture fact." },
+    "contract.sellerConcessions": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Seller credit of $5,000 toward buyer closing costs.", "note": "Operator-completed fixture fact." },
+    "market.trend": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Market trend described as stable to slightly increasing.", "note": "Operator-completed fixture fact." },
+    "market.trendStat": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Median sale prices increased about 3.2% over the prior 12 months.", "note": "Operator-completed fixture fact." },
+    "market.typicalDOM": { "sourceType": "fixture_operator", "sourceId": "residential-fixture", "confidence": "high", "quote": "Typical marketing time of about 21 days.", "note": "Operator-completed fixture fact." }
+  },
+  "expectedSections": [
+    "neighborhood_boundaries",
+    "neighborhood_description",
+    "market_conditions",
+    "site_comments",
+    "improvements_condition",
+    "contract_analysis",
+    "concessions",
+    "offering_history",
+    "sca_summary",
+    "reconciliation"
+  ],
+  "generation": {
+    "timeoutMs": 180000,
+    "options": {
+      "useIntelligence": true
+    }
+  },
+  "insertion": {
+    "targetSoftware": "aci",
+    "timeoutMs": 120000
+  }
+}

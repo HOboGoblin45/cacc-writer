@@ -17,6 +17,7 @@ const logsDir = process.env.CACC_LOGS_DIR
   || path.join(os.tmpdir(), `cacc-unit-${runId}-logs`);
 
 const suites = [
+  'simplePdf.test.mjs',
   'textUtils.test.mjs',
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',

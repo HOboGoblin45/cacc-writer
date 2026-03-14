@@ -6,6 +6,7 @@
  * Behavior:
  * - If a server is already running at baseUrl, reuse it.
  * - If not running and autoStart=true, start cacc-writer-server.js on that port.
+ * - If server startup binds a different port, follow the actual bound port from logs.
  * - Return a stop() function that only stops the process this helper started.
  */
 
@@ -62,9 +63,25 @@ export async function ensureServerRunning({
 
   let outTail = '';
   let errTail = '';
+  let detectedBaseUrl = null;
   const appendTail = (tail, chunk) => (tail + chunk.toString()).slice(-4000);
-  child.stdout?.on('data', chunk => { outTail = appendTail(outTail, chunk); });
-  child.stderr?.on('data', chunk => { errTail = appendTail(errTail, chunk); });
+  const detectBoundPort = (chunk) => {
+    const text = chunk.toString();
+    const match = text.match(/CACC Writer server running on port (\d+)/);
+    if (!match) return;
+    const actualPort = match[1];
+    const currentUrl = new URL(baseUrl);
+    currentUrl.port = actualPort;
+    detectedBaseUrl = currentUrl.toString().replace(/\/$/, '');
+  };
+  child.stdout?.on('data', chunk => {
+    outTail = appendTail(outTail, chunk);
+    detectBoundPort(chunk);
+  });
+  child.stderr?.on('data', chunk => {
+    errTail = appendTail(errTail, chunk);
+    detectBoundPort(chunk);
+  });
 
   const stop = async () => {
     if (child.exitCode !== null) return;
@@ -84,6 +101,9 @@ export async function ensureServerRunning({
   while (Date.now() < deadline) {
     if (await isHealthy(baseUrl, pollIntervalMs)) {
       return { baseUrl, started: true, stop };
+    }
+    if (detectedBaseUrl && detectedBaseUrl !== baseUrl && await isHealthy(detectedBaseUrl, pollIntervalMs)) {
+      return { baseUrl: detectedBaseUrl, started: true, stop };
     }
     if (child.exitCode !== null) break;
     await sleep(pollIntervalMs);

@@ -1,0 +1,156 @@
+{
+  "name": "Commercial Narrative Golden Path",
+  "formType": "commercial",
+  "createCase": {
+    "address": "450 Commerce Parkway, Bloomington, IL 61704",
+    "borrower": "Harbor Point Holdings LLC",
+    "formType": "commercial",
+    "notes": "Golden path regression fixture for commercial narrative assignments."
+  },
+  "casePatch": {
+    "clientName": "Regional Capital Bank",
+    "lenderName": "Regional Capital Bank",
+    "assignmentPurpose": "Refinance",
+    "propertyType": "Industrial Flex",
+    "occupancyType": "Investor",
+    "reportConditionMode": "as_is",
+    "marketType": "suburban",
+    "city": "Bloomington",
+    "county": "McLean",
+    "state": "IL",
+    "marketArea": "Airport Industrial Corridor",
+    "neighborhood": "Airport Industrial Corridor"
+  },
+  "documents": [
+    {
+      "filename": "commercial-engagement-letter.pdf",
+      "contentFile": "documents/engagement_letter.txt"
+    },
+    {
+      "filename": "commercial-tax-record.pdf",
+      "docTypeHint": "tax_record",
+      "contentFile": "documents/assessor_record.txt"
+    },
+    {
+      "filename": "commercial-zoning-letter.pdf",
+      "contentFile": "documents/zoning_document.txt"
+    },
+    {
+      "filename": "commercial-property-summary.pdf",
+      "docTypeHint": "mls_sheet",
+      "contentFile": "documents/property_summary.txt"
+    }
+  ],
+  "review": {
+    "minExtractedFacts": 6,
+    "minAcceptedFacts": 4,
+    "rejectPendingSections": true,
+    "acceptPaths": [
+      "subject.gla",
+      "subject.parcelNumber",
+      "site.zoning",
+      "site.permittedUse",
+      "assignment.clientName",
+      "assignment.effectiveDate"
+    ]
+  },
+  "manualFacts": {
+    "subject": {
+      "address": { "value": "450 Commerce Parkway", "confidence": "high", "source": "fixture_operator" },
+      "city": { "value": "Bloomington", "confidence": "high", "source": "fixture_operator" },
+      "county": { "value": "McLean", "confidence": "high", "source": "fixture_operator" },
+      "state": { "value": "IL", "confidence": "high", "source": "fixture_operator" },
+      "siteSize": { "value": "2.31 acres", "confidence": "high", "source": "fixture_operator" },
+      "zoning": { "value": "I-1 Light Industrial", "confidence": "high", "source": "fixture_operator" },
+      "gla": { "value": "18240", "confidence": "high", "source": "fixture_operator" },
+      "condition": { "value": "Average to good overall condition with functional office and warehouse finish.", "confidence": "high", "source": "fixture_operator" },
+      "quality": { "value": "Average commercial quality", "confidence": "high", "source": "fixture_operator" }
+    },
+    "improvements": {
+      "propertyType": { "value": "Industrial flex building", "confidence": "high", "source": "fixture_operator" },
+      "buildingClass": { "value": "Class B", "confidence": "high", "source": "fixture_operator" },
+      "constructionType": { "value": "Steel frame with metal skin and masonry accent", "confidence": "high", "source": "fixture_operator" },
+      "grossBuildingArea": { "value": "18240", "confidence": "high", "source": "fixture_operator" },
+      "yearBuilt": { "value": "2012", "confidence": "high", "source": "fixture_operator" },
+      "condition": { "value": "Average to good overall condition with functional office finish and clear-height warehouse area.", "confidence": "high", "source": "fixture_operator" },
+      "effectiveAge": { "value": "8 years", "confidence": "high", "source": "fixture_operator" }
+    },
+    "market": {
+      "trend": { "value": "Stable industrial flex market with steady tenant demand.", "confidence": "high", "source": "fixture_operator" },
+      "submarket": { "value": "Airport Industrial Corridor", "confidence": "high", "source": "fixture_operator" },
+      "vacancyTrend": { "value": "Vacancy has remained below 7% over the prior 12 months.", "confidence": "high", "source": "fixture_operator" },
+      "rentTrend": { "value": "Rents are stable to slightly increasing for well-located flex product.", "confidence": "high", "source": "fixture_operator" },
+      "capRateTrend": { "value": "Investor cap rate expectations remain generally stable in the high-7% range.", "confidence": "high", "source": "fixture_operator" },
+      "demandSupply": { "value": "Supply is balanced with steady local and regional user demand.", "confidence": "high", "source": "fixture_operator" }
+    },
+    "income": {
+      "pgi": { "value": "195000", "confidence": "high", "source": "fixture_operator" },
+      "vacancyCollectionLoss": { "value": "9750", "confidence": "high", "source": "fixture_operator" },
+      "egi": { "value": "185250", "confidence": "high", "source": "fixture_operator" },
+      "operatingExpenses": { "value": "54200", "confidence": "high", "source": "fixture_operator" },
+      "noi": { "value": "131050", "confidence": "high", "source": "fixture_operator" },
+      "capRate": { "value": "7.75%", "confidence": "high", "source": "fixture_operator" },
+      "valueIndication": { "value": "1691000", "confidence": "high", "source": "fixture_operator" }
+    },
+    "sales": [
+      {
+        "address": { "value": "380 Logistics Drive", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1740000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "11/30/2025", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$95.39 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for location, office finish percentage, clear height, and loading utility.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "512 Distribution Lane", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1655000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "09/18/2025", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$90.74 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for site size, office finish, and age/condition.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "605 Terminal Road", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1815000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "01/22/2026", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$99.50 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for superior office finish and slightly better overall exposure.", "confidence": "high", "source": "fixture_operator" }
+      }
+    ],
+    "assignment": {
+      "intendedUse": { "value": "Support an internal refinance credit decision.", "confidence": "high", "source": "fixture_operator" },
+      "intendedUser": { "value": "Regional Capital Bank and other permitted intended users in the engagement.", "confidence": "high", "source": "fixture_operator" },
+      "effectiveDate": { "value": "02/20/2026", "confidence": "high", "source": "fixture_operator" },
+      "scopeOfWork": { "value": "Narrative commercial appraisal with sales comparison, income, and cost approach consideration.", "confidence": "high", "source": "fixture_operator" }
+    }
+  },
+  "manualFactSources": {
+    "subject.address": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Confirmed subject address from fixture packet.", "note": "Operator-completed fixture fact." },
+    "subject.city": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Subject city confirmed as Bloomington.", "note": "Operator-completed fixture fact." },
+    "subject.county": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Subject county confirmed as McLean.", "note": "Operator-completed fixture fact." },
+    "subject.gla": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Gross building area confirmed at 18,240 square feet.", "note": "Operator-completed fixture fact." },
+    "subject.siteSize": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Site area confirmed at 2.31 acres.", "note": "Operator-completed fixture fact." },
+    "subject.zoning": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Zoning confirmed as I-1 Light Industrial.", "note": "Operator-completed fixture fact." },
+    "subject.condition": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Overall condition described as average to good.", "note": "Operator-completed fixture fact." },
+    "subject.quality": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Overall quality described as average commercial quality.", "note": "Operator-completed fixture fact." },
+    "market.trend": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Stable industrial flex market with steady tenant demand.", "note": "Operator-completed fixture fact." },
+    "income.noi": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "NOI supported at $131,050.", "note": "Operator-completed fixture fact." },
+    "income.capRate": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Capitalization rate supported at 7.75%.", "note": "Operator-completed fixture fact." }
+  },
+  "expectedSections": [
+    "market_area",
+    "neighborhood_description",
+    "improvement_description",
+    "site_description",
+    "hbu_analysis",
+    "reconciliation"
+  ],
+  "generation": {
+    "timeoutMs": 180000,
+    "options": {
+      "useIntelligence": true
+    }
+  },
+  "insertion": {
+    "targetSoftware": "real_quantum",
+    "timeoutMs": 120000
+  }
+}
