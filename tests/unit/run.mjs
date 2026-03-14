@@ -44,6 +44,7 @@ const suites = [
   'complianceProfile.test.mjs',
   'intelligenceRules.test.mjs',
   'insertionQcGate.test.mjs',
+  'formDraftModel.test.mjs',
   'insertionReliability.test.mjs',
   'casesInsertionRoutes.test.mjs',
   'insertionReplay.test.mjs',
