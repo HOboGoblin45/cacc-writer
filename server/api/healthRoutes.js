@@ -65,6 +65,7 @@ import {
 import { MODEL } from '../openaiClient.js';
 import { getDb } from '../db/database.js';
 import { detectStuckStates } from '../operations/stuckStateDetector.js';
+import { probeAciAgent, probeRqAgent } from './agentHealth.js';
 import log from '../logger.js';
 
 const __dirname      = path.dirname(fileURLToPath(import.meta.url));
@@ -125,9 +126,9 @@ router.get('/health/detailed', async (_req, res) => {
       }
     } catch { /* non-fatal */ }
 
-    const [aciOk, rqOk] = await Promise.all([
-      fetch(`${ACI_AGENT_URL}/health`, { signal: AbortSignal.timeout(2000) }).then(r => r.ok).catch(() => false),
-      fetch(`${RQ_AGENT_URL}/health`,  { signal: AbortSignal.timeout(2000) }).then(r => r.ok).catch(() => false),
+    const [aciProbe, rqProbe] = await Promise.all([
+      probeAciAgent(ACI_AGENT_URL),
+      probeRqAgent(RQ_AGENT_URL),
     ]);
 
     res.json({
@@ -143,7 +144,14 @@ router.get('/health/detailed', async (_req, res) => {
         voiceTrainingCount: voiceCount,
       },
       cases:          { total: caseCount },
-      agents:         { aci: aciOk, rq: rqOk },
+      agents:         {
+        aci: aciProbe.ready,
+        rq: rqProbe.ready,
+        aciReachable: aciProbe.reachable,
+        rqReachable: rqProbe.reachable,
+        aciReason: aciProbe.reason,
+        rqReason: rqProbe.reason,
+      },
       pipelineStages: PIPELINE_STAGES,
     });
   } catch (err) {
@@ -185,17 +193,20 @@ router.get('/health/services', async (_req, res) => {
     }
 
     // Probe agents
-    const [aciOk, rqOk] = await Promise.all([
-      fetch(`${ACI_AGENT_URL}/health`, { signal: AbortSignal.timeout(2000) }).then(r => r.ok).catch(() => false),
-      fetch(`${RQ_AGENT_URL}/health`,  { signal: AbortSignal.timeout(2000) }).then(r => r.ok).catch(() => false),
+    const [aciProbe, rqProbe] = await Promise.all([
+      probeAciAgent(ACI_AGENT_URL),
+      probeRqAgent(RQ_AGENT_URL),
     ]);
+
+    const aciStatus = !aciProbe.reachable ? 'offline' : aciProbe.ready ? 'healthy' : 'degraded';
+    const rqStatus = !rqProbe.reachable ? 'offline' : rqProbe.ready ? 'healthy' : 'degraded';
 
     res.json({
       ok: true,
       services: {
         server:             { status: 'healthy',                    detail: `port ${PORT}, model ${MODEL}` },
-        aciAgent:           { status: aciOk ? 'healthy' : 'offline', detail: aciOk ? ACI_AGENT_URL : 'Not reachable — start desktop_agent/agent.py' },
-        rqAgent:            { status: rqOk  ? 'healthy' : 'offline', detail: rqOk  ? RQ_AGENT_URL  : 'Not reachable — start real_quantum_agent/agent.py' },
+        aciAgent:           { status: aciStatus, detail: aciProbe.reason || ACI_AGENT_URL },
+        rqAgent:            { status: rqStatus,  detail: rqProbe.reason || RQ_AGENT_URL },
         knowledgeBase:      { status: kbStatus,  detail: kbDetail },
         approvedNarratives: { status: narStatus, detail: narDetail },
       },

@@ -1,138 +1,151 @@
-# CACC Appraisal OS - Technical Execution Roadmap
+# CACC Writer Execution Roadmap
 
-Snapshot date: 2026-03-13
-Repository state reviewed from live code + unit suite.
+Audit baseline date: March 13, 2026
 
-## Canonical Status Source
+This roadmap reflects live code, live tests, and the current business target: internal completion for one appraiser first.
 
-Phase acceptance is tracked in:
-- `docs/PHASE_ACCEPTANCE_CHECKLIST.md`
+## Current baseline
 
-This roadmap defines execution order and major delivery outcomes from the current state.
+- Active production scope: `1004` and `commercial`
+- Deferred scope: `1025`, `1073`, `1004C`
+- Validation baseline:
+  - `npm run typecheck`
+  - `npm run test:unit` -> 237 passing
+  - `npm run test:smoke` -> 49 passing
+- Major realities:
+  - backend foundations are broad and real
+  - frontend operator surface is still concentrated in `index.html` and `app.js`
+  - golden-path validation is missing
+  - existing cases are not yet fully backfilled into canonical case records
 
-## Current Platform Baseline
+## Delivery order
 
-Core layers now in place:
-- Canonical case record and workflow scaffolding (`server/caseRecord/*`, `server/workflow/*`)
-- Intake/extraction/fact integrity and pre-draft gate (`server/ingestion/*`, `server/factIntegrity/*`)
-- 1004 workspace foundation with full blank-1004 parity (`server/workspace/*`, `workspace.js`, `index.html`)
-- Section factory with policy, prompt pinning, governance, and staleness invalidation (`server/sectionFactory/*`)
-- Comparable intelligence with comp-grid, income, cost, reconciliation (`server/comparableIntelligence/*`)
-- Contradiction graph + resolution lifecycle + gate (`server/contradictionGraph/*`, `server/qc/*`)
-- Insertion reliability with verification/readback and replay (`server/insertion/*`)
-- Inspection workflow with photo/measurement/condition capture (`server/inspection/*`)
-- Business operations with quote/engagement/invoice/pipeline (`server/business/*`)
-- Controlled learning loop with archive, revision-diff, suggestion ranking, explainability (`server/learning/*`)
-- Security with RBAC/auth/encryption/backup-restore/retention (`server/security/*`)
-- Commercialization with tenant/feature-flag/billing infrastructure (`server/business/*`)
+## Skill utilization protocol
 
-Desktop production UI:
-- 14 tabs: Case, Workspace, Facts, Generate, QC Grade, Voice, Intel, Valuation, Docs, Memory, Pipeline, Inspect, Governance, Learning, System
-- Learning dashboard with pattern explorer, suggestion history, influence explainability, ranked suggestions, revision diffs, archive controls
+These skills are now part of the delivery method, not optional side tools.
 
-Verification baseline:
-- `npm test` passing (147 API integration tests)
+- `playwright`: use for browser-driven regression of intake, workspace, generation, QC, archive, and packaged app flows when the behavior is exposed through the web UI.
+- `playwright-interactive`: use for persistent iterative UI debugging when a flow needs repeated inspection without relaunch overhead.
+- `screenshot`: use for desktop-level evidence capture during ACI and Real Quantum debugging, insertion verification, and operator-visible failure documentation.
+- `pdf`: use to inspect exported appraisal PDFs and packaged support output when layout, pagination, or exhibit fidelity matters.
+- `doc`: use when `.docx` support packs, checklists, or generated operator documents need formatting-aware validation.
+- `spreadsheet`: use for comp-support fixtures, structured valuation support tables, and QA of exported tabular data.
+- `gh-fix-ci`: use if GitHub Actions begins failing so CI issues are investigated from logs rather than guessed at locally.
+- `openai-docs`: use whenever OpenAI model, API, or platform guidance affects implementation choices and current official behavior matters.
+- `yeet`: use only when explicitly asked to stage, commit, push, and open a PR.
 
-## Completed Execution Windows
+## Phase-by-phase skill plan
 
-### Window 1 — Complete Workspace + Section Factory Operating Surface ✅
-- Full blank-1004 parity audit completed (20 sections + 5 addendum sections).
-- Section governance metadata surfaced (prompt version, policy state, quality score, freshness).
-- Staleness invalidation on upstream fact changes implemented end-to-end.
-- Phases D0 and D accepted.
+### Phase 0: truth alignment
 
-### Window 2 — Valuation Workspace Completion ✅
-- Comp-grid editor with slot management.
-- Income support workspace (rent comps, GRM, expense worksheet).
-- Cost support workspace (land value, replacement cost, depreciation).
-- Reconciliation service with weighted value calculation.
-- Phase H accepted.
+- align README and scope docs with live code
+- define done and scope categories
+- remove dead runtime references
+- use no specialty skill by default unless documentation output or CI evidence requires one
 
-### Window 3 — Contradiction Resolution + QC Operating Loop ✅
-- Full contradiction-resolution lifecycle (resolve/dismiss/acknowledge/reopen).
-- Contradiction gate check for finalization gating.
-- QC readiness signals in UI.
-- Phase E accepted.
+### Phase 1: golden-path validation
 
-### Window 4 — Controlled Learning and Assignment Memory ✅
-- Completed-assignment archive schema and persistence.
-- Draft-vs-final revision diffs capture.
-- Suggestion ranking loop from accepted historical patterns.
-- Appraiser-visible influence explanation per section.
-- Phase J accepted.
+- create golden `1004` and `commercial` fixtures
+- build an end-to-end harness covering intake through archive
+- fail loudly on broken steps
+- use `playwright` for browser regression of the golden path where UI state must be confirmed
+- use `screenshot` for desktop capture of ACI or Real Quantum failures and proof of insertion behavior
+- use `pdf`, `doc`, and `spreadsheet` as needed to validate fixture inputs and exported artifacts
 
-### Window 5 — Reliability, Security, and Productization ✅
-- RBAC/authn/authz, encryption-at-rest, backup/restore.
-- Data retention and compliance records.
-- Tenant separation, feature flags, billing hooks.
-- Phases F, K, L accepted.
+### Phase 2: `1004` production hardening
 
-### Desktop Production UI Phases (11-12) ✅
-- Phase 11: Learning dashboard with acceptance metrics, pattern explorer, suggestion history, influence explainability, ranked suggestions, revision diff stats, archive & feedback loop controls.
-- Phase 12: Scope documentation update and machine migration runbook.
+- workspace-level section governance
+- readiness states
+- residential missing-fact severity
+- version compare and restore
+- measurable ACI insertion reliability
+- use `playwright` or `playwright-interactive` to validate workspace readiness, section governance, and stale-state UX
+- use `screenshot` for every ACI placement or read-back defect that needs desktop evidence
+- use `pdf` to verify exported `1004` output and support-pack fidelity
 
-## Remaining Work (Core-to-100 Gaps)
+### Phase 3: commercial production hardening
 
-Items from `docs/CORE_VS_POST100_SCOPE.md` still marked **Needed**:
+- stronger commercial variants
+- structured support capture
+- deterministic Real Quantum replay workflow
+- exhibit/appendix packaging hooks
+- use `playwright` or `playwright-interactive` for commercial workspace and replay workflow validation
+- use `screenshot` for Real Quantum desktop/browser insertion evidence
+- use `spreadsheet` and `pdf` to validate rent-comp, expense, cap-rate, and exhibit outputs
 
-### Case & Workflow (DoD #1, #10)
-- Quote/engagement → case creation UI linkage
-- Due-date dashboard tied to case status
-- Case-header business status summary
-- Overdue/risk queue for upcoming deadlines
+### Phase 4: unified valuation desk
 
-### Fact Integrity (DoD #3)
-- Missing-facts severity dashboard (1004 and commercial)
+- sales comparison, income, cost, reconciliation in one surface
+- comp decision history
+- adjustment support notebook
+- reconciliation memo builder
+- use `playwright` to validate desk workflows, reason capture, and contradiction visibility
+- use `spreadsheet` for comp-grid and support-table fixture design and QA
+- use `pdf` or `doc` for value-support pack validation
 
-### Section Generation (DoD #5)
-- Section governance cards in workspace UI
-- "Ready to generate" / "ready to finalize" checklists
-- Section version compare / restore UX
+### Phase 5: fact integrity and research completion
 
-### Valuation Support (DoD #6)
-- Unified valuation desk UX
-- Comp candidate queue with reason history UI
-- Adjustment support notebook
-- Contradiction/burden visibility per comp
-- Reconciliation memo builder
-- Exportable value support pack
+- verifier-facing fact cards
+- research source presets
+- duplicate detection and review queues
+- conflict routing before drafting
+- use `playwright` for extracted-fact review queues and operator-approval UX
+- use `openai-docs` only if OpenAI extraction or prompting behavior must be aligned with current official platform guidance
 
-### Insertion (DoD #8)
-- ACI insertion reliability summary panel
-- Real Quantum insertion replay/operator UX
+### Phase 6: inspection workflow usability
 
-### Archive & Learning (DoD #9)
-- "Why this suggestion" drawer in workspace
-- Memory health tools (stale/duplicate/weak pruning)
+- mobile-friendly inspection mode
+- templates, tagged photos, voice-note capture
+- auditable merge back into canonical case facts
+- use `playwright` for responsive/mobile browser validation when the inspection surface is web-exposed
+- use `screenshot` for mobile-layout and media-tagging evidence if desktop browser simulation is insufficient
+- use `doc` or `pdf` if inspection summaries generate operator-facing documents
 
-### System Reliability (DoD #10)
-- Backup scheduler UI
-- Restore verification workflow
-- Audit-log viewer for critical events
+### Phase 7: learning transparency and memory health
 
-### Inspection (DoD #2, #3, #10)
-- Mobile-friendly inspection mode
-- Room/exterior checklist templates
-- Photo tagging by room/component
-- Voice note to observation flow
-- Post-inspection summary into prompt context
+- why-this-suggestion visibility
+- stale and duplicate memory management
+- report-family-aware retrieval tuning
+- phrase governance and metrics
+- use `playwright` for suggestion transparency and memory-management UX validation
+- use `openai-docs` if retrieval or model-behavior changes depend on current OpenAI guidance
 
-### Data Pipeline (DoD #3, #6)
-- Crawl preset library for appraisal sources
-- Extracted fact cards with provenance/conflict
-- Duplicate detection
-- Verification queues for extracted web data
+### Phase 8: business loop closure
 
-### Golden-Path Validation
-- 1004 end-to-end case fixture
-- Commercial end-to-end case fixture
-- Automated validation harness
-- Golden path test plan
+- engagement or quote into case creation
+- due-date and risk visibility
+- business state in case health
+- use `playwright` for intake-to-dashboard-to-case workflow validation
+- use `spreadsheet` if imported assignment tracking or tabular business exports are added
 
-## Working Rules for Future Changes
+### Phase 9: reliability, restore, and auditability
 
-- Keep `case record + workspace` as source of truth.
-- Do not bypass evidence provenance requirements.
-- Do not add hidden scoring logic.
-- Do not automate final comp/adjustment/reconciliation/value decisions.
-- Extend existing modules; do not replace completed foundations.
+- backup scheduler UI
+- restore verification workflow
+- clean-machine migration and recovery runbook
+- use `playwright` for backup and restore UI validation where browser-surfaced
+- use `screenshot` for packaged desktop recovery evidence
+- use `pdf` or `doc` for recovery runbook deliverables if formatted operator documentation is required
+
+### Phase 10: deferred form expansion
+
+- `1025`
+- `1073`
+- `1004C`
+- use the same skill pattern as Phases 1 through 3 for each newly activated form family
+- no deferred form activates without fixture validation, UI validation, and insertion evidence
+
+No deferred form should be activated before a full golden-path pass for that family.
+
+## Current highest-risk gaps
+
+- no end-to-end golden-path proof
+- no operationally complete canonical backfill for live cases
+- no unified valuation surface
+- no finished inspection workflow
+- no restore drill confidence
+- frontend maintainability risk
+
+## Control rule
+
+If a task does not improve the one-appraiser operating loop for the active `1004` or `commercial` lanes, it is not on the critical path to 100%.

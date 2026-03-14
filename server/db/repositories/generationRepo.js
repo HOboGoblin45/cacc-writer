@@ -598,7 +598,7 @@ export function saveGeneratedSection({
       (id, job_id, run_id, case_id, section_id, form_type,
        draft_text, final_text, audit_metadata_json, quality_score,
        quality_metadata_json, examples_used, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `).run(
     id,
     jobId,
@@ -611,7 +611,7 @@ export function saveGeneratedSection({
     JSON.stringify(auditMetadata || {}),
     qualityScore,
     JSON.stringify(qualityMetadata || {}),
-    examplesUsed
+    examplesUsed,
   );
 
   return id;
@@ -632,6 +632,59 @@ export function getGeneratedSectionsForRun(runId) {
      WHERE run_id = ?
      ORDER BY created_at ASC
   `).all(runId);
+}
+
+/**
+ * Update the reviewed/final text for an existing generated section row.
+ *
+ * @param {object} params
+ *   @param {string} params.runId
+ *   @param {string} params.sectionId
+ *   @param {string} params.text
+ *   @param {boolean} [params.approved]
+ * @returns {object|null}
+ */
+export function updateGeneratedSectionReview({ runId, sectionId, text, approved = false }) {
+  const db = getDb();
+  const existing = db.prepare(`
+    SELECT id, job_id, case_id, form_type, examples_used
+      FROM generated_sections
+     WHERE run_id = ? AND section_id = ?
+     ORDER BY created_at DESC
+     LIMIT 1
+  `).get(runId, sectionId);
+
+  if (!existing) return null;
+
+  const reviewedText = String(text || '');
+  const approvedAt = approved ? new Date().toISOString() : null;
+
+  db.prepare(`
+    UPDATE generated_sections
+       SET reviewed_text = ?,
+           final_text = ?,
+           approved = ?,
+           approved_at = ?
+     WHERE id = ?
+  `).run(
+    reviewedText,
+    reviewedText,
+    approved ? 1 : 0,
+    approvedAt,
+    existing.id,
+  );
+
+  return {
+    id: existing.id,
+    jobId: existing.job_id,
+    caseId: existing.case_id,
+    formType: existing.form_type,
+    examplesUsed: existing.examples_used || 0,
+    reviewedText,
+    finalText: reviewedText,
+    approved: Boolean(approved),
+    approvedAt,
+  };
 }
 
 // ── Analysis artifacts ────────────────────────────────────────────────────────
