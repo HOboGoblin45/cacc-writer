@@ -217,6 +217,26 @@ await test('executeInsertionRun classifies transport retries and succeeds on ret
   assert.equal(replayPackage.items.length, 0, 'clean successful run should not need replay items');
 });
 
+await test('prepareInsertionRun uses alias-backed draft text for stable insertion fields', async () => {
+  const caseId = randomId('case');
+  insertGeneratedSection({
+    caseId,
+    formType: '1004',
+    fieldId: 'sca_summary',
+    text: 'Alias-backed sales comparison summary text.',
+  });
+
+  const prepared = prepareInsertionRun({
+    caseId,
+    formType: '1004',
+    config: { fieldIds: ['sales_comparison_commentary'] },
+  });
+
+  assert.equal(prepared.items.length, 1);
+  assert.equal(prepared.items[0].fieldId, 'sales_comparison_commentary');
+  assert.equal(prepared.items[0].canonicalText, 'Alias-backed sales comparison summary text.');
+});
+
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
 if (failed) {
   for (const failure of failures) {

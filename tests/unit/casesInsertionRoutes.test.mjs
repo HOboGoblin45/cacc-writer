@@ -5,7 +5,9 @@
  */
 
 import assert from 'assert/strict';
+import crypto from 'crypto';
 import { ensureServerRunning } from '../helpers/serverHarness.mjs';
+import { getDb } from '../../server/db/database.js';
 import {
   createInsertionRun,
   createInsertionRunItems,
@@ -17,6 +19,10 @@ import {
 let passed = 0;
 let failed = 0;
 const failures = [];
+
+function randomId(prefix = 'id') {
+  return `${prefix}-${crypto.randomBytes(4).toString('hex')}`;
+}
 
 function recordPass(label) {
   passed++;
@@ -152,6 +158,31 @@ function seedFailedInsertionRun(caseId) {
   return run.id;
 }
 
+function seedGeneratedSection({ caseId, formType, sectionId, text }) {
+  const db = getDb();
+  const runId = randomId('run');
+  const jobId = randomId('job');
+  const createdAt = new Date().toISOString();
+
+  db.prepare(`
+    INSERT INTO generation_runs (
+      id, case_id, form_type, status, created_at
+    ) VALUES (?, ?, ?, 'completed', ?)
+  `).run(runId, caseId, formType, createdAt);
+
+  db.prepare(`
+    INSERT INTO section_jobs (
+      id, run_id, section_id, status, created_at
+    ) VALUES (?, ?, ?, 'completed', ?)
+  `).run(jobId, runId, sectionId, createdAt);
+
+  db.prepare(`
+    INSERT INTO generated_sections (
+      id, job_id, run_id, case_id, section_id, form_type, final_text, approved, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `).run(randomId('gs'), jobId, runId, caseId, sectionId, formType, text, createdAt);
+}
+
 console.log('\ncase-scoped insertion reliability routes');
 
 await testAsync('workspace payload includes latest insertion reliability summary', async () => {
@@ -213,6 +244,37 @@ await testAsync('case routes return insertion run detail and enforce case owners
   } finally {
     await deleteCase(caseId);
     await deleteCase(otherCaseId);
+  }
+});
+
+await testAsync('draft model endpoint backfills stable aliases before insertion', async () => {
+  harness = harness || await ensureServerRunning({ baseUrl, autoStart, cwd: process.cwd() });
+  const caseId = await createCase('Insertion Draft Model Alias Case');
+
+  try {
+    seedGeneratedSection({
+      caseId,
+      formType: '1004',
+      sectionId: 'sca_summary',
+      text: 'Stable sales comparison summary for alias backfill.',
+    });
+
+    const response = await fetch(`${harness.baseUrl}/api/insertion/draft-model/${caseId}?formType=1004&targetSoftware=aci`);
+    const body = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.ok(body.draftModel);
+    assert.equal(body.draftModel.formType, '1004');
+
+    const salesCommentary = body.draftModel.fields.find((field) => field.fieldId === 'sales_comparison_commentary');
+    assert.ok(salesCommentary, 'expected sales_comparison_commentary field');
+    assert.equal(salesCommentary.sourceFieldId, 'sca_summary');
+    assert.equal(salesCommentary.hasText, true);
+    assert.equal(salesCommentary.aliasUsed, true);
+    assert.match(salesCommentary.text, /Stable sales comparison summary/i);
+    assert.ok(body.draftModel.summary.aliasBackfilledFields >= 1);
+  } finally {
+    await deleteCase(caseId);
   }
 });
 

@@ -47,6 +47,7 @@ These skills are now part of the delivery method, not optional side tools.
 
 - create golden `1004` and `commercial` fixtures
 - build an end-to-end harness covering intake through archive
+- validate an explicit internal form draft model before insertion starts
 - fail loudly on broken steps
 - use `playwright` for browser regression of the golden path where UI state must be confirmed
 - use `screenshot` for desktop capture of ACI or Real Quantum failures and proof of insertion behavior
