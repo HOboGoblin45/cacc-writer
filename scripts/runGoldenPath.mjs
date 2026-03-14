@@ -587,6 +587,12 @@ if (healthServices.status !== 200 || healthServices.body?.ok !== true) {
 
 const capabilities = {
   aiKeySet: Boolean(healthDetailed.body.aiKeySet),
+  ai: {
+    configured: healthDetailed.body.ai?.configured === true,
+    ready: healthDetailed.body.ai?.ready === true,
+    reason: healthDetailed.body.ai?.reason || null,
+    model: healthDetailed.body.ai?.model || null,
+  },
   agents: {
     aci: healthDetailed.body.agents?.aci === true,
     rq: healthDetailed.body.agents?.rq === true,
@@ -597,7 +603,34 @@ console.log('Golden path validation');
 console.log(`  baseUrl: ${serverHarness.baseUrl}`);
 console.log(`  mode: ${options.allowDryRunInsertion ? 'preflight (dry-run insertion allowed)' : 'strict (live insertion required)'}`);
 console.log(`  aiKeySet: ${capabilities.aiKeySet}`);
+console.log(`  aiReady: ${capabilities.ai.ready}${capabilities.ai.reason ? ` (${capabilities.ai.reason})` : ''}`);
 console.log(`  agents: aci=${capabilities.agents.aci} rq=${capabilities.agents.rq}`);
+
+if (!capabilities.ai.ready) {
+  const preflightFailure = {
+    runAt: new Date().toISOString(),
+    baseUrl: serverHarness.baseUrl,
+    options: {
+      allowDryRunInsertion: options.allowDryRunInsertion,
+      cleanup: options.cleanup,
+    },
+    capabilities,
+    reports: [],
+    error: {
+      step: 'ai_preflight',
+      message: capabilities.ai.reason || 'OpenAI is not ready for generation',
+    },
+  };
+
+  if (options.reportPath) {
+    fs.mkdirSync(path.dirname(options.reportPath), { recursive: true });
+    fs.writeFileSync(options.reportPath, JSON.stringify(preflightFailure, null, 2));
+  }
+
+  console.error(`Golden path preflight failed: ${preflightFailure.error.message}`);
+  await serverHarness.stop();
+  process.exit(1);
+}
 
 const reports = [];
 for (const fixtureDir of options.fixtures) {

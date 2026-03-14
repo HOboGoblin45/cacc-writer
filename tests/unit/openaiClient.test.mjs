@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert/strict';
-import { estimateTokens, getContextWindowLimit } from '../../server/openaiClient.js';
+import { estimateTokens, getContextWindowLimit, probeOpenAIAuth } from '../../server/openaiClient.js';
 
 // ── Minimal test runner ───────────────────────────────────────────────────────
 
@@ -16,6 +16,19 @@ const failures = [];
 function test(label, fn) {
   try {
     fn();
+    passed++;
+    console.log('  OK   ' + label);
+  } catch (err) {
+    failed++;
+    failures.push({ label, err });
+    console.log('  FAIL ' + label);
+    console.log('       ' + err.message);
+  }
+}
+
+async function testAsync(label, fn) {
+  try {
+    await fn();
     passed++;
     console.log('  OK   ' + label);
   } catch (err) {
@@ -116,6 +129,50 @@ test('uses default MODEL when no argument provided', () => {
 test('is case-insensitive', () => {
   assert.equal(getContextWindowLimit('GPT-4.1'), 1_000_000);
   assert.equal(getContextWindowLimit('GPT-4O'), 128_000);
+});
+
+// ── probeOpenAIAuth ───────────────────────────────────────────────────────────
+
+console.log('\nprobeOpenAIAuth');
+
+await testAsync('returns ready=true when auth probe succeeds', async () => {
+  const result = await probeOpenAIAuth({
+    forceRefresh: true,
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: [{ id: 'gpt-4.1' }] }),
+    }),
+  });
+  assert.equal(result.ready, true);
+  assert.equal(result.reason, null);
+});
+
+await testAsync('returns actionable reason for unauthorized key', async () => {
+  const result = await probeOpenAIAuth({
+    forceRefresh: true,
+    fetchImpl: async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: { message: 'Incorrect API key provided' } }),
+      text: async () => 'Incorrect API key provided',
+    }),
+  });
+  assert.equal(result.ready, false);
+  assert.equal(result.reason, 'OpenAI API key is invalid or unauthorized');
+});
+
+await testAsync('returns timeout reason when probe throws AbortError', async () => {
+  const result = await probeOpenAIAuth({
+    forceRefresh: true,
+    fetchImpl: async () => {
+      const error = new Error('timed out');
+      error.name = 'AbortError';
+      throw error;
+    },
+  });
+  assert.equal(result.ready, false);
+  assert.equal(result.reason, 'OpenAI auth probe timed out');
 });
 
 // ── Summary ────────────────────────────────────────────────────────────────
