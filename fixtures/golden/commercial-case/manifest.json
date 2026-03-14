@@ -1,0 +1,194 @@
+{
+  "name": "Commercial Narrative Golden Path",
+  "formType": "commercial",
+  "createCase": {
+    "address": "450 Commerce Parkway, Bloomington, IL 61704",
+    "borrower": "Harbor Point Holdings LLC",
+    "formType": "commercial",
+    "notes": "Golden path regression fixture for commercial narrative assignments."
+  },
+  "casePatch": {
+    "clientName": "Regional Capital Bank",
+    "lenderName": "Regional Capital Bank",
+    "assignmentPurpose": "Refinance",
+    "propertyType": "Industrial Flex",
+    "occupancyType": "Investor",
+    "reportConditionMode": "as_is",
+    "marketType": "suburban",
+    "city": "Bloomington",
+    "county": "McLean",
+    "state": "IL",
+    "marketArea": "Airport Industrial Corridor",
+    "neighborhood": "Airport Industrial Corridor"
+  },
+  "documents": [
+    {
+      "filename": "commercial-engagement-letter.pdf",
+      "contentFile": "documents/engagement_letter.txt"
+    },
+    {
+      "filename": "commercial-tax-record.pdf",
+      "docTypeHint": "tax_record",
+      "contentFile": "documents/assessor_record.txt"
+    },
+    {
+      "filename": "commercial-zoning-letter.pdf",
+      "contentFile": "documents/zoning_document.txt"
+    },
+    {
+      "filename": "commercial-property-summary.pdf",
+      "docTypeHint": "mls_sheet",
+      "contentFile": "documents/property_summary.txt"
+    }
+  ],
+  "review": {
+    "minExtractedFacts": 6,
+    "minAcceptedFacts": 4,
+    "rejectPendingSections": true,
+    "acceptPaths": [
+      "subject.gla",
+      "subject.parcelNumber",
+      "site.zoning",
+      "site.permittedUse",
+      "assignment.clientName",
+      "assignment.effectiveDate"
+    ]
+  },
+  "manualFacts": {
+    "subject": {
+      "address": { "value": "450 Commerce Parkway", "confidence": "high", "source": "fixture_operator" },
+      "city": { "value": "Bloomington", "confidence": "high", "source": "fixture_operator" },
+      "county": { "value": "McLean", "confidence": "high", "source": "fixture_operator" },
+      "state": { "value": "IL", "confidence": "high", "source": "fixture_operator" },
+      "siteSize": { "value": "2.31 acres", "confidence": "high", "source": "fixture_operator" },
+      "zoning": { "value": "I-1 Light Industrial", "confidence": "high", "source": "fixture_operator" },
+      "gla": { "value": "18240", "confidence": "high", "source": "fixture_operator" },
+      "condition": { "value": "Average to good overall condition with functional office and warehouse finish.", "confidence": "high", "source": "fixture_operator" },
+      "quality": { "value": "Average commercial quality", "confidence": "high", "source": "fixture_operator" }
+    },
+    "improvements": {
+      "propertyType": { "value": "Industrial flex building", "confidence": "high", "source": "fixture_operator" },
+      "buildingClass": { "value": "Class B", "confidence": "high", "source": "fixture_operator" },
+      "constructionType": { "value": "Steel frame with metal skin and masonry accent", "confidence": "high", "source": "fixture_operator" },
+      "grossBuildingArea": { "value": "18240", "confidence": "high", "source": "fixture_operator" },
+      "yearBuilt": { "value": "2012", "confidence": "high", "source": "fixture_operator" },
+      "condition": { "value": "Average to good overall condition with functional office finish and clear-height warehouse area.", "confidence": "high", "source": "fixture_operator" },
+      "effectiveAge": { "value": "8 years", "confidence": "high", "source": "fixture_operator" }
+    },
+    "market": {
+      "trend": { "value": "Stable industrial flex market with steady tenant demand.", "confidence": "high", "source": "fixture_operator" },
+      "submarket": { "value": "Airport Industrial Corridor", "confidence": "high", "source": "fixture_operator" },
+      "vacancyTrend": { "value": "Vacancy has remained below 7% over the prior 12 months.", "confidence": "high", "source": "fixture_operator" },
+      "rentTrend": { "value": "Rents are stable to slightly increasing for well-located flex product.", "confidence": "high", "source": "fixture_operator" },
+      "capRateTrend": { "value": "Investor cap rate expectations remain generally stable in the high-7% range.", "confidence": "high", "source": "fixture_operator" },
+      "demandSupply": { "value": "Supply is balanced with steady local and regional user demand.", "confidence": "high", "source": "fixture_operator" }
+    },
+    "income": {
+      "pgi": { "value": "195000", "confidence": "high", "source": "fixture_operator" },
+      "vacancyCollectionLoss": { "value": "9750", "confidence": "high", "source": "fixture_operator" },
+      "egi": { "value": "185250", "confidence": "high", "source": "fixture_operator" },
+      "operatingExpenses": { "value": "54200", "confidence": "high", "source": "fixture_operator" },
+      "noi": { "value": "131050", "confidence": "high", "source": "fixture_operator" },
+      "capRate": { "value": "7.75%", "confidence": "high", "source": "fixture_operator" },
+      "valueIndication": { "value": "1691000", "confidence": "high", "source": "fixture_operator" }
+    },
+    "sales": [
+      {
+        "address": { "value": "380 Logistics Drive", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1740000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "11/30/2025", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$95.39 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for location, office finish percentage, clear height, and loading utility.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "512 Distribution Lane", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1655000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "09/18/2025", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$90.74 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for site size, office finish, and age/condition.", "confidence": "high", "source": "fixture_operator" }
+      },
+      {
+        "address": { "value": "605 Terminal Road", "confidence": "high", "source": "fixture_operator" },
+        "salePrice": { "value": "1815000", "confidence": "high", "source": "fixture_operator" },
+        "saleDate": { "value": "01/22/2026", "confidence": "high", "source": "fixture_operator" },
+        "unitOfComparison": { "value": "$99.50 per square foot", "confidence": "high", "source": "fixture_operator" },
+        "adjustmentsNarrative": { "value": "Adjusted for superior office finish and slightly better overall exposure.", "confidence": "high", "source": "fixture_operator" }
+      }
+    ],
+    "assignment": {
+      "intendedUse": { "value": "Support an internal refinance credit decision.", "confidence": "high", "source": "fixture_operator" },
+      "intendedUser": { "value": "Regional Capital Bank and other permitted intended users in the engagement.", "confidence": "high", "source": "fixture_operator" },
+      "effectiveDate": { "value": "02/20/2026", "confidence": "high", "source": "fixture_operator" },
+      "scopeOfWork": { "value": "Narrative commercial appraisal with sales comparison, income, and cost approach consideration.", "confidence": "high", "source": "fixture_operator" }
+    }
+  },
+  "manualFactSources": {
+    "subject.address": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Confirmed subject address from fixture packet.", "note": "Operator-completed fixture fact." },
+    "subject.city": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Subject city confirmed as Bloomington.", "note": "Operator-completed fixture fact." },
+    "subject.county": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Subject county confirmed as McLean.", "note": "Operator-completed fixture fact." },
+    "subject.gla": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Gross building area confirmed at 18,240 square feet.", "note": "Operator-completed fixture fact." },
+    "subject.siteSize": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Site area confirmed at 2.31 acres.", "note": "Operator-completed fixture fact." },
+    "subject.zoning": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Zoning confirmed as I-1 Light Industrial.", "note": "Operator-completed fixture fact." },
+    "subject.condition": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Overall condition described as average to good.", "note": "Operator-completed fixture fact." },
+    "subject.quality": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Overall quality described as average commercial quality.", "note": "Operator-completed fixture fact." },
+    "market.trend": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Stable industrial flex market with steady tenant demand.", "note": "Operator-completed fixture fact." },
+    "income.noi": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "NOI supported at $131,050.", "note": "Operator-completed fixture fact." },
+    "income.capRate": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Capitalization rate supported at 7.75%.", "note": "Operator-completed fixture fact." }
+  },
+  "expectedSections": [
+    "market_area",
+    "neighborhood_description",
+    "improvement_description",
+    "site_description",
+    "hbu_analysis",
+    "reconciliation"
+  ],
+  "reviewedSections": {
+    "market_area": {
+      "sectionStatus": "reviewed",
+      "text": "The Airport Industrial Corridor in Bloomington, Illinois is a functional suburban industrial submarket oriented to flex, warehouse, and service-commercial users that benefit from access to Interstate 55, Veterans Parkway, and regional labor. Current supply is generally balanced with user demand, vacancy has remained comparatively moderate, and well-located industrial-flex properties continue to attract owner-user and investor interest when condition and utility are competitive."
+    },
+    "neighborhood_description": {
+      "sectionStatus": "reviewed",
+      "text": "The subject is located within a predominantly industrial and service-commercial corridor characterized by flex, warehouse, light manufacturing, and support uses that benefit from arterial access and proximity to airport-oriented logistics routes. Surrounding development reflects a functional commercial pattern rather than residential influence, and the neighborhood remains competitive for industrial-flex occupancy given its access, utility, and established commercial identity."
+    },
+    "improvement_description": {
+      "sectionStatus": "reviewed",
+      "text": "The subject improvements consist of an industrial-flex building constructed in 2012 with a steel-frame structural system, metal skin exterior finish, masonry accent, and a utility mix that supports office and warehouse occupancy. The building contains approximately 18,240 square feet of gross building area with a functional combination of office finish, warehouse area, and supporting site improvements consistent with competitive flex properties in the Airport Industrial Corridor. Overall condition is average to good, with utility and finish adequate for continued industrial-flex use."
+    },
+    "site_description": {
+      "sectionStatus": "reviewed",
+      "text": "The site contains approximately 2.31 acres and is zoned for light industrial use consistent with the existing improvement and surrounding development pattern. Access, exposure, utility availability, and overall site utility are typical for competitive industrial-flex properties in this corridor, and no adverse physical or legal site issues are indicated by the fixture packet."
+    },
+    "hbu_analysis": {
+      "sectionStatus": "reviewed",
+      "text": "The highest and best use of the subject site as though vacant is for industrial-oriented development permitted by current zoning and supported by surrounding land use patterns, access, and utility availability. As improved, the existing industrial-flex improvement appears consistent with that legally permissible and financially feasible use because the building utility, site support, and market demand remain aligned with continued industrial-flex occupancy. Final highest and best use judgment remains an appraiser conclusion based on the full record."
+    },
+    "hbu_as_improved": {
+      "sectionStatus": "reviewed",
+      "text": "As improved, the subject's continued use as an industrial-flex property appears to be the highest and best use because the existing improvements are legally permissible, physically suited to the site, and economically aligned with market demand in the Airport Industrial Corridor. The current building configuration, site utility, and surrounding commercial pattern support continued industrial-flex occupancy rather than demolition or conversion to an alternate use. Final highest and best use reconciliation remains an appraiser judgment."
+    },
+    "sales_comparison": {
+      "sectionStatus": "reviewed",
+      "text": "The sales comparison approach considered recent industrial-flex transfers that bracket the subject for location, building utility, size, office finish, and overall market appeal. Adjustments were applied for the principal points of difference identified in the file, and the resulting adjusted indications provide a reasoned market range for comparison with the income approach. Final comparable emphasis, adjustment judgment, and approach weighting remain appraiser decisions."
+    },
+    "income_approach": {
+      "sectionStatus": "reviewed",
+      "text": "The income approach was developed because the subject is a multi-tenant industrial-flex property that competes in an investment-oriented market. Market rent support, stabilized occupancy expectations, and operating expense patterns indicate a net operating income consistent with the subject's location, building utility, and condition. Capitalizing the stabilized NOI at a market-supported overall rate provides a meaningful value indication for reconciliation, while the final rate selection and weighting remain an appraiser judgment."
+    },
+    "reconciliation": {
+      "sectionStatus": "reviewed",
+      "text": "Both the sales comparison and income approaches were considered in this assignment, with primary weight placed on the approach that is best supported by the subject's investor appeal, income-producing utility, and the quality of available market evidence. The cost approach was considered for reasonableness but given less weight due to depreciation judgment and limited direct buyer reliance in this submarket. Final approach weighting and the final value conclusion remain subject to appraiser reconciliation judgment and signoff."
+    }
+  },
+  "generation": {
+    "timeoutMs": 180000,
+    "options": {
+      "useIntelligence": true
+    }
+  },
+  "insertion": {
+    "targetSoftware": "real_quantum",
+    "timeoutMs": 120000
+  }
+}

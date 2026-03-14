@@ -1,200 +1,147 @@
-# CACC Writer — Golden Path Test Plan
+# Golden Path Test Plan
 
-Last updated: 2026-03-13
-Purpose: Prove the system works end-to-end on two real assignment lanes before claiming production readiness.
+## Goal
 
----
+Validate that CACC Writer can move a real fixture-backed assignment from intake through archive using shipped APIs and canonical case records, without database surgery.
 
-## Overview
+This plan is intentionally stricter than smoke tests:
 
-Two golden-path cases exercise the full lifecycle:
+- It uses fixture documents uploaded through the live document pipeline.
+- It reviews and merges extracted facts through review endpoints.
+- It loads the case workspace from the canonical case projection.
+- It runs full-draft generation, QC, insertion/export, and archive.
+- It fails loudly on missing capability, blocked readiness, or partial output.
 
-| Case | Form Type | Fixture Path | Insertion Target |
-|------|-----------|-------------|-----------------|
-| GP-1004-001 | 1004 (single-family residential) | `fixtures/golden/1004-case/` | ACI (port 5180) |
-| GP-COMM-001 | commercial (12-unit multifamily) | `fixtures/golden/commercial-case/` | Real Quantum (port 5181) |
+## Fixtures
 
-Each case must complete every lifecycle stage without manual DB surgery, JSON file edits, or workarounds.
+- `fixtures/golden/1004-case/`
+- `fixtures/golden/commercial-case/`
 
----
+Each fixture contains:
 
-## Validation Command
+- `manifest.json`: case metadata, expected sections, review rules, manual operator facts, provenance expectations, and insertion target.
+- `documents/*.txt`: source evidence rendered to deterministic text PDFs at runtime.
 
-```bash
-node fixtures/golden/run-golden-path.mjs
-```
+## Harness
 
-Options:
-- `--lane 1004` — run only the 1004 case
-- `--lane commercial` — run only the commercial case
-- `--skip-insertion` — skip the insertion stage (useful when ACI/RQ agents are not running)
-- `--skip-generation` — skip AI generation (useful for testing pipeline without OpenAI calls)
-- `--verbose` — print full response bodies
+Entry point:
 
-The harness exits `0` on all stages passing, `1` on any failure.
+- `node scripts/runGoldenPath.mjs`
 
----
+Package scripts:
 
-## Lifecycle Stages
+- `npm run test:golden`
+- `npm run test:golden:preflight`
+- `npm run test:golden:1004`
+- `npm run test:golden:commercial`
 
-Each golden-path case passes through these stages in order. Every stage is validated by the harness.
+Runtime behavior:
 
-### Stage 1: Case Create
-- **Endpoint:** `POST /api/cases/create`
-- **Input:** `case-seed.json` → `formType`, `address`, `borrower`/`owner`, `assignment` metadata
-- **Pass criteria:**
-  - Response `ok: true`
-  - Returns `caseId`
-  - `GET /api/cases/:caseId` returns the case with correct form type and `status: active`
+- Starts against `http://localhost:5178` by default unless `GOLDEN_BASE_URL` is set.
+- Uses an isolated temporary SQLite DB by default.
+- Disables file logging and KB writes for regression safety.
+- Uses live `cases/` directories, so optional cleanup is available via `--cleanup`.
 
-### Stage 2: Document Upload
-- **Endpoint:** `POST /api/cases/:caseId/documents/upload`
-- **Input:** Each file in `documents/` folder
-- **Pass criteria:**
-  - Each upload returns `ok: true` with `documentId`
-  - `GET /api/cases/:caseId/documents` lists all uploaded documents
-  - Document count matches fixture file count
+## Skill-assisted validation
 
-### Stage 3: Extraction
-- **Endpoint:** `POST /api/cases/:caseId/documents/:docId/extract`
-- **Input:** Trigger extraction for each uploaded document
-- **Pass criteria:**
-  - Each extraction returns without server error (5xx)
-  - `GET /api/cases/:caseId/extraction-summary` shows extraction attempted for each document
-  - Note: Extraction quality is not gated here — the test validates the pipeline runs, not AI accuracy
+Golden-path validation should use the available skills when they materially improve confidence:
 
-### Stage 4: Fact Merge
-- **Endpoint:** `PUT /api/cases/:caseId/facts`
-- **Input:** Core facts from `case-seed.json` (subject, transaction, neighborhood, income for commercial)
-- **Pass criteria:**
-  - Response `ok: true`
-  - `GET /api/cases/:caseId/record` returns the case with merged facts
-  - Fact sources are persisted (`PUT /api/cases/:caseId/fact-sources`)
-  - Pre-draft gate check (`GET /api/cases/:caseId/pre-draft-check`) returns a meaningful result (not a server error)
+- `playwright`: verify browser-visible state transitions, operator workflow continuity, and UI regressions that the API harness alone cannot prove.
+- `playwright-interactive`: use during iterative UI debugging when repeated inspection of one broken flow is needed.
+- `screenshot`: capture ACI or Real Quantum desktop evidence for insertion failures, wrong-box placement, and replay diagnostics.
+- `pdf`: inspect exported report files and packaged support output where visual fidelity matters.
+- `doc`: inspect any `.docx` operator deliverables or support packs generated by the flow.
+- `spreadsheet`: validate structured fixture inputs or exported support tables when the golden path relies on them.
 
-### Stage 5: Intelligence Build
-- **Endpoint:** `POST /api/cases/:caseId/missing-facts` (batch check)
-- **Endpoint:** `GET /api/cases/:caseId/workspace` (workspace projection with section requirements)
-- **Pass criteria:**
-  - Missing-facts response identifies which sections have sufficient facts
-  - Workspace projection returns section list matching the form type
-  - For 1004: at least 10 sections listed
-  - For commercial: at least 5 sections listed
+## Validation Flow
 
-### Stage 6: Generation
-- **Endpoint:** `POST /api/cases/:caseId/generate-all` or `POST /api/generate-batch`
-- **Input:** Priority sections for the form type
-- **Pass criteria:**
-  - Generation returns without server error
-  - Each priority section has a generated text result (may be placeholder if OpenAI is unavailable)
-  - `GET /api/cases/:caseId/history` shows version entries for generated sections
-  - If `--skip-generation` is set, this stage is skipped with a warning
+Per fixture, the harness executes:
 
-### Stage 7: QC
-- **Endpoint:** `GET /api/cases/:caseId/qc-approval-gate`
-- **Pass criteria:**
-  - QC gate returns a structured result with severity-graded findings
-  - Response includes `ready` status field
-  - No unhandled server errors
+1. Case creation
+2. Case metadata patch
+3. Pipeline transition to `extracting`
+4. Document upload through `/api/cases/:caseId/documents/upload`
+5. Extraction summary load
+6. Extracted fact review and explicit merge
+7. Fact provenance writeback for accepted extracted facts
+8. Extracted section review cleanup
+9. Workspace load through `GET /api/cases/:caseId`
+10. Explicit operator fact completion through `PUT /api/cases/:caseId/facts`
+11. Explicit operator provenance writeback through `PUT /api/cases/:caseId/fact-sources`
+12. Pipeline transition to `generating`
+13. Pre-draft gate validation
+14. Full-draft orchestration
+15. Operator-reviewed section persistence for sections the fixture explicitly completes after draft
+16. Generation result validation against fixture-required sections
+17. Pipeline transition to `review`
+18. QC run and blocker check
+19. Insertion run
+20. Export manifest + export file write
+21. Archive
 
-### Stage 8: Insertion / Export
-- **Endpoint:** `GET /api/cases/:caseId/insertion-runs` (check insertion infrastructure)
-- **Endpoint:** Export via `POST /api/export/bundle/:caseId` or equivalent
-- **Pass criteria:**
-  - Insertion route responds without error
-  - Export bundle can be generated
-  - If `--skip-insertion` is set, this stage validates the route exists but does not trigger actual insertion
+## Modes
 
-### Stage 9: Archive
-- **Endpoint:** `PATCH /api/cases/:caseId/status` with `{ status: 'archived' }`
-- **Endpoint:** `POST /api/cases/:caseId/archive` (learning archive)
-- **Pass criteria:**
-  - Case status changes to `archived`
-  - Archive endpoint responds without error
-  - `GET /api/cases/:caseId` confirms archived status
+### Strict Mode
 
----
+Default:
 
-## Fixture Files
+- `node scripts/runGoldenPath.mjs`
 
-### 1004 Case (`fixtures/golden/1004-case/`)
+Rules:
 
-| File | Purpose |
-|------|---------|
-| `case-seed.json` | Subject property facts, assignment details, transaction info, neighborhood, comparables reference |
-| `comparables.json` | Three comparable sales with adjustments and reconciliation |
-| `documents/engagement-letter.txt` | Engagement letter from AMC |
-| `documents/purchase-contract.txt` | Purchase and sale agreement |
-| `documents/assessor-record.txt` | County assessor property record card |
-| `documents/mls-listing.txt` | MLS listing detail sheet |
-| `documents/market-conditions.txt` | Residential market conditions summary |
+- Requires live AI generation.
+- Requires live insertion agents for the target lane.
+- Fails if insertion does not complete cleanly.
+- This is the mode that counts for production-lane acceptance.
 
-### Commercial Case (`fixtures/golden/commercial-case/`)
+### Preflight Mode
 
-| File | Purpose |
-|------|---------|
-| `case-seed.json` | Subject property facts, assignment details, income data, neighborhood |
-| `comparables.json` | Three sale comps, three rent comps, and reconciliation |
-| `documents/engagement-letter.txt` | Commercial engagement letter |
-| `documents/rent-roll.txt` | Current rent roll with unit-level detail |
-| `documents/operating-statements.txt` | Three years of operating statements |
-| `documents/assessor-record.txt` | County assessor record for commercial parcel |
-| `documents/market-conditions.txt` | Multifamily market conditions summary |
+Command:
 
----
+- `node scripts/runGoldenPath.mjs --allow-dry-run-insertion`
 
-## Pass/Fail Summary
+Rules:
 
-The harness prints a checklist at the end:
+- Uses the full pipeline but allows insertion dry-run execution.
+- Still fails on extraction, merge, gate, generation, QC blockers, export, or archive problems.
+- Does not count as production insertion validation.
+- Intended for regression coverage on machines without live ACI / Real Quantum agents running.
 
-```
-GOLDEN PATH RESULTS — 1004 (GP-1004-001)
-  [PASS] Case Create
-  [PASS] Document Upload (5 documents)
-  [PASS] Extraction
-  [PASS] Fact Merge
-  [PASS] Intelligence Build
-  [PASS] Generation (10 sections)
-  [PASS] QC Gate
-  [PASS] Insertion/Export
-  [PASS] Archive
-  Result: 9/9 stages passed
+## Failure Policy
 
-GOLDEN PATH RESULTS — Commercial (GP-COMM-001)
-  [PASS] Case Create
-  [PASS] Document Upload (5 documents)
-  [PASS] Extraction
-  [PASS] Fact Merge
-  [PASS] Intelligence Build
-  [PASS] Generation (5 sections)
-  [PASS] QC Gate
-  [PASS] Insertion/Export
-  [PASS] Archive
-  Result: 9/9 stages passed
-```
+The harness must fail for any of the following:
 
-A failure at any stage prints the error response body and continues to subsequent stages (all stages are attempted even after a failure, to produce a complete diagnostic).
+- fixture documents do not upload
+- extracted facts are missing or below fixture minimums
+- pending fact review is left unresolved
+- pre-draft gate is blocked
+- generation ends in `failed` or produces missing/thin required sections
+- QC returns any blocker findings
+- insertion cannot run in strict mode
+- export file is not written
+- archive does not persist
 
----
+The harness reports:
 
-## Known Gaps That May Block a Green Run
+- failing step
+- case ID
+- generation run ID
+- QC run ID
+- insertion run ID
+- raw failure payload when available
+- supporting screenshot or artifact path when skill-assisted evidence is captured
 
-| Gap | Impact | Workaround |
-|-----|--------|-----------|
-| OpenAI API key required for generation | Stage 6 fails without valid API key | Use `--skip-generation` flag |
-| ACI agent must be running for 1004 insertion | Stage 8 incomplete without agent on port 5180 | Use `--skip-insertion` flag |
-| Real Quantum agent must be running for commercial insertion | Stage 8 incomplete without agent on port 5181 | Use `--skip-insertion` flag |
-| Document extraction depends on AI parsing quality | Stage 3 may produce partial results | Facts are manually seeded in Stage 4 to ensure downstream stages work |
-| Export bundle endpoint may not exist yet | Stage 8 export step may fail | Harness treats export as optional within Stage 8 |
+## Honest Current Limitation
 
----
+Workspace load currently maps to canonical case projection load (`GET /api/cases/:caseId`).
 
-## Adding to CI
+There is no separate dedicated workspace API contract in the shipped backend today. The test plan treats canonical case projection load as the workspace source-of-truth path.
 
-To run golden-path checks in CI without external dependencies:
+## Regression Use
 
-```bash
-node fixtures/golden/run-golden-path.mjs --skip-insertion --skip-generation
-```
+Phase 1 regression baseline:
 
-This validates the full API pipeline (create → upload → extract → merge → intelligence → QC → archive) without requiring OpenAI or desktop automation agents.
+- run `npm run test:golden:preflight` on machines without live agents
+- run `npm run test:golden` on machines with live ACI and Real Quantum agents
+
+Phase 1 is only fully accepted when strict mode passes for both fixtures.

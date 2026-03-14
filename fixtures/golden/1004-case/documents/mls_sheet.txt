@@ -1,0 +1,11 @@
+MLS LISTING SHEET
+Address: 123 Test Street, Bloomington, IL 61701
+List Price: $459,900
+Selling Price: $455,000
+DOM: 12
+GLA: 2148
+Year Built: 2008
+Beds: 4
+Baths: 2.5
+Lot Size: 0.24 acre
+Remarks: Two-story home in an established suburban subdivision with updated kitchen finishes and partial finished basement.
