@@ -252,6 +252,18 @@ async function dpQuickExtractSubject() {
   }
 }
 
+function dpAddCompSlot() {
+  const container = document.getElementById('dpCompSlots');
+  if (!container) return;
+  const idx = PIPELINE_STATE.compUrls.length;
+  PIPELINE_STATE.compUrls.push('');
+  const row = document.createElement('div');
+  row.className = 'dp-comp-row';
+  row.dataset.comp = idx;
+  row.innerHTML = `<label>Comp ${idx + 1}</label><div style="display:flex;gap:6px;"><input type="text" class="dp-comp-url" placeholder="Comp ${idx + 1} URL..." oninput="PIPELINE_STATE.compUrls[${idx}]=this.value"/><button class="sm" onclick="dpCrawlComp(${idx})" title="Crawl">Crawl</button><button class="sm sec" onclick="dpQuickExtractComp(${idx})" title="Quick Extract">QE</button></div>`;
+  container.appendChild(row);
+}
+
 async function dpCrawlComp(index) {
   const creds = dpGetCredentials();
   if (!creds) return;
