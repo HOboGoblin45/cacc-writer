@@ -55,7 +55,7 @@ log.info('server:start', { model: MODEL, port: PORT });
 
 app.use((req, res, next) => {
   const start = Date.now();
-  const skip = ['/favicon.ico', '/app.js', '/phase8.css', '/index.html', '/'].includes(req.path);
+  const skip = ['/favicon.ico', '/app.js', '/index.html', '/'].includes(req.path);
   res.on('finish', () => {
     if (!skip) {
       log.request(req.method, req.path, res.statusCode, Date.now() - start);
@@ -67,7 +67,6 @@ app.use((req, res, next) => {
 app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
-app.get('/phase8.css', (_q, r) => r.sendFile(path.join(__dirname, 'phase8.css')));
 app.get('/favicon.ico', (_q, r) => {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0b1020"/><text x="16" y="23" font-family="Arial" font-size="20" font-weight="bold" fill="#d7b35a" text-anchor="middle">C</text></svg>';
   r.setHeader('Content-Type', 'image/svg+xml');

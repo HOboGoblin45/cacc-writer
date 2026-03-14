@@ -1,0 +1,91 @@
+{
+  "version": "phase-c.v1",
+  "ranAt": "2026-03-11T22:20:55.640Z",
+  "extractionRuns": [
+    {
+      "fixtureId": "extract-contract-basic",
+      "expectedCount": 3,
+      "extractedCount": 3,
+      "matchedCount": 3,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "docType": "contract"
+    },
+    {
+      "fixtureId": "extract-mls-core",
+      "expectedCount": 4,
+      "extractedCount": 5,
+      "matchedCount": 4,
+      "falsePositiveCount": 1,
+      "falseNegativeCount": 0,
+      "precision": 0.8,
+      "recall": 1,
+      "f1": 0.8889,
+      "docType": "mls_sheet"
+    },
+    {
+      "fixtureId": "extract-zoning-legal-nc",
+      "expectedCount": 2,
+      "extractedCount": 3,
+      "matchedCount": 2,
+      "falsePositiveCount": 1,
+      "falseNegativeCount": 0,
+      "precision": 0.6667,
+      "recall": 1,
+      "f1": 0.8,
+      "docType": "zoning_document"
+    }
+  ],
+  "gateRuns": [
+    {
+      "fixtureId": "gate-pass-clean",
+      "expectedOk": true,
+      "actualOk": true,
+      "okMatch": true,
+      "missingExpectedBlockers": [],
+      "unexpectedBlockers": [],
+      "passed": true
+    },
+    {
+      "fixtureId": "gate-block-pending-facts",
+      "expectedOk": false,
+      "actualOk": false,
+      "okMatch": true,
+      "missingExpectedBlockers": [],
+      "unexpectedBlockers": [],
+      "passed": true
+    }
+  ],
+  "summary": {
+    "generatedAt": "2026-03-11T22:20:55.640Z",
+    "extraction": {
+      "fixtureCount": 3,
+      "avgPrecision": 0.8222,
+      "avgRecall": 1,
+      "avgF1": 0.8963,
+      "byLane": {
+        "unspecified": {
+          "fixtureCount": 3,
+          "avgPrecision": 0.8222,
+          "avgRecall": 1,
+          "avgF1": 0.8963
+        }
+      }
+    },
+    "gate": {
+      "fixtureCount": 2,
+      "passedCount": 2,
+      "passRate": 1,
+      "byLane": {
+        "unspecified": {
+          "fixtureCount": 2,
+          "passedCount": 2,
+          "passRate": 1
+        }
+      }
+    }
+  }
+}
