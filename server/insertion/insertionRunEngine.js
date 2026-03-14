@@ -19,6 +19,7 @@ import { formatForDestination } from './formatters/index.js';
 import { verifyInsertion, readInsertionField } from './verificationEngine.js';
 import { decideFallback, copyToClipboard } from './fallbackHandler.js';
 import { callAgentInsert } from './agentClient.js';
+import { getFormDraftTextMap } from './formDraftModel.js';
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -1152,37 +1153,7 @@ async function checkAgentHealth(agentBaseUrl) {
  * @returns {Map<string, string>} fieldId → text
  */
 function gatherFieldTexts(caseId, formType, generationRunId = null) {
-  const db = getDb();
-  const texts = new Map();
-
-  let sql = `
-    SELECT section_id, draft_text, reviewed_text, final_text, approved
-    FROM generated_sections
-    WHERE case_id = ? AND form_type = ?
-  `;
-  const params = [caseId, formType];
-
-  if (generationRunId) {
-    sql += ' AND run_id = ?';
-    params.push(generationRunId);
-  }
-
-  sql += ' ORDER BY created_at DESC';
-
-  const rows = db.prepare(sql).all(...params);
-
-  for (const row of rows) {
-    // Skip if we already have text for this field (take most recent)
-    if (texts.has(row.section_id)) continue;
-
-    // Priority: final_text > reviewed_text > draft_text
-    const text = row.final_text || row.reviewed_text || (row.approved ? row.draft_text : row.draft_text);
-    if (text && text.trim().length > 0) {
-      texts.set(row.section_id, text);
-    }
-  }
-
-  return texts;
+  return getFormDraftTextMap({ caseId, formType, generationRunId });
 }
 
 /**

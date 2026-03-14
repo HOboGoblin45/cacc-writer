@@ -73,11 +73,12 @@ Per fixture, the harness executes:
 14. Full-draft orchestration
 15. Operator-reviewed section persistence for sections the fixture explicitly completes after draft
 16. Generation result validation against fixture-required sections
-17. Pipeline transition to `review`
-18. QC run and blocker check
-19. Insertion run
-20. Export manifest + export file write
-21. Archive
+17. Internal draft-model validation against the current report-family requirement matrix
+18. Pipeline transition to `review`
+19. QC run and blocker check
+20. Insertion run
+21. Export manifest + export file write
+22. Archive
 
 ## Modes
 
@@ -116,6 +117,7 @@ The harness must fail for any of the following:
 - pending fact review is left unresolved
 - pre-draft gate is blocked
 - generation ends in `failed` or produces missing/thin required sections
+- the internal draft model is missing required fields for the current report-family plan
 - QC returns any blocker findings
 - insertion cannot run in strict mode
 - export file is not written
