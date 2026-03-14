@@ -19,7 +19,6 @@ import {
   getDestinationProfile,
   updateDestinationProfile,
   getItemHistoryForField,
-  getLatestInsertionRun,
 } from '../insertion/insertionRepo.js';
 import {
   prepareInsertionRun, executeInsertionRun,
@@ -29,7 +28,7 @@ import {
 import { executeReplay, executeSelectiveReplay } from '../insertion/replayEngine.js';
 import { buildInsertionDiff } from '../insertion/diffEngine.js';
 import { resolveAllMappings, buildMappingPreview, inferTargetSoftware } from '../insertion/destinationMapper.js';
-import { getDb } from '../db/database.js';
+import { buildFormDraftModel, getFormDraftTextMap } from '../insertion/formDraftModel.js';
 
 const router = Router();
 
@@ -301,38 +300,34 @@ router.get('/insertion/preview/:caseId', (req, res) => {
     const { caseId } = req.params;
     const formType = req.query.formType || '1004';
     const targetSoftware = req.query.targetSoftware || inferTargetSoftware(formType);
-
-    const db = getDb();
-    const fieldTexts = new Map();
-    const previousStatuses = new Map();
-
-    const rows = db.prepare(
-      `SELECT section_id, draft_text, reviewed_text, final_text, approved
-       FROM generated_sections WHERE case_id = ? AND form_type = ?
-       ORDER BY created_at DESC`
-    ).all(caseId, formType);
-
-    for (const row of rows) {
-      if (!fieldTexts.has(row.section_id)) {
-        const text = row.final_text || row.reviewed_text || row.draft_text || '';
-        if (text.trim()) fieldTexts.set(row.section_id, text);
-      }
-    }
-
-    const latestRun = getLatestInsertionRun(caseId);
-    if (latestRun) {
-      const items = getInsertionRunItems(latestRun.id);
-      for (const item of items) {
-        previousStatuses.set(item.fieldId, item.status);
-      }
-    }
+    const generationRunId = req.query.generationRunId || null;
+    const draftModel = buildFormDraftModel({ caseId, formType, generationRunId, targetSoftware });
+    const fieldTexts = getFormDraftTextMap({ caseId, formType, generationRunId, targetSoftware });
+    const previousStatuses = new Map(
+      draftModel.fields
+        .filter(field => field.previousInsertionStatus)
+        .map(field => [field.fieldId, field.previousInsertionStatus]),
+    );
 
     const preview = buildMappingPreview(formType, targetSoftware, fieldTexts, previousStatuses);
     preview.caseId = caseId;
 
-    res.json({ preview });
+    res.json({ preview, draftModel });
   } catch (err) {
     sendError(res, 500, 'INSERTION_PREVIEW_FAILED', err.message);
+  }
+});
+
+router.get('/insertion/draft-model/:caseId', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const formType = req.query.formType || '1004';
+    const targetSoftware = req.query.targetSoftware || inferTargetSoftware(formType);
+    const generationRunId = req.query.generationRunId || null;
+    const draftModel = buildFormDraftModel({ caseId, formType, generationRunId, targetSoftware });
+    res.json({ draftModel });
+  } catch (err) {
+    sendError(res, 500, 'INSERTION_DRAFT_MODEL_FAILED', err.message);
   }
 });
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 import { ensureServerRunning } from '../tests/helpers/serverHarness.mjs';
 import { buildSimplePdf } from '../tests/helpers/simplePdf.mjs';
+import { inferTargetSoftware } from '../server/insertion/destinationMapper.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, '..');
@@ -410,6 +411,34 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       });
     }
     recordStep('generation_result', 'passed', `Generated ${Object.keys(sections).length} section(s)`);
+
+    const draftModelRes = await apiJson(
+      baseUrl,
+      'GET',
+      `/api/insertion/draft-model/${caseId}?formType=${encodeURIComponent(manifest.formType)}&generationRunId=${encodeURIComponent(generationRunId)}&targetSoftware=${encodeURIComponent(manifest.insertion?.targetSoftware || inferTargetSoftware(manifest.formType))}`,
+      null,
+      20000,
+    );
+    if (draftModelRes.status !== 200 || !draftModelRes.body?.draftModel) {
+      failStep('draft_model', 'Failed to build internal form draft model', draftModelRes.body);
+    }
+    const draftModel = draftModelRes.body.draftModel;
+    if ((draftModel.summary?.missingRequiredFields || 0) > 0) {
+      failStep(
+        'draft_model',
+        `Internal form draft is missing ${draftModel.summary.missingRequiredFields} required field(s)`,
+        draftModel,
+      );
+    }
+    recordStep(
+      'draft_model',
+      'passed',
+      `Internal draft source=${draftModel.summary?.sourceReadiness || 'unknown'} insertion=${draftModel.summary?.insertionReadiness || 'unknown'} aliasBackfilled=${draftModel.summary?.aliasBackfilledFields || 0}`,
+      {
+        missingRequiredFields: draftModel.summary?.missingRequiredFields || 0,
+        insertionReadyFields: draftModel.summary?.insertionReadyFields || 0,
+      },
+    );
 
     const reviewRes = await apiJson(baseUrl, 'PATCH', `/api/cases/${caseId}/pipeline`, { stage: 'review' });
     if (reviewRes.status !== 200 || reviewRes.body?.ok !== true) {
