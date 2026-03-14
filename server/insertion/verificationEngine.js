@@ -16,19 +16,25 @@
  * @param {string} params.fieldId - Canonical field ID
  * @param {string} params.agentFieldKey - Key in the agent's field map
  * @param {string} params.formattedText - The text that was sent to the agent
+ * @param {string} params.formType - Form family for the destination agent
  * @param {'aci' | 'real_quantum'} params.targetSoftware
  * @param {string} params.agentBaseUrl - Agent base URL
  * @param {string} [params.verificationMode] - Verification method
+ * @param {Object|null} [params.targetRect] - Agent-reported target rect for exact read-back
  * @param {number} [params.timeout=10000] - Request timeout in ms
  * @returns {Promise<import('./types.js').VerificationResult>}
  */
+import { readFieldFromAgent } from './agentClient.js';
+
 export async function verifyInsertion({
   fieldId,
   agentFieldKey,
   formattedText,
+  formType,
   targetSoftware,
   agentBaseUrl,
   verificationMode = null,
+  targetRect = null,
   timeout = 10000,
 }) {
   const startTime = Date.now();
@@ -50,8 +56,10 @@ export async function verifyInsertion({
   try {
     const readback = await readInsertionField({
       agentFieldKey,
+      formType,
       targetSoftware,
       agentBaseUrl,
+      targetRect,
       timeout,
     });
 
@@ -101,15 +109,19 @@ export async function verifyInsertion({
  *
  * @param {Object} params
  * @param {string} params.agentFieldKey
+ * @param {string} [params.formType]
  * @param {'aci' | 'real_quantum'} params.targetSoftware
  * @param {string} params.agentBaseUrl
+ * @param {Object|null} [params.targetRect]
  * @param {number} [params.timeout=10000]
  * @returns {Promise<{status: 'passed' | 'unreadable' | 'not_supported' | 'failed', rawValue: string|null, normalizedValue: string|null, message: string|null, durationMs: number}>}
  */
 export async function readInsertionField({
   agentFieldKey,
+  formType = null,
   targetSoftware,
   agentBaseUrl,
+  targetRect = null,
   timeout = 10000,
 }) {
   const startTime = Date.now();
@@ -124,7 +136,13 @@ export async function readInsertionField({
   }
 
   try {
-    const rawValue = await readFieldFromAgent(agentFieldKey, targetSoftware, agentBaseUrl, timeout);
+    const rawValue = await readFieldFromAgent({
+      fieldId: agentFieldKey,
+      formType,
+      agentBaseUrl,
+      targetRect,
+      timeout,
+    });
     if (rawValue === null || rawValue === undefined) {
       return {
         status: 'unreadable',
@@ -150,57 +168,6 @@ export async function readInsertionField({
       message: `Read-back error: ${err.message}`,
       durationMs: Date.now() - startTime,
     };
-  }
-}
-
-// ── Agent Communication ───────────────────────────────────────────────────────
-
-/**
- * Read a field value from the agent.
- *
- * @param {string} agentFieldKey
- * @param {'aci' | 'real_quantum'} targetSoftware
- * @param {string} agentBaseUrl
- * @param {number} timeout
- * @returns {Promise<string|null>}
- */
-async function readFieldFromAgent(agentFieldKey, targetSoftware, agentBaseUrl, timeout) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const url = `${agentBaseUrl}/read-field`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        field: agentFieldKey,
-        form_type: undefined, // Agent infers from current state
-      }),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      throw new Error(`Agent returned ${response.status}: ${errText}`);
-    }
-
-    const data = await response.json();
-
-    // ACI agent returns { success, value, ... }
-    // RQ agent returns { success, value, ... }
-    if (data.success && data.value !== undefined) {
-      return data.value;
-    }
-
-    // Some agents return the text directly
-    if (typeof data.text === 'string') {
-      return data.text;
-    }
-
-    return data.value || null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 

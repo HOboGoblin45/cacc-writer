@@ -20,6 +20,7 @@ const dbPath = process.env.CACC_DB_PATH
   || path.join(os.tmpdir(), `cacc-unit-${runId}.db`);
 
 const suites = [
+  'simplePdf.test.mjs',
   'textUtils.test.mjs',
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',
@@ -49,10 +50,14 @@ const suites = [
   'envPrecedence.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
+  'agentHealth.test.mjs',
+  'agentClient.test.mjs',
+  'verificationEngine.test.mjs',
   'openaiClient.test.mjs',
   'promptBuilder.test.mjs',
   'knowledgeBase.test.mjs',
   'generationService.test.mjs',
+  'generationRepo.test.mjs',
   'generationOrchestrator.test.mjs',
   'sectionPolicyService.test.mjs',
   'sectionFactoryPolicy.test.mjs',
