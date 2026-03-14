@@ -22,6 +22,7 @@ import log from './logger.js';
 
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1';
+const OPENAI_AUTH_PROBE_TTL_MS = Number(process.env.OPENAI_AUTH_PROBE_TTL_MS) || 30_000;
 
 // Retry configuration
 const DEFAULT_MAX_RETRIES = 2;        // 1 original + 2 retries = 3 total attempts
@@ -34,6 +35,7 @@ if (!OPENAI_API_KEY) {
 
 // Single shared client instance
 const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
+let _openAIAuthProbeCache = null;
 
 // ── Concurrency limiter ─────────────────────────────────────────────────────
 // Prevents flooding OpenAI with too many parallel requests (avoids 429 errors)
@@ -56,6 +58,98 @@ function releaseSlot() {
   } else {
     _activeRequests--;
   }
+}
+
+function buildAuthProbeResult({ configured, ready, reason = null, checkedAt = new Date().toISOString() }) {
+  return {
+    configured,
+    ready,
+    reason,
+    model: MODEL,
+    checkedAt,
+  };
+}
+
+async function performOpenAIAuthProbe({
+  fetchImpl = fetch,
+  apiKey = OPENAI_API_KEY,
+  timeoutMs = 4000,
+} = {}) {
+  if (!apiKey) {
+    return buildAuthProbeResult({
+      configured: false,
+      ready: false,
+      reason: 'OPENAI_API_KEY is not set',
+    });
+  }
+
+  const response = await fetchImpl('https://api.openai.com/v1/models?limit=1', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  if (response.ok) {
+    return buildAuthProbeResult({
+      configured: true,
+      ready: true,
+    });
+  }
+
+  let detail = '';
+  try {
+    const body = await response.json();
+    detail = body?.error?.message || body?.message || '';
+  } catch {
+    detail = await response.text().catch(() => '');
+  }
+
+  let reason = `OpenAI auth probe failed with status ${response.status}`;
+  if (response.status === 401) reason = 'OpenAI API key is invalid or unauthorized';
+  else if (response.status === 429) reason = 'OpenAI auth probe was rate limited';
+  else if (detail) reason = `${reason}: ${detail}`;
+
+  return buildAuthProbeResult({
+    configured: true,
+    ready: false,
+    reason,
+  });
+}
+
+export async function probeOpenAIAuth({
+  forceRefresh = false,
+  timeoutMs = 4000,
+  fetchImpl = null,
+} = {}) {
+  const now = Date.now();
+  if (!forceRefresh && !fetchImpl && _openAIAuthProbeCache && (now - _openAIAuthProbeCache.cachedAtMs) < OPENAI_AUTH_PROBE_TTL_MS) {
+    return { ..._openAIAuthProbeCache.result };
+  }
+
+  let result;
+  try {
+    result = await performOpenAIAuthProbe({
+      fetchImpl: fetchImpl || fetch,
+      timeoutMs,
+    });
+  } catch (err) {
+    const timeout = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+    result = buildAuthProbeResult({
+      configured: Boolean(OPENAI_API_KEY),
+      ready: false,
+      reason: timeout ? 'OpenAI auth probe timed out' : `OpenAI auth probe failed: ${err.message}`,
+    });
+  }
+
+  if (!fetchImpl) {
+    _openAIAuthProbeCache = {
+      cachedAtMs: now,
+      result,
+    };
+  }
+  return result;
 }
 
 /**
