@@ -125,6 +125,46 @@ await test('getFormDraftTextMap exposes alias-backed field text to insertion pre
   );
 });
 
+await test('buildFormDraftModel backfills commercial rent roll remarks from market rent analysis', () => {
+  const caseId = randomId('case');
+  insertGeneratedSection({
+    caseId,
+    formType: 'commercial',
+    sectionId: 'market_rent_analysis',
+    text: 'Market rent analysis text used for rent roll remarks.',
+  });
+
+  const draftModel = buildFormDraftModel({ caseId, formType: 'commercial', targetSoftware: 'real_quantum' });
+  const rentRollRemarks = draftModel.fields.find(field => field.fieldId === 'rent_roll_remarks');
+
+  assert.ok(rentRollRemarks, 'expected rent roll remarks field');
+  assert.equal(rentRollRemarks.sourceFieldId, 'market_rent_analysis');
+  assert.equal(rentRollRemarks.hasText, true);
+  assert.equal(rentRollRemarks.aliasUsed, true);
+  assert.match(rentRollRemarks.text, /market rent analysis/i);
+});
+
+await test('getFormDraftTextMap backfills commercial income approach subfields from income approach text', () => {
+  const caseId = randomId('case');
+  insertGeneratedSection({
+    caseId,
+    formType: 'commercial',
+    sectionId: 'income_approach',
+    text: 'Income approach conclusion text used for expense remarks and direct capitalization.',
+  });
+
+  const fieldTexts = getFormDraftTextMap({ caseId, formType: 'commercial', targetSoftware: 'real_quantum' });
+
+  assert.equal(
+    fieldTexts.get('expense_remarks'),
+    'Income approach conclusion text used for expense remarks and direct capitalization.',
+  );
+  assert.equal(
+    fieldTexts.get('direct_capitalization_conclusion'),
+    'Income approach conclusion text used for expense remarks and direct capitalization.',
+  );
+});
+
 await cleanup();
 
 console.log('\n' + '-'.repeat(60));

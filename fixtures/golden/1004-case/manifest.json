@@ -175,6 +175,7 @@
     "concessions",
     "offering_history",
     "sca_summary",
+    "exposure_time",
     "reconciliation"
   ],
   "reviewedSections": {
@@ -193,6 +194,10 @@
     "sca_summary": {
       "sectionStatus": "reviewed",
       "text": "The sales comparison analysis indicates the subject competes within a stable East Bloomington single-family market where recent comparable transfers provide the most relevant evidence of market behavior for this assignment. The selected comparable sales bracket the subject in overall utility, neighborhood appeal, and buyer profile, and the resulting indication is considered the strongest support for the report narrative. Final comparable weighting, adjustment judgment, and value reconciliation remain subject to appraiser review and signature."
+    },
+    "exposure_time": {
+      "sectionStatus": "reviewed",
+      "text": "Based on current market conditions, typical buyer demand, and recent marketing periods for similar properties in this competitive segment, a reasonable exposure time for the subject is estimated to be approximately 30 to 60 days. This opinion reflects prevailing market behavior in the East Bloomington area and remains subject to appraiser judgment in the context of the complete assignment record."
     },
     "reconciliation": {
       "sectionStatus": "reviewed",
