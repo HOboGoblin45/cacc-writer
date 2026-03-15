@@ -43,6 +43,7 @@ const suites = [
   'documentQuality.test.mjs',
   'complianceProfile.test.mjs',
   'intelligenceRules.test.mjs',
+  'sectionPlanner.test.mjs',
   'insertionQcGate.test.mjs',
   'formDraftModel.test.mjs',
   'insertionReliability.test.mjs',
