@@ -36,6 +36,11 @@ const FORM_SOURCE_ALIASES = {
     offering_history: ['prior_sales'],
     sales_comparison_commentary: ['sca_summary', 'sales_comparison'],
   },
+  commercial: {
+    rent_roll_remarks: ['market_rent_analysis'],
+    expense_remarks: ['income_approach'],
+    direct_capitalization_conclusion: ['income_approach'],
+  },
 };
 
 function trimToText(value) {
