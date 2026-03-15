@@ -136,14 +136,23 @@
     "income.capRate": { "sourceType": "fixture_operator", "sourceId": "commercial-fixture", "confidence": "high", "quote": "Capitalization rate supported at 7.75%.", "note": "Operator-completed fixture fact." }
   },
   "expectedSections": [
+    "introduction",
     "market_area",
     "neighborhood_description",
     "improvement_description",
     "site_description",
     "hbu_analysis",
+    "market_rent_analysis",
+    "rent_roll_remarks",
+    "expense_remarks",
+    "direct_capitalization_conclusion",
     "reconciliation"
   ],
   "reviewedSections": {
+    "introduction": {
+      "sectionStatus": "reviewed",
+      "text": "This appraisal was prepared for Regional Capital Bank in connection with a refinance assignment involving the industrial-flex property located at 450 Commerce Parkway in Bloomington, Illinois. The report develops a narrative analysis of the subject real estate as of the effective date identified in the assignment, and it is intended to support the client's internal credit decision subject to the stated scope of work, assumptions, and appraiser judgment."
+    },
     "market_area": {
       "sectionStatus": "reviewed",
       "text": "The Airport Industrial Corridor in Bloomington, Illinois is a functional suburban industrial submarket oriented to flex, warehouse, and service-commercial users that benefit from access to Interstate 55, Veterans Parkway, and regional labor. Current supply is generally balanced with user demand, vacancy has remained comparatively moderate, and well-located industrial-flex properties continue to attract owner-user and investor interest when condition and utility are competitive."
@@ -172,9 +181,25 @@
       "sectionStatus": "reviewed",
       "text": "The sales comparison approach considered recent industrial-flex transfers that bracket the subject for location, building utility, size, office finish, and overall market appeal. Adjustments were applied for the principal points of difference identified in the file, and the resulting adjusted indications provide a reasoned market range for comparison with the income approach. Final comparable emphasis, adjustment judgment, and approach weighting remain appraiser decisions."
     },
+    "market_rent_analysis": {
+      "sectionStatus": "reviewed",
+      "text": "Market rent support was developed from industrial-flex lease evidence within the Airport Industrial Corridor and competing industrial submarkets that reflect similar access, building utility, office finish, and tenant appeal. The available lease data indicates market rent levels that are generally stable to slightly increasing for competitive flex properties, and the resulting rent conclusion is intended to support the income approach rather than replace appraiser judgment regarding final lease selection or weighting."
+    },
+    "rent_roll_remarks": {
+      "sectionStatus": "reviewed",
+      "text": "The rent roll and stabilized occupancy analysis indicate the subject operates as a multi-tenant industrial-flex property with income characteristics consistent with local market expectations for comparable space. Existing tenancy, vacancy allowance, and projected collection patterns were considered in the file to support a stabilized revenue position for the income approach, subject to appraiser review of tenant quality, rollover, and final underwriting assumptions."
+    },
+    "expense_remarks": {
+      "sectionStatus": "reviewed",
+      "text": "Operating expense support was developed from the subject's historical expense pattern, published market indicators, and appraiser normalization of items that may vary from year to year. The resulting expense allowance reflects a stabilized operating profile appropriate for an industrial-flex property of this size and utility, while final treatment of reserves, management, and non-recurring items remains subject to appraiser judgment."
+    },
     "income_approach": {
       "sectionStatus": "reviewed",
       "text": "The income approach was developed because the subject is a multi-tenant industrial-flex property that competes in an investment-oriented market. Market rent support, stabilized occupancy expectations, and operating expense patterns indicate a net operating income consistent with the subject's location, building utility, and condition. Capitalizing the stabilized NOI at a market-supported overall rate provides a meaningful value indication for reconciliation, while the final rate selection and weighting remain an appraiser judgment."
+    },
+    "direct_capitalization_conclusion": {
+      "sectionStatus": "reviewed",
+      "text": "A direct capitalization conclusion was developed from the stabilized net operating income and a market-supported overall rate that reflects current investor expectations for competitive industrial-flex assets in this submarket. The resulting indication provides a reasoned income-based benchmark for reconciliation, while final capitalization rate judgment and final weighting remain appraiser decisions."
     },
     "reconciliation": {
       "sectionStatus": "reviewed",
