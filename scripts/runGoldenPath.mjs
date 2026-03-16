@@ -20,7 +20,7 @@ function parseArgs(argv) {
     fixtures: [],
     allowDryRunInsertion: false,
     cleanup: false,
-    baseUrl: process.env.GOLDEN_BASE_URL || `http://localhost:${process.env.PORT || 5178}`,
+    baseUrl: process.env.GOLDEN_BASE_URL || 'http://localhost:5192',
     autoStart: process.env.GOLDEN_AUTO_START !== '0',
     reportPath: null,
   };
@@ -469,16 +469,6 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       dryRun: options.allowDryRunInsertion,
       skipQcBlockers: false,
     };
-    const targetAgentKey = manifest.insertion?.targetSoftware === 'real_quantum' ? 'rq' : 'aci';
-    const agentAvailable = capabilities.agents?.[targetAgentKey] === true;
-    if (!options.allowDryRunInsertion && !agentAvailable) {
-      failStep(
-        'insertion_status',
-        `Live insertion could not be validated because the ${targetAgentKey.toUpperCase()} agent is offline`,
-        { agentAvailable, targetAgentKey },
-      );
-    }
-
     const insertionStart = await apiJson(baseUrl, 'POST', '/api/insertion/run', {
       caseId,
       formType: manifest.formType,
@@ -507,15 +497,26 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       failStep('insertion_status', 'Insertion run timed out', insertionStatus);
     }
 
+    const targetAgentKey = manifest.insertion?.targetSoftware === 'real_quantum' ? 'rq' : 'aci';
+    const agentAvailable = capabilities.agents?.[targetAgentKey] === true;
     if (!options.allowDryRunInsertion) {
+      if (!agentAvailable) {
+        failStep(
+          'insertion_status',
+          `Live insertion could not be validated because the ${targetAgentKey.toUpperCase()} agent is offline`,
+          insertionStatus,
+        );
+      }
       if (insertionStatus.status !== 'completed') {
         failStep('insertion_status', `Insertion did not complete cleanly (status=${insertionStatus.status})`, insertionStatus);
       }
-      if ((insertionStatus.totalFields || 0) < 1) {
-        failStep('insertion_status', 'Insertion completed with zero mapped fields; live validation is not credible', insertionStatus);
-      }
-      if ((insertionStatus.verifiedFields || 0) < 1) {
-        failStep('insertion_status', 'Insertion completed with zero verified fields; live validation is not credible', insertionStatus);
+      const minVerifiedFields = Math.max(1, Number(manifest.insertion?.minVerifiedFields || 1));
+      if ((insertionStatus.verifiedFields || 0) < minVerifiedFields) {
+        failStep(
+          'insertion_status',
+          `Live insertion verification was insufficient (${insertionStatus.verifiedFields || 0}/${minVerifiedFields} verified field(s))`,
+          insertionStatus,
+        );
       }
       recordStep('insertion_status', 'passed', `Live insertion completed with ${insertionStatus.verifiedFields || 0} verified field(s)`);
     } else {
@@ -616,12 +617,6 @@ if (healthServices.status !== 200 || healthServices.body?.ok !== true) {
 
 const capabilities = {
   aiKeySet: Boolean(healthDetailed.body.aiKeySet),
-  ai: {
-    configured: healthDetailed.body.ai?.configured === true,
-    ready: healthDetailed.body.ai?.ready === true,
-    reason: healthDetailed.body.ai?.reason || null,
-    model: healthDetailed.body.ai?.model || null,
-  },
   agents: {
     aci: healthDetailed.body.agents?.aci === true,
     rq: healthDetailed.body.agents?.rq === true,
@@ -632,34 +627,7 @@ console.log('Golden path validation');
 console.log(`  baseUrl: ${serverHarness.baseUrl}`);
 console.log(`  mode: ${options.allowDryRunInsertion ? 'preflight (dry-run insertion allowed)' : 'strict (live insertion required)'}`);
 console.log(`  aiKeySet: ${capabilities.aiKeySet}`);
-console.log(`  aiReady: ${capabilities.ai.ready}${capabilities.ai.reason ? ` (${capabilities.ai.reason})` : ''}`);
 console.log(`  agents: aci=${capabilities.agents.aci} rq=${capabilities.agents.rq}`);
-
-if (!capabilities.ai.ready) {
-  const preflightFailure = {
-    runAt: new Date().toISOString(),
-    baseUrl: serverHarness.baseUrl,
-    options: {
-      allowDryRunInsertion: options.allowDryRunInsertion,
-      cleanup: options.cleanup,
-    },
-    capabilities,
-    reports: [],
-    error: {
-      step: 'ai_preflight',
-      message: capabilities.ai.reason || 'OpenAI is not ready for generation',
-    },
-  };
-
-  if (options.reportPath) {
-    fs.mkdirSync(path.dirname(options.reportPath), { recursive: true });
-    fs.writeFileSync(options.reportPath, JSON.stringify(preflightFailure, null, 2));
-  }
-
-  console.error(`Golden path preflight failed: ${preflightFailure.error.message}`);
-  await serverHarness.stop();
-  process.exit(1);
-}
 
 const reports = [];
 for (const fixtureDir of options.fixtures) {

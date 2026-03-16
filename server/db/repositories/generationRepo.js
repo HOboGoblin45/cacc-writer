@@ -320,38 +320,22 @@ export function getRunsForCase(caseId) {
  *   @param {string} params.status       — JOB_STATUS.QUEUED or JOB_STATUS.BLOCKED
  *   @param {string} params.profileId    — generator profile ID
  *   @param {string[]} params.dependsOn  — section IDs this job depends on
- *   @param {string|null} [params.promptVersion]
- *   @param {object|null} [params.sectionPolicy]
- *   @param {object|null} [params.dependencySnapshot]
  * @returns {string} jobId
  */
-export function createSectionJob({
-  runId,
-  sectionId,
-  status,
-  profileId,
-  dependsOn = [],
-  promptVersion = null,
-  sectionPolicy = null,
-  dependencySnapshot = null,
-}) {
+export function createSectionJob({ runId, sectionId, status, profileId, dependsOn = [] }) {
   const jobId = uuidv4();
   getDb().prepare(`
     INSERT INTO section_jobs
       (id, run_id, section_id, status, generator_profile,
-       prompt_version, dependencies_json, section_policy_json,
-       dependency_snapshot_json, attempt_count, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
+       dependencies_json, attempt_count, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, 0, datetime('now'))
   `).run(
     jobId,
     runId,
     sectionId,
     status,
     profileId,
-    promptVersion,
-    JSON.stringify(dependsOn),
-    JSON.stringify(sectionPolicy || {}),
-    JSON.stringify(dependencySnapshot || {})
+    JSON.stringify(dependsOn)
   );
   return jobId;
 }
@@ -414,7 +398,6 @@ export function markJobRetrying(jobId) {
  *   @param {number|null} [metrics.promptTokens]
  *   @param {number|null} [metrics.completionTokens]
  *   @param {string[]} [metrics.retrievalSourceIds]
- *   @param {object|null} [metrics.dependencySnapshot]
  * @returns {void}
  */
 export function markJobCompleted(jobId, metrics) {
@@ -428,8 +411,7 @@ export function markJobCompleted(jobId, metrics) {
            warnings_count          = ?,
            prompt_tokens           = ?,
            completion_tokens       = ?,
-           retrieval_source_ids_json = ?,
-           dependency_snapshot_json = ?
+           retrieval_source_ids_json = ?
      WHERE id = ?
   `).run(
     JOB_STATUS.COMPLETE,
@@ -440,7 +422,6 @@ export function markJobCompleted(jobId, metrics) {
     metrics.promptTokens        || null,
     metrics.completionTokens    || null,
     JSON.stringify(metrics.retrievalSourceIds || []),
-    JSON.stringify(metrics.dependencySnapshot || {}),
     jobId
   );
 }
@@ -491,8 +472,7 @@ export function markJobSkipped(jobId, reason) {
 export function getSectionJobsForRun(runId) {
   return getDb().prepare(`
     SELECT id, run_id, section_id, status, generator_profile,
-           prompt_version, dependencies_json, section_policy_json,
-           dependency_snapshot_json, attempt_count,
+           dependencies_json, attempt_count,
            started_at, completed_at, duration_ms,
            input_chars, output_chars, warnings_count,
            prompt_tokens, completion_tokens,
@@ -512,7 +492,6 @@ export function getSectionJobsForRun(runId) {
 export function getSectionJobById(jobId) {
   return getDb().prepare(`
     SELECT id, run_id, section_id, status, generator_profile,
-           prompt_version, section_policy_json, dependency_snapshot_json,
            attempt_count, started_at, completed_at, duration_ms,
            input_chars, output_chars, warnings_count, error_text
       FROM section_jobs WHERE id = ?
@@ -550,23 +529,9 @@ export function getJobIdForSection(runId, sectionId) {
  *   @param {string} params.formType
  *   @param {string} params.text
  *   @param {number} params.examplesUsed
- *   @param {object|null} [params.auditMetadata]
- *   @param {number|null} [params.qualityScore]
- *   @param {object|null} [params.qualityMetadata]
  * @returns {string} record ID
  */
-export function saveGeneratedSection({
-  jobId,
-  runId,
-  caseId,
-  sectionId,
-  formType,
-  text,
-  examplesUsed,
-  auditMetadata = null,
-  qualityScore = null,
-  qualityMetadata = null,
-}) {
+export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType, text, examplesUsed }) {
   const db = getDb();
 
   const existing = db.prepare(`
@@ -576,19 +541,9 @@ export function saveGeneratedSection({
   if (existing) {
     db.prepare(`
       UPDATE generated_sections
-         SET draft_text = ?, final_text = ?, examples_used = ?, job_id = ?,
-             audit_metadata_json = ?, quality_score = ?, quality_metadata_json = ?
+         SET draft_text = ?, final_text = ?, examples_used = ?, job_id = ?
        WHERE id = ?
-    `).run(
-      text,
-      text,
-      examplesUsed,
-      jobId,
-      JSON.stringify(auditMetadata || {}),
-      qualityScore,
-      JSON.stringify(qualityMetadata || {}),
-      existing.id
-    );
+    `).run(text, text, examplesUsed, jobId, existing.id);
     return existing.id;
   }
 
@@ -596,54 +551,13 @@ export function saveGeneratedSection({
   db.prepare(`
     INSERT INTO generated_sections
       (id, job_id, run_id, case_id, section_id, form_type,
-       draft_text, final_text, audit_metadata_json, quality_score,
-       quality_metadata_json, examples_used, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `).run(
-    id,
-    jobId,
-    runId,
-    caseId,
-    sectionId,
-    formType,
-    text,
-    text,
-    JSON.stringify(auditMetadata || {}),
-    qualityScore,
-    JSON.stringify(qualityMetadata || {}),
-    examplesUsed,
-  );
+       draft_text, final_text, examples_used, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `).run(id, jobId, runId, caseId, sectionId, formType, text, text, examplesUsed);
 
   return id;
 }
 
-/**
- * Get all generated sections for a run, ordered by creation time.
- *
- * @param {string} runId
- * @returns {object[]}
- */
-export function getGeneratedSectionsForRun(runId) {
-  return getDb().prepare(`
-    SELECT section_id, final_text, draft_text, approved, approved_at,
-           inserted_at, examples_used, audit_metadata_json,
-           quality_score, quality_metadata_json, created_at
-      FROM generated_sections
-     WHERE run_id = ?
-     ORDER BY created_at ASC
-  `).all(runId);
-}
-
-/**
- * Update the reviewed/final text for an existing generated section row.
- *
- * @param {object} params
- *   @param {string} params.runId
- *   @param {string} params.sectionId
- *   @param {string} params.text
- *   @param {boolean} [params.approved]
- * @returns {object|null}
- */
 export function updateGeneratedSectionReview({ runId, sectionId, text, approved = false }) {
   const db = getDb();
   const existing = db.prepare(`
@@ -656,7 +570,7 @@ export function updateGeneratedSectionReview({ runId, sectionId, text, approved 
 
   if (!existing) return null;
 
-  const reviewedText = String(text || '');
+  const reviewedText = String(text || '').trim();
   const approvedAt = approved ? new Date().toISOString() : null;
 
   db.prepare(`
@@ -679,12 +593,28 @@ export function updateGeneratedSectionReview({ runId, sectionId, text, approved 
     jobId: existing.job_id,
     caseId: existing.case_id,
     formType: existing.form_type,
-    examplesUsed: existing.examples_used || 0,
-    reviewedText,
-    finalText: reviewedText,
-    approved: Boolean(approved),
+    sectionId,
+    text: reviewedText,
+    approved,
     approvedAt,
+    examplesUsed: existing.examples_used || 0,
   };
+}
+
+/**
+ * Get all generated sections for a run, ordered by creation time.
+ *
+ * @param {string} runId
+ * @returns {object[]}
+ */
+export function getGeneratedSectionsForRun(runId) {
+  return getDb().prepare(`
+    SELECT section_id, final_text, draft_text, reviewed_text, approved, approved_at,
+           inserted_at, examples_used, created_at
+      FROM generated_sections
+     WHERE run_id = ?
+     ORDER BY created_at ASC
+  `).all(runId);
 }
 
 // ── Analysis artifacts ────────────────────────────────────────────────────────

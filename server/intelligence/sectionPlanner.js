@@ -183,17 +183,16 @@ export function buildSectionPlanV2(ctx, flags, compliance, manifest, applicableF
     }
 
     fieldIdSet.add(cs.sectionId);
+    const sectionGroup = inferManifestSectionGroup(manifest, cs.sectionId) || normalizeRegistrySectionGroup(registryField.sectionName);
     sections.push({
       id:               cs.sectionId,
       label:            cs.label || registryField.humanLabel || registryField.title || cs.sectionId,
-      sectionGroup:     inferManifestSectionGroup(manifest, cs.sectionId) || normalizeRegistrySectionGroup(registryField.sectionName),
+      sectionGroup,
       contentType:      registryField.narrativeType === 'commentary' ? 'commentary' : 'narrative',
       required:         true,
       generatorProfile: CONTENT_TYPE_PROFILES.narrative,
       dependsOn:        dependencyHints[cs.sectionId] || [],
-      priority:         SECTION_GROUP_PRIORITY[
-        inferManifestSectionGroup(manifest, cs.sectionId) || normalizeRegistrySectionGroup(registryField.sectionName)
-      ] ?? 5,
+      priority:         SECTION_GROUP_PRIORITY[sectionGroup] ?? 5,
       qcTags:           [],
       triggeringFlags:  [cs.condition],
     });

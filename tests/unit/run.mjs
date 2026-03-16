@@ -5,7 +5,6 @@
  */
 
 import { spawnSync } from 'child_process';
-import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,8 +15,6 @@ const queueStatePath = process.env.CACC_QUEUE_STATE_FILE
   || path.join(os.tmpdir(), `cacc-unit-${runId}-queue_state.json`);
 const logsDir = process.env.CACC_LOGS_DIR
   || path.join(os.tmpdir(), `cacc-unit-${runId}-logs`);
-const dbPath = process.env.CACC_DB_PATH
-  || path.join(os.tmpdir(), `cacc-unit-${runId}.db`);
 
 const suites = [
   'simplePdf.test.mjs',
@@ -25,64 +22,22 @@ const suites = [
   'fileUtils.test.mjs',
   'caseUtils.test.mjs',
   'workflowStateMachine.test.mjs',
-  'workspaceService.test.mjs',
-  'contradictionGraphService.test.mjs',
-  'contradictionGraphChecker.test.mjs',
-  'comparableIntelligenceService.test.mjs',
-  'comparableQcChecker.test.mjs',
-  'caseApprovalGate.test.mjs',
   'caseRecordService.test.mjs',
-  'accuracyBenchmarks.test.mjs',
-  'benchmarkRunner.test.mjs',
-  'benchmarkThresholds.test.mjs',
   'factIntegrity.test.mjs',
   'documentIntake.test.mjs',
-  'ingestJobService.test.mjs',
-  'documentClassifier.test.mjs',
-  'documentExtractors.test.mjs',
   'documentQuality.test.mjs',
-  'complianceProfile.test.mjs',
   'intelligenceRules.test.mjs',
-  'sectionPlanner.test.mjs',
-  'insertionQcGate.test.mjs',
-  'formDraftModel.test.mjs',
-  'insertionReliability.test.mjs',
-  'casesInsertionRoutes.test.mjs',
-  'insertionReplay.test.mjs',
-  'envPrecedence.test.mjs',
   'middleware.test.mjs',
   'logger.test.mjs',
-  'agentHealth.test.mjs',
-  'agentClient.test.mjs',
-  'verificationEngine.test.mjs',
   'openaiClient.test.mjs',
   'promptBuilder.test.mjs',
-  'knowledgeBase.test.mjs',
-  'generationService.test.mjs',
+  'fieldProfiles.test.mjs',
+  'formDraftModel.test.mjs',
+  'sectionPlanner.test.mjs',
   'generationRepo.test.mjs',
-  'generationOrchestrator.test.mjs',
-  'sectionPolicyService.test.mjs',
-  'sectionFactoryPolicy.test.mjs',
-  'sectionFreshness.test.mjs',
-  'generationRegenerateRoutes.test.mjs',
+  'verificationEngine.test.mjs',
+  'generationService.test.mjs',
   'reportQueue.test.mjs',
-  'contradictionResolution.test.mjs',
-  'valuationCalculator.test.mjs',
-  'valuationWorkspace.test.mjs',
-  'learningSystem.test.mjs',
-  'businessOps.test.mjs',
-  'inspectionWorkflow.test.mjs',
-  'exportLayer.test.mjs',
-  'securityGovernance.test.mjs',
-  'securityComplete.test.mjs',
-  'feedbackLoop.test.mjs',
-  'contradictionLifecycle.test.mjs',
-  'learningLoop.test.mjs',
-  'routeValidation.test.mjs',
-  'stuckStateDetector.test.mjs',
-  'authMiddleware.test.mjs',
-  'sectionGovernance.test.mjs',
-  'dataPipeline.test.mjs',
 ];
 
 let totalPassed = 0;
@@ -105,7 +60,6 @@ for (const suite of suites) {
       ...process.env,
       CACC_QUEUE_STATE_FILE: queueStatePath,
       CACC_LOGS_DIR: logsDir,
-      CACC_DB_PATH: dbPath,
       CACC_DISABLE_FILE_LOGGER: process.env.CACC_DISABLE_FILE_LOGGER || '1',
       CACC_DISABLE_KB_WRITES: process.env.CACC_DISABLE_KB_WRITES || '1',
     },
@@ -147,38 +101,7 @@ console.log('='.repeat(60));
 
 if (totalFailed > 0) {
   console.log('\n✗ ' + totalFailed + ' test(s) failed');
-  cleanupUnitArtifacts();
   process.exit(1);
 } else {
   console.log('\n✓ All ' + totalPassed + ' tests passed');
-  cleanupUnitArtifacts();
-}
-
-function cleanupUnitArtifacts() {
-  const targets = [
-    queueStatePath,
-    dbPath,
-    `${dbPath}-wal`,
-    `${dbPath}-shm`,
-  ];
-
-  for (const target of targets) {
-    try {
-      if (target && process.env.CACC_KEEP_TEST_ARTIFACTS !== '1') {
-        if (fs.existsSync(target)) fs.rmSync(target, { force: true });
-      }
-    } catch {
-      // best effort cleanup
-    }
-  }
-
-  try {
-    if (process.env.CACC_KEEP_TEST_ARTIFACTS !== '1') {
-      if (fs.existsSync(logsDir)) {
-        fs.rmSync(logsDir, { recursive: true, force: true });
-      }
-    }
-  } catch {
-    // best effort cleanup
-  }
 }

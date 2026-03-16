@@ -1,0 +1,1062 @@
+{
+  "_comment": "Corpus-backed surface/profile hints for FNMA 1004 narrative fields.",
+  "_source_glob": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\voice_pdfs\\1004",
+  "_source_count": 15,
+  "_source_files": [
+    "47674.PDF",
+    "47772.PDF",
+    "47773.PDF",
+    "47900.PDF",
+    "48005.PDF",
+    "48079.PDF",
+    "48118.PDF",
+    "Betsworth.PDF",
+    "Gobtop.PDF",
+    "Hundman.PDF",
+    "Mirza.PDF",
+    "Ryan MtVernon.PDF",
+    "Ryan Stewart.PDF",
+    "Soddy.PDF",
+    "Summer Properties II LLC.PDF"
+  ],
+  "_generated_on": "2026-03-13",
+  "_usage": "Use for ACI visual/page targeting, operator diagnostics, and trust checks. These hints do not automate final appraisal judgment.",
+  "_schema": {
+    "visual_tab_label": "Visible tab prefix in the ACI lower section strip",
+    "visual_tab_ratio": "Measured click ratio within the live ACISectionTabs strip for the current 1004 layout",
+    "page_cluster": "Most common page numbers in the sample PDF corpus where the section appears",
+    "pdf_anchor_text": "Primary PDF text anchor for locating the section",
+    "adjacent_anchor_text": "Nearby PDF strings that usually bracket the same section",
+    "content_kind": "Expected content shape in the field",
+    "expected_elements": "Evidence or facts usually expressed in the narrative",
+    "sample_hit_counts": "Observed page frequencies in the corpus",
+    "sample_hits": "Per-file first-hit page for the combined anchor set"
+  },
+  "neighborhood_description": {
+    "visual_tab_label": "Neig",
+    "visual_tab_ratio": 0.173,
+    "pdf_anchor_text": "Neighborhood Description",
+    "adjacent_anchor_text": [
+      "Market Conditions (including support for the above conclusions)"
+    ],
+    "content_kind": "narrative_paragraph",
+    "expected_elements": [
+      "market area identity",
+      "land use mix",
+      "supply and demand context",
+      "marketing time or trend support"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "market_conditions": {
+    "visual_tab_label": "Neig",
+    "visual_tab_ratio": 0.173,
+    "pdf_anchor_text": "Market Conditions (including support for the above conclusions)",
+    "adjacent_anchor_text": [
+      "Neighborhood Description"
+    ],
+    "content_kind": "market_trend_narrative",
+    "expected_elements": [
+      "price trend",
+      "supply and demand balance",
+      "marketing time",
+      "supporting sales or market evidence"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "site_comments": {
+    "visual_tab_label": "Site",
+    "visual_tab_ratio": 0.231,
+    "pdf_anchor_text": "Dimensions Area Shape View Specific Zoning Classification",
+    "adjacent_anchor_text": [
+      "Zoning Description",
+      "Highest and Best Use"
+    ],
+    "content_kind": "site_narrative",
+    "expected_elements": [
+      "site size or dimensions",
+      "utilities",
+      "zoning or legal access",
+      "topography, view, or shape"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "improvements_condition": {
+    "visual_tab_label": "Impro",
+    "visual_tab_ratio": 0.292,
+    "pdf_anchor_text": "Describe the condition of the property (including needed repairs, deterioration, renovations, remodeling, etc.).",
+    "adjacent_anchor_text": [
+      "Are there any physical deficiencies or adverse conditions that affect the livability, soundness, or structural integrity of the property?"
+    ],
+    "content_kind": "physical_condition_narrative",
+    "expected_elements": [
+      "overall condition",
+      "repairs or renovations",
+      "quality or upkeep",
+      "observed deficiencies"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "functional_utility": {
+    "visual_tab_label": "Impro",
+    "visual_tab_ratio": 0.292,
+    "pdf_anchor_text": "Does the property generally conform to the neighborhood (functional utility, style, condition, use, construction, etc.)?",
+    "adjacent_anchor_text": [
+      "Are there any physical deficiencies or adverse conditions that affect the livability, soundness, or structural integrity of the property?"
+    ],
+    "content_kind": "functional_utility_narrative",
+    "expected_elements": [
+      "conformity to neighborhood",
+      "layout adequacy",
+      "design utility",
+      "functional obsolescence if present"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "adverse_conditions": {
+    "visual_tab_label": "Site",
+    "visual_tab_ratio": 0.231,
+    "pdf_anchor_text": "Are there any physical deficiencies or adverse conditions that affect the livability, soundness, or structural integrity of the property?",
+    "adjacent_anchor_text": [
+      "Describe the condition of the property",
+      "Does the property generally conform to the neighborhood"
+    ],
+    "content_kind": "adverse_condition_narrative",
+    "expected_elements": [
+      "adverse site or improvement conditions",
+      "impact on livability or soundness",
+      "repair needs",
+      "external or environmental factors"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "offering_history": {
+    "visual_tab_label": "Sales",
+    "visual_tab_ratio": 0.354,
+    "pdf_anchor_text": "Report data source(s) used, offering price(s), and date(s).",
+    "adjacent_anchor_text": [
+      "I did did not analyze the contract for sale for the subject purchase transaction."
+    ],
+    "content_kind": "listing_and_transfer_history_narrative",
+    "expected_elements": [
+      "listing or offering source",
+      "price history",
+      "date history",
+      "listing or sale chronology"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "contract_analysis": {
+    "visual_tab_label": "Sales",
+    "visual_tab_ratio": 0.354,
+    "pdf_anchor_text": "Explain the results of the analysis of the contract for sale or why the analysis was not performed.",
+    "adjacent_anchor_text": [
+      "Contract Price",
+      "Is the property seller the owner of public record?"
+    ],
+    "content_kind": "contract_analysis_narrative",
+    "expected_elements": [
+      "contract terms or absence of contract",
+      "arm's-length analysis",
+      "concessions or financing relevance",
+      "reason if analysis was not performed"
+    ],
+    "page_cluster": [
+      4,
+      3
+    ],
+    "sample_hit_counts": {
+      "4": 8,
+      "3": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 3
+      },
+      {
+        "file": "47772.PDF",
+        "page": 3
+      },
+      {
+        "file": "47773.PDF",
+        "page": 3
+      },
+      {
+        "file": "47900.PDF",
+        "page": 3
+      },
+      {
+        "file": "48005.PDF",
+        "page": 3
+      },
+      {
+        "file": "48079.PDF",
+        "page": 3
+      },
+      {
+        "file": "48118.PDF",
+        "page": 3
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 4
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 4
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 4
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 4
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 4
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 4
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 4
+      }
+    ]
+  },
+  "sales_comparison_commentary": {
+    "visual_tab_label": "Sales",
+    "visual_tab_ratio": 0.354,
+    "pdf_anchor_text": "Summary of Sales Comparison Approach.",
+    "adjacent_anchor_text": [
+      "Analysis of prior sale or transfer history of the subject property and comparable sales",
+      "Indicated Value by Sales Comparison Approach"
+    ],
+    "content_kind": "sales_comparison_narrative",
+    "expected_elements": [
+      "comparable selection rationale",
+      "adjustment pattern support",
+      "subject and comp similarity or difference",
+      "weighting support"
+    ],
+    "page_cluster": [
+      5,
+      4
+    ],
+    "sample_hit_counts": {
+      "5": 8,
+      "4": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 4
+      },
+      {
+        "file": "47772.PDF",
+        "page": 4
+      },
+      {
+        "file": "47773.PDF",
+        "page": 4
+      },
+      {
+        "file": "47900.PDF",
+        "page": 4
+      },
+      {
+        "file": "48005.PDF",
+        "page": 4
+      },
+      {
+        "file": "48079.PDF",
+        "page": 4
+      },
+      {
+        "file": "48118.PDF",
+        "page": 4
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 5
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 5
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 5
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 5
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 5
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 5
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 5
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 5
+      }
+    ]
+  },
+  "reconciliation": {
+    "visual_tab_label": "Reco",
+    "visual_tab_ratio": 0.37,
+    "pdf_anchor_text": "Indicated Value by: Sales Comparison Approach",
+    "adjacent_anchor_text": [
+      "Cost Approach (if developed)",
+      "Income Approach (if developed)",
+      "This appraisal is made \"as is,\""
+    ],
+    "content_kind": "reconciliation_narrative",
+    "expected_elements": [
+      "approach weighting",
+      "reason excluded approaches were not developed or were secondary",
+      "manual final reconciliation support",
+      "as-is or subject-to conditions when relevant"
+    ],
+    "page_cluster": [
+      5,
+      4
+    ],
+    "sample_hit_counts": {
+      "5": 8,
+      "4": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 4
+      },
+      {
+        "file": "47772.PDF",
+        "page": 4
+      },
+      {
+        "file": "47773.PDF",
+        "page": 4
+      },
+      {
+        "file": "47900.PDF",
+        "page": 4
+      },
+      {
+        "file": "48005.PDF",
+        "page": 4
+      },
+      {
+        "file": "48079.PDF",
+        "page": 4
+      },
+      {
+        "file": "48118.PDF",
+        "page": 4
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 5
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 5
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 5
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 5
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 5
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 5
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 5
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 5
+      }
+    ]
+  },
+  "cost_approach": {
+    "visual_tab_label": "Cost",
+    "visual_tab_ratio": 0.538,
+    "pdf_anchor_text": "Support for the opinion of site value",
+    "adjacent_anchor_text": [
+      "ESTIMATED REPRODUCTION OR REPLACEMENT COST NEW"
+    ],
+    "content_kind": "cost_approach_narrative",
+    "expected_elements": [
+      "site value support",
+      "cost source",
+      "depreciation or applicability rationale",
+      "whether the approach was developed"
+    ],
+    "page_cluster": [
+      6,
+      5
+    ],
+    "sample_hit_counts": {
+      "6": 8,
+      "5": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 5
+      },
+      {
+        "file": "47772.PDF",
+        "page": 5
+      },
+      {
+        "file": "47773.PDF",
+        "page": 5
+      },
+      {
+        "file": "47900.PDF",
+        "page": 5
+      },
+      {
+        "file": "48005.PDF",
+        "page": 5
+      },
+      {
+        "file": "48079.PDF",
+        "page": 5
+      },
+      {
+        "file": "48118.PDF",
+        "page": 5
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 6
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 6
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 6
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 6
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 6
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 6
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 6
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 6
+      }
+    ]
+  },
+  "income_approach": {
+    "visual_tab_label": "Income",
+    "visual_tab_ratio": 0.604,
+    "pdf_anchor_text": "Summary of Income Approach",
+    "adjacent_anchor_text": [
+      "Estimated Monthly Market Rent",
+      "PROJECT INFORMATION FOR PUDs"
+    ],
+    "content_kind": "income_approach_narrative",
+    "expected_elements": [
+      "rent or GRM support",
+      "income evidence source",
+      "applicability or non-applicability rationale",
+      "scope caveat if omitted"
+    ],
+    "page_cluster": [
+      6,
+      5
+    ],
+    "sample_hit_counts": {
+      "6": 8,
+      "5": 7
+    },
+    "sample_hits": [
+      {
+        "file": "47674.PDF",
+        "page": 5
+      },
+      {
+        "file": "47772.PDF",
+        "page": 5
+      },
+      {
+        "file": "47773.PDF",
+        "page": 5
+      },
+      {
+        "file": "47900.PDF",
+        "page": 5
+      },
+      {
+        "file": "48005.PDF",
+        "page": 5
+      },
+      {
+        "file": "48079.PDF",
+        "page": 5
+      },
+      {
+        "file": "48118.PDF",
+        "page": 5
+      },
+      {
+        "file": "Betsworth.PDF",
+        "page": 6
+      },
+      {
+        "file": "Gobtop.PDF",
+        "page": 6
+      },
+      {
+        "file": "Hundman.PDF",
+        "page": 6
+      },
+      {
+        "file": "Mirza.PDF",
+        "page": 6
+      },
+      {
+        "file": "Ryan MtVernon.PDF",
+        "page": 6
+      },
+      {
+        "file": "Ryan Stewart.PDF",
+        "page": 6
+      },
+      {
+        "file": "Soddy.PDF",
+        "page": 6
+      },
+      {
+        "file": "Summer Properties II LLC.PDF",
+        "page": 6
+      }
+    ]
+  }
+}
