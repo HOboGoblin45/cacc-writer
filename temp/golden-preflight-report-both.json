@@ -1,0 +1,316 @@
+{
+  "runAt": "2026-03-16T17:43:30.839Z",
+  "baseUrl": "http://localhost:5178",
+  "options": {
+    "allowDryRunInsertion": true,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": true,
+      "rq": true
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Residential 1004 Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\1004-case",
+      "formType": "1004",
+      "mode": "preflight",
+      "status": "passed",
+      "caseId": "dc142159",
+      "generationRunId": "5c1f3886-2935-452b-b640-f0acf9d4ff5d",
+      "qcRunId": "e9890e4b-0910-4c98-b19b-239bebd156b6",
+      "insertionRunId": "irun_baacbd28-fa9",
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case dc142159"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-order-sheet.pdf -> order_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-contract.pdf -> contract"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-mls-sheet.pdf -> mls_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 15 fact(s), rejected 16"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 15 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 12 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 18 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 5c1f3886-2935-452b-b640-f0acf9d4ff5d"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 6 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=1",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 4
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "insertion_status",
+          "status": "passed",
+          "detail": "Dry-run insertion completed with status=partial; live agent validation skipped by flag",
+          "dryRun": true,
+          "agentAvailable": true
+        },
+        {
+          "name": "export_download",
+          "status": "passed",
+          "detail": "case-export-dc142159-2026-03-16T17-42-34.json"
+        },
+        {
+          "name": "archive_case",
+          "status": "passed",
+          "detail": "Case archived successfully"
+        }
+      ]
+    },
+    {
+      "fixture": "Commercial Narrative Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\commercial-case",
+      "formType": "commercial",
+      "mode": "preflight",
+      "status": "passed",
+      "caseId": "3f3fb90f",
+      "generationRunId": "7106840f-eeef-4b5a-b30f-b575f7fdc459",
+      "qcRunId": "d9cf792c-fd4e-4ad8-9e7b-18293f579efe",
+      "insertionRunId": "irun_d4f6e584-7b0",
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case 3f3fb90f"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-engagement-letter.pdf -> engagement_letter"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-property-summary.pdf -> mls_sheet"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 7 fact(s), rejected 13"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 7 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 6 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 11 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 7106840f-eeef-4b5a-b30f-b575f7fdc459"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 14 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 14 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=0",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 12
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "insertion_status",
+          "status": "passed",
+          "detail": "Dry-run insertion completed with status=partial; live agent validation skipped by flag",
+          "dryRun": true,
+          "agentAvailable": true
+        },
+        {
+          "name": "export_download",
+          "status": "passed",
+          "detail": "case-export-3f3fb90f-2026-03-16T17-43-30.json"
+        },
+        {
+          "name": "archive_case",
+          "status": "passed",
+          "detail": "Case archived successfully"
+        }
+      ]
+    }
+  ]
+}

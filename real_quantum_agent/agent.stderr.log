@@ -1,0 +1,14 @@
+[rq_agent] 17:06:58 INFO: CACC Real Quantum Agent v2.0 starting on port 5181
+[rq_agent] 17:06:58 INFO: Playwright available: True
+[rq_agent] 17:06:58 INFO: CDP URL (Chrome remote debugging): http://127.0.0.1:9222
+[rq_agent] 17:06:58 INFO: Field maps directory: C:\Users\ccres\OneDrive\Desktop\cacc-writer\real_quantum_agent\field_maps
+[rq_agent] 17:06:58 INFO: Screenshots directory: C:\Users\ccres\OneDrive\Desktop\cacc-writer\real_quantum_agent\screenshots
+[rq_agent] 17:06:58 INFO: 
+[rq_agent] 17:06:58 INFO: SETUP REMINDER:
+[rq_agent] 17:06:58 INFO:   1. Launch Chrome: chrome.exe --remote-debugging-port=9222 --user-data-dir=C:\rq-session
+[rq_agent] 17:06:58 INFO:   2. Log into Real Quantum and open your commercial report
+[rq_agent] 17:06:58 INFO:   3. Then use CACC Writer to generate and insert narratives
+[rq_agent] 17:06:58 INFO: 
+[rq_agent] 17:06:58 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5181
+[rq_agent] 17:06:58 INFO: [33mPress CTRL+C to quit[0m

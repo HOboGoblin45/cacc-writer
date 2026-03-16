@@ -26,9 +26,11 @@ export async function verifyInsertion({
   fieldId,
   agentFieldKey,
   formattedText,
+  formType,
   targetSoftware,
   agentBaseUrl,
   verificationMode = null,
+  targetRect = null,
   timeout = 10000,
 }) {
   const startTime = Date.now();
@@ -47,7 +49,13 @@ export async function verifyInsertion({
   }
 
   try {
-    const rawValue = await readFieldFromAgent(agentFieldKey, targetSoftware, agentBaseUrl, timeout);
+    const rawValue = await readFieldFromAgent({
+      fieldId: agentFieldKey,
+      formType,
+      agentBaseUrl,
+      targetRect,
+      timeout,
+    });
 
     if (rawValue === null || rawValue === undefined) {
       return {
@@ -102,7 +110,13 @@ export async function verifyInsertion({
  * @param {number} timeout
  * @returns {Promise<string|null>}
  */
-async function readFieldFromAgent(agentFieldKey, targetSoftware, agentBaseUrl, timeout) {
+async function readFieldFromAgent({
+  fieldId,
+  formType,
+  agentBaseUrl,
+  targetRect = null,
+  timeout,
+}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
 
@@ -112,8 +126,9 @@ async function readFieldFromAgent(agentFieldKey, targetSoftware, agentBaseUrl, t
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        field: agentFieldKey,
-        form_type: undefined, // Agent infers from current state
+        fieldId,
+        formType,
+        targetRect,
       }),
       signal: controller.signal,
     });

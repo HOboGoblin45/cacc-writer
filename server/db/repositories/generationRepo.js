@@ -558,6 +558,49 @@ export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType
   return id;
 }
 
+export function updateGeneratedSectionReview({ runId, sectionId, text, approved = false }) {
+  const db = getDb();
+  const existing = db.prepare(`
+    SELECT id, job_id, case_id, form_type, examples_used
+      FROM generated_sections
+     WHERE run_id = ? AND section_id = ?
+     ORDER BY created_at DESC
+     LIMIT 1
+  `).get(runId, sectionId);
+
+  if (!existing) return null;
+
+  const reviewedText = String(text || '').trim();
+  const approvedAt = approved ? new Date().toISOString() : null;
+
+  db.prepare(`
+    UPDATE generated_sections
+       SET reviewed_text = ?,
+           final_text = ?,
+           approved = ?,
+           approved_at = ?
+     WHERE id = ?
+  `).run(
+    reviewedText,
+    reviewedText,
+    approved ? 1 : 0,
+    approvedAt,
+    existing.id,
+  );
+
+  return {
+    id: existing.id,
+    jobId: existing.job_id,
+    caseId: existing.case_id,
+    formType: existing.form_type,
+    sectionId,
+    text: reviewedText,
+    approved,
+    approvedAt,
+    examplesUsed: existing.examples_used || 0,
+  };
+}
+
 /**
  * Get all generated sections for a run, ordered by creation time.
  *
@@ -566,7 +609,7 @@ export function saveGeneratedSection({ jobId, runId, caseId, sectionId, formType
  */
 export function getGeneratedSectionsForRun(runId) {
   return getDb().prepare(`
-    SELECT section_id, final_text, draft_text, approved, approved_at,
+    SELECT section_id, final_text, draft_text, reviewed_text, approved, approved_at,
            inserted_at, examples_used, created_at
       FROM generated_sections
      WHERE run_id = ?

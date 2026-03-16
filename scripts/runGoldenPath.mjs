@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 import { ensureServerRunning } from '../tests/helpers/serverHarness.mjs';
 import { buildSimplePdf } from '../tests/helpers/simplePdf.mjs';
+import { inferTargetSoftware } from '../server/insertion/destinationMapper.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, '..');
@@ -371,7 +372,31 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       failStep('generation_result', 'Failed to load generation result', generationResult.body);
     }
 
-    const sections = generationResult.body.sections || generationResult.body.draftPackage?.sections || {};
+    if (manifest.reviewedSections && Object.keys(manifest.reviewedSections).length) {
+      for (const [sectionId, review] of Object.entries(manifest.reviewedSections)) {
+        const reviewText = typeof review === 'string' ? review : review?.text;
+        const sectionStatus = typeof review === 'object' && review?.sectionStatus
+          ? review.sectionStatus
+          : 'reviewed';
+        const patchRes = await apiJson(baseUrl, 'PATCH', `/api/generation/runs/${generationRunId}/sections/${encodeURIComponent(sectionId)}`, {
+          text: reviewText,
+          sectionStatus,
+        });
+        if (patchRes.status !== 200 || patchRes.body?.ok !== true) {
+          failStep('reviewed_sections', `Failed to persist reviewed section ${sectionId}`, patchRes.body);
+        }
+      }
+      recordStep('reviewed_sections', 'passed', `Applied operator-reviewed text to ${Object.keys(manifest.reviewedSections).length} section(s)`);
+    }
+
+    const finalGenerationResult = manifest.reviewedSections && Object.keys(manifest.reviewedSections).length
+      ? await apiJson(baseUrl, 'GET', `/api/generation/runs/${generationRunId}/result`, null, 20000)
+      : generationResult;
+    if (finalGenerationResult.status !== 200 || finalGenerationResult.body?.ok !== true) {
+      failStep('generation_result', 'Failed to reload generation result after reviewed section updates', finalGenerationResult.body);
+    }
+
+    const sections = finalGenerationResult.body.sections || finalGenerationResult.body.draftPackage?.sections || {};
     const expectedSections = manifest.expectedSections || [];
     const missingSections = expectedSections.filter(sectionId => {
       const section = sections[sectionId];
@@ -386,6 +411,34 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       });
     }
     recordStep('generation_result', 'passed', `Generated ${Object.keys(sections).length} section(s)`);
+
+    const draftModelRes = await apiJson(
+      baseUrl,
+      'GET',
+      `/api/insertion/draft-model/${caseId}?formType=${encodeURIComponent(manifest.formType)}&generationRunId=${encodeURIComponent(generationRunId)}&targetSoftware=${encodeURIComponent(manifest.insertion?.targetSoftware || inferTargetSoftware(manifest.formType))}`,
+      null,
+      20000,
+    );
+    if (draftModelRes.status !== 200 || !draftModelRes.body?.draftModel) {
+      failStep('draft_model', 'Failed to build internal form draft model', draftModelRes.body);
+    }
+    const draftModel = draftModelRes.body.draftModel;
+    if ((draftModel.summary?.missingRequiredFields || 0) > 0) {
+      failStep(
+        'draft_model',
+        `Internal form draft is missing ${draftModel.summary.missingRequiredFields} required field(s)`,
+        draftModel,
+      );
+    }
+    recordStep(
+      'draft_model',
+      'passed',
+      `Internal draft source=${draftModel.summary?.sourceReadiness || 'unknown'} insertion=${draftModel.summary?.insertionReadiness || 'unknown'} aliasBackfilled=${draftModel.summary?.aliasBackfilledFields || 0}`,
+      {
+        missingRequiredFields: draftModel.summary?.missingRequiredFields || 0,
+        insertionReadyFields: draftModel.summary?.insertionReadyFields || 0,
+      },
+    );
 
     const reviewRes = await apiJson(baseUrl, 'PATCH', `/api/cases/${caseId}/pipeline`, { stage: 'review' });
     if (reviewRes.status !== 200 || reviewRes.body?.ok !== true) {
@@ -456,6 +509,14 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
       }
       if (insertionStatus.status !== 'completed') {
         failStep('insertion_status', `Insertion did not complete cleanly (status=${insertionStatus.status})`, insertionStatus);
+      }
+      const minVerifiedFields = Math.max(1, Number(manifest.insertion?.minVerifiedFields || 1));
+      if ((insertionStatus.verifiedFields || 0) < minVerifiedFields) {
+        failStep(
+          'insertion_status',
+          `Live insertion verification was insufficient (${insertionStatus.verifiedFields || 0}/${minVerifiedFields} verified field(s))`,
+          insertionStatus,
+        );
       }
       recordStep('insertion_status', 'passed', `Live insertion completed with ${insertionStatus.verifiedFields || 0} verified field(s)`);
     } else {

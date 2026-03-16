@@ -1,0 +1,1386 @@
+{
+  "caseId": "e9841e54",
+  "exportedAt": "2026-03-16T17:44:48.862Z",
+  "appVersion": "2.0.0",
+  "caseMetadata": {
+    "caseId": "e9841e54",
+    "address": "123 Test Street, Bloomington, IL 61701",
+    "borrower": "Jordan Harper",
+    "notes": "Golden path regression fixture for residential 1004 assignments.",
+    "formType": "1004",
+    "status": "active",
+    "pipelineStage": "extracting",
+    "unresolvedIssues": [],
+    "createdAt": "2026-03-16T17:43:46.193Z",
+    "updatedAt": "2026-03-16T17:43:46.959Z",
+    "assignmentPurpose": "Purchase",
+    "loanProgram": "Conventional",
+    "propertyType": "Single Family",
+    "occupancyType": "Owner Occupied",
+    "reportConditionMode": null,
+    "subjectCondition": "C3",
+    "clientName": "First Community Bank",
+    "lenderName": "First Community Bank",
+    "amcName": "CACC Internal",
+    "state": "IL",
+    "county": "McLean",
+    "city": "Bloomington",
+    "marketArea": "East Bloomington",
+    "neighborhood": "East Bloomington",
+    "marketType": "suburban",
+    "assignmentNotes": "",
+    "workflowStatus": "ready_for_generation",
+    "pipelineHistory": [
+      {
+        "stage": "extracting",
+        "at": "2026-03-16T17:43:46.217Z"
+      }
+    ],
+    "docs": {
+      "appraisal_order": {
+        "uploadedAt": "2026-03-16T17:43:46.550Z",
+        "pages": 0,
+        "bytes": 967,
+        "documentId": "2114b23c-6327-4e5d-92d5-d5af323eeedf",
+        "docType": "order_sheet",
+        "duplicateOf": null,
+        "warning": null
+      },
+      "purchase_contract": {
+        "uploadedAt": "2026-03-16T17:43:46.588Z",
+        "pages": 0,
+        "bytes": 911,
+        "documentId": "b58c51f9-7ee1-4bb7-8eba-06e65e4c3b6e",
+        "docType": "contract",
+        "duplicateOf": null,
+        "warning": null
+      },
+      "mls_sheet": {
+        "uploadedAt": "2026-03-16T17:43:46.616Z",
+        "pages": 0,
+        "bytes": 966,
+        "documentId": "453a25cf-fffb-4f15-bab0-2a16ca8296e6",
+        "docType": "mls_sheet",
+        "duplicateOf": null,
+        "warning": null
+      },
+      "tax_record": {
+        "uploadedAt": "2026-03-16T17:43:46.646Z",
+        "pages": 0,
+        "bytes": 879,
+        "documentId": "da8414af-42d2-410f-a40e-670aeb65fdcc",
+        "docType": "assessor_record",
+        "duplicateOf": null,
+        "warning": null
+      },
+      "zoning_document": {
+        "uploadedAt": "2026-03-16T17:43:46.679Z",
+        "pages": 0,
+        "bytes": 829,
+        "documentId": "c0b9e273-f862-4e07-bce1-8f9974a4268d",
+        "docType": "zoning_document",
+        "duplicateOf": null,
+        "warning": null
+      }
+    }
+  },
+  "assignmentIntelligence": {
+    "id": "bf59bf7c-1770-4822-b154-7e24023e4561",
+    "formType": "1004",
+    "bundle": {
+      "caseId": "e9841e54",
+      "context": {
+        "caseId": "e9841e54",
+        "formType": "1004",
+        "reportType": "appraisal_report",
+        "assignmentPurpose": "purchase",
+        "loanProgram": "conventional",
+        "valueCondition": "as_is",
+        "propertyType": "single_family",
+        "occupancyType": "owner_occupied",
+        "tenureType": "fee_simple",
+        "unitCount": 1,
+        "client": {
+          "name": "First Community Bank",
+          "lender": "First Community Bank",
+          "amc": "CACC Internal"
+        },
+        "intendedUse": "Support a first mortgage lending decision.",
+        "intendedUser": "First Community Bank and secondary market participants as allowed by the engagement.",
+        "extraordinaryAssumptions": [],
+        "hypotheticalConditions": [],
+        "subject": {
+          "address": "123 Test Street",
+          "city": "Bloomington",
+          "county": "McLean",
+          "state": "IL",
+          "zip": "",
+          "yearBuilt": 2008,
+          "effectiveAge": null,
+          "gla": 2148,
+          "lotSize": null,
+          "bedrooms": null,
+          "bathrooms": null,
+          "rooms": null,
+          "design": "Two-story",
+          "condition": "C3",
+          "quality": "Q4"
+        },
+        "site": {
+          "zoning": "R-1 Permitted Use: Single-family residen",
+          "zoningConformity": null,
+          "utilities": null,
+          "floodZone": null,
+          "floodMapNumber": null,
+          "floodMapDate": null,
+          "topography": null,
+          "view": null,
+          "siteSize": null,
+          "shape": null,
+          "drainage": null,
+          "easements": null,
+          "encroachments": null
+        },
+        "improvements": {
+          "condition": "C3",
+          "quality": "Q4",
+          "functionalUtility": null,
+          "updates": null,
+          "basement": null,
+          "garage": null,
+          "heating": null,
+          "cooling": null,
+          "foundation": null,
+          "roof": null,
+          "exterior": null
+        },
+        "neighborhood": {
+          "description": "Established suburban residential neighborhood consisting primarily of one- and two-story single-family homes built from the late 1990s through the 2010s.",
+          "boundaries": "Veterans Parkway on the west, Hershey Road on the east, Empire Street on the north, and Oakland Avenue on the south.",
+          "characteristics": "",
+          "builtUp": "Mostly built out",
+          "growth": null,
+          "landUse": "Predominantly single-family residential with supporting neighborhood commercial uses along major arterials."
+        },
+        "market": {
+          "marketArea": "Bloomington",
+          "marketType": "suburban",
+          "priceLow": null,
+          "priceHigh": null,
+          "trend": "Stable to slightly increasing",
+          "avgDom": null,
+          "marketTimeAdjustmentPercent": 0,
+          "supplyDemand": null
+        },
+        "assignment": {
+          "effectiveDate": "02/10/2026",
+          "intendedUse": "Support a first mortgage lending decision.",
+          "intendedUser": "First Community Bank and secondary market participants as allowed by the engagement.",
+          "clientName": "First Community Bank"
+        },
+        "comps": [
+          {
+            "index": 1,
+            "address": "118 Oak Ridge Drive",
+            "salePrice": "462000",
+            "saleDate": "12/20/2025",
+            "gla": "2205",
+            "lotSize": null,
+            "yearBuilt": null,
+            "condition": null,
+            "adjustments": {
+              "value": "Adjusted for location, GLA, condition, basement finish, and garage utility.",
+              "confidence": "high",
+              "source": "fixture_operator"
+            }
+          },
+          {
+            "index": 2,
+            "address": "245 Maple Hollow Lane",
+            "salePrice": "448500",
+            "saleDate": "11/14/2025",
+            "gla": "2090",
+            "lotSize": null,
+            "yearBuilt": null,
+            "condition": null,
+            "adjustments": {
+              "value": "Adjusted for site size, GLA, overall condition, and updates.",
+              "confidence": "high",
+              "source": "fixture_operator"
+            }
+          },
+          {
+            "index": 3,
+            "address": "307 Hawthorne Court",
+            "salePrice": "469900",
+            "saleDate": "01/05/2026",
+            "gla": "2288",
+            "lotSize": null,
+            "yearBuilt": null,
+            "condition": null,
+            "adjustments": {
+              "value": "Adjusted for market conditions, GLA, basement finish, and site utility.",
+              "confidence": "high",
+              "source": "fixture_operator"
+            }
+          }
+        ],
+        "approaches": {
+          "salesApplicable": true,
+          "costApplicable": false,
+          "incomeApplicable": false,
+          "salesExclusionReason": null,
+          "costExclusionReason": null,
+          "incomeExclusionReason": null
+        },
+        "indicators": {
+          "mixedUse": false,
+          "adu": false,
+          "manufacturedHome": false,
+          "rural": false,
+          "incomeProducing": false,
+          "newConstruction": false,
+          "proposedConstruction": false,
+          "rehabilitation": false
+        },
+        "_version": "2.0",
+        "_builtAt": "2026-03-16T17:43:47.063Z"
+      },
+      "flags": {
+        "conventional_assignment": true,
+        "fha_assignment": false,
+        "usda_assignment": false,
+        "va_assignment": false,
+        "government_loan": false,
+        "single_family": true,
+        "condo": false,
+        "multi_unit": false,
+        "manufactured_home": false,
+        "mixed_use": false,
+        "commercial_property": false,
+        "adu_present": false,
+        "rural_property": false,
+        "income_producing": false,
+        "as_is_value": true,
+        "subject_to_repairs": false,
+        "subject_to_completion": false,
+        "subject_to_inspection": false,
+        "subject_to_any": false,
+        "prospective_value": false,
+        "retrospective_value": false,
+        "new_construction": false,
+        "proposed_construction": false,
+        "rehabilitation": false,
+        "repair_commentary_required": false,
+        "flood_zone": false,
+        "high_risk_flood_zone": false,
+        "nonconforming_zoning": false,
+        "illegal_zoning": false,
+        "zoning_commentary_required": false,
+        "flood_commentary_required": false,
+        "sales_approach_required": true,
+        "cost_approach_likely": false,
+        "income_approach_likely": false,
+        "extraordinary_assumption_present": false,
+        "hypothetical_condition_present": false,
+        "additional_certification_risk": false,
+        "has_comps": true,
+        "limited_comps": false,
+        "market_time_adjustment": false,
+        "declining_market": false,
+        "owner_occupied": true,
+        "investment": false,
+        "vacant": false,
+        "leasehold": false,
+        "fha_repair_required": false,
+        "usda_site_eligibility_required": false
+      },
+      "flagSummary": {
+        "active": [
+          "conventional_assignment",
+          "single_family",
+          "as_is_value",
+          "sales_approach_required",
+          "has_comps",
+          "owner_occupied"
+        ],
+        "count": 6,
+        "total": 47
+      },
+      "compliance": {
+        "uspap_applicable": true,
+        "fha_overlay": false,
+        "usda_overlay": false,
+        "va_overlay": false,
+        "report_family": "urar_1004",
+        "property_type_implications": [
+          "standard_residential_scope"
+        ],
+        "assignment_condition_implications": [],
+        "likely_commentary_families": [
+          "neighborhood",
+          "market_conditions",
+          "site",
+          "improvements",
+          "sales_comparison",
+          "reconciliation"
+        ],
+        "likely_qc_categories": [
+          "uspap_compliance",
+          "data_accuracy",
+          "narrative_consistency",
+          "value_support"
+        ]
+      },
+      "reportFamily": {
+        "id": "urar_1004",
+        "displayName": "URAR 1004 — Single-Family Residential",
+        "formType": "1004",
+        "sectionGroups": [
+          {
+            "id": "contract",
+            "label": "Contract / Offering History",
+            "order": 1
+          },
+          {
+            "id": "neighborhood",
+            "label": "Neighborhood",
+            "order": 2
+          },
+          {
+            "id": "site",
+            "label": "Site",
+            "order": 3
+          },
+          {
+            "id": "improvements",
+            "label": "Improvements",
+            "order": 4
+          },
+          {
+            "id": "sales_comparison",
+            "label": "Sales Comparison Approach",
+            "order": 5
+          },
+          {
+            "id": "cost_approach",
+            "label": "Cost Approach",
+            "order": 6
+          },
+          {
+            "id": "income_approach",
+            "label": "Income Approach",
+            "order": 7
+          },
+          {
+            "id": "reconciliation",
+            "label": "Reconciliation",
+            "order": 8
+          }
+        ],
+        "destinationHints": {
+          "primary": "aci",
+          "secondary": null
+        }
+      },
+      "canonicalFields": {
+        "applicable": [
+          {
+            "fieldId": "neighborhood_description",
+            "label": "Neighborhood Description",
+            "sectionGroup": "neighborhood",
+            "contentType": "narrative",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "market_conditions",
+            "label": "Market Conditions",
+            "sectionGroup": "neighborhood",
+            "contentType": "analysis",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "neighborhood_boundaries",
+            "label": "Neighborhood Boundaries",
+            "sectionGroup": "neighborhood",
+            "contentType": "boilerplate",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "site_comments",
+            "label": "Site Comments",
+            "sectionGroup": "site",
+            "contentType": "narrative",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "improvements_condition",
+            "label": "Improvements / Condition",
+            "sectionGroup": "improvements",
+            "contentType": "narrative",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "contract_analysis",
+            "label": "Contract Analysis",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "concessions",
+            "label": "Concessions / Financial Assistance",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "offering_history",
+            "label": "Offering History",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "sca_summary",
+            "label": "Sales Comparison Summary",
+            "sectionGroup": "sales_comparison",
+            "contentType": "analysis",
+            "triggeringFlags": [
+              "sales_approach_required"
+            ]
+          },
+          {
+            "fieldId": "reconciliation",
+            "label": "Reconciliation",
+            "sectionGroup": "reconciliation",
+            "contentType": "narrative",
+            "triggeringFlags": []
+          },
+          {
+            "fieldId": "exposure_time",
+            "label": "Exposure Time",
+            "sectionGroup": "reconciliation",
+            "contentType": "boilerplate",
+            "triggeringFlags": []
+          }
+        ],
+        "byGroup": {
+          "neighborhood": [
+            "neighborhood_description",
+            "market_conditions",
+            "neighborhood_boundaries"
+          ],
+          "site": [
+            "site_comments"
+          ],
+          "improvements": [
+            "improvements_condition"
+          ],
+          "contract": [
+            "contract_analysis",
+            "concessions",
+            "offering_history"
+          ],
+          "sales_comparison": [
+            "sca_summary"
+          ],
+          "reconciliation": [
+            "reconciliation",
+            "exposure_time"
+          ]
+        },
+        "totalApplicable": 11
+      },
+      "sectionPlan": {
+        "id": "a79a01d8-6c2d-4034-9b17-2310021c62c9",
+        "version": "2.0",
+        "reportFamily": "urar_1004",
+        "formType": "1004",
+        "caseId": "e9841e54",
+        "sections": [
+          {
+            "id": "concessions",
+            "label": "Concessions / Financial Assistance",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "required": true,
+            "generatorProfile": "template-heavy",
+            "dependsOn": [],
+            "priority": 1,
+            "qcTags": [
+              "data_accuracy"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "contract_analysis",
+            "label": "Contract Analysis",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "required": true,
+            "generatorProfile": "template-heavy",
+            "dependsOn": [],
+            "priority": 1,
+            "qcTags": [
+              "data_accuracy"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "offering_history",
+            "label": "Offering History",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "required": true,
+            "generatorProfile": "template-heavy",
+            "dependsOn": [],
+            "priority": 1,
+            "qcTags": [
+              "uspap_compliance"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "market_conditions",
+            "label": "Market Conditions",
+            "sectionGroup": "neighborhood",
+            "contentType": "analysis",
+            "required": true,
+            "generatorProfile": "analysis-narrative",
+            "dependsOn": [],
+            "priority": 2,
+            "qcTags": [
+              "data_accuracy",
+              "value_support"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "neighborhood_boundaries",
+            "label": "Neighborhood Boundaries",
+            "sectionGroup": "neighborhood",
+            "contentType": "boilerplate",
+            "required": false,
+            "generatorProfile": "template-heavy",
+            "dependsOn": [],
+            "priority": 2,
+            "qcTags": [
+              "data_accuracy"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "neighborhood_description",
+            "label": "Neighborhood Description",
+            "sectionGroup": "neighborhood",
+            "contentType": "narrative",
+            "required": true,
+            "generatorProfile": "retrieval-guided",
+            "dependsOn": [],
+            "priority": 2,
+            "qcTags": [
+              "narrative_consistency",
+              "data_accuracy"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "site_comments",
+            "label": "Site Comments",
+            "sectionGroup": "site",
+            "contentType": "narrative",
+            "required": true,
+            "generatorProfile": "retrieval-guided",
+            "dependsOn": [],
+            "priority": 3,
+            "qcTags": [
+              "data_accuracy",
+              "flood_zone_documentation",
+              "zoning_analysis"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "improvements_condition",
+            "label": "Improvements / Condition",
+            "sectionGroup": "improvements",
+            "contentType": "narrative",
+            "required": true,
+            "generatorProfile": "retrieval-guided",
+            "dependsOn": [],
+            "priority": 4,
+            "qcTags": [
+              "data_accuracy",
+              "narrative_consistency"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "sca_summary",
+            "label": "Sales Comparison Summary",
+            "sectionGroup": "sales_comparison",
+            "contentType": "analysis",
+            "required": true,
+            "generatorProfile": "analysis-narrative",
+            "dependsOn": [],
+            "priority": 6,
+            "qcTags": [
+              "value_support",
+              "data_accuracy"
+            ],
+            "triggeringFlags": [
+              "sales_approach_required"
+            ]
+          },
+          {
+            "id": "exposure_time",
+            "label": "Exposure Time",
+            "sectionGroup": "reconciliation",
+            "contentType": "boilerplate",
+            "required": true,
+            "generatorProfile": "template-heavy",
+            "dependsOn": [],
+            "priority": 8,
+            "qcTags": [
+              "value_support"
+            ],
+            "triggeringFlags": []
+          },
+          {
+            "id": "reconciliation",
+            "label": "Reconciliation",
+            "sectionGroup": "reconciliation",
+            "contentType": "narrative",
+            "required": true,
+            "generatorProfile": "retrieval-guided",
+            "dependsOn": [
+              "neighborhood_description",
+              "market_conditions",
+              "improvements_condition",
+              "sca_summary"
+            ],
+            "priority": 8,
+            "qcTags": [
+              "value_support",
+              "narrative_consistency",
+              "uspap_compliance"
+            ],
+            "triggeringFlags": []
+          }
+        ],
+        "requiredSections": [
+          "concessions",
+          "contract_analysis",
+          "offering_history",
+          "market_conditions",
+          "neighborhood_description",
+          "site_comments",
+          "improvements_condition",
+          "sca_summary",
+          "exposure_time",
+          "reconciliation"
+        ],
+        "optionalSections": [
+          "neighborhood_boundaries"
+        ],
+        "commentaryBlocks": [],
+        "excludedSections": [
+          {
+            "fieldId": "cost_approach",
+            "label": "Cost Approach",
+            "reason": "Condition not met: cost_approach_likely"
+          },
+          {
+            "fieldId": "income_approach",
+            "label": "Income Approach",
+            "reason": "Condition not met: income_approach_likely"
+          }
+        ],
+        "parallelSections": [
+          "concessions",
+          "contract_analysis",
+          "offering_history",
+          "market_conditions",
+          "neighborhood_boundaries",
+          "neighborhood_description",
+          "site_comments",
+          "improvements_condition",
+          "sca_summary",
+          "exposure_time"
+        ],
+        "dependentSections": [
+          "reconciliation"
+        ],
+        "analysisJobs": [
+          "comp_analysis",
+          "market_analysis"
+        ],
+        "totalSections": 11,
+        "requiredCount": 10,
+        "optionalCount": 1,
+        "commentaryCount": 0,
+        "excludedCount": 2,
+        "parallelCount": 10,
+        "dependentCount": 1,
+        "estimatedDurationMs": 21000,
+        "complianceTags": [
+          "uspap_compliance",
+          "data_accuracy",
+          "narrative_consistency",
+          "value_support"
+        ],
+        "_builtAt": "2026-03-16T17:43:47.065Z",
+        "_buildMs": 1
+      },
+      "sectionRequirements": {
+        "reportFamilyId": "urar_1004",
+        "formType": "1004",
+        "generatedAt": "2026-03-16T17:43:47.066Z",
+        "sections": [
+          {
+            "sectionId": "concessions",
+            "label": "Concessions",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "status": "conditional_required",
+            "required": true,
+            "reasonCode": "manifest_always",
+            "reason": "Manifest marks this section as always required.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "contract_analysis",
+            "label": "Contract Analysis",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "status": "conditional_required",
+            "required": true,
+            "reasonCode": "manifest_always",
+            "reason": "Manifest marks this section as always required.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "offering_history",
+            "label": "Offering History",
+            "sectionGroup": "contract",
+            "contentType": "boilerplate",
+            "status": "conditional_required",
+            "required": true,
+            "reasonCode": "manifest_always",
+            "reason": "Manifest marks this section as always required.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "market_conditions",
+            "label": "Market Conditions",
+            "sectionGroup": "neighborhood",
+            "contentType": "analysis",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "neighborhood_description",
+            "label": "Neighborhood Description",
+            "sectionGroup": "neighborhood",
+            "contentType": "narrative",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "neighborhood_boundaries",
+            "label": "Neighborhood Boundaries",
+            "sectionGroup": "neighborhood",
+            "contentType": "boilerplate",
+            "status": "optional",
+            "required": false,
+            "reasonCode": "applicable_optional",
+            "reason": "Applicable canonical field that is not required by manifest rules.",
+            "source": "canonical_fields",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "site_comments",
+            "label": "Site Comments",
+            "sectionGroup": "site",
+            "contentType": "narrative",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "flood_comment",
+            "label": "Flood Zone Commentary",
+            "sectionGroup": "site",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"flood_commentary_required\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "flood_commentary_required"
+          },
+          {
+            "sectionId": "zoning_comment",
+            "label": "Zoning Nonconformity Commentary",
+            "sectionGroup": "site",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"zoning_commentary_required\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "zoning_commentary_required"
+          },
+          {
+            "sectionId": "improvements_condition",
+            "label": "Improvements / Condition",
+            "sectionGroup": "improvements",
+            "contentType": "narrative",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "adu_comment",
+            "label": "ADU Commentary",
+            "sectionGroup": "improvements",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"adu_present\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "adu_present"
+          },
+          {
+            "sectionId": "fha_repair_comment",
+            "label": "FHA Repair Requirements Commentary",
+            "sectionGroup": "improvements",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"fha_repair_required\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "fha_repair_required"
+          },
+          {
+            "sectionId": "mixed_use_comment",
+            "label": "Mixed-Use Commentary",
+            "sectionGroup": "improvements",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"mixed_use\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "mixed_use"
+          },
+          {
+            "sectionId": "subject_to_completion_comment",
+            "label": "Subject-To Completion Commentary",
+            "sectionGroup": "improvements",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"subject_to_completion\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "subject_to_completion"
+          },
+          {
+            "sectionId": "subject_to_repairs_comment",
+            "label": "Subject-To Repairs Commentary",
+            "sectionGroup": "improvements",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"subject_to_repairs\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "subject_to_repairs"
+          },
+          {
+            "sectionId": "sca_summary",
+            "label": "Sales Comparison Summary",
+            "sectionGroup": "sales_comparison",
+            "contentType": "analysis",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "cost_approach",
+            "label": "Cost Approach",
+            "sectionGroup": "cost_approach",
+            "contentType": "analysis",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "manifest_condition_not_met",
+            "reason": "Manifest condition \"cost_approach_likely\" is not active.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": "cost_approach_likely"
+          },
+          {
+            "sectionId": "income_approach",
+            "label": "Income Approach",
+            "sectionGroup": "income_approach",
+            "contentType": "analysis",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "manifest_condition_not_met",
+            "reason": "Manifest condition \"income_approach_likely\" is not active.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": "income_approach_likely"
+          },
+          {
+            "sectionId": "reconciliation",
+            "label": "Reconciliation",
+            "sectionGroup": "reconciliation",
+            "contentType": "narrative",
+            "status": "required",
+            "required": true,
+            "reasonCode": "manifest_required",
+            "reason": "Listed in manifest.requiredSections.",
+            "source": "manifest.requiredSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "exposure_time",
+            "label": "Exposure Time",
+            "sectionGroup": "reconciliation",
+            "contentType": "boilerplate",
+            "status": "conditional_required",
+            "required": true,
+            "reasonCode": "manifest_always",
+            "reason": "Manifest marks this section as always required.",
+            "source": "manifest.conditionalSections",
+            "triggerFlag": null
+          },
+          {
+            "sectionId": "declining_market_comment",
+            "label": "Declining Market Comment",
+            "sectionGroup": "commentary",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"declining_market\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "declining_market"
+          },
+          {
+            "sectionId": "ea_comment",
+            "label": "Ea Comment",
+            "sectionGroup": "commentary",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"extraordinary_assumption_present\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "extraordinary_assumption_present"
+          },
+          {
+            "sectionId": "hc_comment",
+            "label": "Hc Comment",
+            "sectionGroup": "commentary",
+            "contentType": "commentary",
+            "status": "excluded",
+            "required": false,
+            "reasonCode": "commentary_not_triggered",
+            "reason": "Commentary block not triggered (flag \"hypothetical_condition_present\" is false).",
+            "source": "manifest.optionalCommentaryBlocks",
+            "triggerFlag": "hypothetical_condition_present"
+          }
+        ],
+        "requiredSectionIds": [
+          "concessions",
+          "contract_analysis",
+          "offering_history",
+          "market_conditions",
+          "neighborhood_description",
+          "site_comments",
+          "improvements_condition",
+          "sca_summary",
+          "reconciliation",
+          "exposure_time"
+        ],
+        "optionalSectionIds": [
+          "neighborhood_boundaries"
+        ],
+        "excludedSectionIds": [
+          "flood_comment",
+          "zoning_comment",
+          "adu_comment",
+          "fha_repair_comment",
+          "mixed_use_comment",
+          "subject_to_completion_comment",
+          "subject_to_repairs_comment",
+          "cost_approach",
+          "income_approach",
+          "declining_market_comment",
+          "ea_comment",
+          "hc_comment"
+        ],
+        "summary": {
+          "totalSections": 23,
+          "requiredCount": 10,
+          "optionalCount": 1,
+          "excludedCount": 12
+        }
+      },
+      "complianceChecks": {
+        "checkedAt": "2026-03-16T17:43:47.066Z",
+        "context": {
+          "caseId": "e9841e54",
+          "formType": "1004",
+          "reportFamilyId": "urar_1004"
+        },
+        "summary": {
+          "totalRules": 4,
+          "passedRules": 4,
+          "failedRules": 0,
+          "blockerCount": 0,
+          "warningCount": 0,
+          "infoCount": 0
+        },
+        "blockers": [],
+        "warnings": [],
+        "info": [],
+        "checks": [
+          {
+            "ruleId": "rule.uspap.applicable",
+            "severity": "blocker",
+            "passed": true,
+            "reasonCode": "uspap_active",
+            "message": "USPAP applicability is confirmed.",
+            "evidence": null
+          },
+          {
+            "ruleId": "rule.section_matrix.available",
+            "severity": "blocker",
+            "passed": true,
+            "reasonCode": "section_matrix_present",
+            "message": "Section requirement matrix is available.",
+            "evidence": null
+          },
+          {
+            "ruleId": "rule.reconciliation.section",
+            "severity": "blocker",
+            "passed": true,
+            "reasonCode": "reconciliation_present",
+            "message": "Reconciliation section is present.",
+            "evidence": null
+          },
+          {
+            "ruleId": "rule.sales_approach.section",
+            "severity": "blocker",
+            "passed": true,
+            "reasonCode": "sales_section_present",
+            "message": "Sales approach section is present.",
+            "evidence": {
+              "expectedSectionIds": [
+                "sca_summary",
+                "sales_comparison"
+              ]
+            }
+          }
+        ]
+      },
+      "_version": "4.0",
+      "_builtAt": "2026-03-16T17:43:47.067Z",
+      "_buildMs": 6
+    },
+    "createdAt": "2026-03-16 17:43:47",
+    "updatedAt": "2026-03-16 17:43:47"
+  },
+  "documentManifest": [
+    {
+      "id": "2114b23c-6327-4e5d-92d5-d5af323eeedf",
+      "originalFilename": "1004-order-sheet.pdf",
+      "docType": "order_sheet",
+      "fileType": "pdf",
+      "fileSizeBytes": 967,
+      "extractionStatus": "extracted",
+      "uploadedAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "b58c51f9-7ee1-4bb7-8eba-06e65e4c3b6e",
+      "originalFilename": "1004-contract.pdf",
+      "docType": "contract",
+      "fileType": "pdf",
+      "fileSizeBytes": 911,
+      "extractionStatus": "extracted",
+      "uploadedAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "453a25cf-fffb-4f15-bab0-2a16ca8296e6",
+      "originalFilename": "1004-mls-sheet.pdf",
+      "docType": "mls_sheet",
+      "fileType": "pdf",
+      "fileSizeBytes": 966,
+      "extractionStatus": "extracted",
+      "uploadedAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "da8414af-42d2-410f-a40e-670aeb65fdcc",
+      "originalFilename": "1004-tax-record.pdf",
+      "docType": "assessor_record",
+      "fileType": "pdf",
+      "fileSizeBytes": 879,
+      "extractionStatus": "extracted",
+      "uploadedAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "c0b9e273-f862-4e07-bce1-8f9974a4268d",
+      "originalFilename": "1004-zoning-letter.pdf",
+      "docType": "zoning_document",
+      "fileType": "pdf",
+      "fileSizeBytes": 829,
+      "extractionStatus": "extracted",
+      "uploadedAt": "2026-03-16 17:43:46"
+    }
+  ],
+  "extractionSummary": [
+    {
+      "id": "f6f72173-4679-48d2-9478-bca09ff36858",
+      "documentId": "2114b23c-6327-4e5d-92d5-d5af323eeedf",
+      "docType": "order_sheet",
+      "status": "completed",
+      "method": "structured",
+      "factsExtracted": 8,
+      "sectionsExtracted": 0,
+      "durationMs": 4,
+      "createdAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "10567d0e-e148-427e-97cb-b6be7a979bc1",
+      "documentId": "b58c51f9-7ee1-4bb7-8eba-06e65e4c3b6e",
+      "docType": "contract",
+      "status": "completed",
+      "method": "structured",
+      "factsExtracted": 5,
+      "sectionsExtracted": 0,
+      "durationMs": 3,
+      "createdAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "45c9f4b4-e761-4e5e-b790-68a03c5555e6",
+      "documentId": "453a25cf-fffb-4f15-bab0-2a16ca8296e6",
+      "docType": "mls_sheet",
+      "status": "completed",
+      "method": "structured",
+      "factsExtracted": 9,
+      "sectionsExtracted": 0,
+      "durationMs": 6,
+      "createdAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "c4732ae4-dfb6-4cad-b2f1-a497c512b888",
+      "documentId": "da8414af-42d2-410f-a40e-670aeb65fdcc",
+      "docType": "assessor_record",
+      "status": "completed",
+      "method": "structured",
+      "factsExtracted": 7,
+      "sectionsExtracted": 0,
+      "durationMs": 6,
+      "createdAt": "2026-03-16 17:43:46"
+    },
+    {
+      "id": "4a7ba47f-a936-4603-ac0b-2f8f20c1a5b6",
+      "documentId": "c0b9e273-f862-4e07-bce1-8f9974a4268d",
+      "docType": "zoning_document",
+      "status": "completed",
+      "method": "structured",
+      "factsExtracted": 2,
+      "sectionsExtracted": 0,
+      "durationMs": 2,
+      "createdAt": "2026-03-16 17:43:46"
+    }
+  ],
+  "generationRunHistory": [
+    {
+      "id": "80535ae9-faee-45e1-b3c9-cb97fe752280",
+      "status": "partial_complete",
+      "form_type": "1004",
+      "started_at": "2026-03-16 17:43:47",
+      "completed_at": "2026-03-16 17:44:21",
+      "duration_ms": 34830,
+      "section_count": 11,
+      "success_count": 9,
+      "error_count": 2,
+      "retry_count": 4,
+      "sections": [
+        {
+          "sectionId": "concessions",
+          "status": "complete",
+          "durationMs": 2220,
+          "outputChars": 385
+        },
+        {
+          "sectionId": "contract_analysis",
+          "status": "complete",
+          "durationMs": 4950,
+          "outputChars": 904
+        },
+        {
+          "sectionId": "offering_history",
+          "status": "complete",
+          "durationMs": 3205,
+          "outputChars": 575
+        },
+        {
+          "sectionId": "market_conditions",
+          "status": "complete",
+          "durationMs": 5704,
+          "outputChars": 917
+        },
+        {
+          "sectionId": "neighborhood_boundaries",
+          "status": "complete",
+          "durationMs": 4634,
+          "outputChars": 541
+        },
+        {
+          "sectionId": "neighborhood_description",
+          "status": "complete",
+          "durationMs": 13437,
+          "outputChars": 838
+        },
+        {
+          "sectionId": "site_comments",
+          "status": "failed",
+          "durationMs": 21667,
+          "outputChars": null
+        },
+        {
+          "sectionId": "improvements_condition",
+          "status": "complete",
+          "durationMs": 11648,
+          "outputChars": 1019
+        },
+        {
+          "sectionId": "sca_summary",
+          "status": "complete",
+          "durationMs": 21455,
+          "outputChars": 1046
+        },
+        {
+          "sectionId": "exposure_time",
+          "status": "failed",
+          "durationMs": 18247,
+          "outputChars": null
+        },
+        {
+          "sectionId": "reconciliation",
+          "status": "complete",
+          "durationMs": 7373,
+          "outputChars": 1074
+        }
+      ]
+    }
+  ],
+  "qcHistory": [],
+  "insertionRunHistory": [],
+  "auditEvents": [],
+  "timelineSummary": {
+    "caseId": "e9841e54",
+    "totalEvents": 0,
+    "categoryCounts": {},
+    "recentEvents": [],
+    "firstEventAt": null,
+    "lastEventAt": null
+  },
+  "healthSnapshot": {
+    "database": {
+      "status": "healthy",
+      "detail": "journal=wal, tables=32"
+    },
+    "documentStorage": {
+      "status": "healthy",
+      "detail": "83 case directories"
+    },
+    "orchestrator": {
+      "status": "healthy",
+      "detail": "1 generation runs recorded"
+    },
+    "qcEngine": {
+      "status": "healthy",
+      "detail": "1 QC runs recorded"
+    },
+    "aciAgent": {
+      "status": "healthy",
+      "detail": "ACI agent responding"
+    },
+    "rqAgent": {
+      "status": "healthy",
+      "detail": "RQ agent responding"
+    },
+    "dbStats": {
+      "tableCount": 32,
+      "tableCounts": {
+        "analysis_artifacts": 2,
+        "approved_memory": 0,
+        "assignment_intelligence": 1,
+        "assignments": 1,
+        "audit_events": 1,
+        "case_documents": 5,
+        "case_facts": 1,
+        "case_history": 1,
+        "case_outputs": 1,
+        "case_records": 1,
+        "case_timeline_events": 0,
+        "comp_commentary_memory": 0,
+        "destination_profiles": 2,
+        "document_extractions": 5,
+        "extracted_facts": 31,
+        "extracted_sections": 0,
+        "generated_sections": 11,
+        "generation_runs": 1,
+        "ingest_jobs": 0,
+        "insertion_run_items": 8,
+        "insertion_runs": 1,
+        "memory_items": 0,
+        "memory_staging_candidates": 0,
+        "operational_metrics": 0,
+        "qc_findings": 5,
+        "qc_runs": 1,
+        "report_plans": 1,
+        "retrieval_cache": 1,
+        "section_jobs": 11,
+        "staged_memory_reviews": 0,
+        "voice_profiles": 0,
+        "voice_rules": 0
+      },
+      "dbSizeBytes": 729088,
+      "walSizeBytes": 4132392,
+      "dbSizeMB": 0.7,
+      "walSizeMB": 3.94,
+      "pageCount": 187,
+      "pageSize": 4096
+    },
+    "checkedAt": "2026-03-16T17:44:48.866Z"
+  }
+}

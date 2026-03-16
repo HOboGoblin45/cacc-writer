@@ -33,6 +33,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { getFieldDefinition } from '../fieldRegistry.js';
 
 // ── Generator profile resolution ────────────────────────────────────────────
 // Maps content types to default generator profiles.
@@ -80,6 +81,11 @@ export function buildSectionPlanV2(ctx, flags, compliance, manifest, applicableF
   const t0 = Date.now();
 
   const requiredSet = new Set(manifest.requiredSections || []);
+  const activeConditionalSet = new Set(
+    (manifest.conditionalSections || [])
+      .filter(section => section.condition === 'always' || flags[section.condition] === true)
+      .map(section => section.sectionId),
+  );
   const dependencyHints = manifest.dependencyHints || {};
 
   // ── 1. Classify each applicable field ─────────────────────────────────
@@ -94,7 +100,7 @@ export function buildSectionPlanV2(ctx, flags, compliance, manifest, applicableF
     if (fieldIdSet.has(field.fieldId)) continue;
     fieldIdSet.add(field.fieldId);
 
-    const isRequired = requiredSet.has(field.fieldId);
+    const isRequired = requiredSet.has(field.fieldId) || activeConditionalSet.has(field.fieldId);
     const isCommentary = field.contentType === 'commentary';
     const isTriggered = field.triggeringFlags.length === 0 ||
       field.triggeringFlags.some(f => flags[f] === true);
@@ -156,14 +162,40 @@ export function buildSectionPlanV2(ctx, flags, compliance, manifest, applicableF
         label:            cs.label,
         sectionGroup:     canonicalField.sectionGroup,
         contentType:      canonicalField.contentType,
-        required:         false,
+        required:         true,
         generatorProfile: resolveGeneratorProfile(canonicalField),
         dependsOn:        dependencyHints[cs.sectionId] || [],
         priority:         SECTION_GROUP_PRIORITY[canonicalField.sectionGroup] ?? 5,
         qcTags:           canonicalField.qcHints || [],
         triggeringFlags:  canonicalField.triggeringFlags,
       });
+      continue;
     }
+
+    const registryField = getFieldDefinition(ctx.formType || manifest.formType, cs.sectionId);
+    if (!registryField) {
+      excludedSections.push({
+        fieldId: cs.sectionId,
+        label: cs.label,
+        reason: 'Condition met, but no canonical or registry-backed field definition was found.',
+      });
+      continue;
+    }
+
+    fieldIdSet.add(cs.sectionId);
+    const sectionGroup = inferManifestSectionGroup(manifest, cs.sectionId) || normalizeRegistrySectionGroup(registryField.sectionName);
+    sections.push({
+      id:               cs.sectionId,
+      label:            cs.label || registryField.humanLabel || registryField.title || cs.sectionId,
+      sectionGroup,
+      contentType:      registryField.narrativeType === 'commentary' ? 'commentary' : 'narrative',
+      required:         true,
+      generatorProfile: CONTENT_TYPE_PROFILES.narrative,
+      dependsOn:        dependencyHints[cs.sectionId] || [],
+      priority:         SECTION_GROUP_PRIORITY[sectionGroup] ?? 5,
+      qcTags:           [],
+      triggeringFlags:  [cs.condition],
+    });
   }
 
   // ── 3. Check optional commentary blocks from manifest ─────────────────
@@ -247,6 +279,22 @@ export function buildSectionPlanV2(ctx, flags, compliance, manifest, applicableF
 
 function resolveGeneratorProfile(field) {
   return CONTENT_TYPE_PROFILES[field.contentType] || 'retrieval-guided';
+}
+
+function inferManifestSectionGroup(manifest, fieldId) {
+  for (const [groupId, fieldIds] of Object.entries(manifest.canonicalFieldGroups || {})) {
+    if (Array.isArray(fieldIds) && fieldIds.includes(fieldId)) return groupId;
+  }
+  return null;
+}
+
+function normalizeRegistrySectionGroup(sectionName) {
+  const raw = String(sectionName || '').trim();
+  if (!raw) return 'commentary';
+  return raw
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/\s+/g, '_')
+    .toLowerCase();
 }
 
 function computeAnalysisJobs(flags, manifest) {

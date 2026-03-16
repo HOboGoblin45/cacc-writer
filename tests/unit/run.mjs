@@ -32,6 +32,10 @@ const suites = [
   'openaiClient.test.mjs',
   'promptBuilder.test.mjs',
   'fieldProfiles.test.mjs',
+  'formDraftModel.test.mjs',
+  'sectionPlanner.test.mjs',
+  'generationRepo.test.mjs',
+  'verificationEngine.test.mjs',
   'generationService.test.mjs',
   'reportQueue.test.mjs',
 ];

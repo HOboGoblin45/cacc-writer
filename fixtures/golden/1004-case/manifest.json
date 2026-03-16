@@ -175,8 +175,35 @@
     "concessions",
     "offering_history",
     "sca_summary",
+    "exposure_time",
     "reconciliation"
   ],
+  "reviewedSections": {
+    "neighborhood_description": {
+      "sectionStatus": "reviewed",
+      "text": "The subject is located in East Bloomington, an established suburban residential neighborhood consisting primarily of one- and two-story single-family homes developed from the late 1990s through the 2010s. The area is mostly built out, is supported by neighborhood commercial services along major arterials, and remains competitive for owner-occupied housing in the subject's price range."
+    },
+    "site_comments": {
+      "sectionStatus": "reviewed",
+      "text": "The site is an approximately 0.24-acre residential lot improved with typical suburban utilities, legal access, and a use that is consistent with surrounding single-family development. The parcel is adequately sized for the existing improvement, has no adverse utility issues noted in the fixture record, and is consistent with neighborhood expectations for this market segment."
+    },
+    "improvements_condition": {
+      "sectionStatus": "reviewed",
+      "text": "The subject improvements appear to be in overall C3 condition with maintenance, finish, and utility consistent with market expectations for a circa-2008 owner-occupied residence in this neighborhood. The dwelling reflects average upkeep, functional design, and a level of updating and deferred maintenance that does not suggest significant physical deficiency beyond ordinary wear. Final condition and quality judgments remain subject to appraiser inspection review and certification."
+    },
+    "sca_summary": {
+      "sectionStatus": "reviewed",
+      "text": "The sales comparison analysis indicates the subject competes within a stable East Bloomington single-family market where recent comparable transfers provide the most relevant evidence of market behavior for this assignment. The selected comparable sales bracket the subject in overall utility, neighborhood appeal, and buyer profile, and the resulting indication is considered the strongest support for the report narrative. Final comparable weighting, adjustment judgment, and value reconciliation remain subject to appraiser review and signature."
+    },
+    "exposure_time": {
+      "sectionStatus": "reviewed",
+      "text": "Based on current market conditions, typical buyer demand, and recent marketing periods for similar properties in this competitive segment, a reasonable exposure time for the subject is estimated to be approximately 30 to 60 days. This opinion reflects prevailing market behavior in the East Bloomington area and remains subject to appraiser judgment in the context of the complete assignment record."
+    },
+    "reconciliation": {
+      "sectionStatus": "reviewed",
+      "text": "The sales comparison approach is given primary emphasis because the subject is an owner-occupied single-family residence and the available comparable sales provide the most direct market evidence for this assignment. The cost approach was considered as a secondary support check only, and the income approach was not developed for this non-income-producing property. Final adjustment weighting and the final value conclusion remain subject to appraiser review, reconciliation judgment, and signature."
+    }
+  },
   "generation": {
     "timeoutMs": 180000,
     "options": {
@@ -185,6 +212,7 @@
   },
   "insertion": {
     "targetSoftware": "aci",
+    "minVerifiedFields": 1,
     "timeoutMs": 120000
   }
 }

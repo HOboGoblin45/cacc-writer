@@ -1,0 +1,21 @@
+[agent] 17:06:58 INFO: ============================================================
+[agent] 17:06:58 INFO: CACC Writer — ACI Desktop Agent  (Phase 2)
+[agent] 17:06:58 INFO: Port:       5180
+[agent] 17:06:58 INFO: pywinauto:  True
+[agent] 17:06:58 INFO: pyperclip:  True
+[agent] 17:06:58 INFO: win32:      True
+[agent] 17:06:58 INFO: PIL:        True
+[agent] 17:06:58 INFO: ACI pattern: .*ACI.*
+[agent] 17:06:58 INFO: Field maps: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps
+[agent] 17:06:58 INFO: Learned:    C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\learned_targets.json
+[agent] 17:06:58 INFO: ============================================================
+[agent] 17:06:58 INFO: Field surface map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1004_surface.json (12 fields)
+[agent] 17:06:58 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1004.json (12 fields)
+[agent] 17:06:58 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1025.json (8 fields)
+[agent] 17:06:58 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1073.json (7 fields)
+[agent] 17:06:58 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\1004c.json (7 fields)
+[agent] 17:06:58 INFO: Field map: C:\Users\ccres\OneDrive\Desktop\cacc-writer\desktop_agent\field_maps\commercial.json (8 fields)
+[agent] 17:06:58 INFO: Learned targets: 7 entries
+[agent] 17:06:58 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5180
+[agent] 17:06:58 INFO: [33mPress CTRL+C to quit[0m

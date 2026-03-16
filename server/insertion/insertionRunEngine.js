@@ -18,6 +18,7 @@ import { resolveMapping, resolveAllMappings, inferTargetSoftware } from './desti
 import { formatForDestination } from './formatters/index.js';
 import { verifyInsertion } from './verificationEngine.js';
 import { decideFallback, copyToClipboard } from './fallbackHandler.js';
+import { getFormDraftTextMap } from './formDraftModel.js';
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -323,7 +324,7 @@ async function processItem(item, run, profile, agentBaseUrl) {
       insertResult = await callAgentInsert(
         mapping.agentFieldKey || item.fieldId,
         formatResult.formattedText,
-        item.targetSoftware,
+        item.formType,
         agentBaseUrl,
         profile?.config?.timeout || 15000
       );
@@ -395,6 +396,18 @@ async function processItem(item, run, profile, agentBaseUrl) {
     agentResponseJson: insertResult || {},
   });
 
+  if (insertResult?.verified === true) {
+    updateInsertionRunItem(item.id, {
+      status: 'verified',
+      verificationStatus: 'passed',
+      verificationRaw: null,
+      verificationNormalized: null,
+      completedAt: new Date().toISOString(),
+      durationMs: Date.now() - startTime,
+    });
+    return { status: 'verified', verificationStatus: 'passed' };
+  }
+
   // 5. Verify if configured
   let verificationStatus = 'skipped';
   if (run.config.verifyAfter && mapping.supported) {
@@ -402,9 +415,11 @@ async function processItem(item, run, profile, agentBaseUrl) {
       fieldId: item.fieldId,
       agentFieldKey: mapping.agentFieldKey || item.fieldId,
       formattedText: formatResult.formattedText,
+      formType: item.formType,
       targetSoftware: item.targetSoftware,
       agentBaseUrl,
       verificationMode: mapping.verificationMode,
+      targetRect: insertResult?.diagnostics?.tx32_rect || null,
       timeout: profile?.config?.timeout || 10000,
     });
 
@@ -447,7 +462,7 @@ async function processItem(item, run, profile, agentBaseUrl) {
  * @param {number} timeout
  * @returns {Promise<Object>}
  */
-async function callAgentInsert(fieldKey, text, targetSoftware, agentBaseUrl, timeout) {
+async function callAgentInsert(fieldKey, text, formType, agentBaseUrl, timeout) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
 
@@ -456,9 +471,9 @@ async function callAgentInsert(fieldKey, text, targetSoftware, agentBaseUrl, tim
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        field: fieldKey,
-        text: text,
-        clear_first: true,
+        fieldId: fieldKey,
+        text,
+        formType,
       }),
       signal: controller.signal,
     });
@@ -503,37 +518,7 @@ async function checkAgentHealth(agentBaseUrl) {
  * @returns {Map<string, string>} fieldId → text
  */
 function gatherFieldTexts(caseId, formType, generationRunId = null) {
-  const db = getDb();
-  const texts = new Map();
-
-  let sql = `
-    SELECT section_id, draft_text, reviewed_text, final_text, approved
-    FROM generated_sections
-    WHERE case_id = ? AND form_type = ?
-  `;
-  const params = [caseId, formType];
-
-  if (generationRunId) {
-    sql += ' AND run_id = ?';
-    params.push(generationRunId);
-  }
-
-  sql += ' ORDER BY created_at DESC';
-
-  const rows = db.prepare(sql).all(...params);
-
-  for (const row of rows) {
-    // Skip if we already have text for this field (take most recent)
-    if (texts.has(row.section_id)) continue;
-
-    // Priority: final_text > reviewed_text > draft_text
-    const text = row.final_text || row.reviewed_text || (row.approved ? row.draft_text : row.draft_text);
-    if (text && text.trim().length > 0) {
-      texts.set(row.section_id, text);
-    }
-  }
-
-  return texts;
+  return getFormDraftTextMap({ caseId, formType, generationRunId });
 }
 
 /**
