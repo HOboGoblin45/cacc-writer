@@ -97,14 +97,14 @@ await test('updateGeneratedSectionReview updates reviewed/final text and approva
 
 await cleanup();
 
-console.log('\n' + '─'.repeat(60));
+console.log('\n' + '-'.repeat(60));
 console.log(`generationRepo: ${passed} passed, ${failed} failed`);
 if (failures.length) {
   console.log('\nFailed tests:');
   failures.forEach(({ label, err }) => {
-    console.log('  ✗ ' + label);
+    console.log('  x ' + label);
     console.log('    ' + err.message);
   });
 }
-console.log('─'.repeat(60));
+console.log('-'.repeat(60));
 if (failed > 0) process.exit(1);

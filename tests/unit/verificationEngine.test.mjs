@@ -30,6 +30,9 @@ function createJsonResponse(status, body) {
     async text() {
       return JSON.stringify(body);
     },
+    async json() {
+      return body;
+    },
   };
 }
 
@@ -37,7 +40,7 @@ console.log('\nverificationEngine');
 
 const originalFetch = global.fetch;
 
-await test('verifyInsertion passes targetRect through to agent read-back', async () => {
+await test('verifyInsertion passes formType and targetRect through to agent read-back', async () => {
   let seen = null;
   global.fetch = async (url, options) => {
     seen = { url, options };

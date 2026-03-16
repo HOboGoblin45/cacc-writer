@@ -1,101 +1,52 @@
-﻿/**
+/**
  * server/api/insertionRoutes.js
- * --------------------------------
+ * -------------------------------
  * Phase 9: REST endpoints for Destination Automation.
+ *
+ * Routes:
+ *   POST   /api/insertion/prepare          — Prepare an insertion run (preview + create)
+ *   POST   /api/insertion/execute/:runId    — Execute a prepared insertion run
+ *   POST   /api/insertion/run               — Prepare + execute in one call
+ *   GET    /api/insertion/runs/:caseId      — List insertion runs for a case
+ *   GET    /api/insertion/run/:runId        — Get insertion run details
+ *   GET    /api/insertion/run/:runId/items  — Get items for a run
+ *   POST   /api/insertion/run/:runId/cancel — Cancel a running insertion
+ *   POST   /api/insertion/retry/:itemId     — Retry a single failed item
+ *
+ *   GET    /api/insertion/preview/:caseId   — Preview mapping for a case
+ *   GET    /api/insertion/mappings/:formType — Get all mappings for a form type
+ *
+ *   GET    /api/insertion/profiles          — List destination profiles
+ *   GET    /api/insertion/profile/:id       — Get a destination profile
+ *   PUT    /api/insertion/profile/:id       — Update a destination profile
+ *
+ *   GET    /api/insertion/field-history/:caseId/:fieldId — Get insertion history for a field
  */
 
 import { Router } from 'express';
-import { z } from 'zod';
 import log from '../logger.js';
 import {
-  getInsertionRun,
-  getInsertionRunItem,
-  listInsertionRuns,
-  getInsertionRunItems,
-  updateInsertionRun,
-  updateInsertionRunItem,
-  bulkUpdateItemStatus,
-  listDestinationProfiles,
-  getDestinationProfile,
-  updateDestinationProfile,
-  getItemHistoryForField,
+  getInsertionRun, listInsertionRuns, getInsertionRunItems,
+  updateInsertionRun, updateInsertionRunItem, bulkUpdateItemStatus,
+  listDestinationProfiles, getDestinationProfile, updateDestinationProfile,
+  getItemHistoryForField, getLatestInsertionRun,
 } from '../insertion/insertionRepo.js';
-import {
-  prepareInsertionRun, executeInsertionRun,
-  buildDryRunReport, resumeInsertionRun,
-  manualRollbackItem, batchRollback,
-} from '../insertion/insertionRunEngine.js';
-import { executeReplay, executeSelectiveReplay } from '../insertion/replayEngine.js';
-import { buildInsertionDiff } from '../insertion/diffEngine.js';
+import { prepareInsertionRun, executeInsertionRun } from '../insertion/insertionRunEngine.js';
 import { resolveAllMappings, buildMappingPreview, inferTargetSoftware } from '../insertion/destinationMapper.js';
+import { getDb } from '../db/database.js';
 import { buildFormDraftModel, getFormDraftTextMap } from '../insertion/formDraftModel.js';
 
 const router = Router();
 
-const insertionConfigSchema = z.object({
-  dryRun: z.boolean().optional(),
-  verifyAfter: z.boolean().optional(),
-  skipQcBlockers: z.boolean().optional(),
-  requireQcRun: z.boolean().optional(),
-  requireFreshQcForGeneration: z.boolean().optional(),
-  forceReinsert: z.boolean().optional(),
-  maxRetries: z.number().int().min(0).max(10).optional(),
-  defaultFallback: z.enum(['retry', 'clipboard', 'manual_prompt', 'retry_then_clipboard']).optional(),
-  fieldIds: z.array(z.string().min(1)).max(200).optional(),
-}).catchall(z.unknown());
-
-const prepareInsertionSchema = z.object({
-  caseId: z.string().trim().min(1, 'caseId is required'),
-  formType: z.string().trim().min(1, 'formType is required'),
-  targetSoftware: z.string().trim().min(1).optional(),
-  generationRunId: z.string().trim().min(1).optional(),
-  config: insertionConfigSchema.optional(),
-});
-
-const runInsertionSchema = prepareInsertionSchema;
-const emptyMutationSchema = z.object({}).strict();
-const updateProfileSchema = z.object({
-  name: z.string().trim().min(1).max(120).optional(),
-  baseUrl: z.string().trim().min(1).max(600).optional(),
-  active: z.boolean().optional(),
-  supportsReadback: z.boolean().optional(),
-  supportsRichText: z.boolean().optional(),
-  supportsPartialRetry: z.boolean().optional(),
-  supportsAppendMode: z.boolean().optional(),
-  requiresFocusTarget: z.boolean().optional(),
-  config: z.union([z.string(), z.record(z.unknown())]).optional(),
-  configJson: z.union([z.string(), z.record(z.unknown())]).optional(),
-}).passthrough().refine(
-  payload => Object.keys(payload || {}).length > 0,
-  { message: 'At least one profile field is required' },
-);
-
-function sendError(res, status, code, error, extra = {}) {
-  res.status(status).json({
-    ok: false,
-    code,
-    error,
-    ...extra,
-  });
-  return null;
-}
-
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  return sendError(res, 400, 'INVALID_PAYLOAD', 'Invalid request payload', {
-    issues: parsed.error.issues.map(issue => ({
-      path: issue.path.join('.'),
-      message: issue.message,
-    })),
-  });
-}
+// ── Prepare Insertion Run ─────────────────────────────────────────────────────
 
 router.post('/insertion/prepare', (req, res) => {
   try {
-    const body = parsePayload(prepareInsertionSchema, req.body || {}, res);
-    if (!body) return;
-    const { caseId, formType, targetSoftware, generationRunId, config } = body;
+    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
+
+    if (!caseId || !formType) {
+      return res.status(400).json({ error: 'caseId and formType are required' });
+    }
 
     const result = prepareInsertionRun({
       caseId,
@@ -109,38 +60,37 @@ router.post('/insertion/prepare', (req, res) => {
       run: result.run,
       items: result.items,
       qcGate: result.qcGate,
-      blocked: !result.qcGate.passed,
-      overrideAllowed: result.qcGate.overrideAllowed !== false,
       profile: result.profile,
       totalFields: result.items.length,
     });
   } catch (err) {
     log.error('insertion:prepare', { error: err.message });
-    sendError(res, 500, 'INSERTION_PREPARE_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
+// ── Execute Insertion Run ─────────────────────────────────────────────────────
+
 router.post('/insertion/execute/:runId', async (req, res) => {
   try {
-    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { runId } = req.params;
     const run = getInsertionRun(runId);
 
     if (!run) {
-      return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Insertion run not found');
+      return res.status(404).json({ error: 'Insertion run not found' });
     }
 
     if (run.status !== 'queued' && run.status !== 'preparing') {
-      return sendError(
-        res,
-        400,
-        'INSERTION_RUN_INVALID_STATUS',
-        `Cannot execute run in status '${run.status}' - must be 'queued' or 'preparing'`,
-      );
+      return res.status(400).json({
+        error: `Cannot execute run in status '${run.status}' — must be 'queued'`,
+      });
     }
 
+    // Execute asynchronously — return immediately with run ID
+    // Client polls for status
     res.json({ runId, status: 'started', message: 'Insertion run started' });
 
+    // Execute in background
     executeInsertionRun(runId).catch(err => {
       log.error('insertion:run-failed', { runId, error: err.message });
       updateInsertionRun(runId, {
@@ -151,15 +101,19 @@ router.post('/insertion/execute/:runId', async (req, res) => {
     });
   } catch (err) {
     log.error('insertion:execute', { error: err.message });
-    sendError(res, 500, 'INSERTION_EXECUTE_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
+// ── Prepare + Execute in One Call ─────────────────────────────────────────────
+
 router.post('/insertion/run', async (req, res) => {
   try {
-    const body = parsePayload(runInsertionSchema, req.body || {}, res);
-    if (!body) return;
-    const { caseId, formType, targetSoftware, generationRunId, config } = body;
+    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
+
+    if (!caseId || !formType) {
+      return res.status(400).json({ error: 'caseId and formType are required' });
+    }
 
     const prepared = prepareInsertionRun({
       caseId,
@@ -169,20 +123,17 @@ router.post('/insertion/run', async (req, res) => {
       config: config || {},
     });
 
-    const canBypassQcGate = !!(config || {}).skipQcBlockers && prepared.qcGate.overrideAllowed !== false;
-
-    if (!prepared.qcGate.passed && !canBypassQcGate) {
+    // If QC gate blocked and not overridden
+    if (!prepared.qcGate.passed && !(config || {}).skipQcBlockers) {
       return res.json({
         run: prepared.run,
         qcGate: prepared.qcGate,
         blocked: true,
-        overrideAllowed: prepared.qcGate.overrideAllowed !== false,
-        message: prepared.qcGate.overrideAllowed === false
-          ? 'QC gate blocked insertion - run QC for this generation before insertion'
-          : 'QC gate blocked insertion - review qcGate details or set skipQcBlockers',
+        message: 'QC gate blocked insertion — resolve blockers or set skipQcBlockers',
       });
     }
 
+    // Return immediately, execute in background
     res.json({
       runId: prepared.run.id,
       status: 'started',
@@ -200,56 +151,58 @@ router.post('/insertion/run', async (req, res) => {
     });
   } catch (err) {
     log.error('insertion:run', { error: err.message });
-    sendError(res, 500, 'INSERTION_EXECUTE_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── List Runs ─────────────────────────────────────────────────────────────────
 
 router.get('/insertion/runs/:caseId', (req, res) => {
   try {
     const { caseId } = req.params;
-    const parsedLimit = Number.parseInt(req.query.limit, 10);
-    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 20;
+    const limit = parseInt(req.query.limit) || 20;
     const runs = listInsertionRuns(caseId, { limit });
     res.json({ runs });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_LIST_RUNS_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Get Run Details ───────────────────────────────────────────────────────────
 
 router.get('/insertion/run/:runId', (req, res) => {
   try {
     const run = getInsertionRun(req.params.runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
+    if (!run) return res.status(404).json({ error: 'Run not found' });
     res.json({ run });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_GET_RUN_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Get Run Items ─────────────────────────────────────────────────────────────
 
 router.get('/insertion/run/:runId/items', (req, res) => {
   try {
     const items = getInsertionRunItems(req.params.runId);
     res.json({ items });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_GET_ITEMS_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
+// ── Cancel Run ────────────────────────────────────────────────────────────────
+
 router.post('/insertion/run/:runId/cancel', (req, res) => {
   try {
-    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const run = getInsertionRun(req.params.runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
+    if (!run) return res.status(404).json({ error: 'Run not found' });
 
     if (run.status === 'completed' || run.status === 'failed' || run.status === 'cancelled') {
-      return sendError(
-        res,
-        400,
-        'INSERTION_RUN_INVALID_STATUS',
-        `Cannot cancel run in status '${run.status}'`,
-      );
+      return res.status(400).json({ error: `Cannot cancel run in status '${run.status}'` });
     }
 
+    // Cancel remaining queued items
     const cancelled = bulkUpdateItemStatus(run.id, 'queued', 'skipped');
 
     updateInsertionRun(run.id, {
@@ -259,28 +212,17 @@ router.post('/insertion/run/:runId/cancel', (req, res) => {
 
     res.json({ message: `Run cancelled. ${cancelled} queued items skipped.` });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_CANCEL_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
+// ── Retry Single Item ─────────────────────────────────────────────────────────
+
 router.post('/insertion/retry/:itemId', async (req, res) => {
   try {
-    if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
     const { itemId } = req.params;
-    const item = getInsertionRunItem(itemId);
-    if (!item) {
-      return sendError(res, 404, 'INSERTION_ITEM_NOT_FOUND', 'Insertion run item not found');
-    }
-
-    if (item.status !== 'failed' && item.status !== 'skipped') {
-      return sendError(
-        res,
-        400,
-        'INSERTION_ITEM_NOT_RETRYABLE',
-        `Cannot retry item in status '${item.status}'`,
-      );
-    }
-
+    // For now, reset the item status to queued and re-execute
+    // Full retry logic would re-run processItem
     updateInsertionRunItem(itemId, {
       status: 'queued',
       errorCode: null,
@@ -288,12 +230,13 @@ router.post('/insertion/retry/:itemId', async (req, res) => {
       attemptCount: 0,
       verificationStatus: 'pending',
     });
-
     res.json({ message: 'Item reset for retry', itemId });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_RETRY_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Mapping Preview ───────────────────────────────────────────────────────────
 
 router.get('/insertion/preview/:caseId', (req, res) => {
   try {
@@ -314,7 +257,7 @@ router.get('/insertion/preview/:caseId', (req, res) => {
 
     res.json({ preview, draftModel });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_PREVIEW_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -327,9 +270,11 @@ router.get('/insertion/draft-model/:caseId', (req, res) => {
     const draftModel = buildFormDraftModel({ caseId, formType, generationRunId, targetSoftware });
     res.json({ draftModel });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_DRAFT_MODEL_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Get All Mappings ──────────────────────────────────────────────────────────
 
 router.get('/insertion/mappings/:formType', (req, res) => {
   try {
@@ -338,9 +283,11 @@ router.get('/insertion/mappings/:formType', (req, res) => {
     const mappings = resolveAllMappings(formType, targetSoftware);
     res.json({ mappings, formType, targetSoftware });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_MAPPINGS_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Destination Profiles ──────────────────────────────────────────────────────
 
 router.get('/insertion/profiles', (req, res) => {
   try {
@@ -348,244 +295,40 @@ router.get('/insertion/profiles', (req, res) => {
     const profiles = listDestinationProfiles({ activeOnly });
     res.json({ profiles });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_LIST_PROFILES_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
 router.get('/insertion/profile/:id', (req, res) => {
   try {
     const profile = getDestinationProfile(req.params.id);
-    if (!profile) return sendError(res, 404, 'INSERTION_PROFILE_NOT_FOUND', 'Profile not found');
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
     res.json({ profile });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_GET_PROFILE_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
 router.put('/insertion/profile/:id', (req, res) => {
   try {
-    const body = parsePayload(updateProfileSchema, req.body || {}, res);
-    if (!body) return;
-    const updates = { ...body };
-    if (updates.config !== undefined && updates.configJson === undefined) {
-      updates.configJson = updates.config;
-    }
-    delete updates.config;
-    updateDestinationProfile(req.params.id, updates);
+    updateDestinationProfile(req.params.id, req.body);
     const profile = getDestinationProfile(req.params.id);
-    if (!profile) return sendError(res, 404, 'INSERTION_PROFILE_NOT_FOUND', 'Profile not found');
     res.json({ profile });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_UPDATE_PROFILE_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// ── Field History ─────────────────────────────────────────────────────────────
 
 router.get('/insertion/field-history/:caseId/:fieldId', (req, res) => {
   try {
     const { caseId, fieldId } = req.params;
-    const parsedLimit = Number.parseInt(req.query.limit, 10);
-    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
+    const limit = parseInt(req.query.limit) || 5;
     const history = getItemHistoryForField(caseId, fieldId, limit);
     res.json({ history });
   } catch (err) {
-    sendError(res, 500, 'INSERTION_FIELD_HISTORY_FAILED', err.message);
-  }
-});
-
-// ── Priority 5: Enhanced Insertion Reliability Routes ──────────────────────────
-
-/**
- * POST /api/cases/:caseId/insertion/dry-run
- * Execute a dry run and return a detailed preview report.
- */
-router.post('/cases/:caseId/insertion/dry-run', (req, res) => {
-  try {
-    const { caseId } = req.params;
-    const body = parsePayload(
-      z.object({
-        formType: z.string().trim().min(1, 'formType is required'),
-        targetSoftware: z.string().trim().min(1).optional(),
-        generationRunId: z.string().trim().min(1).optional(),
-        config: insertionConfigSchema.optional(),
-      }),
-      req.body || {},
-      res,
-    );
-    if (!body) return;
-
-    const prepared = prepareInsertionRun({
-      caseId,
-      formType: body.formType,
-      targetSoftware: body.targetSoftware,
-      generationRunId: body.generationRunId,
-      config: { ...(body.config || {}), dryRun: true },
-    });
-
-    const report = buildDryRunReport(prepared.run.id);
-
-    res.json({
-      run: prepared.run,
-      dryRunReport: report,
-      qcGate: prepared.qcGate,
-    });
-  } catch (err) {
-    log.error('insertion:dry-run', { error: err.message });
-    sendError(res, 500, 'INSERTION_DRY_RUN_FAILED', err.message);
-  }
-});
-
-/**
- * POST /api/cases/:caseId/insertion/replay/:runId
- * Replay failed/mismatched items from a previous insertion run.
- */
-router.post('/cases/:caseId/insertion/replay/:runId', async (req, res) => {
-  try {
-    const { caseId, runId } = req.params;
-    const run = getInsertionRun(runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Original run not found');
-    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
-
-    const configBody = parsePayload(
-      z.object({ config: insertionConfigSchema.optional() }).passthrough(),
-      req.body || {},
-      res,
-    );
-    if (!configBody) return;
-
-    res.json({ runId, status: 'replay_started', message: 'Replay run started' });
-
-    executeReplay(runId, { config: configBody.config }).catch(err => {
-      log.error('insertion:replay-failed', { runId, error: err.message });
-    });
-  } catch (err) {
-    log.error('insertion:replay', { error: err.message });
-    sendError(res, 500, 'INSERTION_REPLAY_FAILED', err.message);
-  }
-});
-
-/**
- * POST /api/cases/:caseId/insertion/replay/:runId/selective
- * Replay specific fields from a previous insertion run.
- */
-router.post('/cases/:caseId/insertion/replay/:runId/selective', async (req, res) => {
-  try {
-    const { caseId, runId } = req.params;
-    const run = getInsertionRun(runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Original run not found');
-    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
-
-    const body = parsePayload(
-      z.object({
-        fieldIds: z.array(z.string().min(1)).min(1, 'At least one fieldId is required'),
-        config: insertionConfigSchema.optional(),
-      }),
-      req.body || {},
-      res,
-    );
-    if (!body) return;
-
-    res.json({ runId, status: 'selective_replay_started', fieldIds: body.fieldIds });
-
-    executeSelectiveReplay(runId, body.fieldIds, { config: body.config }).catch(err => {
-      log.error('insertion:selective-replay-failed', { runId, error: err.message });
-    });
-  } catch (err) {
-    log.error('insertion:selective-replay', { error: err.message });
-    sendError(res, 500, 'INSERTION_SELECTIVE_REPLAY_FAILED', err.message);
-  }
-});
-
-/**
- * GET /api/cases/:caseId/insertion/runs/:runId/diff
- * Get the post-insert diff view for a run.
- */
-router.get('/cases/:caseId/insertion/runs/:runId/diff', (req, res) => {
-  try {
-    const { caseId, runId } = req.params;
-    const run = getInsertionRun(runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
-    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
-
-    const diff = buildInsertionDiff(runId);
-    res.json({ diff });
-  } catch (err) {
-    log.error('insertion:diff', { error: err.message });
-    sendError(res, 500, 'INSERTION_DIFF_FAILED', err.message);
-  }
-});
-
-/**
- * POST /api/cases/:caseId/insertion/runs/:runId/resume
- * Resume a failed or partial insertion run.
- */
-router.post('/cases/:caseId/insertion/runs/:runId/resume', async (req, res) => {
-  try {
-    const { caseId, runId } = req.params;
-    const run = getInsertionRun(runId);
-    if (!run) return sendError(res, 404, 'INSERTION_RUN_NOT_FOUND', 'Run not found');
-    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
-
-    if (!['failed', 'partial', 'running'].includes(run.status)) {
-      return sendError(
-        res,
-        400,
-        'INSERTION_RUN_INVALID_STATUS',
-        `Cannot resume run in status '${run.status}' — must be 'failed', 'partial', or 'running'`,
-      );
-    }
-
-    res.json({ runId, status: 'resume_started', message: 'Run resume started' });
-
-    resumeInsertionRun(runId).catch(err => {
-      log.error('insertion:resume-failed', { runId, error: err.message });
-      updateInsertionRun(runId, {
-        status: 'failed',
-        completedAt: new Date().toISOString(),
-        summaryJson: { error: err.message },
-      });
-    });
-  } catch (err) {
-    log.error('insertion:resume', { error: err.message });
-    sendError(res, 500, 'INSERTION_RESUME_FAILED', err.message);
-  }
-});
-
-// ── Manual rollback endpoints ─────────────────────────────────────────────────
-
-router.post('/cases/:caseId/insertion/rollback/:itemId', async (req, res) => {
-  try {
-    const { caseId, itemId } = req.params;
-    const item = getInsertionRunItem(itemId);
-    if (!item) return sendError(res, 404, 'ITEM_NOT_FOUND', 'Insertion item not found');
-
-    const run = getInsertionRun(item.runId);
-    if (!run || run.caseId !== caseId) {
-      return sendError(res, 400, 'CASE_MISMATCH', 'Item does not belong to this case');
-    }
-
-    const verify = req.body?.verify !== false;
-    const result = await manualRollbackItem(itemId, { verify });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('insertion:manual-rollback', { error: err.message });
-    sendError(res, 500, 'ROLLBACK_FAILED', err.message);
-  }
-});
-
-router.post('/cases/:caseId/insertion/runs/:runId/rollback', async (req, res) => {
-  try {
-    const { caseId, runId } = req.params;
-    const run = getInsertionRun(runId);
-    if (!run) return sendError(res, 404, 'RUN_NOT_FOUND', 'Insertion run not found');
-    if (run.caseId !== caseId) return sendError(res, 400, 'CASE_MISMATCH', 'Run does not belong to this case');
-
-    const verify = req.body?.verify !== false;
-    const fieldIds = Array.isArray(req.body?.fieldIds) ? req.body.fieldIds : undefined;
-    const result = await batchRollback(runId, { verify, fieldIds });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('insertion:batch-rollback', { error: err.message });
-    sendError(res, 500, 'BATCH_ROLLBACK_FAILED', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

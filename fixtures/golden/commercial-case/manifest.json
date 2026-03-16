@@ -214,6 +214,7 @@
   },
   "insertion": {
     "targetSoftware": "real_quantum",
+    "minVerifiedFields": 1,
     "timeoutMs": 120000
   }
 }
