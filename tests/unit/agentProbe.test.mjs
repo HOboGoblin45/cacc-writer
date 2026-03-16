@@ -52,6 +52,12 @@ await test('probeDestinationFields passes when at least one field is locatable',
     agentBaseUrl: 'http://localhost:5180',
     fetchImpl: async (url, options) => {
       calls.push({ url, options });
+      if (url.endsWith('/health')) {
+        return createResponse(200, { ok: true });
+      }
+      if (url.endsWith('/list-windows')) {
+        return createResponse(200, { windows: [{ title: 'ACI Report', class: 'AciWnd' }] });
+      }
       const payload = JSON.parse(options.body);
       if (payload.fieldId === 'site_comments') {
         return createResponse(200, { ok: true, found: true });
@@ -60,26 +66,57 @@ await test('probeDestinationFields passes when at least one field is locatable',
     },
   });
 
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 4);
   assert.equal(result.reachable, true);
   assert.equal(result.ready, true);
+  assert.equal(result.sessionReady, true);
   assert.equal(result.foundCount, 1);
   assert.equal(result.fieldResults[1].found, true);
 });
 
-await test('probeDestinationFields fails closed when agent is reachable but no fields are locatable', async () => {
+await test('probeDestinationFields returns session readiness failure before field probing', async () => {
+  const result = await probeDestinationFields({
+    formType: '1004',
+    targetSoftware: 'aci',
+    fieldIds: ['market_conditions'],
+    agentBaseUrl: 'http://localhost:5180',
+    fetchImpl: async (url) => {
+      if (url.endsWith('/health')) {
+        return createResponse(200, { ok: true });
+      }
+      if (url.endsWith('/list-windows')) {
+        return createResponse(200, { windows: [] });
+      }
+      throw new Error('field probe should not run when session is not ready');
+    },
+  });
+
+  assert.equal(result.reachable, true);
+  assert.equal(result.ready, false);
+  assert.equal(result.sessionReady, false);
+  assert.equal(result.reason, 'ACI desktop window not detected');
+  assert.equal(result.probedCount, 0);
+});
+
+await test('probeDestinationFields fails closed when session is ready but no fields are locatable', async () => {
   const result = await probeDestinationFields({
     formType: 'commercial',
     targetSoftware: 'real_quantum',
     fieldIds: ['market_area'],
     agentBaseUrl: 'http://localhost:5181',
-    fetchImpl: async () => createResponse(200, { ok: true, found: false, message: 'selector missing' }),
+    fetchImpl: async (url) => {
+      if (url.endsWith('/health')) {
+        return createResponse(200, { connected: true });
+      }
+      return createResponse(200, { ok: true, found: false, message: 'selector missing' });
+    },
   });
 
   assert.equal(result.reachable, true);
   assert.equal(result.ready, false);
+  assert.equal(result.sessionReady, true);
   assert.equal(result.foundCount, 0);
-  assert.equal(result.reason, 'Live destination agent could not locate any probe field');
+  assert.equal(result.reason, 'Live destination session is ready, but no probe field could be located');
 });
 
 console.log('\n' + '-'.repeat(60));

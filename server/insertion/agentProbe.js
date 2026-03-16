@@ -9,6 +9,7 @@
 
 import { inferTargetSoftware, resolveMapping } from './destinationMapper.js';
 import { buildFormDraftModel } from './formDraftModel.js';
+import { probeAciAgent, probeRqAgent } from '../api/agentHealth.js';
 
 const DEFAULT_AGENT_URLS = {
   aci: process.env.ACI_AGENT_URL || 'http://localhost:5180',
@@ -23,14 +24,28 @@ function scoreProbeCandidate(field) {
   let score = 0;
   if (field.required) score += 100;
   if (field.verifyRequired) score += 50;
-  if (field.destinationCalibrated) score += 25;
-  if (field.destinationSupported) score += 10;
+  if (field.calibrated) score += 25;
+  if (field.supported) score += 10;
   score += Math.min(field.textLength || 0, 500) / 100;
   return score;
 }
 
 export function getAgentBaseUrl(targetSoftware) {
   return DEFAULT_AGENT_URLS[targetSoftware] || null;
+}
+
+async function probeAgentSession(targetSoftware, agentBaseUrl, fetchImpl) {
+  if (targetSoftware === 'aci') {
+    return probeAciAgent(agentBaseUrl, fetchImpl);
+  }
+  if (targetSoftware === 'real_quantum') {
+    return probeRqAgent(agentBaseUrl, fetchImpl);
+  }
+  return {
+    reachable: true,
+    ready: true,
+    reason: null,
+  };
 }
 
 export function selectProbeFieldIds({
@@ -132,11 +147,28 @@ export async function probeDestinationFields({
     return {
       reachable: false,
       ready: false,
+      sessionReady: false,
       foundCount: 0,
       probedCount: 0,
       fieldResults: [],
       reason: 'No candidate fields are available for destination probing',
       agentBaseUrl,
+    };
+  }
+
+  const sessionProbe = await probeAgentSession(targetSoftware, agentBaseUrl, fetchImpl);
+  if (!sessionProbe.reachable || !sessionProbe.ready) {
+    return {
+      targetSoftware,
+      agentBaseUrl,
+      reachable: sessionProbe.reachable,
+      ready: false,
+      sessionReady: sessionProbe.ready,
+      reason: sessionProbe.reason,
+      foundCount: 0,
+      probedCount: 0,
+      fieldResults: [],
+      sessionProbe,
     };
   }
 
@@ -167,7 +199,7 @@ export async function probeDestinationFields({
   if (!reachable) {
     reason = `${targetSoftware} agent is not reachable`;
   } else if (!ready) {
-    reason = 'Live destination agent could not locate any probe field';
+    reason = 'Live destination session is ready, but no probe field could be located';
   }
 
   return {
@@ -175,9 +207,11 @@ export async function probeDestinationFields({
     agentBaseUrl,
     reachable,
     ready,
+    sessionReady: true,
     reason,
     foundCount,
     probedCount: fieldResults.length,
     fieldResults,
+    sessionProbe,
   };
 }

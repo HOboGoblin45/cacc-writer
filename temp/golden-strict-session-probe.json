@@ -1,0 +1,2478 @@
+{
+  "runAt": "2026-03-16T18:34:33.589Z",
+  "baseUrl": "http://localhost:5214",
+  "options": {
+    "allowDryRunInsertion": false,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": false,
+      "rq": false
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Residential 1004 Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\1004-case",
+      "formType": "1004",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "79577b4f",
+      "generationRunId": "119178bc-7a2d-403a-b9c6-9076439fc33e",
+      "qcRunId": "5ea5107e-850c-4d7b-972a-75d8b1b2996b",
+      "insertionRunId": null,
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case 79577b4f"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-order-sheet.pdf -> order_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-contract.pdf -> contract"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-mls-sheet.pdf -> mls_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 15 fact(s), rejected 16"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 15 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 12 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 18 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 119178bc-7a2d-403a-b9c6-9076439fc33e"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 6 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=1",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 4
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "destination_probe",
+          "status": "failed",
+          "detail": "ACI desktop window not detected",
+          "payload": {
+            "ok": true,
+            "caseId": "79577b4f",
+            "formType": "1004",
+            "targetSoftware": "aci",
+            "probeFieldIds": [
+              "neighborhood_description",
+              "site_comments"
+            ],
+            "probe": {
+              "targetSoftware": "aci",
+              "agentBaseUrl": "http://localhost:5180",
+              "reachable": true,
+              "ready": false,
+              "sessionReady": false,
+              "reason": "ACI desktop window not detected",
+              "foundCount": 0,
+              "probedCount": 0,
+              "fieldResults": [],
+              "sessionProbe": {
+                "reachable": true,
+                "ready": false,
+                "reason": "ACI desktop window not detected",
+                "health": {
+                  "agent": "cacc-aci-agent",
+                  "learned_targets": 7,
+                  "max_retries": 3,
+                  "ok": true,
+                  "phase": 2,
+                  "pil": true,
+                  "port": 5180,
+                  "pyperclip": true,
+                  "pywinauto": true,
+                  "verify_enabled": true,
+                  "version": "3.0.0",
+                  "win32": true
+                },
+                "windows": {
+                  "count": 252,
+                  "ok": true,
+                  "windows": [
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (AsusOSD.exe)"
+                    },
+                    {
+                      "class": "XamlExplorerHostIslandWindow",
+                      "title": "Task Switching"
+                    },
+                    {
+                      "class": "Flyout window class",
+                      "title": "Flyout window"
+                    },
+                    {
+                      "class": "SystemTray_Main",
+                      "title": "Battery Meter"
+                    },
+                    {
+                      "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                      "title": "PopupHost"
+                    },
+                    {
+                      "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                      "title": "PopupHost"
+                    },
+                    {
+                      "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                      "title": "PopupHost"
+                    },
+                    {
+                      "class": "Chrome_WidgetWin_1",
+                      "title": "VPS | Hostinger - Google Chrome"
+                    },
+                    {
+                      "class": "Chrome_WidgetWin_1",
+                      "title": "Codex"
+                    },
+                    {
+                      "class": "AcrobatTrayIcon",
+                      "title": "AcrobatTrayIcon"
+                    },
+                    {
+                      "class": "Windows.UI.Core.CoreWindow",
+                      "title": "DesktopWindowXamlSource"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (OneDrive.exe)"
+                    },
+                    {
+                      "class": "OleDdeWndClass",
+                      "title": "DDE Server Window"
+                    },
+                    {
+                      "class": "SkyDrive Class Name {090B42FF-7B26-4416-99B6-CB17896CF07C}-Personal",
+                      "title": "OneDrive - Personal"
+                    },
+                    {
+                      "class": "#32770",
+                      "title": "BattlEye Launcher"
+                    },
+                    {
+                      "class": "Logi_Devio_MainWindow",
+                      "title": "Logi_Devio_MainWindow"
+                    },
+                    {
+                      "class": "Logi_Devio_MainWindow",
+                      "title": "Logi_Devio_MainWindow"
+                    },
+                    {
+                      "class": "thekogans_util_SystemRunLoop_Window_class",
+                      "title": "t"
+                    },
+                    {
+                      "class": "ASHDRCONTROL",
+                      "title": "AsHDRControl"
+                    },
+                    {
+                      "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                      "title": "PopupHost"
+                    },
+                    {
+                      "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                      "title": "PopupHost"
+                    },
+                    {
+                      "class": "WinUIDesktopWin32WindowClass",
+                      "title": "Proton VPN"
+                    },
+                    {
+                      "class": "Chrome_WidgetWin_1",
+                      "title": "Claude"
+                    },
+                    {
+                      "class": "Nucleus Auth Window",
+                      "title": "Microsoft OneDrive Sync Service"
+                    },
+                    {
+                      "class": "CNewOsd",
+                      "title": "ATKOSD2"
+                    },
+                    {
+                      "class": "ConsoleWindowClass",
+                      "title": "C:\\WINDOWS\\system32\\cmd.exe"
+                    },
+                    {
+                      "class": "SDL_app",
+                      "title": "Steam"
+                    },
+                    {
+                      "class": "DagorWClass",
+                      "title": "War Thunder (DirectX 12, 64bit)"
+                    },
+                    {
+                      "class": "WinUIDesktopWin32WindowClass",
+                      "title": "Proton VPN (tray)"
+                    },
+                    {
+                      "class": "ADNotificationManagerWindowClass",
+                      "title": "ADNotificationManager"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (Explorer.EXE)"
+                    },
+                    {
+                      "class": "COMTASKSWINDOWCLASS",
+                      "title": "Task Host Window"
+                    },
+                    {
+                      "class": "WinUIDesktopWin32WindowClass",
+                      "title": "Discover VPN Plus"
+                    },
+                    {
+                      "class": "ApplicationFrameWindow",
+                      "title": "Settings"
+                    },
+                    {
+                      "class": "wingetWindow",
+                      "title": "WingetMessageOnlyWindow"
+                    },
+                    {
+                      "class": ".NET-BroadcastEventWindow.4.0.0.0.141b42a.0",
+                      "title": ".NET-BroadcastEventWindow.4.0.0.0.141b42a.0"
+                    },
+                    {
+                      "class": "WindowsForms10.Window.8.app.0.141b42a_r7_ad1",
+                      "title": "ArmourySwAgent"
+                    },
+                    {
+                      "class": "ArmourySwAgentClass",
+                      "title": "ArmourySwAgentName"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (ArmourySwAgent.exe)"
+                    },
+                    {
+                      "class": "OleDdeWndClass",
+                      "title": "DDE Server Window"
+                    },
+                    {
+                      "class": "H.NotifyIcon_995a72e7-b4b5-46ac-99bb-fd7f0bcaa18b",
+                      "title": "H.NotifyIcon_995a72e7-b4b5-46ac-99bb-fd7f0bcaa18b"
+                    },
+                    {
+                      "class": "SDL_app",
+                      "title": "Menu"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (ProtonVPN.Client.exe)"
+                    },
+                    {
+                      "class": "Windows.UI.Core.CoreWindow",
+                      "title": "DesktopWindowXamlSource"
+                    },
+                    {
+                      "class": "vguiPopupWindow",
+                      "title": "Untitled"
+                    },
+                    {
+                      "class": "AdobeCollabSynchronizerNotification",
+                      "title": "AdobeCollabSynchronizerNotification"
+                    },
+                    {
+                      "class": "HWPlugin Data Collection Service",
+                      "title": "HWPluginReceive"
+                    },
+                    {
+                      "class": "SecHealth Window Class",
+                      "title": "SecurityHealthSystray"
+                    },
+                    {
+                      "class": "RealtekAudioBackgroundProcessClass",
+                      "title": "RealtekAudioBackgroundProcessClass"
+                    },
+                    {
+                      "class": "WindowsForms10.Window.8.app.0.3598b65_r3_ad1",
+                      "title": "Logi Plugin Service"
+                    },
+                    {
+                      "class": "Windows.UI.Core.CoreWindow",
+                      "title": "Windows Input Experience"
+                    },
+                    {
+                      "class": "HwndWrapper[AcPowerNotification.exe;;13269652-3e2d-4c44-b329-669f68b98ced]",
+                      "title": "MainWindow"
+                    },
+                    {
+                      "class": "HwndWrapper[AcPowerNotification.exe;;37357488-c034-43a2-b3c1-a46ad3c327be]",
+                      "title": "Hidden Window"
+                    },
+                    {
+                      "class": "HwndWrapper[AcPowerNotification.exe;;7d490d2d-7bfb-4c3d-a02b-bc8444bccbd2]",
+                      "title": "SystemResourceNotifyWindow"
+                    },
+                    {
+                      "class": "HwndWrapper[AcPowerNotification.exe;;912505e7-958d-4344-9bbf-140df7dc8c93]",
+                      "title": "MediaContextNotificationWindow"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (DSATray.exe)"
+                    },
+                    {
+                      "class": "ATKOSD2 MainFrm Class",
+                      "title": "ATKOSD2 MainFrm Window (Help)"
+                    },
+                    {
+                      "class": "HwndWrapper[DSATray;;97139fc1-ed8b-47de-8733-43c1f79b5dfb]",
+                      "title": "SystemResourceNotifyWindow"
+                    },
+                    {
+                      "class": "NVSVC64.DLL",
+                      "title": "NvSvc"
+                    },
+                    {
+                      "class": "MS_WebcheckMonitor",
+                      "title": "MS_WebcheckMonitor"
+                    },
+                    {
+                      "class": "UxdService",
+                      "title": "UxdService"
+                    },
+                    {
+                      "class": "UxdService",
+                      "title": "UxdService"
+                    },
+                    {
+                      "class": "BluetoothNotificationAreaIconWindowClass",
+                      "title": "BluetoothNotificationAreaIconWindowClass"
+                    },
+                    {
+                      "class": "ARMOURY GPUPowerSaving Window",
+                      "title": "ARMOURY GPUPowerSaving Window"
+                    },
+                    {
+                      "class": "ASUS AC User GameVisual Helper Hidden Window",
+                      "title": "GameVisual User Hidden Wnd"
+                    },
+                    {
+                      "class": "MiracastConnectionWindow",
+                      "title": "MiracastConnectionWindow"
+                    },
+                    {
+                      "class": "Loupedeck2ExtWindowClass",
+                      "title": "Loupedeck2ExtWin"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass19032",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass18976",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass19012",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "ConsoleWindowClass",
+                      "title": "C:\\Program Files\\Logi\\LogiPluginService\\LogiPluginServiceExt.exe"
+                    },
+                    {
+                      "class": "ASUS ROG Aura Listener Sync Proc Invisible Window",
+                      "title": "ASUS ROG Aura Listener Sync Proc Invisible Window"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass17456",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass17416",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": ".NET-BroadcastEventWindow.3598b65.0",
+                      "title": ".NET-BroadcastEventWindow.3598b65.0"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (LogiPluginService.exe)"
+                    },
+                    {
+                      "class": ".NET-BroadcastEventWindow.21af1a5.0",
+                      "title": ".NET-BroadcastEventWindow.21af1a5.0"
+                    },
+                    {
+                      "class": "AINoise Service",
+                      "title": "peephole_ainoise"
+                    },
+                    {
+                      "class": "RealtekAudioBackgroundProcessClass",
+                      "title": "RealtekAudioBackgroundProcessClass"
+                    },
+                    {
+                      "class": "ASUS AC Service MacroKey Helper Hidden Window",
+                      "title": "MacroKey Hidden Wnd"
+                    },
+                    {
+                      "class": "UERawInputClass",
+                      "title": "UERawInput"
+                    },
+                    {
+                      "class": "ARMOURY UtilityPlugin Window",
+                      "title": "ARMOURY UtilityPlugin Window"
+                    },
+                    {
+                      "class": "Windows.UI.Core.CoreWindow",
+                      "title": "DesktopWindowXamlSource"
+                    },
+                    {
+                      "class": "ASUS AC User Hotkey Helper Hidden Window",
+                      "title": "Hotkey User Hidden Wnd"
+                    },
+                    {
+                      "class": "ASUSSmartDisplayControl",
+                      "title": "ASUS Smart Display Control"
+                    },
+                    {
+                      "class": "KeyStone Service Power Status Peeker",
+                      "title": "peephole_keystone"
+                    },
+                    {
+                      "class": "GDI+ Hook Window Class",
+                      "title": "GDI+ Window (ArmouryCrate.UserSessionHelper.exe)"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass16072",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass16040",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "CrossDeviceResumeWindowClass",
+                      "title": "CrossDeviceResumeWindow"
+                    },
+                    {
+                      "class": "UserSessionManagerEventClass",
+                      "title": "User Session Helper Window"
+                    },
+                    {
+                      "class": "ArmourySocketServerClass",
+                      "title": "ArmourySocketServer"
+                    },
+                    {
+                      "class": "thekogans_util_SystemRunLoop_Window_class",
+                      "title": "t"
+                    },
+                    {
+                      "class": "thekogans_util_SystemRunLoop_Window_class",
+                      "title": "t"
+                    },
+                    {
+                      "class": "thekogans_util_SystemRunLoop_Window_class",
+                      "title": "t鬐"
+                    },
+                    {
+                      "class": "BroadcastListenerWindowThreadClass14588",
+                      "title": "BroadcastListenerWindow"
+                    },
+                    {
+                      "class": "ASHOTPLUGCTRL",
+                      "title": "AsHotplugCtrl"
+                    },
+                    {
+                      "class": "Windows.UI.Core.CoreWindow",
+                      "title": "DesktopWindowXamlSource"
+                    },
+                    {
+                      "class": "PushNotificationsPowerManagement",
+                      "title": "Windows Push Notifications Platform"
+                    },
+                    {
+                      "class": "COMTASKSWINDOWCLASS",
+                      "title": "Task Host Window"
+                    },
+                    {
+                      "class": "NvContainerWindowClass000013F4",
+                      "title": "NvContainerWindowClass000013F4"
+                    },
+                    {
+                      "class": "thekogans_util_SystemRunLoop_Window_class",
+                      "title": "t"
+                    },
+                    {
+                      "class": "HCONTROL",
+                      "title": "HControl"
+                    },
+                    {
+                      "class": "NvContainerWindowClass000024AC",
+                      "title": "NvContainerWindowClass000024AC"
+                    },
+                    {
+                      "class": "NvContainerWindowClass00001218",
+                      "title": "NvContainerWindowClass00001218"
+                    },
+                    {
+                      "class": "Dwm",
+                      "title": "DWM Notification Window"
+                    },
+                    {
+                      "class": "Chrome_WidgetWin_1",
+                      "title": "Widgets"
+                    },
+                    {
+                      "class": "OperationStatusWindow",
+                      "title": "Progress"
+                    },
+                    {
+                      "class": "Progman",
+                      "title": "Program Manager"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    },
+                    {
+                      "class": "MSCTFIME UI",
+                      "title": "M"
+                    },
+                    {
+                      "class": "IME",
+                      "title": "Default IME"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "error": {
+        "step": "destination_probe",
+        "message": "ACI desktop window not detected",
+        "payload": {
+          "ok": true,
+          "caseId": "79577b4f",
+          "formType": "1004",
+          "targetSoftware": "aci",
+          "probeFieldIds": [
+            "neighborhood_description",
+            "site_comments"
+          ],
+          "probe": {
+            "targetSoftware": "aci",
+            "agentBaseUrl": "http://localhost:5180",
+            "reachable": true,
+            "ready": false,
+            "sessionReady": false,
+            "reason": "ACI desktop window not detected",
+            "foundCount": 0,
+            "probedCount": 0,
+            "fieldResults": [],
+            "sessionProbe": {
+              "reachable": true,
+              "ready": false,
+              "reason": "ACI desktop window not detected",
+              "health": {
+                "agent": "cacc-aci-agent",
+                "learned_targets": 7,
+                "max_retries": 3,
+                "ok": true,
+                "phase": 2,
+                "pil": true,
+                "port": 5180,
+                "pyperclip": true,
+                "pywinauto": true,
+                "verify_enabled": true,
+                "version": "3.0.0",
+                "win32": true
+              },
+              "windows": {
+                "count": 252,
+                "ok": true,
+                "windows": [
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (AsusOSD.exe)"
+                  },
+                  {
+                    "class": "XamlExplorerHostIslandWindow",
+                    "title": "Task Switching"
+                  },
+                  {
+                    "class": "Flyout window class",
+                    "title": "Flyout window"
+                  },
+                  {
+                    "class": "SystemTray_Main",
+                    "title": "Battery Meter"
+                  },
+                  {
+                    "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                    "title": "PopupHost"
+                  },
+                  {
+                    "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                    "title": "PopupHost"
+                  },
+                  {
+                    "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                    "title": "PopupHost"
+                  },
+                  {
+                    "class": "Chrome_WidgetWin_1",
+                    "title": "VPS | Hostinger - Google Chrome"
+                  },
+                  {
+                    "class": "Chrome_WidgetWin_1",
+                    "title": "Codex"
+                  },
+                  {
+                    "class": "AcrobatTrayIcon",
+                    "title": "AcrobatTrayIcon"
+                  },
+                  {
+                    "class": "Windows.UI.Core.CoreWindow",
+                    "title": "DesktopWindowXamlSource"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (OneDrive.exe)"
+                  },
+                  {
+                    "class": "OleDdeWndClass",
+                    "title": "DDE Server Window"
+                  },
+                  {
+                    "class": "SkyDrive Class Name {090B42FF-7B26-4416-99B6-CB17896CF07C}-Personal",
+                    "title": "OneDrive - Personal"
+                  },
+                  {
+                    "class": "#32770",
+                    "title": "BattlEye Launcher"
+                  },
+                  {
+                    "class": "Logi_Devio_MainWindow",
+                    "title": "Logi_Devio_MainWindow"
+                  },
+                  {
+                    "class": "Logi_Devio_MainWindow",
+                    "title": "Logi_Devio_MainWindow"
+                  },
+                  {
+                    "class": "thekogans_util_SystemRunLoop_Window_class",
+                    "title": "t"
+                  },
+                  {
+                    "class": "ASHDRCONTROL",
+                    "title": "AsHDRControl"
+                  },
+                  {
+                    "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                    "title": "PopupHost"
+                  },
+                  {
+                    "class": "Microsoft.UI.Content.PopupWindowSiteBridge",
+                    "title": "PopupHost"
+                  },
+                  {
+                    "class": "WinUIDesktopWin32WindowClass",
+                    "title": "Proton VPN"
+                  },
+                  {
+                    "class": "Chrome_WidgetWin_1",
+                    "title": "Claude"
+                  },
+                  {
+                    "class": "Nucleus Auth Window",
+                    "title": "Microsoft OneDrive Sync Service"
+                  },
+                  {
+                    "class": "CNewOsd",
+                    "title": "ATKOSD2"
+                  },
+                  {
+                    "class": "ConsoleWindowClass",
+                    "title": "C:\\WINDOWS\\system32\\cmd.exe"
+                  },
+                  {
+                    "class": "SDL_app",
+                    "title": "Steam"
+                  },
+                  {
+                    "class": "DagorWClass",
+                    "title": "War Thunder (DirectX 12, 64bit)"
+                  },
+                  {
+                    "class": "WinUIDesktopWin32WindowClass",
+                    "title": "Proton VPN (tray)"
+                  },
+                  {
+                    "class": "ADNotificationManagerWindowClass",
+                    "title": "ADNotificationManager"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (Explorer.EXE)"
+                  },
+                  {
+                    "class": "COMTASKSWINDOWCLASS",
+                    "title": "Task Host Window"
+                  },
+                  {
+                    "class": "WinUIDesktopWin32WindowClass",
+                    "title": "Discover VPN Plus"
+                  },
+                  {
+                    "class": "ApplicationFrameWindow",
+                    "title": "Settings"
+                  },
+                  {
+                    "class": "wingetWindow",
+                    "title": "WingetMessageOnlyWindow"
+                  },
+                  {
+                    "class": ".NET-BroadcastEventWindow.4.0.0.0.141b42a.0",
+                    "title": ".NET-BroadcastEventWindow.4.0.0.0.141b42a.0"
+                  },
+                  {
+                    "class": "WindowsForms10.Window.8.app.0.141b42a_r7_ad1",
+                    "title": "ArmourySwAgent"
+                  },
+                  {
+                    "class": "ArmourySwAgentClass",
+                    "title": "ArmourySwAgentName"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (ArmourySwAgent.exe)"
+                  },
+                  {
+                    "class": "OleDdeWndClass",
+                    "title": "DDE Server Window"
+                  },
+                  {
+                    "class": "H.NotifyIcon_995a72e7-b4b5-46ac-99bb-fd7f0bcaa18b",
+                    "title": "H.NotifyIcon_995a72e7-b4b5-46ac-99bb-fd7f0bcaa18b"
+                  },
+                  {
+                    "class": "SDL_app",
+                    "title": "Menu"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (ProtonVPN.Client.exe)"
+                  },
+                  {
+                    "class": "Windows.UI.Core.CoreWindow",
+                    "title": "DesktopWindowXamlSource"
+                  },
+                  {
+                    "class": "vguiPopupWindow",
+                    "title": "Untitled"
+                  },
+                  {
+                    "class": "AdobeCollabSynchronizerNotification",
+                    "title": "AdobeCollabSynchronizerNotification"
+                  },
+                  {
+                    "class": "HWPlugin Data Collection Service",
+                    "title": "HWPluginReceive"
+                  },
+                  {
+                    "class": "SecHealth Window Class",
+                    "title": "SecurityHealthSystray"
+                  },
+                  {
+                    "class": "RealtekAudioBackgroundProcessClass",
+                    "title": "RealtekAudioBackgroundProcessClass"
+                  },
+                  {
+                    "class": "WindowsForms10.Window.8.app.0.3598b65_r3_ad1",
+                    "title": "Logi Plugin Service"
+                  },
+                  {
+                    "class": "Windows.UI.Core.CoreWindow",
+                    "title": "Windows Input Experience"
+                  },
+                  {
+                    "class": "HwndWrapper[AcPowerNotification.exe;;13269652-3e2d-4c44-b329-669f68b98ced]",
+                    "title": "MainWindow"
+                  },
+                  {
+                    "class": "HwndWrapper[AcPowerNotification.exe;;37357488-c034-43a2-b3c1-a46ad3c327be]",
+                    "title": "Hidden Window"
+                  },
+                  {
+                    "class": "HwndWrapper[AcPowerNotification.exe;;7d490d2d-7bfb-4c3d-a02b-bc8444bccbd2]",
+                    "title": "SystemResourceNotifyWindow"
+                  },
+                  {
+                    "class": "HwndWrapper[AcPowerNotification.exe;;912505e7-958d-4344-9bbf-140df7dc8c93]",
+                    "title": "MediaContextNotificationWindow"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (DSATray.exe)"
+                  },
+                  {
+                    "class": "ATKOSD2 MainFrm Class",
+                    "title": "ATKOSD2 MainFrm Window (Help)"
+                  },
+                  {
+                    "class": "HwndWrapper[DSATray;;97139fc1-ed8b-47de-8733-43c1f79b5dfb]",
+                    "title": "SystemResourceNotifyWindow"
+                  },
+                  {
+                    "class": "NVSVC64.DLL",
+                    "title": "NvSvc"
+                  },
+                  {
+                    "class": "MS_WebcheckMonitor",
+                    "title": "MS_WebcheckMonitor"
+                  },
+                  {
+                    "class": "UxdService",
+                    "title": "UxdService"
+                  },
+                  {
+                    "class": "UxdService",
+                    "title": "UxdService"
+                  },
+                  {
+                    "class": "BluetoothNotificationAreaIconWindowClass",
+                    "title": "BluetoothNotificationAreaIconWindowClass"
+                  },
+                  {
+                    "class": "ARMOURY GPUPowerSaving Window",
+                    "title": "ARMOURY GPUPowerSaving Window"
+                  },
+                  {
+                    "class": "ASUS AC User GameVisual Helper Hidden Window",
+                    "title": "GameVisual User Hidden Wnd"
+                  },
+                  {
+                    "class": "MiracastConnectionWindow",
+                    "title": "MiracastConnectionWindow"
+                  },
+                  {
+                    "class": "Loupedeck2ExtWindowClass",
+                    "title": "Loupedeck2ExtWin"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass19032",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass18976",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass19012",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "ConsoleWindowClass",
+                    "title": "C:\\Program Files\\Logi\\LogiPluginService\\LogiPluginServiceExt.exe"
+                  },
+                  {
+                    "class": "ASUS ROG Aura Listener Sync Proc Invisible Window",
+                    "title": "ASUS ROG Aura Listener Sync Proc Invisible Window"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass17456",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass17416",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": ".NET-BroadcastEventWindow.3598b65.0",
+                    "title": ".NET-BroadcastEventWindow.3598b65.0"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (LogiPluginService.exe)"
+                  },
+                  {
+                    "class": ".NET-BroadcastEventWindow.21af1a5.0",
+                    "title": ".NET-BroadcastEventWindow.21af1a5.0"
+                  },
+                  {
+                    "class": "AINoise Service",
+                    "title": "peephole_ainoise"
+                  },
+                  {
+                    "class": "RealtekAudioBackgroundProcessClass",
+                    "title": "RealtekAudioBackgroundProcessClass"
+                  },
+                  {
+                    "class": "ASUS AC Service MacroKey Helper Hidden Window",
+                    "title": "MacroKey Hidden Wnd"
+                  },
+                  {
+                    "class": "UERawInputClass",
+                    "title": "UERawInput"
+                  },
+                  {
+                    "class": "ARMOURY UtilityPlugin Window",
+                    "title": "ARMOURY UtilityPlugin Window"
+                  },
+                  {
+                    "class": "Windows.UI.Core.CoreWindow",
+                    "title": "DesktopWindowXamlSource"
+                  },
+                  {
+                    "class": "ASUS AC User Hotkey Helper Hidden Window",
+                    "title": "Hotkey User Hidden Wnd"
+                  },
+                  {
+                    "class": "ASUSSmartDisplayControl",
+                    "title": "ASUS Smart Display Control"
+                  },
+                  {
+                    "class": "KeyStone Service Power Status Peeker",
+                    "title": "peephole_keystone"
+                  },
+                  {
+                    "class": "GDI+ Hook Window Class",
+                    "title": "GDI+ Window (ArmouryCrate.UserSessionHelper.exe)"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass16072",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass16040",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "CrossDeviceResumeWindowClass",
+                    "title": "CrossDeviceResumeWindow"
+                  },
+                  {
+                    "class": "UserSessionManagerEventClass",
+                    "title": "User Session Helper Window"
+                  },
+                  {
+                    "class": "ArmourySocketServerClass",
+                    "title": "ArmourySocketServer"
+                  },
+                  {
+                    "class": "thekogans_util_SystemRunLoop_Window_class",
+                    "title": "t"
+                  },
+                  {
+                    "class": "thekogans_util_SystemRunLoop_Window_class",
+                    "title": "t"
+                  },
+                  {
+                    "class": "thekogans_util_SystemRunLoop_Window_class",
+                    "title": "t鬐"
+                  },
+                  {
+                    "class": "BroadcastListenerWindowThreadClass14588",
+                    "title": "BroadcastListenerWindow"
+                  },
+                  {
+                    "class": "ASHOTPLUGCTRL",
+                    "title": "AsHotplugCtrl"
+                  },
+                  {
+                    "class": "Windows.UI.Core.CoreWindow",
+                    "title": "DesktopWindowXamlSource"
+                  },
+                  {
+                    "class": "PushNotificationsPowerManagement",
+                    "title": "Windows Push Notifications Platform"
+                  },
+                  {
+                    "class": "COMTASKSWINDOWCLASS",
+                    "title": "Task Host Window"
+                  },
+                  {
+                    "class": "NvContainerWindowClass000013F4",
+                    "title": "NvContainerWindowClass000013F4"
+                  },
+                  {
+                    "class": "thekogans_util_SystemRunLoop_Window_class",
+                    "title": "t"
+                  },
+                  {
+                    "class": "HCONTROL",
+                    "title": "HControl"
+                  },
+                  {
+                    "class": "NvContainerWindowClass000024AC",
+                    "title": "NvContainerWindowClass000024AC"
+                  },
+                  {
+                    "class": "NvContainerWindowClass00001218",
+                    "title": "NvContainerWindowClass00001218"
+                  },
+                  {
+                    "class": "Dwm",
+                    "title": "DWM Notification Window"
+                  },
+                  {
+                    "class": "Chrome_WidgetWin_1",
+                    "title": "Widgets"
+                  },
+                  {
+                    "class": "OperationStatusWindow",
+                    "title": "Progress"
+                  },
+                  {
+                    "class": "Progman",
+                    "title": "Program Manager"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  },
+                  {
+                    "class": "MSCTFIME UI",
+                    "title": "M"
+                  },
+                  {
+                    "class": "IME",
+                    "title": "Default IME"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "Commercial Narrative Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\commercial-case",
+      "formType": "commercial",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "dd773cdc",
+      "generationRunId": "f15f6118-42f6-441e-aab3-d7284d59fd5f",
+      "qcRunId": "c0e7036e-b972-46b5-8e3e-69da7e541668",
+      "insertionRunId": null,
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case dd773cdc"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-engagement-letter.pdf -> engagement_letter"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-property-summary.pdf -> mls_sheet"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 7 fact(s), rejected 13"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 7 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 6 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 11 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run f15f6118-42f6-441e-aab3-d7284d59fd5f"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 14 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 14 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=0",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 12
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "destination_probe",
+          "status": "failed",
+          "detail": "Chrome CDP / Real Quantum report session not connected",
+          "payload": {
+            "ok": true,
+            "caseId": "dd773cdc",
+            "formType": "commercial",
+            "targetSoftware": "real_quantum",
+            "probeFieldIds": [
+              "market_area",
+              "site_description"
+            ],
+            "probe": {
+              "targetSoftware": "real_quantum",
+              "agentBaseUrl": "http://localhost:5181",
+              "reachable": true,
+              "ready": false,
+              "sessionReady": false,
+              "reason": "Chrome CDP / Real Quantum report session not connected",
+              "foundCount": 0,
+              "probedCount": 0,
+              "fieldResults": [],
+              "sessionProbe": {
+                "reachable": true,
+                "ready": false,
+                "connected": false,
+                "reason": "Chrome CDP / Real Quantum report session not connected",
+                "health": {
+                  "agent": "cacc-rq-agent",
+                  "cdp_url": "http://127.0.0.1:9222",
+                  "connected": false,
+                  "ok": true,
+                  "playwright": true,
+                  "port": 5181
+                }
+              }
+            }
+          }
+        }
+      ],
+      "error": {
+        "step": "destination_probe",
+        "message": "Chrome CDP / Real Quantum report session not connected",
+        "payload": {
+          "ok": true,
+          "caseId": "dd773cdc",
+          "formType": "commercial",
+          "targetSoftware": "real_quantum",
+          "probeFieldIds": [
+            "market_area",
+            "site_description"
+          ],
+          "probe": {
+            "targetSoftware": "real_quantum",
+            "agentBaseUrl": "http://localhost:5181",
+            "reachable": true,
+            "ready": false,
+            "sessionReady": false,
+            "reason": "Chrome CDP / Real Quantum report session not connected",
+            "foundCount": 0,
+            "probedCount": 0,
+            "fieldResults": [],
+            "sessionProbe": {
+              "reachable": true,
+              "ready": false,
+              "connected": false,
+              "reason": "Chrome CDP / Real Quantum report session not connected",
+              "health": {
+                "agent": "cacc-rq-agent",
+                "cdp_url": "http://127.0.0.1:9222",
+                "connected": false,
+                "ok": true,
+                "playwright": true,
+                "port": 5181
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
