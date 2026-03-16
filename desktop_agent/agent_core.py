@@ -98,27 +98,65 @@ def capture_screenshot(label: str) -> str | None:
 # ── Field map loader ──────────────────────────────────────────────────────────
 
 _map_cache: dict = {}
+_surface_cache: dict = {}
+
+
+def _load_json_file(path: str) -> dict:
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError as e:
+        log.error(f"JSON error {path}: {e}")
+        return {}
+    except Exception as e:
+        log.warning(f"Could not load JSON {path}: {e}")
+        return {}
+
+
+def load_surface_profile(form_type: str) -> dict:
+    if form_type in _surface_cache:
+        return _surface_cache[form_type]
+    path = os.path.join(FIELD_MAPS_DIR, f'{form_type}_surface.json')
+    raw = _load_json_file(path)
+    profile = {k: v for k, v in raw.items() if not k.startswith('_')}
+    _surface_cache[form_type] = profile
+    if profile:
+        log.info(f"Surface profile: {path} ({len(profile)} fields)")
+    return profile
 
 def load_field_map(form_type: str) -> dict:
     if form_type in _map_cache:
         return _map_cache[form_type]
     path = os.path.join(FIELD_MAPS_DIR, f'{form_type}.json')
-    try:
-        with open(path) as f:
-            raw = json.load(f)
-        fm = {k: v for k, v in raw.items() if not k.startswith('_')}
-        _map_cache[form_type] = fm
-        log.info(f"Field map: {path} ({len(fm)} fields)")
-        return fm
-    except FileNotFoundError:
+    raw = _load_json_file(path)
+    if not raw:
         log.warning(f"Field map not found: {path}")
         return {}
-    except json.JSONDecodeError as e:
-        log.error(f"Field map JSON error {path}: {e}")
-        return {}
+    fm = {k: v for k, v in raw.items() if not k.startswith('_')}
+    surface = load_surface_profile(form_type)
+    if surface:
+        for field_id, cfg in fm.items():
+            hints = surface.get(field_id)
+            if not hints:
+                continue
+            merged = dict(cfg)
+            for key in (
+                'visual_tab_label', 'visual_tab_ratio', 'page_cluster',
+                'pdf_anchor_text', 'adjacent_anchor_text', 'content_kind',
+                'expected_elements',
+            ):
+                if key in hints:
+                    merged[key] = hints[key]
+            fm[field_id] = merged
+    _map_cache[form_type] = fm
+    log.info(f"Field map: {path} ({len(fm)} fields)")
+    return fm
 
 def reload_field_maps():
     _map_cache.clear()
+    _surface_cache.clear()
     log.info("Field map cache cleared.")
 
 # ── Learned targets ───────────────────────────────────────────────────────────
@@ -185,9 +223,43 @@ def connect_uia():
         log.error(f"UIA connect failed: {e}")
         return None
 
+def _find_aci_window_handle():
+    """Find the live ACI top-level window handle using Win32 enumeration."""
+    if not WIN32_AVAILABLE:
+        return None
+
+    matches = []
+
+    def _enum(hwnd, _extra):
+        try:
+            title = win32gui.GetWindowText(hwnd) or ''
+            cls = win32gui.GetClassName(hwnd) or ''
+            if not win32gui.IsWindowVisible(hwnd):
+                return
+            title_upper = title.upper()
+            cls_upper = cls.upper()
+            if 'REPORT32MAIN' in cls_upper or 'ACI REPORT' in title_upper or '\\ACI32\\REPORTS\\' in title_upper:
+                matches.append(hwnd)
+        except Exception:
+            return
+
+    try:
+        win32gui.EnumWindows(_enum, None)
+    except Exception as e:
+        log.debug(f'EnumWindows failed: {e}')
+        return None
+
+    return matches[0] if matches else None
+
 def connect_win32():
     if not PYWINAUTO_AVAILABLE:
         return None
+    hwnd = _find_aci_window_handle()
+    if hwnd:
+        try:
+            return Application(backend='win32').connect(handle=hwnd, timeout=5)
+        except Exception as e:
+            log.debug(f"win32 handle connect failed: {e}")
     try:
         return Application(backend='win32').connect(
             title_re=ACI_WINDOW_PATTERN, timeout=5)
@@ -407,6 +479,31 @@ def find_tx32_by_label(win32_win, label: str,
         log.info(f"  TX32 label-proximity: score={best_score} via={best_method}")
         return best_ctrl, best_score, best_method
 
+    content_label_ctrl = None
+    content_label_score = 0
+    content_label_method = 'none'
+    for c_entry in content:
+        ctext = (c_entry.get('text') or '').strip()
+        if not ctext:
+            continue
+        first_line = ctext.splitlines()[0].strip()
+        best_line_score = 0
+        best_line_label = ''
+        for lbl in all_labels:
+            s = score_label(first_line, lbl)
+            if s > best_line_score:
+                best_line_score = s
+                best_line_label = lbl
+        if best_line_score > content_label_score:
+            content_label_ctrl = c_entry['ctrl']
+            content_label_score = best_line_score
+            content_label_method = f'content_label:{best_line_label[:30]}'
+
+    if content_label_score >= 60:
+        log.info("  TX32 content-label fallback: "
+                 f"score={content_label_score} via={content_label_method}")
+        return content_label_ctrl, content_label_score, content_label_method
+
     titled_sections = [t for t in titles if (t.get('text') or '').strip()]
     if titled_sections and len(content) > 1:
         log.warning("  TX32 ambiguous view: visible titled sections exist but no "
@@ -502,8 +599,31 @@ _TAB_ORDER = {
 }
 
 
+def _click_section_tabs_ratio(win32_win, ratio: float, reason: str) -> bool:
+    try:
+        bring_to_foreground(win32_win)
+        time.sleep(0.2)
+        tabs_ctrl = win32_win.child_window(class_name='ACISectionTabs')
+        r = tabs_ctrl.rectangle()
+        ctrl_w = r.right - r.left
+        ctrl_h = r.bottom - r.top
+        if ctrl_w <= 0 or ctrl_h <= 0:
+            return False
+        ratio = max(0.02, min(0.98, float(ratio)))
+        click_x = int(ctrl_w * ratio)
+        click_y = int(ctrl_h / 2)
+        tabs_ctrl.click_input(coords=(click_x, click_y))
+        time.sleep(0.8)
+        log.info(f"  Tab click via ratio {ratio:.3f} ({reason})")
+        return True
+    except Exception as e:
+        log.debug(f"  Tab ratio click failed: {e}")
+        return False
+
+
 def _navigate_tab_by_position(win32_win, tab_name: str,
-                               form_type: str = '1004') -> bool:
+                               form_type: str = '1004',
+                               field_cfg: dict | None = None) -> bool:
     """
     Click ACISectionTabs at the calculated X position for the target tab.
 
@@ -514,9 +634,17 @@ def _navigate_tab_by_position(win32_win, tab_name: str,
     IMPORTANT: The window must be in the foreground before clicking.
     Returns True if the click was sent.
     """
-    tl       = tab_name.lower()
-    order    = _TAB_ORDER.get(form_type, _TAB_ORDER['default'])
-    tab_idx  = None
+    tl = tab_name.lower()
+    ratio = field_cfg.get('visual_tab_ratio') if field_cfg else None
+    if ratio is not None:
+        label = field_cfg.get('visual_tab_label') or tab_name
+        if _click_section_tabs_ratio(
+            win32_win, ratio, f"surface:{label} form={form_type}"
+        ):
+            return True
+
+    order = _TAB_ORDER.get(form_type, _TAB_ORDER['default'])
+    tab_idx = None
 
     for i, t in enumerate(order):
         if tl in t.lower() or t.lower() in tl:
@@ -598,7 +726,8 @@ def navigate_to_main_form(win32_win) -> bool:
     return False
 
 
-def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
+def navigate_tab(win32_win, tab_name: str, form_type: str = '1004',
+                 field_cfg: dict | None = None) -> bool:
     """
     Navigate to a section tab. Returns True if a click was sent.
 
@@ -618,7 +747,12 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     # never actually changes tabs.
     navigate_to_main_form(win32_win)
 
-    # 1. ACISectionTabs child windows (text-based)
+    # 1. Measured owner-drawn ratio click
+    if field_cfg and field_cfg.get('visual_tab_ratio') is not None:
+        if _navigate_tab_by_position(win32_win, tab_name, form_type, field_cfg):
+            return True
+
+    # 2. ACISectionTabs child windows (text-based)
     try:
         tabs = win32_win.child_window(class_name='ACISectionTabs')
         for child in tabs.children():
@@ -631,7 +765,7 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     except Exception:
         pass
 
-    # 2. Button controls (text-based)
+    # 3. Button controls (text-based)
     try:
         for btn in win32_win.descendants(control_type='Button'):
             txt = (btn.window_text() or '').strip()
@@ -643,7 +777,7 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     except Exception:
         pass
 
-    # 3. Any descendant with matching text (filtered)
+    # 4. Any descendant with matching text (filtered)
     try:
         for child in win32_win.descendants():
             try:
@@ -659,10 +793,8 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004') -> bool:
     except Exception:
         pass
 
-    # 4. Position-based click on ACISectionTabs (owner-drawn tabs — PRIMARY for ACI)
-    # ACI confirmed: ACISectionTabs has no child windows for tab buttons.
-    # Tabs are painted directly on the control surface.
-    if _navigate_tab_by_position(win32_win, tab_name, form_type):
+    # 5. Position-based click on ACISectionTabs (equal-width fallback)
+    if _navigate_tab_by_position(win32_win, tab_name, form_type, field_cfg):
         return True
 
     log.warning(f"  Tab '{tab_name}' not found by any strategy")
@@ -686,7 +818,7 @@ def get_current_tab(win32_win) -> str:
 
 # ── Individual insertion strategies ──────────────────────────────────────────
 
-def _ins_tx32(field_cfg: dict, text: str) -> tuple:
+def _ins_tx32(field_cfg: dict, text: str, form_type: str = '1004') -> tuple:
     """
     Primary ACI strategy: TX32 clipboard insert with label-proximity targeting.
     Returns: (success, method_str, tx32_ctrl | None, diagnostics_dict)
@@ -705,7 +837,7 @@ def _ins_tx32(field_cfg: dict, text: str) -> tuple:
 
         tab = (field_cfg.get('tab_name') or '').strip()
         if tab:
-            nav_ok = navigate_tab(win, tab)
+            nav_ok = navigate_tab(win, tab, form_type, field_cfg)
             diag['tab_name']      = tab
             diag['tab_navigated'] = nav_ok
             if nav_ok:
@@ -747,7 +879,9 @@ def _ins_tx32(field_cfg: dict, text: str) -> tuple:
 
     except Exception as e:
         log.debug(f"  TX32 failed: {e}")
-        return False, 'tx32_exception', None, {'error': str(e)[:200]}
+        diag = diag if isinstance(diag, dict) else {}
+        diag['error'] = str(e)[:200]
+        return False, 'tx32_exception', None, diag
 
 
 def _ins_automation_id(main_win, aid: str, text: str) -> bool:
@@ -951,7 +1085,7 @@ def insert_field(app, field_cfg: dict, text: str,
     if learned:
         log.info(f"  [0] Learned target (n={learned.get('success_count',0)} "
                  f"strategy={learned.get('strategy','')})")
-        ok, meth, tx32c, diag = _ins_tx32(field_cfg, text)
+        ok, meth, tx32c, diag = _ins_tx32(field_cfg, text, form_type)
         last_diag = diag
         if ok:
             return {'success': True, 'method': f'learned:{meth}',
@@ -960,7 +1094,7 @@ def insert_field(app, field_cfg: dict, text: str,
         attempts.append('learned:failed')
 
     # 1. TX32 label-proximity
-    ok, meth, tx32c, diag = _ins_tx32(field_cfg, text)
+    ok, meth, tx32c, diag = _ins_tx32(field_cfg, text, form_type)
     last_diag = diag
     if ok:
         return {'success': True, 'method': meth,

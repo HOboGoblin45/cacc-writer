@@ -191,6 +191,62 @@ def capture_screenshot(page, label: str) -> str | None:
 _playwright_instance = None
 _browser_instance    = None
 _page_instance       = None
+_last_connection_error = None
+
+def reset_browser_connection():
+    """Tear down cached Playwright browser state so a fresh CDP attach can be attempted."""
+    global _playwright_instance, _browser_instance, _page_instance
+    try:
+        if _page_instance and not _page_instance.is_closed():
+            _page_instance = None
+    except Exception:
+        _page_instance = None
+
+    try:
+        if _browser_instance:
+            _browser_instance.close()
+    except Exception:
+        pass
+    finally:
+        _browser_instance = None
+
+    try:
+        if _playwright_instance:
+            _playwright_instance.stop()
+    except Exception:
+        pass
+    finally:
+        _playwright_instance = None
+
+def list_cdp_targets():
+    """Return raw CDP targets for diagnostics without requiring a Playwright attach."""
+    import urllib.request
+    import urllib.error
+
+    list_url = CDP_URL.rstrip('/') + '/json/list'
+    try:
+        with urllib.request.urlopen(list_url, timeout=3) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+            if isinstance(payload, list):
+                return payload
+            return []
+    except Exception:
+        return []
+
+def summarize_targets(targets):
+    summaries = []
+    for target in targets[:10]:
+        summaries.append({
+            'title': target.get('title', ''),
+            'url': target.get('url', ''),
+            'type': target.get('type', ''),
+        })
+    return summaries
+
+def is_rq_target(url: str) -> bool:
+    candidate = (url or '').lower()
+    base = RQ_BASE_URL.lower().replace('https://', '').replace('http://', '')
+    return 'realquantum' in candidate or 'realquantumapp' in candidate or base in candidate
 
 def get_page():
     """
@@ -209,56 +265,64 @@ def get_page():
         - To support Edge instead of Chrome, change the CDP URL port or
           launch Edge with --remote-debugging-port=9222
     """
-    global _playwright_instance, _browser_instance, _page_instance
+    global _playwright_instance, _browser_instance, _page_instance, _last_connection_error
 
     if not PLAYWRIGHT_AVAILABLE:
+        _last_connection_error = 'playwright not available'
         return None
 
-    try:
-        # Reuse existing connection if still alive
-        if _page_instance and not _page_instance.is_closed():
-            return _page_instance
+    for attempt in range(2):
+        try:
+            if _page_instance and not _page_instance.is_closed():
+                return _page_instance
 
-        # Connect to existing Chrome session via CDP
-        if _playwright_instance is None:
-            _playwright_instance = sync_playwright().start()
+            if _playwright_instance is None:
+                _playwright_instance = sync_playwright().start()
 
-        log.info(f"Connecting to Chrome at {CDP_URL}...")
-        _browser_instance = _playwright_instance.chromium.connect_over_cdp(CDP_URL)
+            log.info(f"Connecting to Chrome at {CDP_URL} (attempt {attempt + 1})...")
+            _browser_instance = _playwright_instance.chromium.connect_over_cdp(CDP_URL)
 
-        # Find the Real Quantum tab
-        contexts = _browser_instance.contexts
-        if not contexts:
-            log.error("No browser contexts found. Make sure Chrome is open with a Real Quantum report.")
-            return None
+            contexts = _browser_instance.contexts
+            if not contexts:
+                _last_connection_error = 'No browser contexts found'
+                log.error("No browser contexts found. Make sure Chrome is open with a Real Quantum report.")
+                reset_browser_connection()
+                continue
 
-        # Search all pages for Real Quantum URL
-        rq_page = None
-        for context in contexts:
-            for page in context.pages:
-                url = page.url or ''
-                if 'realquantum' in url.lower() or RQ_BASE_URL.lower().replace('https://', '') in url.lower():
-                    rq_page = page
-                    log.info(f"Found Real Quantum tab: {url}")
+            rq_page = None
+            for context in contexts:
+                for page in context.pages:
+                    url = page.url or ''
+                    if is_rq_target(url):
+                        rq_page = page
+                        log.info(f"Found Real Quantum tab: {url}")
+                        break
+                if rq_page:
                     break
-            if rq_page:
-                break
 
-        # Fallback: use the first available page
-        if not rq_page and contexts and contexts[0].pages:
-            rq_page = contexts[0].pages[0]
-            log.warning(f"Real Quantum tab not found by URL. Using first tab: {rq_page.url}")
+            if not rq_page:
+                targets = list_cdp_targets()
+                if targets:
+                    _last_connection_error = (
+                        'CDP is reachable, but no Real Quantum page target matched. '
+                        f'Visible targets: {summarize_targets(targets)}'
+                    )
+                else:
+                    _last_connection_error = 'CDP is reachable, but no browser page targets were returned'
+                log.warning(_last_connection_error)
+                reset_browser_connection()
+                continue
 
-        _page_instance = rq_page
-        return rq_page
+            _page_instance = rq_page
+            _last_connection_error = None
+            return rq_page
+        except Exception as e:
+            _last_connection_error = str(e)
+            log.error(f"Failed to connect to Chrome: {e}")
+            log.info("Make sure Chrome is running with: --remote-debugging-port=9222")
+            reset_browser_connection()
 
-    except Exception as e:
-        log.error(f"Failed to connect to Chrome: {e}")
-        log.info("Make sure Chrome is running with: --remote-debugging-port=9222")
-        _playwright_instance = None
-        _browser_instance    = None
-        _page_instance       = None
-        return None
+    return None
 
 # ── Section navigation ────────────────────────────────────────────────────────
 
@@ -635,36 +699,9 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
     Returns:
         True if verification passed, False otherwise (non-fatal).
     """
-    input_type = field_config.get('input_type', 'textarea')
-
     try:
         check = expected_text[:60].strip()
-
-        if input_type == 'tinymce':
-            tinymce_id   = field_config.get('tinymce_id', '')
-            editor_index = field_config.get('editor_index', 0)
-            try:
-                if tinymce_id:
-                    actual = page.evaluate(f"tinymce.get('{tinymce_id}') ? tinymce.get('{tinymce_id}').getContent({{format:'text'}}) : ''")
-                else:
-                    actual = page.evaluate(f"tinymce.editors[{editor_index}] ? tinymce.editors[{editor_index}].getContent({{format:'text'}}) : ''")
-            except Exception:
-                # Fallback: read iframe body text
-                tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
-                if tinymce_iframe_id:
-                    try:
-                        iframe_el = page.frame_locator(f"iframe#{tinymce_iframe_id}")
-                        actual = iframe_el.locator('body').text_content() or ''
-                    except Exception:
-                        actual = ''
-                else:
-                    actual = ''
-        else:
-            input_selector = field_config.get('input_selector', '')
-            if not input_selector:
-                return False
-            element = page.locator(input_selector).first
-            actual  = element.input_value() or element.text_content() or ''
+        actual = read_field_value(page, field_config)
 
         passed = check in actual
         if passed:
@@ -677,6 +714,39 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
         log.warning(f"Verification error (non-fatal): {e}")
         return False
 
+def read_field_value(page, field_config: dict) -> str:
+    """
+    Read the current field value from the active Real Quantum section.
+
+    Returns plain text for both TinyMCE and direct input fields.
+    Raises on transport/selector errors so the caller can surface diagnostics.
+    """
+    input_type = field_config.get('input_type', 'textarea')
+
+    if input_type == 'tinymce':
+        tinymce_id   = field_config.get('tinymce_id', '')
+        editor_index = field_config.get('editor_index', 0)
+        try:
+            if tinymce_id:
+                actual = page.evaluate(f"tinymce.get('{tinymce_id}') ? tinymce.get('{tinymce_id}').getContent({{format:'text'}}) : ''")
+            else:
+                actual = page.evaluate(f"tinymce.editors[{editor_index}] ? tinymce.editors[{editor_index}].getContent({{format:'text'}}) : ''")
+        except Exception:
+            tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
+            if tinymce_iframe_id:
+                iframe_el = page.frame_locator(f"iframe#{tinymce_iframe_id}")
+                actual = iframe_el.locator('body').text_content() or ''
+            else:
+                actual = ''
+        return actual or ''
+
+    input_selector = field_config.get('input_selector', '')
+    if not input_selector:
+        raise ValueError('No input_selector defined for readback')
+
+    element = page.locator(input_selector).first
+    return element.input_value() or element.text_content() or ''
+
 # ── Flask HTTP server ─────────────────────────────────────────────────────────
 
 flask_app = Flask(__name__)
@@ -685,6 +755,7 @@ flask_app = Flask(__name__)
 def health():
     """Health check endpoint."""
     page = get_page() if PLAYWRIGHT_AVAILABLE else None
+    targets = list_cdp_targets() if PLAYWRIGHT_AVAILABLE else []
     return jsonify({
         'ok':        True,
         'agent':     'cacc-rq-agent',
@@ -692,6 +763,10 @@ def health():
         'connected': page is not None,
         'port':      AGENT_PORT,
         'cdp_url':   CDP_URL,
+        'rq_base_url': RQ_BASE_URL,
+        'last_error': _last_connection_error,
+        'target_count': len(targets),
+        'targets': summarize_targets(targets),
     })
 
 @flask_app.route('/insert', methods=['POST'])
@@ -976,6 +1051,54 @@ def reload_maps():
     """
     reload_field_maps()
     return jsonify({'ok': True, 'message': 'Field map cache cleared. Maps will reload on next request.'})
+
+@flask_app.route('/read-field', methods=['POST'])
+def read_field():
+    """
+    Read the current value of a Real Quantum field after navigating to its section.
+
+    Request:  { fieldId, formType }
+    Response: { ok, success, value, fieldId, fieldLabel, url }
+    """
+    data      = request.get_json(force=True, silent=True) or {}
+    field_id  = str(data.get('fieldId', '')).strip()
+    form_type = str(data.get('formType', 'commercial')).strip()
+
+    if not field_id:
+        return jsonify({'ok': False, 'error': 'fieldId is required'}), 400
+
+    if not PLAYWRIGHT_AVAILABLE:
+        return jsonify({'ok': True, 'success': False, 'value': '', 'message': 'stub mode'})
+
+    field_map    = load_field_map(form_type)
+    field_config = field_map.get(field_id, {})
+    field_label  = field_config.get('label', field_id)
+
+    page = get_page()
+    if not page:
+        return jsonify({'ok': False, 'error': 'Could not connect to Chrome.'}), 503
+
+    try:
+        navigate_to_section(page, field_config)
+        time.sleep(0.3)
+        value = read_field_value(page, field_config)
+        return jsonify({
+            'ok': True,
+            'success': True,
+            'value': value,
+            'fieldId': field_id,
+            'fieldLabel': field_label,
+            'url': page.url,
+        })
+    except Exception as e:
+        return jsonify({
+            'ok': False,
+            'success': False,
+            'error': str(e),
+            'fieldId': field_id,
+            'fieldLabel': field_label,
+            'url': page.url if page else None,
+        }), 500
 
 @flask_app.route('/list-sections', methods=['GET'])  # noqa: E302
 def list_sections():

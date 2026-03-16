@@ -353,7 +353,7 @@ def test_field():
         try:
             win32_win = app32.top_window()
             if tab_name:
-                core.navigate_tab(win32_win, tab_name, form_type)
+                core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
                 time.sleep(0.4)
             ctrl, score, method = core.find_tx32_by_label(
                 win32_win, field_label, aliases)
@@ -420,7 +420,7 @@ def probe():
     win32_win     = app32.top_window()
     tab_navigated = False
     if tab_name:
-        tab_navigated = core.navigate_tab(win32_win, tab_name, form_type)
+        tab_navigated = core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
         if tab_navigated:
             time.sleep(0.5)
 
@@ -548,7 +548,7 @@ def read_field():
 
     win32_win = app32.top_window()
     if tab_name:
-        core.navigate_tab(win32_win, tab_name, form_type)
+        core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
         time.sleep(0.5)
 
     ctrl = core.find_tx32_by_rect(win32_win, target_rect)

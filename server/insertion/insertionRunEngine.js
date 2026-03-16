@@ -19,6 +19,12 @@ import { formatForDestination } from './formatters/index.js';
 import { verifyInsertion } from './verificationEngine.js';
 import { decideFallback, copyToClipboard } from './fallbackHandler.js';
 import { getFormDraftTextMap } from './formDraftModel.js';
+import { callAgentInsert as callLiveAgentInsert } from './agentClient.js';
+
+const MIN_AGENT_TIMEOUT_MS = {
+  aci: 30000,
+  real_quantum: 15000,
+};
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -308,6 +314,7 @@ export function getInsertionReplayPackage(runId) {
 
 async function processItem(item, run, profile, agentBaseUrl) {
   const startTime = Date.now();
+  const agentTimeout = getAgentTimeoutMs(item.targetSoftware, profile?.config?.timeout);
 
   updateInsertionRunItem(item.id, {
     status: 'formatting',
@@ -364,13 +371,13 @@ async function processItem(item, run, profile, agentBaseUrl) {
   while (attemptCount < (item.maxAttempts || 3)) {
     attemptCount++;
     try {
-      insertResult = await callAgentInsert(
-        mapping.agentFieldKey || item.fieldId,
-        formatResult.formattedText,
-        item.formType,
+      insertResult = await callLiveAgentInsert({
+        fieldId: mapping.agentFieldKey || item.fieldId,
+        text: formatResult.formattedText,
+        formType: item.formType,
         agentBaseUrl,
-        profile?.config?.timeout || 15000
-      );
+        timeout: agentTimeout,
+      });
 
       if (insertResult.success) break;
 
@@ -463,7 +470,7 @@ async function processItem(item, run, profile, agentBaseUrl) {
       agentBaseUrl,
       verificationMode: mapping.verificationMode,
       targetRect: insertResult?.diagnostics?.tx32_rect || null,
-      timeout: profile?.config?.timeout || 10000,
+      timeout: agentTimeout,
     });
 
     verificationStatus = verResult.status;
@@ -505,34 +512,6 @@ async function processItem(item, run, profile, agentBaseUrl) {
  * @param {number} timeout
  * @returns {Promise<Object>}
  */
-async function callAgentInsert(fieldKey, text, formType, agentBaseUrl, timeout) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(`${agentBaseUrl}/insert`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fieldId: fieldKey,
-        text,
-        formType,
-      }),
-      signal: controller.signal,
-    });
-
-    const data = await response.json();
-    return {
-      success: !!data.success,
-      message: data.message || data.error || '',
-      errorCode: data.success ? null : 'insertion_rejected',
-      ...data,
-    };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 /**
  * Check agent health.
  * @param {string} agentBaseUrl
@@ -652,6 +631,14 @@ function getDefaultAgentUrl(targetSoftware) {
   return targetSoftware === 'aci'
     ? 'http://localhost:5180'
     : 'http://localhost:5181';
+}
+
+export function getAgentTimeoutMs(targetSoftware, configuredTimeout = null) {
+  const numericTimeout = Number(configuredTimeout);
+  const baseTimeout = Number.isFinite(numericTimeout) && numericTimeout > 0
+    ? numericTimeout
+    : 15000;
+  return Math.max(baseTimeout, MIN_AGENT_TIMEOUT_MS[targetSoftware] || 15000);
 }
 
 function sleep(ms) {
