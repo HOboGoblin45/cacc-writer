@@ -19,7 +19,6 @@
 
 import { Router } from 'express';
 import path from 'path';
-import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
@@ -43,17 +42,16 @@ import {
   getRunResult,
   getGeneratedSectionsForRun,
 } from '../orchestrator/generationOrchestrator.js';
+import { RUN_STATUS } from '../db/repositories/generationRepo.js';
 import {
-  RUN_STATUS,
+  runSectionJob,
+} from '../orchestrator/sectionJobRunner.js';
+import {
   getRunById,
-  persistDraftPackage,
   getJobIdForSection,
   saveGeneratedSection,
   updateGeneratedSectionReview,
 } from '../db/repositories/generationRepo.js';
-import {
-  runSectionJob,
-} from '../orchestrator/sectionJobRunner.js';
 import { buildAssignmentContext } from '../context/assignmentContextBuilder.js';
 import { buildReportPlan, getSectionDef } from '../context/reportPlanner.js';
 import { buildRetrievalPack } from '../context/retrievalPackBuilder.js';
@@ -61,25 +59,6 @@ import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImpo
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
-import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
-import {
-  buildSectionPolicy,
-  buildDependencySnapshot as buildFactDependencySnapshot,
-  computeQualityScore,
-  getPromptVersion,
-  findStaleDependentSections,
-  evaluateRegeneratePolicy as evaluateFactRegeneratePolicy,
-} from '../services/sectionPolicyService.js';
-import {
-  evaluateSectionFreshness,
-  evaluateAllSectionsFreshness,
-  getStaleSections,
-  invalidateSections,
-} from '../services/sectionFreshnessService.js';
-import {
-  resolveSectionPolicy,
-  evaluateRegeneratePolicy as evaluateRunRegeneratePolicy,
-} from '../sectionFactory/sectionPolicyService.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -90,85 +69,6 @@ import log from '../logger.js';
 const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
 const MAX_BATCH_FIELDS = 20;
-const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
-  .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
-const fullDraftOptionsSchema = z.object({
-  forceGateBypass: z.boolean().optional(),
-}).passthrough();
-const generateSchema = z.object({
-  fieldId: z.string().max(80).optional(),
-  formType: z.string().max(40).optional(),
-  caseId: z.string().max(80).optional(),
-  facts: z.record(z.unknown()).optional(),
-  prompt: z.string().max(24000).optional(),
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const generateBatchFieldSchema = z.union([
-  z.string().max(80),
-  z.object({
-    id: z.string().max(80).optional(),
-    title: z.string().max(200).optional(),
-  }).passthrough(),
-]);
-const generateBatchSchema = z.object({
-  fields: z.array(generateBatchFieldSchema).min(1).max(MAX_BATCH_FIELDS),
-  caseId: z.string().max(80).optional(),
-  twoPass: z.boolean().optional(),
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const similarExamplesSchema = z.object({
-  fieldId: z.string().max(80).optional(),
-  limit: z.union([z.number(), z.string()]).optional(),
-  formType: z.string().max(40).optional(),
-}).passthrough();
-const generateCoreSchema = z.object({
-  fields: z.array(z.string().max(80)).max(200).optional(),
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const generateCompCommentarySchema = z.object({
-  comps: z.array(z.unknown()).max(200).optional(),
-  compFocus: z.string().max(40).optional(),
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const generateAllSchema = z.object({
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const generateFullDraftSchema = z.object({
-  formType: z.string().max(40).optional(),
-  options: fullDraftOptionsSchema.optional(),
-  forceGateBypass: z.boolean().optional(),
-}).passthrough();
-const fullDraftAliasSchema = generateFullDraftSchema.extend({
-  caseId: z.string().min(1).max(80),
-});
-const regenerateSectionSchema = z.object({
-  runId: z.string().min(1).max(80),
-  sectionId: z.string().min(1).max(80),
-  caseId: z.string().min(1).max(80),
-  forceGateBypass: z.boolean().optional(),
-  options: fullDraftOptionsSchema.optional(),
-}).passthrough();
-const emptyMutationSchema = z.object({}).strict();
-
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  res.status(400).json({
-    ok: false,
-    code: 'INVALID_PAYLOAD',
-    error: 'Invalid request payload',
-    details: parsed.error.issues.map(i => ({
-      path: i.path.join('.') || '(root)',
-      message: i.message,
-    })),
-  });
-  return null;
-}
 
 function _setRunResult(runId, result) {
   // Evict oldest entry if at capacity (Map preserves insertion order)
@@ -177,30 +77,6 @@ function _setRunResult(runId, result) {
     _runResults.delete(oldestKey);
   }
   _runResults.set(runId, result);
-}
-
-function _syncCachedRunSection(runId, sectionId, text) {
-  const cached = _runResults.get(runId);
-  if (!cached) return;
-
-  const nextDraftPackage = {
-    ...(cached.draftPackage || {}),
-    sections: {
-      ...((cached.draftPackage || {}).sections || {}),
-      [sectionId]: {
-        ...(((cached.draftPackage || {}).sections || {})[sectionId] || {}),
-        sectionId,
-        ok: true,
-        error: null,
-        text,
-      },
-    },
-  };
-
-  _setRunResult(runId, {
-    ...cached,
-    draftPackage: nextDraftPackage,
-  });
 }
 
 function toSectionIds(fields) {
@@ -214,25 +90,11 @@ function toSectionIds(fields) {
   return ids;
 }
 
-function requestedGateBypass(req) {
+function shouldBypassPreDraftGate(req) {
   return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
 }
 
-function shouldBypassPreDraftGate(req) {
-  return requestedGateBypass(req) && ALLOW_FORCE_GATE_BYPASS;
-}
-
 function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) {
-  if (requestedGateBypass(req) && !ALLOW_FORCE_GATE_BYPASS) {
-    res.status(403).json({
-      ok: false,
-      code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
-      error: 'forceGateBypass is disabled in this environment',
-      hint: 'Set CACC_ALLOW_FORCE_GATE_BYPASS=true to allow explicit pre-draft gate bypass.',
-    });
-    return false;
-  }
-
   if (shouldBypassPreDraftGate(req)) return true;
 
   const gate = evaluatePreDraftGate({ caseId, formType, sectionIds });
@@ -242,19 +104,13 @@ function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) 
   }
 
   if (gate.ok) return true;
-  const queue = buildFactDecisionQueue(caseId);
-  const factReviewQueuePath = `/api/cases/${caseId}/fact-review-queue`;
 
   res.status(409).json({
     ok: false,
     code: 'PRE_DRAFT_GATE_BLOCKED',
     error: 'Pre-draft integrity gate blocked generation',
     gate,
-    factReviewQueuePath,
-    factReviewQueueSummary: queue?.summary || null,
-    hint: ALLOW_FORCE_GATE_BYPASS
-      ? `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check), or pass forceGateBypass=true.`
-      : `Resolve blocker items from GET ${factReviewQueuePath} (or /pre-draft-check).`,
+    hint: 'Resolve blocker items from GET /api/cases/:caseId/pre-draft-check, or pass forceGateBypass=true.',
   });
   return false;
 }
@@ -342,13 +198,9 @@ router.param('caseId', (req, res, next, caseId) => {
 
 // ── POST /generate (legacy compat, now modular) ──────────────────────────────
 router.post('/generate', ensureAI, async (req, res) => {
-  const body = parsePayload(generateSchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-
   try {
-    const { fieldId, formType, caseId, facts: bodyFacts } = body;
-    const prompt = trimText(body.prompt, 24000);
+    const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
+    const prompt = trimText(req.body?.prompt, 24000);
     const requestedFt = String(formType || '').trim().toLowerCase();
     if (requestedFt && isDeferredForm(requestedFt)) {
       logDeferredAccess(requestedFt, 'POST /api/generate', log);
@@ -424,12 +276,14 @@ router.post('/generate', ensureAI, async (req, res) => {
 
 // ── POST /generate-batch (legacy compat, now modular) ────────────────────────
 router.post('/generate-batch', ensureAI, async (req, res) => {
-  const body = parsePayload(generateBatchSchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-
   try {
-    const { fields, caseId, twoPass = false } = body;
+    const { fields, caseId, twoPass = false } = req.body;
+    if (!Array.isArray(fields) || !fields.length) {
+      return res.status(400).json({ ok: false, error: 'fields must be a non-empty array' });
+    }
+    if (fields.length > MAX_BATCH_FIELDS) {
+      return res.status(400).json({ ok: false, error: 'fields must be <= ' + MAX_BATCH_FIELDS });
+    }
     const requestedSectionIds = toSectionIds(fields);
 
     let caseFacts = {};
@@ -535,11 +389,8 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
 
 // ── POST /similar-examples (legacy compat, now modular) ──────────────────────
 router.post('/similar-examples', (req, res) => {
-  const body = parsePayload(similarExamplesSchema, req.body || {}, res);
-  if (!body) return;
-
   try {
-    const { fieldId, limit = 3, formType } = body;
+    const { fieldId, limit = 3, formType } = req.body;
     const safeLimit = Math.max(1, Math.min(Number(limit) || 3, 10));
     const normalized = formType ? normalizeFormType(formType) : null;
     res.json({
@@ -552,10 +403,6 @@ router.post('/similar-examples', (req, res) => {
 });
 
 router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
-  const body = parsePayload(generateCoreSchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -581,7 +428,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
       }
     }
 
-    const requestedFields = asArray(body.fields);
+    const requestedFields = asArray(req.body?.fields);
     const coreSections = formConfig.workflowFields || CORE_SECTIONS[formType] || [];
     const targetFields = requestedFields.length
       ? coreSections.filter(section => requestedFields.includes(section.id))
@@ -662,10 +509,6 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
 });
 
 router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
-  const body = parsePayload(generateCompCommentarySchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -687,7 +530,7 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       formType,
       sectionIds: ['sca_summary'],
     })) return;
-    const comps = asArray(body.comps || facts?.comps || []);
+    const comps = asArray(req.body?.comps || facts?.comps || []);
     if (!comps.length) return res.status(400).json({ ok: false, error: 'No comparables provided' });
 
     const results = [];
@@ -722,7 +565,7 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       }
     }
 
-    const compFocus = trimText(body.compFocus, 40) || 'all';
+    const compFocus = trimText(req.body?.compFocus, 40) || 'all';
     const combinedText = results.map(result => result.compLabel + ': ' + result.text).join('\n\n');
     if (results.length) {
       const generatedAt = new Date().toISOString();
@@ -759,10 +602,6 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
 });
 
 router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
-  const body = parsePayload(generateAllSchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -857,10 +696,8 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
-  const { caseId } = req.params;
-  const body = parsePayload(generateFullDraftSchema, req.body || {}, res);
-  if (!body) return;
-  const { formType, options = {} } = body;
+  const { caseId }           = req.params;
+  const { formType, options = {} } = req.body || {};
 
   // Scope enforcement — deferred forms blocked
   const resolvedFormType = formType || 'unknown';
@@ -952,9 +789,11 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/generation/full-draft', async (req, res) => {
-  const body = parsePayload(fullDraftAliasSchema, req.body || {}, res);
-  if (!body) return;
-  const { caseId, formType, options = {} } = body;
+  const { caseId, formType, options = {} } = req.body || {};
+
+  if (!caseId) {
+    return res.status(400).json({ ok: false, error: 'caseId is required in request body' });
+  }
 
   // Delegate to the canonical route handler by forwarding to the same logic
   req.params.caseId = caseId;
@@ -1170,6 +1009,14 @@ router.get('/generation/runs/:runId/result', (req, res) => {
   }
 });
 
+// ── POST /generation/regenerate-section ──────────────────────────────────────
+/**
+ * Regenerate a single section within an existing run.
+ * Useful for fixing a failed or thin section without re-running the full draft.
+ *
+ * Body:    { runId, sectionId, caseId }
+ * Returns: { ok, sectionId, text, metrics }
+ */
 router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
   const runId = trimText(req.params.runId, 80);
   const sectionId = trimText(req.params.sectionId, 80);
@@ -1244,25 +1091,24 @@ router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
       });
     }
 
-    const runResult = getRunResult(runId);
-    if (runResult?.draftPackage) {
-      const nextDraftPackage = {
-        ...runResult.draftPackage,
-        sections: {
-          ...(runResult.draftPackage.sections || {}),
-          [sectionId]: {
-            ...((runResult.draftPackage.sections || {})[sectionId] || {}),
-            sectionId,
-            ok: true,
-            error: null,
-            text,
+    const cached = _runResults.get(runId);
+    if (cached?.draftPackage) {
+      _setRunResult(runId, {
+        ...cached,
+        draftPackage: {
+          ...cached.draftPackage,
+          sections: {
+            ...(cached.draftPackage.sections || {}),
+            [sectionId]: {
+              ...((cached.draftPackage.sections || {})[sectionId] || {}),
+              sectionId,
+              ok: true,
+              error: null,
+              text,
+            },
           },
         },
-      };
-      persistDraftPackage(runId, nextDraftPackage);
-      _syncCachedRunSection(runId, sectionId, text);
-    } else {
-      _syncCachedRunSection(runId, sectionId, text);
+      });
     }
 
     res.json({
@@ -1279,34 +1125,17 @@ router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
   }
 });
 
-// ── POST /generation/regenerate-section ──────────────────────────────────────
-/**
- * Regenerate a single section within an existing run.
- * Useful for fixing a failed or thin section without re-running the full draft.
- *
- * Body:    { runId, sectionId, caseId, forceGateBypass?, options? }
- * Returns: { ok, sectionId, text, metrics }
- */
 router.post('/generation/regenerate-section', async (req, res) => {
-  const body = parsePayload(regenerateSectionSchema, req.body || {}, res);
-  if (!body) return;
-  req.body = body;
-  const { runId, sectionId, caseId } = body;
+  const { runId, sectionId, caseId } = req.body || {};
+
+  if (!runId || !sectionId || !caseId) {
+    return res.status(400).json({ ok: false, error: 'runId, sectionId, and caseId are required' });
+  }
 
   try {
     const runStatus = getRunStatus(runId);
     if (!runStatus) {
       return res.status(404).json({ ok: false, error: `Run not found: ${runId}` });
-    }
-    if (runStatus.caseId && runStatus.caseId !== caseId) {
-      return res.status(409).json({
-        ok: false,
-        code: 'RUN_CASE_MISMATCH',
-        error: 'runId does not belong to caseId',
-        runId,
-        caseId,
-        runCaseId: runStatus.caseId,
-      });
     }
 
     const formType   = runStatus.formType || '1004';
@@ -1314,11 +1143,6 @@ router.post('/generation/regenerate-section', async (req, res) => {
     if (!sectionDef) {
       return res.status(400).json({ ok: false, error: `Unknown section: ${sectionId} for form ${formType}` });
     }
-    if (!enforcePreDraftGate(req, res, {
-      caseId,
-      formType,
-      sectionIds: [sectionId],
-    })) return;
 
     const context       = await buildAssignmentContext(caseId);
     const plan          = buildReportPlan(context);
@@ -1326,43 +1150,11 @@ router.post('/generation/regenerate-section', async (req, res) => {
 
     // Collect prior section results for synthesis sections
     const priorSections = getGeneratedSectionsForRun(runId);
-    const runSectionPolicy = resolveSectionPolicy({ formType, sectionDef });
-    const regenerateCheck = evaluateRunRegeneratePolicy({
-      runStatus,
-      sectionPolicy: runSectionPolicy,
-      generatedSections: priorSections,
-    });
-    if (!regenerateCheck.ok) {
-      return res.status(409).json({
-        ok: false,
-        code: regenerateCheck.code,
-        error: regenerateCheck.error,
-        sectionId,
-        promptVersion: runSectionPolicy.promptVersion,
-        dependencySnapshot: regenerateCheck.dependencySnapshot,
-        staleDependentSections: regenerateCheck.staleDependentSections,
-      });
-    }
-
     const priorResults  = {};
     for (const s of priorSections) {
       if (s.section_id !== sectionId) {
         priorResults[s.section_id] = { text: s.final_text || '', ok: true };
       }
-    }
-
-    // Phase D — evaluate fact-level regenerate policy
-    const projection = getCaseProjection(caseId);
-    const facts = projection?.facts || {};
-    const regenPolicy = evaluateFactRegeneratePolicy(sectionId, facts, priorResults);
-    if (!regenPolicy.allowed && !body.forceGateBypass) {
-      return res.status(409).json({
-        ok: false,
-        code: 'REGENERATE_POLICY_BLOCKED',
-        sectionId,
-        blockers: regenPolicy.blockers,
-        warnings: regenPolicy.warnings,
-      });
     }
 
     const result = await runSectionJob({
@@ -1375,110 +1167,15 @@ router.post('/generation/regenerate-section', async (req, res) => {
       analysisArtifacts: {},
     });
 
-    // Phase D — build audit metadata for the regenerated section
-    const promptVersion = getPromptVersion(sectionId);
-    const dependencySnapshot = buildFactDependencySnapshot(sectionId, facts);
-    const factSectionPolicy = buildSectionPolicy(sectionId, facts);
-    const staleDependents = findStaleDependentSections(sectionId);
-    let qualityResult = null;
-    if (result.ok && result.text) {
-      qualityResult = computeQualityScore({
-        sectionId,
-        facts,
-        generatedText: result.text,
-        reviewPassed: result.reviewPassed || false,
-        examplesUsed: result.metrics?.examplesUsed || 0,
-      });
-    }
-
     res.json({
       ok:        result.ok,
       sectionId: result.sectionId,
       text:      result.text,
       metrics:   result.metrics,
       error:     result.error || null,
-      // Phase D audit metadata
-      promptVersion: result.promptVersion || promptVersion,
-      dependencySnapshot,
-      sectionPolicy: factSectionPolicy,
-      staleDependentSections: staleDependents,
-      qualityScore:   qualityResult?.score ?? null,
-      qualityFactors: qualityResult?.factors ?? null,
-      regenerateWarnings: regenPolicy.warnings,
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── GET /cases/:caseId/sections/freshness ──────────────────────────────────────
-/**
- * Get freshness status for all generated sections in a case.
- *
- * Returns: { ok, caseId, sections, summary }
- */
-router.get('/cases/:caseId/sections/freshness', (req, res) => {
-  const { caseId } = req.params;
-  try {
-    const result = evaluateAllSectionsFreshness(caseId);
-    res.json({
-      ok: true,
-      caseId,
-      sections: result.sections,
-      summary: result.summary,
-    });
-  } catch (err) {
-    log.error('[sections/freshness]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── GET /cases/:caseId/sections/:sectionId/freshness ─────────────────────────
-/**
- * Get freshness status for a specific section.
- *
- * Returns: { ok, caseId, sectionId, freshness, changedPaths, reasons, ... }
- */
-router.get('/cases/:caseId/sections/:sectionId/freshness', (req, res) => {
-  const { caseId, sectionId } = req.params;
-  try {
-    const result = evaluateSectionFreshness(caseId, sectionId);
-    res.json({
-      ok: true,
-      caseId,
-      ...result,
-    });
-  } catch (err) {
-    log.error('[sections/freshness]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── POST /cases/:caseId/sections/invalidate ──────────────────────────────────
-/**
- * Manually invalidate one or more sections, marking them as stale.
- *
- * Body:    { sectionIds: string[], reason?: string }
- * Returns: { ok, invalidated, skipped }
- */
-router.post('/cases/:caseId/sections/invalidate', (req, res) => {
-  const { caseId } = req.params;
-  const { sectionIds, reason } = req.body || {};
-
-  if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
-    return res.status(400).json({ ok: false, error: 'sectionIds must be a non-empty array' });
-  }
-
-  try {
-    const result = invalidateSections(caseId, sectionIds, reason || 'Manual invalidation via API');
-    res.json({
-      ok: true,
-      caseId,
-      ...result,
-    });
-  } catch (err) {
-    log.error('[sections/invalidate]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
@@ -1490,9 +1187,7 @@ router.post('/cases/:caseId/sections/invalidate', (req, res) => {
  *
  * Returns: { ok, imported, skipped, upgraded, errors, sources, durationMs }
  */
-router.post('/db/migrate-legacy-kb', async (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.post('/db/migrate-legacy-kb', async (_req, res) => {
   try {
     log.info('[db] Starting legacy KB migration...');
     const result = await runLegacyKbImport();

@@ -16,16 +16,12 @@
  * @param {string} params.fieldId - Canonical field ID
  * @param {string} params.agentFieldKey - Key in the agent's field map
  * @param {string} params.formattedText - The text that was sent to the agent
- * @param {string} params.formType - Form family for the destination agent
  * @param {'aci' | 'real_quantum'} params.targetSoftware
  * @param {string} params.agentBaseUrl - Agent base URL
  * @param {string} [params.verificationMode] - Verification method
- * @param {Object|null} [params.targetRect] - Agent-reported target rect for exact read-back
  * @param {number} [params.timeout=10000] - Request timeout in ms
  * @returns {Promise<import('./types.js').VerificationResult>}
  */
-import { readFieldFromAgent } from './agentClient.js';
-
 export async function verifyInsertion({
   fieldId,
   agentFieldKey,
@@ -38,7 +34,6 @@ export async function verifyInsertion({
   timeout = 10000,
 }) {
   const startTime = Date.now();
-  const expectedNormalized = normalizeForComparison(formattedText, targetSoftware);
 
   // If no agent field key, we can't verify
   if (!agentFieldKey) {
@@ -46,91 +41,9 @@ export async function verifyInsertion({
       status: 'not_supported',
       rawValue: null,
       normalizedValue: null,
-      expectedNormalized,
+      expectedNormalized: normalizeForComparison(formattedText, targetSoftware),
       similarityScore: null,
       mismatchDetail: 'No agent field key available for read-back',
-      durationMs: Date.now() - startTime,
-    };
-  }
-
-  try {
-    const readback = await readInsertionField({
-      agentFieldKey,
-      formType,
-      targetSoftware,
-      agentBaseUrl,
-      targetRect,
-      timeout,
-    });
-
-    if (readback.status !== 'passed') {
-      return {
-        status: readback.status === 'failed' ? 'failed' : 'unreadable',
-        rawValue: readback.rawValue,
-        normalizedValue: readback.normalizedValue,
-        expectedNormalized,
-        similarityScore: null,
-        mismatchDetail: readback.message,
-        durationMs: Date.now() - startTime,
-      };
-    }
-
-    const normalizedActual = readback.normalizedValue || '';
-
-    const similarity = computeSimilarity(normalizedActual, expectedNormalized);
-
-    // Threshold: 0.90 similarity = pass (allows minor whitespace/encoding differences)
-    const passed = similarity >= 0.90;
-
-    return {
-      status: passed ? 'passed' : 'mismatch',
-      rawValue: String(readback.rawValue || '').slice(0, 5000),
-      normalizedValue: normalizedActual.slice(0, 5000),
-      expectedNormalized: expectedNormalized.slice(0, 5000),
-      similarityScore: similarity,
-      mismatchDetail: passed ? null : buildMismatchDetail(expectedNormalized, normalizedActual),
-      durationMs: Date.now() - startTime,
-    };
-  } catch (err) {
-    return {
-      status: 'failed',
-      rawValue: null,
-      normalizedValue: null,
-      expectedNormalized,
-      similarityScore: null,
-      mismatchDetail: `Verification error: ${err.message}`,
-      durationMs: Date.now() - startTime,
-    };
-  }
-}
-
-/**
- * Read a field value without comparison.
- *
- * @param {Object} params
- * @param {string} params.agentFieldKey
- * @param {string} [params.formType]
- * @param {'aci' | 'real_quantum'} params.targetSoftware
- * @param {string} params.agentBaseUrl
- * @param {Object|null} [params.targetRect]
- * @param {number} [params.timeout=10000]
- * @returns {Promise<{status: 'passed' | 'unreadable' | 'not_supported' | 'failed', rawValue: string|null, normalizedValue: string|null, message: string|null, durationMs: number}>}
- */
-export async function readInsertionField({
-  agentFieldKey,
-  formType = null,
-  targetSoftware,
-  agentBaseUrl,
-  targetRect = null,
-  timeout = 10000,
-}) {
-  const startTime = Date.now();
-  if (!agentFieldKey) {
-    return {
-      status: 'not_supported',
-      rawValue: null,
-      normalizedValue: null,
-      message: 'No agent field key available for read-back',
       durationMs: Date.now() - startTime,
     };
   }
@@ -143,21 +56,34 @@ export async function readInsertionField({
       targetRect,
       timeout,
     });
+
     if (rawValue === null || rawValue === undefined) {
       return {
         status: 'unreadable',
         rawValue: null,
         normalizedValue: null,
-        message: 'Agent returned null/empty for read-back',
+        expectedNormalized: normalizeForComparison(formattedText, targetSoftware),
+        similarityScore: null,
+        mismatchDetail: 'Agent returned null/empty for read-back',
         durationMs: Date.now() - startTime,
       };
     }
 
+    const normalizedActual = normalizeForComparison(String(rawValue), targetSoftware);
+    const normalizedExpected = normalizeForComparison(formattedText, targetSoftware);
+
+    const similarity = computeSimilarity(normalizedActual, normalizedExpected);
+
+    // Threshold: 0.90 similarity = pass (allows minor whitespace/encoding differences)
+    const passed = similarity >= 0.90;
+
     return {
-      status: 'passed',
-      rawValue: String(rawValue).slice(0, 5000),
-      normalizedValue: normalizeForComparison(String(rawValue), targetSoftware).slice(0, 5000),
-      message: null,
+      status: passed ? 'passed' : 'mismatch',
+      rawValue: String(rawValue).slice(0, 5000), // Cap stored raw value
+      normalizedValue: normalizedActual.slice(0, 5000),
+      expectedNormalized: normalizedExpected.slice(0, 5000),
+      similarityScore: similarity,
+      mismatchDetail: passed ? null : buildMismatchDetail(normalizedExpected, normalizedActual),
       durationMs: Date.now() - startTime,
     };
   } catch (err) {
@@ -165,9 +91,69 @@ export async function readInsertionField({
       status: 'failed',
       rawValue: null,
       normalizedValue: null,
-      message: `Read-back error: ${err.message}`,
+      expectedNormalized: normalizeForComparison(formattedText, targetSoftware),
+      similarityScore: null,
+      mismatchDetail: `Verification error: ${err.message}`,
       durationMs: Date.now() - startTime,
     };
+  }
+}
+
+// ── Agent Communication ───────────────────────────────────────────────────────
+
+/**
+ * Read a field value from the agent.
+ *
+ * @param {string} agentFieldKey
+ * @param {'aci' | 'real_quantum'} targetSoftware
+ * @param {string} agentBaseUrl
+ * @param {number} timeout
+ * @returns {Promise<string|null>}
+ */
+async function readFieldFromAgent({
+  fieldId,
+  formType,
+  agentBaseUrl,
+  targetRect = null,
+  timeout,
+}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const url = `${agentBaseUrl}/read-field`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fieldId,
+        formType,
+        targetRect,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(`Agent returned ${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+
+    // ACI agent returns { success, value, ... }
+    // RQ agent returns { success, value, ... }
+    if (data.success && data.value !== undefined) {
+      return data.value;
+    }
+
+    // Some agents return the text directly
+    if (typeof data.text === 'string') {
+      return data.text;
+    }
+
+    return data.value || null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

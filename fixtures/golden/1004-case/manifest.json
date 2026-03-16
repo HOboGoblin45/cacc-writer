@@ -212,6 +212,7 @@
   },
   "insertion": {
     "targetSoftware": "aci",
+    "minVerifiedFields": 1,
     "timeoutMs": 120000
   }
 }
