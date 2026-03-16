@@ -212,6 +212,10 @@
   },
   "insertion": {
     "targetSoftware": "aci",
+    "probeFields": [
+      "neighborhood_description",
+      "site_comments"
+    ],
     "minVerifiedFields": 1,
     "timeoutMs": 120000
   }
