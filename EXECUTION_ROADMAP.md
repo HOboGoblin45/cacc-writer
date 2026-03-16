@@ -10,12 +10,13 @@ This roadmap reflects live code, live tests, and the current business target: in
 - Deferred scope: `1025`, `1073`, `1004C`
 - Validation baseline:
   - `npm run typecheck`
-  - `npm run test:unit` -> 237 passing
+  - `npm run test:unit` -> 287 passing
   - `npm run test:smoke` -> 49 passing
 - Major realities:
   - backend foundations are broad and real
   - frontend operator surface is still concentrated in `index.html` and `app.js`
-  - golden-path validation is missing
+  - golden-path preflight is working for both active lanes
+  - strict golden-path acceptance is still blocked by live destination readiness and verification
   - existing cases are not yet fully backfilled into canonical case records
 
 ## Delivery order
@@ -31,6 +32,10 @@ This roadmap reflects live code, live tests, and the current business target: in
 - create golden `1004` and `commercial` fixtures
 - build an end-to-end harness covering intake through archive
 - fail loudly on broken steps
+- current state:
+  - preflight passes for both fixtures
+  - strict mode now fails early at `destination_probe` when agents cannot locate live fields
+  - remaining work is destination reliability, not generation/planning drift
 
 ### Phase 2: `1004` production hardening
 
@@ -96,7 +101,7 @@ No deferred form should be activated before a full golden-path pass for that fam
 
 ## Current highest-risk gaps
 
-- no end-to-end golden-path proof
+- no strict end-to-end golden-path proof for live insertion
 - no operationally complete canonical backfill for live cases
 - no unified valuation surface
 - no finished inspection workflow

@@ -35,6 +35,7 @@ import { prepareInsertionRun, executeInsertionRun } from '../insertion/insertion
 import { resolveAllMappings, buildMappingPreview, inferTargetSoftware } from '../insertion/destinationMapper.js';
 import { getDb } from '../db/database.js';
 import { buildFormDraftModel, getFormDraftTextMap } from '../insertion/formDraftModel.js';
+import { probeDestinationFields, selectProbeFieldIds } from '../insertion/agentProbe.js';
 
 const router = Router();
 
@@ -275,6 +276,49 @@ router.get('/insertion/draft-model/:caseId', (req, res) => {
 });
 
 // ── Get All Mappings ──────────────────────────────────────────────────────────
+
+router.post('/insertion/probe', async (req, res) => {
+  try {
+    const {
+      caseId = null,
+      formType,
+      targetSoftware,
+      generationRunId = null,
+      fieldIds = null,
+    } = req.body || {};
+
+    if (!formType) {
+      return res.status(400).json({ error: 'formType is required' });
+    }
+
+    const effectiveTargetSoftware = targetSoftware || inferTargetSoftware(formType);
+    const probeFieldIds = selectProbeFieldIds({
+      caseId,
+      formType,
+      generationRunId,
+      targetSoftware: effectiveTargetSoftware,
+      fieldIds,
+    });
+
+    const probe = await probeDestinationFields({
+      formType,
+      targetSoftware: effectiveTargetSoftware,
+      fieldIds: probeFieldIds,
+    });
+
+    res.json({
+      ok: true,
+      caseId,
+      formType,
+      targetSoftware: effectiveTargetSoftware,
+      probeFieldIds,
+      probe,
+    });
+  } catch (err) {
+    log.error('insertion:probe', { error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get('/insertion/mappings/:formType', (req, res) => {
   try {
