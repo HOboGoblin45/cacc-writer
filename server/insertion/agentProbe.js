@@ -16,6 +16,11 @@ const DEFAULT_AGENT_URLS = {
   real_quantum: process.env.RQ_AGENT_URL || 'http://localhost:5181',
 };
 
+const MIN_PROBE_TIMEOUT_MS = {
+  aci: 20000,
+  real_quantum: 6000,
+};
+
 function unique(items = []) {
   return [...new Set(items.filter(Boolean))];
 }
@@ -32,6 +37,11 @@ function scoreProbeCandidate(field) {
 
 export function getAgentBaseUrl(targetSoftware) {
   return DEFAULT_AGENT_URLS[targetSoftware] || null;
+}
+
+export function getProbeTimeoutMs(targetSoftware, timeoutMs = 6000) {
+  const minimum = MIN_PROBE_TIMEOUT_MS[targetSoftware] || 6000;
+  return Math.max(timeoutMs, minimum);
 }
 
 async function probeAgentSession(targetSoftware, agentBaseUrl, fetchImpl) {
@@ -118,6 +128,7 @@ export async function probeDestinationFields({
   fetchImpl = fetch,
 } = {}) {
   const normalizedFieldIds = unique(fieldIds.map(fieldId => String(fieldId || '').trim()));
+  const probeTimeoutMs = getProbeTimeoutMs(targetSoftware, timeoutMs);
 
   if (!formType) {
     return {
@@ -177,7 +188,7 @@ export async function probeDestinationFields({
 
   for (const fieldId of normalizedFieldIds) {
     const mapping = resolveMapping(fieldId, formType, targetSoftware);
-    const probe = await postProbe(agentBaseUrl, { fieldId, formType }, timeoutMs, fetchImpl);
+    const probe = await postProbe(agentBaseUrl, { fieldId, formType }, probeTimeoutMs, fetchImpl);
     const found = probe.ok && probe.body?.found === true;
     if (probe.ok || probe.status > 0) reachable = true;
 

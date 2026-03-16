@@ -4,7 +4,11 @@
  */
 
 import assert from 'assert/strict';
-import { probeDestinationFields, selectProbeFieldIds } from '../../server/insertion/agentProbe.js';
+import {
+  getProbeTimeoutMs,
+  probeDestinationFields,
+  selectProbeFieldIds,
+} from '../../server/insertion/agentProbe.js';
 
 let passed = 0;
 let failed = 0;
@@ -41,6 +45,12 @@ await test('selectProbeFieldIds preserves explicit field list ordering and uniqu
     fieldIds: ['neighborhood_description', 'site_comments', 'neighborhood_description', ''],
   });
   assert.deepEqual(fieldIds, ['neighborhood_description', 'site_comments']);
+});
+
+await test('getProbeTimeoutMs enforces longer ACI probe windows without inflating RQ defaults', async () => {
+  assert.equal(getProbeTimeoutMs('aci', 6000), 20000);
+  assert.equal(getProbeTimeoutMs('aci', 30000), 30000);
+  assert.equal(getProbeTimeoutMs('real_quantum', 6000), 6000);
 });
 
 await test('probeDestinationFields passes when at least one field is locatable', async () => {
