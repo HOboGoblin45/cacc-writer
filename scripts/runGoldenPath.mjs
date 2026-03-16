@@ -464,6 +464,36 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
     }
     recordStep('qc_summary', 'passed', `QC readiness=${qcSummaryRes.body.draftReadiness} high=${qcSummaryRes.body.severityCounts?.high || 0}`);
 
+    if (!options.allowDryRunInsertion) {
+      const targetSoftware = manifest.insertion?.targetSoftware || inferTargetSoftware(manifest.formType);
+      const probeRes = await apiJson(baseUrl, 'POST', '/api/insertion/probe', {
+        caseId,
+        formType: manifest.formType,
+        targetSoftware,
+        generationRunId,
+        fieldIds: manifest.insertion?.probeFields || null,
+      }, 30000);
+      if (probeRes.status !== 200 || probeRes.body?.ok !== true || !probeRes.body?.probe) {
+        failStep('destination_probe', 'Failed to probe live destination readiness', probeRes.body);
+      }
+      const probe = probeRes.body.probe;
+      if (!probe.ready) {
+        failStep(
+          'destination_probe',
+          probe.reason || 'Live destination agent could not locate a probe field',
+          probeRes.body,
+        );
+      }
+      recordStep(
+        'destination_probe',
+        'passed',
+        `Live destination located ${probe.foundCount}/${probe.probedCount} probe field(s)`,
+        { probeFieldIds: probeRes.body.probeFieldIds || [] },
+      );
+    } else {
+      recordStep('destination_probe', 'passed', 'Skipped live destination probe in preflight mode', { dryRun: true });
+    }
+
     const insertionConfig = {
       ...(manifest.insertion?.config || {}),
       dryRun: options.allowDryRunInsertion,

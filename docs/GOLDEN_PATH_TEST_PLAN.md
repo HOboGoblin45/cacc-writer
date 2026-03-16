@@ -63,9 +63,10 @@ Per fixture, the harness executes:
 16. Internal draft-model validation against required insertion fields
 17. Pipeline transition to `review`
 18. QC run and blocker check
-19. Insertion run
-20. Export manifest + export file write
-21. Archive
+19. Live destination probe against agent-locatable fields
+20. Insertion run
+21. Export manifest + export file write
+22. Archive
 
 ## Modes
 
@@ -79,6 +80,7 @@ Rules:
 
 - Requires live AI generation.
 - Requires live insertion agents for the target lane.
+- Requires at least one live probe field to be locatable before insertion starts.
 - Fails if insertion does not complete cleanly.
 - This is the mode that counts for production-lane acceptance.
 
@@ -106,6 +108,7 @@ The harness must fail for any of the following:
 - generation ends in `failed` or produces missing/thin required sections
 - internal draft model is missing required insertion fields
 - QC returns any blocker findings
+- no live destination probe field can be located in strict mode
 - insertion cannot run in strict mode
 - export file is not written
 - archive does not persist

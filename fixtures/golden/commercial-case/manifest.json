@@ -214,6 +214,10 @@
   },
   "insertion": {
     "targetSoftware": "real_quantum",
+    "probeFields": [
+      "market_area",
+      "site_description"
+    ],
     "minVerifiedFields": 1,
     "timeoutMs": 120000
   }
