@@ -213,6 +213,7 @@
   "insertion": {
     "targetSoftware": "aci",
     "probeFields": [
+      "sales_comparison_commentary",
       "neighborhood_description",
       "site_comments"
     ],
