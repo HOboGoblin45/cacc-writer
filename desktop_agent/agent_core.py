@@ -145,7 +145,8 @@ def load_field_map(form_type: str) -> dict:
             for key in (
                 'visual_tab_label', 'visual_tab_ratio', 'page_cluster',
                 'pdf_anchor_text', 'adjacent_anchor_text', 'content_kind',
-                'expected_elements',
+                'expected_elements', 'report_click_ratio',
+                'report_clicks', 'report_click_delay_ms',
             ):
                 if key in hints:
                     merged[key] = hints[key]
@@ -572,6 +573,58 @@ def find_tx32_by_rect(win32_win, rect: dict | None, tolerance: int = 24):
             continue
     return best
 
+
+def activate_report_field_anchor(win32_win, field_cfg: dict | None) -> bool:
+    if not field_cfg:
+        return False
+    ratio = field_cfg.get('report_click_ratio')
+    if not isinstance(ratio, (list, tuple)) or len(ratio) != 2:
+        return False
+    try:
+        x_ratio = float(ratio[0])
+        y_ratio = float(ratio[1])
+    except Exception:
+        return False
+
+    try:
+        form = win32_win.child_window(class_name='ACIFormView')
+        r = form.rectangle()
+        ctrl_w = r.right - r.left
+        ctrl_h = r.bottom - r.top
+        if ctrl_w <= 0 or ctrl_h <= 0:
+            return False
+        click_x = int(ctrl_w * max(0.02, min(0.98, x_ratio)))
+        click_y = int(ctrl_h * max(0.02, min(0.98, y_ratio)))
+        click_count = max(1, int(field_cfg.get('report_clicks', 1)))
+        delay_ms = max(100, int(field_cfg.get('report_click_delay_ms', 700)))
+        bring_to_foreground(win32_win)
+        time.sleep(0.2)
+        for _ in range(click_count):
+            form.click_input(coords=(click_x, click_y))
+            time.sleep(delay_ms / 1000.0)
+        log.info("  Report anchor click "
+                 f"({click_x},{click_y}) via {field_cfg.get('label', 'unknown')}")
+        return True
+    except Exception as e:
+        log.debug(f"  Report anchor click failed: {e}")
+        return False
+
+
+def locate_field_tx32(win32_win, field_cfg: dict, form_type: str = '1004'):
+    label = field_cfg.get('label', '')
+    aliases = field_cfg.get('aliases', [])
+    ctrl, score, method = find_tx32_by_label(win32_win, label, aliases)
+    if ctrl is not None:
+        return ctrl, score, method
+
+    if not activate_report_field_anchor(win32_win, field_cfg):
+        return None, score, method
+
+    retry_ctrl, retry_score, retry_method = find_tx32_by_label(win32_win, label, aliases)
+    if retry_ctrl is not None:
+        return retry_ctrl, retry_score, f'report_anchor:{retry_method}'
+    return None, retry_score, f'report_anchor:{retry_method}'
+
 # ── Tab navigation ────────────────────────────────────────────────────────────
 
 _SKIP_CLS = frozenset({'TX32', 'ACIPaneTitle', 'Edit',
@@ -597,6 +650,74 @@ _TAB_ORDER = {
     '1004c': ['Neig', 'Site', 'Impro', 'Sales', 'Reco', 'Cost', 'Income', 'Addend'],
     'default': ['Neig', 'Site', 'Impro', 'Sales', 'Reco', 'Cost', 'Income', 'Addend'],
 }
+
+_SIDEBAR_ENTRY_BY_FORM = {
+    '1004': {
+        'entry_name': '1004_05UAD',
+        'index': 4,
+        'x_ratio': 0.45,
+        'first_y_ratio': 0.04,
+        'step_y_ratio': 0.075,
+    },
+}
+
+
+def get_pane_title(win32_win) -> str:
+    try:
+        return (win32_win.child_window(class_name='ACIPaneTitle').window_text() or '').strip()
+    except Exception:
+        return ''
+
+
+def _click_sidebar_entry(win32_win, entry: dict) -> bool:
+    try:
+        sidebar = win32_win.child_window(class_name='ACIRpdCompView')
+        r = sidebar.rectangle()
+        ctrl_w = r.right - r.left
+        ctrl_h = r.bottom - r.top
+        if ctrl_w <= 0 or ctrl_h <= 0:
+            return False
+        x_ratio = float(entry.get('x_ratio', 0.45))
+        first_y_ratio = float(entry.get('first_y_ratio', 0.04))
+        step_y_ratio = float(entry.get('step_y_ratio', 0.075))
+        index = int(entry.get('index', 0))
+        click_x = int(ctrl_w * x_ratio)
+        click_y = int(ctrl_h * (first_y_ratio + index * step_y_ratio))
+        if click_y < 2 or click_y >= ctrl_h:
+            return False
+        bring_to_foreground(win32_win)
+        time.sleep(0.2)
+        sidebar.click_input(coords=(click_x, click_y))
+        time.sleep(0.9)
+        return True
+    except Exception as e:
+        log.debug(f"  Sidebar click failed: {e}")
+        return False
+
+
+def ensure_form_sidebar_surface(win32_win, form_type: str,
+                                field_cfg: dict | None = None) -> bool:
+    form_key = (form_type or '').lower()
+    entry = _SIDEBAR_ENTRY_BY_FORM.get(form_key)
+    if not entry:
+        return False
+
+    target_title = (field_cfg or {}).get('sidebar_entry_name') or entry.get('entry_name')
+    current_title = get_pane_title(win32_win)
+    if current_title == target_title:
+        return True
+
+    if not _click_sidebar_entry(win32_win, entry):
+        return False
+
+    new_title = get_pane_title(win32_win)
+    if new_title == target_title:
+        log.info(f"  Sidebar surface activated: {target_title}")
+        return True
+
+    log.warning(f"  Sidebar activation landed on '{new_title or 'unknown'}' "
+                f"instead of '{target_title}'")
+    return False
 
 
 def _click_section_tabs_ratio(win32_win, ratio: float, reason: str) -> bool:
@@ -742,10 +863,12 @@ def navigate_tab(win32_win, tab_name: str, form_type: str = '1004',
         return True
     tl = tab_name.lower()
 
-    # ACI often leaves an addendum overlay active. If we don't dismiss it first,
-    # section-tab clicks can land on the wrong visible pane while the main form
-    # never actually changes tabs.
-    navigate_to_main_form(win32_win)
+    # For 1004 narrative fields, the left-rail document surface is the real
+    # working context. Returning to "main form" can land back on Title and
+    # destroy the lower narrative strip entirely.
+    if not ensure_form_sidebar_surface(win32_win, form_type, field_cfg):
+        # Legacy fallback for forms without a sidebar strategy yet.
+        navigate_to_main_form(win32_win)
 
     # 1. Measured owner-drawn ratio click
     if field_cfg and field_cfg.get('visual_tab_ratio') is not None:
@@ -843,9 +966,8 @@ def _ins_tx32(field_cfg: dict, text: str, form_type: str = '1004') -> tuple:
             if nav_ok:
                 time.sleep(0.5)
 
-        label   = field_cfg.get('label', '')
-        aliases = field_cfg.get('aliases', [])
-        ctrl, score, method = find_tx32_by_label(win, label, aliases)
+        label = field_cfg.get('label', '')
+        ctrl, score, method = locate_field_tx32(win, field_cfg, form_type)
 
         diag['label_text']  = label
         diag['tx32_score']  = score
