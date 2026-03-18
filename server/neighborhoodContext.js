@@ -457,12 +457,9 @@ export function formatLocationContextBlock(geocodeData) {
     }
 
     lines.push('');
-    lines.push('  INSTRUCTION: Use the BOUNDARY ROADS above (N/S/E/W) to describe the');
-    lines.push('  neighborhood boundaries. Use the exact road names provided. Format:');
-    lines.push('  "The subject neighborhood is bordered to the North by [north road],');
-    lines.push('   to the South by [south road], to the East by [east road],');
-    lines.push('   and to the West by [west road]."');
-    lines.push('  Only use features actually present in the data above.');
+    lines.push('  MANDATORY NEIGHBORHOOD BOUNDARY SENTENCE (use this verbatim):');
+    const filledSentence = `  "The subject neighborhood is bordered to the North by ${br.north || '[INSERT north road]'}, to the South by ${br.south || '[INSERT south road]'}, to the East by ${br.east || '[INSERT east road]'}, and to the West by ${br.west || '[INSERT west road]'}."`;    lines.push(filledSentence);
+    lines.push('  The road names above are ALREADY KNOWN. Do NOT replace them with [INSERT]. Use them verbatim.');
   } else if (boundaryFeatures?.error) {
     lines.push('\n  [Location boundary data unavailable — describe boundaries based on known facts]');
   }

@@ -291,6 +291,24 @@ export function buildPromptMessages({
 }) {
   const messages = [];
 
+  // Pre-substitute boundary road facts so AI never sees [INSERT NORTH_BOUNDARY].
+  // The AI pattern-matches [INSERT X] and outputs it even when told not to.
+  // Replace placeholders with real values before the AI sees the location context.
+  let resolvedLocationContext = locationContext;
+  if (resolvedLocationContext && facts && facts.neighborhood) {
+    const nb = facts.neighborhood;
+    const getV = (key) => { const e = nb[key]; if (!e) return null; return typeof e === 'object' ? (e.value || null) : String(e); };
+    const north = getV('NORTH_BOUNDARY') || getV('boundary_north');
+    const south = getV('SOUTH_BOUNDARY') || getV('boundary_south');
+    const east  = getV('EAST_BOUNDARY')  || getV('boundary_east');
+    const west  = getV('WEST_BOUNDARY')  || getV('boundary_west');
+    if (north) resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT north road\]/gi, north);
+    if (south) resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT south road\]/gi, south);
+    if (east)  resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT east road\]/gi,  east);
+    if (west)  resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT west road\]/gi,  west);
+    locationContext = resolvedLocationContext;
+  }
+
   // ── Block 1: CACC Writer system instructions ──────────────────────────────
   if (SYSTEM_CACC) {
     messages.push({ role: 'system', content: SYSTEM_CACC });
