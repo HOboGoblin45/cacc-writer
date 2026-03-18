@@ -370,7 +370,7 @@ async function main() {
 
   const { status: geoStatus, body: geoBody, error: geoErr } = await apiFetch(
     `/api/cases/${caseId}/geocode`,
-    { method: 'POST', body: {}, timeoutMs: GEOCODE_TIMEOUT_MS }
+    { method: 'POST', body: { subjectAddress: extracted?.address || null }, timeoutMs: GEOCODE_TIMEOUT_MS }
   );
 
   if (geoStatus === 200 && geoBody?.ok) {
@@ -379,6 +379,19 @@ async function main() {
     log(`  ✓ Geocoded: ${sub?.display_name || sub?.lat + ',' + sub?.lng || 'OK'}`);
     if (geoBody.subject?.lat) {
       log(`    lat/lng: ${geoBody.subject.lat}, ${geoBody.subject.lng}`);
+    }
+    // Explicitly seed boundary roads into facts so generate-all can use them
+    if (geoBody.boundaryRoads || geoBody.boundary_roads) {
+      const br = geoBody.boundaryRoads || geoBody.boundary_roads || {};
+      if (br.north || br.south || br.east || br.west) {
+        const boundaryFacts = { neighborhood: {} };
+        if (br.north) { boundaryFacts.neighborhood.NORTH_BOUNDARY = { value: br.north, confidence: 'high' }; boundaryFacts.neighborhood.boundary_north = { value: br.north, confidence: 'high' }; }
+        if (br.south) { boundaryFacts.neighborhood.SOUTH_BOUNDARY = { value: br.south, confidence: 'high' }; boundaryFacts.neighborhood.boundary_south = { value: br.south, confidence: 'high' }; }
+        if (br.east)  { boundaryFacts.neighborhood.EAST_BOUNDARY  = { value: br.east,  confidence: 'high' }; boundaryFacts.neighborhood.boundary_east  = { value: br.east,  confidence: 'high' }; }
+        if (br.west)  { boundaryFacts.neighborhood.WEST_BOUNDARY  = { value: br.west,  confidence: 'high' }; boundaryFacts.neighborhood.boundary_west  = { value: br.west,  confidence: 'high' }; }
+        await apiFetch(`/api/cases/${caseId}/facts`, { method: 'PUT', body: boundaryFacts });
+        log(`    boundary roads seeded: N=${br.north} S=${br.south} E=${br.east} W=${br.west}`);
+      }
     }
     // Check location context
     const { status: lcStatus, body: lcBody } = await apiFetch(

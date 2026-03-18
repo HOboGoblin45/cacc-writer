@@ -1738,6 +1738,13 @@ router.post('/:caseId/geocode', async (req, res) => {
       // Non-fatal — continue without boundary roads
     }
 
+    // Capture boundary roads to include in response
+    let _boundaryRoadsForResponse = null;
+    try {
+      const _bf = await getNeighborhoodBoundaryFeatures(subjectResult.lat, subjectResult.lng, 1.5);
+      if (_bf?.boundaryRoads) _boundaryRoadsForResponse = _bf.boundaryRoads;
+    } catch (_e) { /* non-fatal */ }
+
     res.json({
       ok:      true,
       subject: {
@@ -1748,6 +1755,7 @@ router.post('/:caseId/geocode', async (req, res) => {
         county:  subjectResult.county,
         state:   subjectResult.state,
       },
+      boundaryRoads: _boundaryRoadsForResponse,
       comps: compsData.map(c => ({
         index:     c.index,
         address:   c.address,
