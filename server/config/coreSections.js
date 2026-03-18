@@ -9,7 +9,11 @@ export const CORE_SECTIONS = {
     { id: 'neighborhood_description', title: 'Neighborhood Description' },
     { id: 'market_conditions', title: 'Market Conditions' },
     { id: 'improvements_condition', title: 'Improvements / Condition' },
+    { id: 'adverse_conditions', title: 'Adverse Conditions / External Factors' },
+    { id: 'functional_utility', title: 'Functional Utility' },
+    { id: 'functional_utility_conformity', title: 'Functional Utility / Conformity' },
     { id: 'sca_summary', title: 'Sales Comparison Summary' },
+    { id: 'sales_comparison_commentary', title: 'Sales Comparison Commentary' },
     { id: 'reconciliation', title: 'Reconciliation' },
   ],
   commercial: [

@@ -59,32 +59,35 @@ const NARRATIVE_FIELDS = [
 // Minimal inspection facts that can't be derived from geocoding or the order sheet.
 // Used to unblock the pre-draft gate for testing purposes.
 // These are realistic placeholder values for a 4BR/2.5BA two-story house.
+// NOTE: confidence='high' so formatFactsBlock includes values in the prompt
+// instead of replacing them with [INSERT]. This is intentional for test seeding —
+// these values are "known" for the purposes of the duplicate test.
 const MINIMAL_INSPECTION_FACTS = {
   improvements: {
-    condition_rating:      { value: 'C3', confidence: 'low' },
-    kitchen_update:        { value: 'updated-one to five years ago', confidence: 'low' },
-    bathroom_update:       { value: 'updated-one to five years ago', confidence: 'low' },
+    condition_rating:      { value: 'C3', confidence: 'high' },
+    kitchen_update:        { value: 'updated-one to five years ago', confidence: 'high' },
+    bathroom_update:       { value: 'updated-one to five years ago', confidence: 'high' },
   },
   subject: {
-    bedrooms_above_grade:  { value: '4', confidence: 'low' },
-    bathrooms_above_grade: { value: '2.5', confidence: 'low' },
-    basement:              { value: 'partial unfinished', confidence: 'low' },
-    garage:                { value: 'attached two-car', confidence: 'low' },
-    style:                 { value: 'two-story', confidence: 'low' },
-    year_built:            { value: '1995', confidence: 'low' },
-    gla:                   { value: '2100', confidence: 'low' },
-    condition:             { value: 'C3', confidence: 'low' },
+    bedrooms_above_grade:  { value: '4', confidence: 'high' },
+    bathrooms_above_grade: { value: '2.5', confidence: 'high' },
+    basement:              { value: 'partial unfinished', confidence: 'high' },
+    garage:                { value: 'attached two-car', confidence: 'high' },
+    style:                 { value: 'two-story', confidence: 'high' },
+    year_built:            { value: '1995', confidence: 'high' },
+    gla:                   { value: '2100', confidence: 'high' },
+    condition:             { value: 'C3', confidence: 'high' },
   },
   site: {
-    flood_zone:            { value: 'X', confidence: 'low' },
-    adverse_conditions:    { value: 'none', confidence: 'low' },
+    flood_zone:            { value: 'X', confidence: 'high' },
+    adverse_conditions:    { value: 'none', confidence: 'high' },
   },
   market: {
-    marketing_time_days:   { value: '30', confidence: 'low' },
-    rate_trend:            { value: 'decreased', confidence: 'low' },
-    market_appeal:         { value: 'good', confidence: 'low' },
-    concessions_typical:   { value: 'true', confidence: 'low' },
-    supply_demand:         { value: 'in balance', confidence: 'low' },
+    marketing_time_days:   { value: '30', confidence: 'high' },
+    rate_trend:            { value: 'decreased', confidence: 'high' },
+    market_appeal:         { value: 'good', confidence: 'high' },
+    concessions_typical:   { value: 'true', confidence: 'high' },
+    supply_demand:         { value: 'in balance', confidence: 'high' },
   },
 };
 
