@@ -16,7 +16,7 @@
  */
 
 import dotenv from 'dotenv';
-dotenv.config(); // environment variables passed by runtime should take precedence
+dotenv.config({ override: true }); // .env takes precedence over stale system env vars
 import OpenAI from 'openai';
 import log from './logger.js';
 
