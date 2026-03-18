@@ -70,7 +70,7 @@ const MINIMAL_INSPECTION_FACTS = {
   },
   subject: {
     bedrooms_above_grade:  { value: '4', confidence: 'high' },
-    bathrooms_above_grade: { value: '2.5', confidence: 'high' },
+    bathrooms_above_grade: { value: '2', confidence: 'high' },
     basement:              { value: 'partial unfinished', confidence: 'high' },
     fireplace:             { value: 'living room fireplace', confidence: 'high' },
     patio:                 { value: 'patio', confidence: 'high' },

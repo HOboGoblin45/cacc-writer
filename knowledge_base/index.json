@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-18T09:54:16.411Z",
+  "lastUpdated": "2026-03-18T09:56:57.994Z",
   "counts": {
     "approved_edits": 73,
     "curated_examples": 41,
@@ -3177,7 +3177,7 @@
         "standard",
         "no_adverse"
       ],
-      "text": "There are no apparent adverse site conditions, encroachments, environmental conditions, or land uses."
+      "text": "There are no apparent adverse site conditions, encroachments, environmental conditions, or land uses. The subject appears to have no adverse conditions that would affect the livability, soundness, or structural integrity of the improvements."
     },
     {
       "id": "adverse-standard-02",
