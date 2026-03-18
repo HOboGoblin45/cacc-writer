@@ -141,15 +141,17 @@ def extract_narratives_from_page(text, page_num):
                     if not existing or len(candidate) > len(existing):
                         fields['sales_comparison_commentary'] = candidate
 
-        # Reconciliation
+        # Reconciliation — extract Charles's actual analysis, not FNMA boilerplate
+        # Charles writes: "The greatest weight is applied to the Sales Comparison Approach..."
+        # The FNMA boilerplate "Based on a complete visual inspection..." is NOT Charles's narrative
         recon_patterns = [
-            r'(Based on a complete visual inspection[^\n]{30,}(?:\n[^\n]{20,}){0,3})',
-            r'(my (?:final )?opinion of the market value[^\n]{30,})',
+            r'(The greatest weight is applied[^\n]{30,}(?:\n[^\n]{20,}){0,6})',
+            r'(greatest weight[^\n]{20,}(?:\n[^\n]{20,}){0,4})',
         ]
         for pat in recon_patterns:
             m = re.search(pat, text, re.IGNORECASE)
             if m:
-                candidate = clean_narrative(m.group(1))
+                candidate = clean_narrative(m.group(1), max_chars=800)
                 if len(candidate) > 50:
                     fields['reconciliation'] = candidate
                     break
