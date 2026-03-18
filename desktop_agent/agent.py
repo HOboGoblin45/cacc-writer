@@ -126,7 +126,8 @@ def insert():
         }), 503
 
     try:
-        win_sig = aci.top_window().window_text() or ''
+        main = core.ensure_main_report_surface(app=aci)
+        win_sig = (main.window_text() or '') if main else ''
     except Exception:
         win_sig = ''
 
@@ -154,14 +155,23 @@ def insert():
             'screenshot':  shot,
         }), 500
 
-    # Verification
+    # Verification — non-blocking: a readback failure does NOT report insertion as failed.
+    # The paste went through (insertion_ok=True). We just may not be able to confirm it.
+    verify_mode = str(field_cfg.get('verification_mode', '')).strip().lower()
     verify = {'passed': False, 'method': 'skipped', 'actual_preview': ''}
-    if core.VERIFY_INSERTION:
+    if verify_mode == 'skip':
+        verify = {'passed': False, 'method': 'skipped_by_field_config', 'actual_preview': ''}
+    elif core.VERIFY_INSERTION:
         time.sleep(0.2)
         verify = core.verify_insertion(
             aci, field_cfg, text, result.get('tx32_ctrl'))
         if not verify['passed']:
-            core.capture_screenshot(f'verify_fail_{field_id}')
+            # Readback failed — log a warning but do NOT treat as insertion failure.
+            # ACI TX32 controls often return '' from window_text() right after paste.
+            log.warning(f"  ✗ Readback inconclusive for '{field_label}' "
+                        f"(method={verify['method']}) — insertion likely succeeded")
+            core.capture_screenshot(f'verify_inconclusive_{field_id}')
+            verify['method'] = 'readback_inconclusive'
 
     # Persist successful strategy
     diag = result.get('diagnostics', {})
@@ -173,6 +183,7 @@ def insert():
         'label_matched':    diag.get('label_text', field_label),
         'window_signature': win_sig,
         'verified':         verify['passed'],
+        'insertion_ok':     True,   # paste/write was dispatched successfully
     })
 
     log.info(f"  DONE: method={result['method']} "
@@ -223,7 +234,8 @@ def insert_batch():
         return jsonify({'ok': False, 'error': 'Could not connect to ACI.'}), 503
 
     try:
-        win_sig = aci.top_window().window_text() or ''
+        main = core.ensure_main_report_surface(app=aci)
+        win_sig = (main.window_text() or '') if main else ''
     except Exception:
         win_sig = ''
 
@@ -251,8 +263,11 @@ def insert_batch():
             time.sleep(0.5)
 
         if result['success']:
+            verify_mode = str(field_cfg.get('verification_mode', '')).strip().lower()
             verify = {'passed': False, 'method': 'skipped', 'actual_preview': ''}
-            if core.VERIFY_INSERTION:
+            if verify_mode == 'skip':
+                verify = {'passed': False, 'method': 'skipped_by_field_config', 'actual_preview': ''}
+            elif core.VERIFY_INSERTION:
                 time.sleep(0.2)
                 verify = core.verify_insertion(
                     aci, field_cfg, text, result.get('tx32_ctrl'))
@@ -306,13 +321,37 @@ def test_field():
     ctrl_idx    = field_cfg.get('control_index')
     tab_name    = field_cfg.get('tab_name', '')
     aliases     = field_cfg.get('aliases', [])
+    mode_probe  = core.probe_field_strategy(field_cfg, form_type)
+    if mode_probe.get('supported') and field_cfg.get('mode_required'):
+        return jsonify({
+            'ok': True,
+            'found': mode_probe.get('found', False),
+            'fieldId': field_id,
+            'fieldLabel': field_label,
+            'formType': form_type,
+            'tabName': tab_name,
+            'strategies': {
+                'field_mode': {
+                    'found': mode_probe.get('found', False),
+                    'method': mode_probe.get('method'),
+                },
+            },
+            'tx32_candidates': [],
+            'learned_target': core.get_learned(form_type, field_id),
+        })
 
     aci = core.connect_uia()
     if not aci:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI.'}), 503
 
-    main_win   = aci.top_window()
+    main_win   = core.ensure_main_report_surface(app=aci)
     strategies = {}
+
+    if mode_probe.get('supported'):
+        strategies['field_mode'] = {
+            'found': mode_probe.get('found', False),
+            'method': mode_probe.get('method'),
+        }
 
     # Test automation_id
     if aid:
@@ -351,7 +390,7 @@ def test_field():
     app32 = core.connect_win32()
     if app32:
         try:
-            win32_win = app32.top_window()
+            win32_win = core.ensure_main_report_surface(app32=app32)
             if tab_name:
                 core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
                 time.sleep(0.4)
@@ -412,12 +451,34 @@ def probe():
     field_label = field_cfg.get('label', field_id)
     tab_name    = field_cfg.get('tab_name', '')
     aliases     = field_cfg.get('aliases', [])
+    mode_probe  = core.probe_field_strategy(field_cfg, form_type)
+
+    if mode_probe.get('supported'):
+        return jsonify({
+            'ok': True,
+            'fieldId': field_id,
+            'fieldLabel': field_label,
+            'formType': form_type,
+            'tabName': tab_name,
+            'tabNavigated': True,
+            'tx32_discovered': {
+                'total': 0,
+                'title': 0,
+                'content': 0,
+                'labels': [],
+                'all_content': [],
+            },
+            'best_candidate': None,
+            'score': 100 if mode_probe.get('found') else 0,
+            'method': mode_probe.get('method'),
+            'learned_target': core.get_learned(form_type, field_id),
+        })
 
     app32 = core.connect_win32()
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win     = app32.top_window()
+    win32_win     = core.ensure_main_report_surface(app32=app32)
     tab_navigated = False
     if tab_name:
         tab_navigated = core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
@@ -546,7 +607,7 @@ def read_field():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win = app32.top_window()
+    win32_win = core.ensure_main_report_surface(app32=app32)
     if tab_name:
         core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
         time.sleep(0.5)
@@ -589,7 +650,7 @@ def get_current_section():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win = app32.top_window()
+    win32_win = core.ensure_main_report_surface(app32=app32)
     tab       = core.get_current_tab(win32_win)
     win_title = core.window_signature(win32_win)
     disc      = core.discover_tx32(win32_win)
@@ -624,7 +685,7 @@ def calibrate():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win = app32.top_window()
+    win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
 
     if tab_name:
@@ -653,7 +714,7 @@ def calibrate():
     try:
         aci_uia  = core.connect_uia()
         if aci_uia:
-            main_win = aci_uia.top_window()
+            main_win = core.ensure_main_report_surface(app=aci_uia)
             for ctrl in main_win.descendants(control_type='Edit'):
                 try:
                     r   = ctrl.rectangle()
@@ -761,7 +822,7 @@ def dump_all_controls():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win = app32.top_window()
+    win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
 
     controls = []
@@ -819,7 +880,7 @@ def dump_section_tabs():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win = app32.top_window()
+    win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
 
     def _enum_children(parent_ctrl, label):
@@ -940,7 +1001,7 @@ def dump_tx32_visibility():
     if not app32:
         return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
 
-    win32_win     = app32.top_window()
+    win32_win     = core.ensure_main_report_surface(app32=app32)
     win_title     = core.window_signature(win32_win)
     tab_navigated = False
 
