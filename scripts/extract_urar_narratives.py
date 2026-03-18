@@ -156,15 +156,23 @@ def extract_narratives_from_page(text, page_num):
                     fields['reconciliation'] = candidate
                     break
 
-    elif page_num in range(6, 16):
-        # Check addendum pages for market conditions
-        if 'typical marketing times' in text.lower():
+    elif page_num in range(6, 20):
+        # Check addendum pages for market conditions - Charles's full paragraph
+        mc_triggers = ['fixed rate and arm', 'typical marketing times', 'area employment remains']
+        if any(t in text.lower() for t in mc_triggers):
             mc_match = re.search(
-                r'((?:s are considered average|Typical marketing times)[^\n]{30,}(?:\n[^\n]{20,}){0,3})',
+                r'(Fixed rate and ARM financing[^\n]{20,}(?:\n[^\n]{20,}){0,6})',
                 text, re.IGNORECASE
             )
             if mc_match:
-                fields['market_conditions_addendum'] = clean_narrative(mc_match.group(1))
+                fields['market_conditions'] = clean_narrative(mc_match.group(1), max_chars=600)
+            else:
+                mc_match = re.search(
+                    r'((?:Typical marketing times|area employment remains)[^\n]{30,}(?:\n[^\n]{20,}){0,4})',
+                    text, re.IGNORECASE
+                )
+                if mc_match:
+                    fields['market_conditions'] = clean_narrative(mc_match.group(1), max_chars=600)
 
         # Look for highest and best use discussion
         if 'highest and best use' in text.lower():

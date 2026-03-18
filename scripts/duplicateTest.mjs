@@ -86,7 +86,7 @@ const MINIMAL_INSPECTION_FACTS = {
   },
   market: {
     marketing_time_days:   { value: '30', confidence: 'high' },
-    rate_trend:            { value: 'decreased', confidence: 'high' },
+    rate_trend:            { value: 'remained stable', confidence: 'high' },
     market_appeal:         { value: 'good', confidence: 'high' },
     concessions_typical:   { value: 'true', confidence: 'high' },
     supply_demand:         { value: 'in balance', confidence: 'high' },
