@@ -1,0 +1,14 @@
+{
+  "id": "adverse-well-septic-01",
+  "formType": "1004",
+  "fieldId": "adverse_conditions",
+  "sourceType": "curated",
+  "qualityScore": 92,
+  "tags": [
+    "illinois",
+    "residential",
+    "well_septic",
+    "rural"
+  ],
+  "text": "The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability."
+}

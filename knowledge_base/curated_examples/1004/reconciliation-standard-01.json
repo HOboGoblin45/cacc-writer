@@ -1,0 +1,15 @@
+{
+  "id": "reconciliation-standard-01",
+  "formType": "1004",
+  "fieldId": "reconciliation",
+  "sourceType": "curated",
+  "qualityScore": 95,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "standard",
+    "template_match"
+  ],
+  "text": "Based on a complete visual inspection of the interior and exterior areas of the subject property, defined scope of work, statement of assumptions and limiting conditions, and appraiser's certification, my (our) opinion of the market value, as defined, of the real property that is the subject of this report is $[INSERT value], as of [INSERT date]."
+}

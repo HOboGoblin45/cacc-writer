@@ -153,7 +153,7 @@ const form1004 = {
       note: 'ACI: Functional utility and features of the subject property',
       aiEligibility: 'ai_draft',
       requiredFacts: ['subject.gla', 'subject.beds', 'subject.baths'],
-      tpl: 'Write the Functional Utility narrative for a 1004 appraisal in Charlie Cresci\'s concise style.\nDescribe the subject\'s functional utility: Use the subject facts above (beds, baths, garage, basement, fireplace, patio). Format: The subject features [X] above grade bedrooms, [X] above grade bathrooms, [list key features]. Use [INSERT beds] for any missing facts. Return ONLY the narrative text (1-2 sentences).',
+      tpl: 'Write the Functional Utility narrative using the subject facts above.\nFormat: The subject features [spell out number] above grade bedrooms, [spell out number] above grade bathrooms, [list features: fireplace/basement type/garage/patio/deck from facts].\nCRITICAL: Always write numbers as English words (four, two, two-and-a-half). Never use digits.\nReturn ONLY the narrative text (1-2 sentences).',
     },
     {
       id: 'functional_utility_conformity', title: 'Functional Utility / Conformity',
