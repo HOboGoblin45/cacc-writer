@@ -146,14 +146,14 @@ const form1004 = {
       note: 'ACI: Adverse conditions and external obsolescence',
       aiEligibility: 'ai_draft',
       requiredFacts: ['site.adverse_conditions'],
-      tpl: 'Write the Adverse Conditions narrative for a 1004 appraisal in Charlie Cresci\'s concise style.\nIf no adverse conditions are present, write a brief statement noting no apparent adverse site conditions were observed from the street and no known adverse conditions affecting value.\nDo NOT invent conditions. Use [INSERT] for missing data.\nSubject: {{summary}}\nReturn ONLY the narrative text.',
+      tpl: 'Write the Adverse Conditions narrative for a 1004 appraisal in Charlie Cresci\'s style.\nStandard template when no adverse conditions: \"There are no apparent adverse site conditions, encroachments, environmental conditions, or land uses. The subject appears to have no adverse conditions that would affect the livability, soundness, or structural integrity of the improvements.\"\nWell/septic variant: \"The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability.\"\nUse the standard template unless facts indicate well/septic or other adverse conditions.\nReturn ONLY the narrative text.',
     },
     {
       id: 'functional_utility', title: 'Functional Utility',
       note: 'ACI: Functional utility and features of the subject property',
       aiEligibility: 'ai_draft',
       requiredFacts: ['subject.gla', 'subject.beds', 'subject.baths'],
-      tpl: 'Write the Functional Utility narrative using the subject facts above.\nFormat: The subject features [spell out number] above grade bedrooms, [spell out number] above grade bathrooms, [list features: fireplace/basement type/garage/patio/deck from facts].\nCRITICAL: Always write numbers as English words (four, two, two-and-a-half). Never use digits.\nReturn ONLY the narrative text (1-2 sentences).',
+      tpl: 'Write the Functional Utility narrative using the subject facts above.\nFormat: "The subject features [spell out number] above grade bedrooms, [spell out number] above grade bathrooms, [features from facts]."\nCRITICAL rules:\n1. Write ALL numbers as English words: four, two, two-and-a-half, three, attached two-car, etc.\n2. Do NOT add article \"a\" before features: write \"living room fireplace\" not \"a living room fireplace\"\n3. Write \"partial\" not \"partially\" for basement: \"partial unfinished basement\" or \"partial finished basement\"\n4. List features without articles: \"living room fireplace, partial unfinished basement, attached two-car garage, patio\"\nReturn ONLY the narrative text (1-2 sentences).',
     },
     {
       id: 'functional_utility_conformity', title: 'Functional Utility / Conformity',
