@@ -478,7 +478,14 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
     if (geo?.subject?.result?.lat) {
       try {
         const { lat, lng } = geo.subject.result;
-        const boundaryFeatures = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+        // Use cached boundary roads from facts if present - avoids redundant Overpass call that can timeout
+        const _cn = facts?.neighborhood?.NORTH_BOUNDARY?.value || facts?.neighborhood?.boundary_north?.value;
+        const _cs = facts?.neighborhood?.SOUTH_BOUNDARY?.value || facts?.neighborhood?.boundary_south?.value;
+        const _ce = facts?.neighborhood?.EAST_BOUNDARY?.value  || facts?.neighborhood?.boundary_east?.value;
+        const _cw = facts?.neighborhood?.WEST_BOUNDARY?.value  || facts?.neighborhood?.boundary_west?.value;
+        const boundaryFeatures = (_cn && _cs && _ce && _cw)
+          ? { boundaryRoads: { north: _cn, south: _cs, east: _ce, west: _cw }, majorRoads: [], landUseTypes: [], waterFeatures: [] }
+          : await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
         locationContext = formatLocationContextBlock({
           subject: geo.subject,
           comps: geo.comps || [],
@@ -686,7 +693,14 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     if (geo?.subject?.result?.lat) {
       try {
         const { lat, lng } = geo.subject.result;
-        const boundaryFeatures = await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
+        // Use cached boundary roads from facts if present - avoids redundant Overpass call that can timeout
+        const _cn = facts?.neighborhood?.NORTH_BOUNDARY?.value || facts?.neighborhood?.boundary_north?.value;
+        const _cs = facts?.neighborhood?.SOUTH_BOUNDARY?.value || facts?.neighborhood?.boundary_south?.value;
+        const _ce = facts?.neighborhood?.EAST_BOUNDARY?.value  || facts?.neighborhood?.boundary_east?.value;
+        const _cw = facts?.neighborhood?.WEST_BOUNDARY?.value  || facts?.neighborhood?.boundary_west?.value;
+        const boundaryFeatures = (_cn && _cs && _ce && _cw)
+          ? { boundaryRoads: { north: _cn, south: _cs, east: _ce, west: _cw }, majorRoads: [], landUseTypes: [], waterFeatures: [] }
+          : await getNeighborhoodBoundaryFeatures(lat, lng, 1.5);
         locationContext = formatLocationContextBlock({
           subject: geo.subject,
           comps: geo.comps || [],
