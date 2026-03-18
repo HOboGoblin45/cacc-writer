@@ -697,10 +697,12 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
         const br = boundaryFeatures?.boundaryRoads || {};
         const sr = geo.subject?.result || {};
         const neighborhoodFacts = { ...(enrichedFacts.neighborhood || {}) };
-        if (br.north) neighborhoodFacts.boundary_north = { value: br.north, confidence: 'high' };
-        if (br.south) neighborhoodFacts.boundary_south = { value: br.south, confidence: 'high' };
-        if (br.east)  neighborhoodFacts.boundary_east  = { value: br.east,  confidence: 'high' };
-        if (br.west)  neighborhoodFacts.boundary_west  = { value: br.west,  confidence: 'high' };
+        // Store boundary roads under both naming schemes so the AI can resolve
+        // [NORTH_BOUNDARY] placeholders in the style guide template.
+        if (br.north) { neighborhoodFacts.boundary_north  = { value: br.north, confidence: 'high' }; neighborhoodFacts.NORTH_BOUNDARY = { value: br.north, confidence: 'high' }; }
+        if (br.south) { neighborhoodFacts.boundary_south  = { value: br.south, confidence: 'high' }; neighborhoodFacts.SOUTH_BOUNDARY = { value: br.south, confidence: 'high' }; }
+        if (br.east)  { neighborhoodFacts.boundary_east   = { value: br.east,  confidence: 'high' }; neighborhoodFacts.EAST_BOUNDARY  = { value: br.east,  confidence: 'high' }; }
+        if (br.west)  { neighborhoodFacts.boundary_west   = { value: br.west,  confidence: 'high' }; neighborhoodFacts.WEST_BOUNDARY  = { value: br.west,  confidence: 'high' }; }
         if (sr.city)  neighborhoodFacts.city            = { value: sr.city,  confidence: 'high' };
         if (sr.suburb || sr.neighborhood) {
           neighborhoodFacts.subdivision = { value: sr.suburb || sr.neighborhood, confidence: 'high' };
@@ -731,10 +733,10 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     const results = {};
     const errors = {};
     const statuses = {};
-    // Sequential generation with small delay to avoid hitting OpenAI TPM limits.
+    // Sequential generation with delay to avoid hitting OpenAI TPM limits.
     // 30K TPM limit with ~3-4K tokens per field = max ~8 fields/min safely.
-    // Running sequentially with a 2s gap keeps us well under the limit.
-    const INTER_FIELD_DELAY_MS = 2000;
+    // 3s gap keeps us under the limit even for longer fields like reconciliation.
+    const INTER_FIELD_DELAY_MS = 3000;
 
     for (const field of allFields) {
       const sid = trimText(field?.id || field, 80);
