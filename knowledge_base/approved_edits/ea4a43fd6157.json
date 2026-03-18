@@ -1,14 +1,16 @@
 {
-  "id": "ea4a43fd6157",
-  "formType": "1004",
-  "fieldId": "market_conditions",
-  "propertyType": "residential",
-  "marketType": "suburban",
-  "marketArea": "",
-  "sourceType": "approved_edit",
-  "qualityScore": 90,
-  "tags": [],
-  "text": "Based on available information, the subject market area is reportedly stable. Supply and demand conditions appear to be in relative balance per available market data. Marketing times are indicated as typical, with no significant evidence of oversupply or undersupply noted in the data reviewed. Market values are reported to be stable, with no significant appreciation or depreciation indicated over the prior 12-month period. These trends are generally consistent with patterns observed in similar suburban residential markets in the area. The appraiser's conclusions are based on the information available at the time of the report; however, the analysis is limited by the absence of specific market statistics in the provided data.",
-  "createdAt": "2026-03-09T22:58:22.267Z",
-  "updatedAt": "2026-03-09T22:58:22.267Z"
+    "id":  "ea4a43fd6157",
+    "formType":  "1004",
+    "fieldId":  "market_conditions",
+    "propertyType":  "residential",
+    "marketType":  "suburban",
+    "marketArea":  "",
+    "sourceType":  "approved_edit",
+    "qualityScore":  10,
+    "tags":  [
+
+             ],
+    "text":  "Based on available information, the subject market area is reportedly stable. Supply and demand conditions appear to be in relative balance per available market data. Marketing times are indicated as typical, with no significant evidence of oversupply or undersupply noted in the data reviewed. Market values are reported to be stable, with no significant appreciation or depreciation indicated over the prior 12-month period. These trends are generally consistent with patterns observed in similar suburban residential markets in the area. The appraiser\u0027s conclusions are based on the information available at the time of the report; however, the analysis is limited by the absence of specific market statistics in the provided data.",
+    "createdAt":  "2026-03-09T22:58:22.267Z",
+    "updatedAt":  "2026-03-18T02:51:41.107Z"
 }

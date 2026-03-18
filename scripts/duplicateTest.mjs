@@ -58,15 +58,33 @@ const NARRATIVE_FIELDS = [
 
 // Minimal inspection facts that can't be derived from geocoding or the order sheet.
 // Used to unblock the pre-draft gate for testing purposes.
+// These are realistic placeholder values for a 4BR/2.5BA two-story house.
 const MINIMAL_INSPECTION_FACTS = {
   improvements: {
-    condition_rating:   { value: 'C3', confidence: 'low' },
-    kitchen_update:     { value: 'updated-one to five years ago', confidence: 'low' },
-    bathroom_update:    { value: 'updated-one to five years ago', confidence: 'low' },
+    condition_rating:      { value: 'C3', confidence: 'low' },
+    kitchen_update:        { value: 'updated-one to five years ago', confidence: 'low' },
+    bathroom_update:       { value: 'updated-one to five years ago', confidence: 'low' },
+  },
+  subject: {
+    bedrooms_above_grade:  { value: '4', confidence: 'low' },
+    bathrooms_above_grade: { value: '2.5', confidence: 'low' },
+    basement:              { value: 'partial unfinished', confidence: 'low' },
+    garage:                { value: 'attached two-car', confidence: 'low' },
+    style:                 { value: 'two-story', confidence: 'low' },
+    year_built:            { value: '1995', confidence: 'low' },
+    gla:                   { value: '2100', confidence: 'low' },
+    condition:             { value: 'C3', confidence: 'low' },
+  },
+  site: {
+    flood_zone:            { value: 'X', confidence: 'low' },
+    adverse_conditions:    { value: 'none', confidence: 'low' },
   },
   market: {
-    marketing_time_days: { value: '30', confidence: 'low' },
-    rate_trend:          { value: 'decreased', confidence: 'low' },
+    marketing_time_days:   { value: '30', confidence: 'low' },
+    rate_trend:            { value: 'decreased', confidence: 'low' },
+    market_appeal:         { value: 'good', confidence: 'low' },
+    concessions_typical:   { value: 'true', confidence: 'low' },
+    supply_demand:         { value: 'in balance', confidence: 'low' },
   },
 };
 

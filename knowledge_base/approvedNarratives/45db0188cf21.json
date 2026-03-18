@@ -1,23 +1,27 @@
 {
-  "id": "45db0188cf21",
-  "text": "Market conditions are stable with moderate demand.",
-  "sectionType": "market_conditions",
-  "formType": "1004",
-  "propertyType": "residential",
-  "assignmentPurpose": "",
-  "loanProgram": "",
-  "subjectCondition": "",
-  "state": "IL",
-  "county": "",
-  "city": "",
-  "marketType": "suburban",
-  "approvalTimestamp": "2026-03-09T14:27:25.039Z",
-  "sourceType": "approvedNarrative",
-  "sourceReportId": "915c037b",
-  "qualityScore": 90,
-  "tags": [],
-  "customMetadata": {},
-  "createdAt": "2026-03-09T14:27:25.039Z",
-  "updatedAt": "2026-03-09T14:27:25.039Z",
-  "approvedBy": "cresci"
+    "id":  "45db0188cf21",
+    "text":  "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have decreased slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand are considered in balance.",
+    "sectionType":  "market_conditions",
+    "formType":  "1004",
+    "propertyType":  "residential",
+    "assignmentPurpose":  "",
+    "loanProgram":  "",
+    "subjectCondition":  "",
+    "state":  "IL",
+    "county":  "",
+    "city":  "",
+    "marketType":  "suburban",
+    "approvalTimestamp":  "2026-03-09T14:27:25.039Z",
+    "sourceType":  "approvedNarrative",
+    "sourceReportId":  "915c037b",
+    "qualityScore":  90,
+    "tags":  [
+
+             ],
+    "customMetadata":  {
+
+                       },
+    "createdAt":  "2026-03-09T14:27:25.039Z",
+    "updatedAt":  "2026-03-09T14:27:25.039Z",
+    "approvedBy":  "cresci"
 }

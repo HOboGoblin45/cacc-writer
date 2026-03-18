@@ -84,26 +84,35 @@ export const LOCATION_CONTEXT_FIELDS = new Set([
  * Queries Overpass for features that typically define neighborhood boundaries
  * in residential appraisal reports.
  *
+ * Uses an 800m radius (≈0.5 mile) for boundary roads to find the perimeter
+ * roads that form the neighborhood edge — not just adjacent streets.
+ * Roads are found by cardinal extremes (northernmost, southernmost, etc.)
+ * so the AI can write accurate N/S/E/W boundary descriptions.
+ *
  * @param {number} lat
  * @param {number} lng
- * @param {number} [radiusMiles=1.5]  Search radius (1.5 miles covers most neighborhoods)
+ * @param {number} [radiusMiles=1.5]  Search radius for land use / non-road features
  * @returns {Promise<object>}
  *   {
- *     majorRoads:    string[],   // named roads with type labels
- *     landUseTypes:  string[],   // surrounding land use descriptions
- *     waterFeatures: string[],   // named water bodies and features
- *     parks:         string[],   // named parks and open spaces
- *     summary:       string|null // formatted summary for prompt injection
+ *     majorRoads:      string[],   // named roads with type labels (all)
+ *     boundaryRoads:   object,     // { north, south, east, west } — named boundary roads
+ *     landUseTypes:    string[],   // surrounding land use descriptions
+ *     waterFeatures:   string[],   // named water bodies and features
+ *     parks:           string[],   // named parks and open spaces
+ *     summary:         string|null // formatted summary for prompt injection
  *   }
  */
 export async function getNeighborhoodBoundaryFeatures(lat, lng, radiusMiles = 1.5) {
   const radiusMeters = Math.round(radiusMiles * 1609.34);
+  // Use a fixed ~800m radius for boundary roads (neighborhood perimeter)
+  const boundaryRadiusMeters = 800;
 
   // Overpass QL — query roads, land use, water, parks around the subject
+  // Use `out center;` for roads so we get center coordinates for cardinal positioning
   const query = `
 [out:json][timeout:30];
 (
-  way["highway"~"^(motorway|trunk|primary|secondary)$"](around:${radiusMeters},${lat},${lng});
+  way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential)$"]["name"](around:${boundaryRadiusMeters},${lat},${lng});
   way["landuse"~"^(residential|commercial|retail|industrial|farmland|farm|forest|park|recreation_ground|cemetery|military|allotments|meadow)$"](around:${radiusMeters},${lat},${lng});
   way["natural"~"^(water|wood|grassland|wetland)$"](around:${radiusMeters},${lat},${lng});
   relation["natural"="water"](around:${radiusMeters},${lat},${lng});
@@ -112,7 +121,7 @@ export async function getNeighborhoodBoundaryFeatures(lat, lng, radiusMiles = 1.
   node["railway"="station"](around:${radiusMeters},${lat},${lng});
   way["railway"~"^(rail|light_rail)$"](around:${radiusMeters},${lat},${lng});
 );
-out tags;
+out center tags;
   `.trim();
 
   try {
@@ -143,6 +152,16 @@ out tags;
 
 // ── Result processing ─────────────────────────────────────────────────────────
 
+// Highway types eligible for boundary road selection (ordered by priority)
+const BOUNDARY_HIGHWAY_PRIORITY = {
+  motorway:   5,
+  trunk:      5,
+  primary:    4,
+  secondary:  3,
+  tertiary:   2,
+  residential: 1,
+};
+
 function processOverpassResults(elements, subjectLat, subjectLng) {
   const majorRoads    = new Map(); // name → { type, label, ref }
   const landUseTypes  = new Set();
@@ -150,21 +169,40 @@ function processOverpassResults(elements, subjectLat, subjectLng) {
   const parks         = new Set();
   const railFeatures  = new Set();
 
+  // For boundary road detection: track road candidates with center coordinates
+  // Structure: { name, type, priority, centerLat, centerLng }
+  const boundaryRoadCandidates = [];
+
   for (const el of elements) {
     const tags = el.tags || {};
 
     // ── Major roads ──────────────────────────────────────────────────────────
-    if (tags.highway && HIGHWAY_LABELS[tags.highway]) {
+    const hwType = tags.highway;
+    if (hwType && (HIGHWAY_LABELS[hwType] || BOUNDARY_HIGHWAY_PRIORITY[hwType])) {
       const name = tags.name || null;
       const ref  = tags.ref  || null;
       const key  = name || ref;
-      if (key && !majorRoads.has(key)) {
+      if (key && HIGHWAY_LABELS[hwType] && !majorRoads.has(key)) {
         majorRoads.set(key, {
-          type:  tags.highway,
-          label: HIGHWAY_LABELS[tags.highway],
+          type:  hwType,
+          label: HIGHWAY_LABELS[hwType],
           name,
           ref,
         });
+      }
+      // Collect for boundary detection if named and has center coords
+      if (name && BOUNDARY_HIGHWAY_PRIORITY[hwType]) {
+        const centerLat = el.center?.lat ?? null;
+        const centerLng = el.center?.lon ?? null;
+        if (centerLat !== null && centerLng !== null) {
+          boundaryRoadCandidates.push({
+            name,
+            type:     hwType,
+            priority: BOUNDARY_HIGHWAY_PRIORITY[hwType],
+            centerLat,
+            centerLng,
+          });
+        }
       }
     }
 
@@ -203,6 +241,12 @@ function processOverpassResults(elements, subjectLat, subjectLng) {
     }
   }
 
+  // ── Boundary roads: find the road at each cardinal extreme ───────────────
+  // For each direction, find the road whose center point is the furthest
+  // in that direction. Prefer higher-priority road types when close in position.
+  // Deduplicate so the same road isn't used for multiple directions.
+  const boundaryRoads = computeBoundaryRoads(boundaryRoadCandidates, subjectLat, subjectLng);
+
   // Build sorted, deduplicated arrays
   const roadList  = Array.from(majorRoads.entries())
     .slice(0, 10)
@@ -220,18 +264,106 @@ function processOverpassResults(elements, subjectLat, subjectLng) {
   const railList  = Array.from(railFeatures).slice(0, 3);
 
   return {
-    majorRoads:   roadList,
-    landUseTypes: landList,
+    majorRoads:    roadList,
+    boundaryRoads,
+    landUseTypes:  landList,
     waterFeatures: waterList,
-    parks:        parkList,
-    railFeatures: railList,
-    summary:      buildBoundarySummary(roadList, landList, waterList, parkList, railList),
+    parks:         parkList,
+    railFeatures:  railList,
+    summary:       buildBoundarySummary(roadList, boundaryRoads, landList, waterList, parkList, railList),
   };
 }
 
-function buildBoundarySummary(roads, landUse, water, parks, rail) {
+/**
+ * computeBoundaryRoads(candidates, subjectLat, subjectLng)
+ *
+ * Finds the road at each cardinal extreme of the candidate set.
+ * Uses a scoring approach: northernmost road for north boundary, etc.
+ * Deduplicates across directions (same road won't serve two boundaries).
+ *
+ * Returns { north, south, east, west } — each is a road name string or null.
+ */
+function computeBoundaryRoads(candidates, subjectLat, subjectLng) {
+  if (!candidates.length) return { north: null, south: null, east: null, west: null };
+
+  // Score each candidate for each direction: distance in that axis from subject
+  // northernmost = highest lat, southernmost = lowest lat, etc.
+  // Tiebreak by priority (prefer secondary > tertiary > residential)
+  const scored = candidates.map(c => ({
+    ...c,
+    dLat: c.centerLat - subjectLat,   // positive = north of subject
+    dLng: c.centerLng - subjectLng,   // positive = east of subject
+  }));
+
+  // Group by name to get the most extreme point for each named road
+  const byName = new Map();
+  for (const c of scored) {
+    if (!byName.has(c.name)) {
+      byName.set(c.name, { ...c, maxLat: c.centerLat, minLat: c.centerLat, maxLng: c.centerLng, minLng: c.centerLng });
+    } else {
+      const existing = byName.get(c.name);
+      if (c.centerLat > existing.maxLat) existing.maxLat = c.centerLat;
+      if (c.centerLat < existing.minLat) existing.minLat = c.centerLat;
+      if (c.centerLng > existing.maxLng) existing.maxLng = c.centerLng;
+      if (c.centerLng < existing.minLng) existing.minLng = c.centerLng;
+      // Use highest priority type seen
+      if (c.priority > existing.priority) {
+        existing.priority = c.priority;
+        existing.type = c.type;
+      }
+    }
+  }
+
+  const roads = Array.from(byName.values());
+
+  // Pick boundary roads for each direction
+  // North = road with highest maxLat (furthest north of subject)
+  // South = road with lowest minLat (furthest south of subject)
+  // East = road with highest maxLng (furthest east)
+  // West = road with lowest minLng (furthest west)
+  function pickBest(sortFn, used = new Set()) {
+    const sorted = roads
+      .filter(r => !used.has(r.name))
+      .sort(sortFn);
+    return sorted[0] || null;
+  }
+
+  const used = new Set();
+
+  const northRoad = pickBest((a, b) => b.maxLat - a.maxLat || b.priority - a.priority, used);
+  if (northRoad) used.add(northRoad.name);
+
+  const southRoad = pickBest((a, b) => a.minLat - b.minLat || b.priority - a.priority, used);
+  if (southRoad) used.add(southRoad.name);
+
+  const eastRoad = pickBest((a, b) => b.maxLng - a.maxLng || b.priority - a.priority, used);
+  if (eastRoad) used.add(eastRoad.name);
+
+  const westRoad = pickBest((a, b) => a.minLng - b.minLng || b.priority - a.priority, used);
+  if (westRoad) used.add(westRoad.name);
+
+  return {
+    north: northRoad?.name || null,
+    south: southRoad?.name || null,
+    east:  eastRoad?.name  || null,
+    west:  westRoad?.name  || null,
+  };
+}
+
+function buildBoundarySummary(roads, boundaryRoads, landUse, water, parks, rail) {
   const parts = [];
-  if (roads.length)   parts.push(`Major roads/boundaries nearby: ${roads.join('; ')}`);
+
+  // Boundary roads summary (N/S/E/W)
+  if (boundaryRoads && Object.values(boundaryRoads).some(Boolean)) {
+    const bParts = [];
+    if (boundaryRoads.north) bParts.push(`north: ${boundaryRoads.north}`);
+    if (boundaryRoads.south) bParts.push(`south: ${boundaryRoads.south}`);
+    if (boundaryRoads.east)  bParts.push(`east: ${boundaryRoads.east}`);
+    if (boundaryRoads.west)  bParts.push(`west: ${boundaryRoads.west}`);
+    if (bParts.length) parts.push(`Neighborhood boundary roads: ${bParts.join('; ')}`);
+  }
+
+  if (roads.length)   parts.push(`Additional roads nearby: ${roads.join('; ')}`);
   if (water.length)   parts.push(`Water/natural features: ${water.join(', ')}`);
   if (parks.length)   parts.push(`Parks/open space: ${parks.join(', ')}`);
   if (rail.length)    parts.push(`Rail features: ${rail.join(', ')}`);
@@ -295,10 +427,20 @@ export function formatLocationContextBlock(geocodeData) {
 
   // ── Neighborhood boundary features ───────────────────────────────────────
   if (boundaryFeatures && !boundaryFeatures.error) {
-    lines.push('\nNEIGHBORHOOD BOUNDARY FEATURES (within ~1.5 miles of subject):');
+    lines.push('\nNEIGHBORHOOD BOUNDARY FEATURES (within ~800m of subject):');
+
+    // ── Directional boundary roads (primary reference) ─────────────────────
+    const br = boundaryFeatures.boundaryRoads;
+    if (br && Object.values(br).some(Boolean)) {
+      lines.push('  BOUNDARY ROADS (use these for N/S/E/W boundary descriptions):');
+      if (br.north) lines.push(`    North boundary: ${br.north}`);
+      if (br.south) lines.push(`    South boundary: ${br.south}`);
+      if (br.east)  lines.push(`    East boundary:  ${br.east}`);
+      if (br.west)  lines.push(`    West boundary:  ${br.west}`);
+    }
 
     if (boundaryFeatures.majorRoads?.length) {
-      lines.push('  Major roads that may form neighborhood boundaries:');
+      lines.push('  Other major roads nearby:');
       boundaryFeatures.majorRoads.forEach(r => lines.push(`    - ${r}`));
     }
     if (boundaryFeatures.waterFeatures?.length) {
@@ -315,12 +457,12 @@ export function formatLocationContextBlock(geocodeData) {
     }
 
     lines.push('');
-    lines.push('  INSTRUCTION: Use the roads, water features, and land use changes above to');
-    lines.push('  describe the neighborhood boundaries. Example format:');
-    lines.push('  "The subject neighborhood is bounded to the north by [road/feature],');
-    lines.push('   to the east by [road/feature], to the south by [road/feature],');
-    lines.push('   and to the west by [road/feature]."');
-    lines.push('  Only use features that are actually present in the data above.');
+    lines.push('  INSTRUCTION: Use the BOUNDARY ROADS above (N/S/E/W) to describe the');
+    lines.push('  neighborhood boundaries. Use the exact road names provided. Format:');
+    lines.push('  "The subject neighborhood is bordered to the North by [north road],');
+    lines.push('   to the South by [south road], to the East by [east road],');
+    lines.push('   and to the West by [west road]."');
+    lines.push('  Only use features actually present in the data above.');
   } else if (boundaryFeatures?.error) {
     lines.push('\n  [Location boundary data unavailable — describe boundaries based on known facts]');
   }

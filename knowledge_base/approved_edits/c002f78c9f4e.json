@@ -1,14 +1,16 @@
 {
-  "id": "c002f78c9f4e",
-  "formType": "1004",
-  "fieldId": "reconciliation",
-  "propertyType": "residential",
-  "marketType": "suburban",
-  "marketArea": "",
-  "sourceType": "approved_edit",
-  "qualityScore": 90,
-  "tags": [],
-  "text": "Primary emphasis is placed on the Sales Comparison Approach, as it most accurately reflects the actions of typical buyers and sellers in the subject's market area. The Cost Approach and Income Approach were not developed due to [INSERT: explanation supporting lack of applicability or supporting data], and are typically considered less relevant for single-family residential properties in this area. The available sales data is considered the most reliable indicator of market value for the subject property as of the effective date of appraisal. The final opinion of value reflects consideration of all available data and developed approaches, with primary reliance on the Sales Comparison Approach based on the data analyzed.",
-  "createdAt": "2026-03-09T22:58:22.281Z",
-  "updatedAt": "2026-03-09T22:58:22.281Z"
+    "id":  "c002f78c9f4e",
+    "formType":  "1004",
+    "fieldId":  "reconciliation",
+    "propertyType":  "residential",
+    "marketType":  "suburban",
+    "marketArea":  "",
+    "sourceType":  "approved_edit",
+    "qualityScore":  10,
+    "tags":  [
+
+             ],
+    "text":  "Primary emphasis is placed on the Sales Comparison Approach, as it most accurately reflects the actions of typical buyers and sellers in the subject\u0027s market area. The Cost Approach and Income Approach were not developed due to [INSERT: explanation supporting lack of applicability or supporting data], and are typically considered less relevant for single-family residential properties in this area. The available sales data is considered the most reliable indicator of market value for the subject property as of the effective date of appraisal. The final opinion of value reflects consideration of all available data and developed approaches, with primary reliance on the Sales Comparison Approach based on the data analyzed.",
+    "createdAt":  "2026-03-09T22:58:22.281Z",
+    "updatedAt":  "2026-03-18T02:51:46.514Z"
 }

@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-12T04:02:17.813Z",
+  "lastUpdated": "2026-03-18T07:52:23.256Z",
   "counts": {
-    "approved_edits": 71,
-    "curated_examples": 0,
+    "approved_edits": 73,
+    "curated_examples": 33,
     "imported_examples": 296,
     "phrases": 18
   },
@@ -44,11 +44,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T04:32:51.534Z",
-      "updatedAt": "2026-03-09T04:32:51.534Z"
+      "updatedAt": "2026-03-18T02:51:30.648Z"
     },
     {
       "id": "0867138bdf00",
@@ -128,11 +128,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Primary emphasis is placed on the Sales Comparison Approach, as it best reflects the actions of typical buyers and sellers in the subject's market area. The Cost Approach and Income Approach were not developed due to [INSERT: explanation supporting lack of applicability or supporting data], and are typically less relevant for single-family residential properties in this area. The available sales data is considered the most reliable indicator of market value for the subject property as of the effective date of appraisal. The final opinion of value reflects consideration of all available data and developed approaches, with primary reliance on the Sales Comparison Approach based on the data analyzed.",
       "createdAt": "2026-03-09T22:54:46.663Z",
-      "updatedAt": "2026-03-09T22:54:46.663Z"
+      "updatedAt": "2026-03-18T02:51:46.483Z"
     },
     {
       "id": "20bff23ecea1",
@@ -156,11 +156,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T05:35:54.224Z",
-      "updatedAt": "2026-03-09T05:35:54.224Z"
+      "updatedAt": "2026-03-18T02:51:30.694Z"
     },
     {
       "id": "23205ce19ff2",
@@ -240,11 +240,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T22:44:40.737Z",
-      "updatedAt": "2026-03-09T22:44:40.737Z"
+      "updatedAt": "2026-03-18T02:51:30.699Z"
     },
     {
       "id": "3d68ec61c0d9",
@@ -254,11 +254,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T14:27:25.036Z",
-      "updatedAt": "2026-03-09T14:27:25.036Z"
+      "updatedAt": "2026-03-18T02:51:30.705Z"
     },
     {
       "id": "40f114fd8966",
@@ -338,11 +338,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T23:00:56.800Z",
-      "updatedAt": "2026-03-09T23:00:56.800Z"
+      "updatedAt": "2026-03-18T02:51:30.710Z"
     },
     {
       "id": "4db397f6b9f1",
@@ -394,11 +394,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "The subject market demonstrates stable absorption rates with balanced supply and demand conditions as of the effective date of appraisal.",
       "createdAt": "2026-03-09T06:20:51.971Z",
-      "updatedAt": "2026-03-09T06:20:51.971Z"
+      "updatedAt": "2026-03-18T02:51:41.059Z"
     },
     {
       "id": "63047a02538a",
@@ -464,11 +464,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T04:55:44.681Z",
-      "updatedAt": "2026-03-09T04:55:44.681Z"
+      "updatedAt": "2026-03-18T02:51:30.716Z"
     },
     {
       "id": "76262a54e414",
@@ -478,11 +478,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T08:19:59.007Z",
-      "updatedAt": "2026-03-09T08:19:59.007Z"
+      "updatedAt": "2026-03-18T02:51:30.722Z"
     },
     {
       "id": "7c7a3dd645a1",
@@ -506,11 +506,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T11:11:17.520Z",
-      "updatedAt": "2026-03-09T11:11:17.520Z"
+      "updatedAt": "2026-03-18T02:51:30.728Z"
     },
     {
       "id": "7fa9a783effb",
@@ -520,11 +520,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Based on available data, the subject market area is reportedly stable. Supply and demand are indicated to be generally balanced, with marketing times described as typical for the area. No significant oversupply or undersupply has been reported. Available information does not indicate notable appreciation or depreciation in values over the past 12 months. These conditions are reportedly typical of suburban residential markets in Sangamon County, Illinois. The appraiser's conclusions are based on available information and should not be interpreted as a guarantee of market performance.",
       "createdAt": "2026-03-09T22:54:46.638Z",
-      "updatedAt": "2026-03-09T22:54:46.638Z"
+      "updatedAt": "2026-03-18T02:51:41.112Z"
     },
     {
       "id": "83b449956e4f",
@@ -534,11 +534,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T11:11:37.356Z",
-      "updatedAt": "2026-03-09T11:11:37.356Z"
+      "updatedAt": "2026-03-18T02:51:30.734Z"
     },
     {
       "id": "8de22801931a",
@@ -646,11 +646,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T08:11:37.077Z",
-      "updatedAt": "2026-03-09T08:11:37.077Z"
+      "updatedAt": "2026-03-18T02:51:30.739Z"
     },
     {
       "id": "9ee4b951e2ca",
@@ -758,11 +758,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T14:25:11.602Z",
-      "updatedAt": "2026-03-09T14:25:11.602Z"
+      "updatedAt": "2026-03-18T02:51:30.746Z"
     },
     {
       "id": "c002f78c9f4e",
@@ -772,11 +772,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Primary emphasis is placed on the Sales Comparison Approach, as it most accurately reflects the actions of typical buyers and sellers in the subject's market area. The Cost Approach and Income Approach were not developed due to [INSERT: explanation supporting lack of applicability or supporting data], and are typically considered less relevant for single-family residential properties in this area. The available sales data is considered the most reliable indicator of market value for the subject property as of the effective date of appraisal. The final opinion of value reflects consideration of all available data and developed approaches, with primary reliance on the Sales Comparison Approach based on the data analyzed.",
       "createdAt": "2026-03-09T22:58:22.281Z",
-      "updatedAt": "2026-03-09T22:58:22.281Z"
+      "updatedAt": "2026-03-18T02:51:46.514Z"
     },
     {
       "id": "c01d96cc6b8e",
@@ -814,11 +814,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T04:51:58.651Z",
-      "updatedAt": "2026-03-09T04:51:58.651Z"
+      "updatedAt": "2026-03-18T02:51:30.752Z"
     },
     {
       "id": "c814ce2a9295",
@@ -870,11 +870,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "The subject market demonstrates stable absorption rates with balanced supply and demand conditions as of the effective date.",
       "createdAt": "2026-03-09T06:12:56.332Z",
-      "updatedAt": "2026-03-09T06:12:56.332Z"
+      "updatedAt": "2026-03-18T02:51:41.104Z"
     },
     {
       "id": "d1cd5c12cb41",
@@ -898,11 +898,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T22:44:02.708Z",
-      "updatedAt": "2026-03-09T22:44:02.708Z"
+      "updatedAt": "2026-03-18T02:51:30.758Z"
     },
     {
       "id": "d682021a2ee6",
@@ -954,11 +954,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Based on available information, the subject market area is reportedly stable. Supply and demand conditions appear to be in relative balance per available market data. Marketing times are indicated as typical, with no significant evidence of oversupply or undersupply noted in the data reviewed. Market values are reported to be stable, with no significant appreciation or depreciation indicated over the prior 12-month period. These trends are generally consistent with patterns observed in similar suburban residential markets in the area. The appraiser's conclusions are based on the information available at the time of the report; however, the analysis is limited by the absence of specific market statistics in the provided data.",
       "createdAt": "2026-03-09T22:58:22.267Z",
-      "updatedAt": "2026-03-09T22:58:22.267Z"
+      "updatedAt": "2026-03-18T02:51:41.107Z"
     },
     {
       "id": "ef44815b31f1",
@@ -982,11 +982,11 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T22:47:16.239Z",
-      "updatedAt": "2026-03-09T22:47:16.239Z"
+      "updatedAt": "2026-03-18T02:51:30.765Z"
     },
     {
       "id": "fab846e1bdcb",
@@ -996,11 +996,61 @@
       "marketType": "suburban",
       "marketArea": "",
       "sourceType": "approved_edit",
-      "qualityScore": 90,
+      "qualityScore": 10,
       "tags": [],
       "text": "Market conditions are stable with moderate demand.",
       "createdAt": "2026-03-09T09:49:39.482Z",
-      "updatedAt": "2026-03-09T09:49:39.482Z"
+      "updatedAt": "2026-03-18T02:51:30.772Z"
+    },
+    {
+      "id": "market_cond_cresci_template",
+      "formType": "1004",
+      "fieldId": "market_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "approved_edit",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "under_30_days",
+        "good_appeal",
+        "rates_decreased",
+        "charles_cresci_voice",
+        "concessions_typical",
+        "in_balance"
+      ],
+      "text": "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have decreased slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand are considered in balance.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "recon_cresci_template",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "approved_edit",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "visual_inspection",
+        "charles_cresci_voice",
+        "standard",
+        "as_is_condition",
+        "no_personal_property",
+        "sales_comparison_primary"
+      ],
+      "text": "Based on a complete visual inspection of the interior and exterior areas of the subject property, defined scope of work, statement of assumptions and limiting conditions, and appraiser's certification, my (our) opinion of the market value, as defined, of the real property that is the subject of this report is $[INSERT value] as of [INSERT date], which is the date of inspection and the effective date of this appraisal. The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "01a24295d8aa",
@@ -1073,6 +1123,50 @@
       "updatedAt": "2026-03-07T21:05:38.348Z"
     },
     {
+      "id": "0628deb9c745",
+      "formType": "1004",
+      "fieldId": "final_value_opinion",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "as_is",
+        "no_personal_property",
+        "standard"
+      ],
+      "text": "The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "07b78c7ababe",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "standard",
+        "no_obsolescence",
+        "form_text"
+      ],
+      "text": "generally conforms to most other homes in the neighborhood in functional utility, style, condition, use, and quality of construction.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "07ee8c16bb88",
       "formType": "1004",
       "fieldId": "contract_analysis",
@@ -1099,6 +1193,30 @@
       "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses.",
       "createdAt": "2026-03-07T21:05:38.122Z",
       "updatedAt": "2026-03-07T21:05:38.122Z"
+    },
+    {
+      "id": "0f2bf0b820a5",
+      "formType": "1004",
+      "fieldId": "contract_analysis",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "purchase",
+        "seller_concession",
+        "closing_costs",
+        "buyer_brokerage",
+        "dollar_concession"
+      ],
+      "text": "The Residential Sales Contract lists the contract price as $185,000 with sales concessions in the form of the seller providing $2,500 towards buyer's closing costs and $5,500 to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "0f49ed2a41d7",
@@ -1155,6 +1273,28 @@
       "text": "The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family detached two-story traditional designed house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment. The subject neighborhood is bordered to the North by Shepard Rd, to the South by College Ave, to the East by Airport Rd, and to the West by Veterans Pkwy.",
       "createdAt": "2026-03-07T21:05:38.270Z",
       "updatedAt": "2026-03-07T21:05:38.270Z"
+    },
+    {
+      "id": "16c63e377d88",
+      "formType": "1004",
+      "fieldId": "listing_history",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "not_listed",
+        "refinance",
+        "standard"
+      ],
+      "text": "It appears that the subject has not been offered for sale in the twelve months prior to the effective date of this appraisal.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "17a3c9d5124a",
@@ -1367,6 +1507,28 @@
       "updatedAt": "2026-03-07T21:05:38.042Z"
     },
     {
+      "id": "270802ecaa1b",
+      "formType": "1004",
+      "fieldId": "adverse_conditions",
+      "propertyType": "residential",
+      "marketType": "rural",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "well_septic",
+        "rural",
+        "private_utilities"
+      ],
+      "text": "The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "274442a16253",
       "formType": "1004",
       "fieldId": "final_value_opinion",
@@ -1407,6 +1569,28 @@
       "text": "All comparables have been found on the eastside of Bloomington, IL and were selected to demonstrate the marketability of houses of a similar location, design, age, quality, and condition that have been recently updated. Due to recent market trends the comparables have received a market time adjustment of 7.1% based on the sales statistics chart included in this report. The comparables have been adjusted to account for the subject's location on a busy road, however, Comparable #4 has been included to demonstrate the marketability of recently updated houses on Empire St. Comparable #1 has been adjusted for its location, site size, basement, and garage. Comparable #2 has been adjusted for its location, site size, garage, enclosed porch, and fence. Comparable #3 has been adjusted for its location, site size, age, bathroom count, GLA, basement, enclosed porch, and fence.",
       "createdAt": "2026-03-07T21:05:38.031Z",
       "updatedAt": "2026-03-07T21:05:38.031Z"
+    },
+    {
+      "id": "2db9103d0795",
+      "formType": "1004",
+      "fieldId": "market_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "under_30_days",
+        "good_appeal",
+        "rates_decreased"
+      ],
+      "text": "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have decreased slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "364842343bc9",
@@ -1577,6 +1761,52 @@
       "updatedAt": "2026-03-07T21:05:40.227Z"
     },
     {
+      "id": "46754884c56f",
+      "formType": "1004",
+      "fieldId": "subject_improvements",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "c3_condition",
+        "kitchen_remodeled",
+        "bathrooms_remodeled",
+        "6_to_10_years"
+      ],
+      "text": "C3;Kitchen-remodeled-six to ten years ago;Bathrooms-remodeled-six to ten years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "47b8147586a9",
+      "formType": "1004",
+      "fieldId": "contract_analysis",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "purchase",
+        "seller_concession",
+        "buyer_brokerage",
+        "percent_concession"
+      ],
+      "text": "The Residential Sales Contract lists the contract price as $188,900 with sales concessions in the form of the seller paying 2.0% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "480c773bbbcb",
       "formType": "1004",
       "fieldId": "market_conditions",
@@ -1591,6 +1821,28 @@
       "updatedAt": "2026-03-07T21:05:38.337Z"
     },
     {
+      "id": "4919f49a6381",
+      "formType": "1004",
+      "fieldId": "subject_improvements",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "refinance",
+        "no_uad_prefix",
+        "standard"
+      ],
+      "text": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "49aaba41ca4e",
       "formType": "1004",
       "fieldId": "reconciliation",
@@ -1603,6 +1855,27 @@
       "text": "The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
       "createdAt": "2026-03-07T21:05:39.902Z",
       "updatedAt": "2026-03-07T21:05:39.902Z"
+    },
+    {
+      "id": "4bacd9698e2f",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "standard",
+        "no_obsolescence"
+      ],
+      "text": "The subject generally conforms to most other homes in the neighborhood in functional utility, style, condition, use, and quality of construction.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "4cd18b078eab",
@@ -1745,6 +2018,29 @@
       "updatedAt": "2026-03-07T21:05:38.343Z"
     },
     {
+      "id": "56af360c132e",
+      "formType": "1004",
+      "fieldId": "contract_analysis",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "purchase",
+        "seller_concession",
+        "buyer_brokerage",
+        "percent_concession"
+      ],
+      "text": "The Residential Sales Contract lists the contract price as $155,000 with sales concessions in the form of the seller paying 3% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "594c786e522f",
       "formType": "1004",
       "fieldId": "reconciliation",
@@ -1771,6 +2067,28 @@
       "text": "The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family detached ranch style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
       "createdAt": "2026-03-07T21:05:40.135Z",
       "updatedAt": "2026-03-07T21:05:40.135Z"
+    },
+    {
+      "id": "5a11a14d8f4b",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "detached",
+        "ranch",
+        "westside_bloomington"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Washington St, to the South by 6 Points Rd, to the East by Lee St, and to the West by I-55. The subject is located in a neighborhood on the westside of Bloomington, IL. It is a single family detached ranch style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "5b1a86f77358",
@@ -1997,6 +2315,29 @@
       "updatedAt": "2026-03-07T21:05:38.009Z"
     },
     {
+      "id": "6af807074b27",
+      "formType": "1004",
+      "fieldId": "subject_improvements",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "c3_condition",
+        "kitchen_updated",
+        "bathrooms_updated",
+        "6_to_10_years"
+      ],
+      "text": "C3;Kitchen-updated-six to ten years ago;Bathrooms-updated-six to ten years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "6c4333396bda",
       "formType": "1004",
       "fieldId": "functional_utility",
@@ -2051,6 +2392,28 @@
       "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses.",
       "createdAt": "2026-03-07T21:05:38.260Z",
       "updatedAt": "2026-03-07T21:05:38.260Z"
+    },
+    {
+      "id": "7220d75dddce",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "standard",
+        "as_is_condition",
+        "no_personal_property"
+      ],
+      "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data. The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "7483d4bdf732",
@@ -2135,6 +2498,29 @@
       "text": "Per MRED/MLS #12501772, the subject was listed for sale on 10/29/2025 for $155,000 for 1 day.",
       "createdAt": "2026-03-07T21:05:38.046Z",
       "updatedAt": "2026-03-07T21:05:38.046Z"
+    },
+    {
+      "id": "7cab100fe38b",
+      "formType": "1004",
+      "fieldId": "market_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "under_60_days",
+        "good_appeal",
+        "rates_decreased",
+        "weldon"
+      ],
+      "text": "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have slightly decreased in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 60 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "7cd6d3a11996",
@@ -2317,6 +2703,28 @@
       "text": "The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred.",
       "createdAt": "2026-03-07T21:05:38.365Z",
       "updatedAt": "2026-03-07T21:05:38.365Z"
+    },
+    {
+      "id": "8de828a052b4",
+      "formType": "1004",
+      "fieldId": "sales_comparison",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "illinois",
+        "residential",
+        "template_match",
+        "clinton_il",
+        "limited_sales",
+        "extended_search",
+        "competing_market"
+      ],
+      "text": "Due to a lack of recent comparable sales in Clinton, IL, an extensive search was made to find comparables in Clinton, IL and the competing community of Lincoln, IL. The comparables were selected to demonstrate the marketability of houses of a similar age and design that have been recently updated to appeal to a similar market segment as the subject. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its site size, age, GLA, basement finished room count, main floor bedroom, garage space count, and patio. Comparable #2 has been adjusted for its site size, age, inferior condition, bathroom count, GLA, main floor bedroom, and enclosed porch. Comparable #3 has been adjusted for its site size, bathroom count, GLA, lack of a garage, shed, and fence.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "8e3604867328",
@@ -2515,6 +2923,28 @@
       "updatedAt": "2026-03-07T21:05:40.041Z"
     },
     {
+      "id": "9e9316d341c4",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "standard",
+        "no_obsolescence",
+        "alternate"
+      ],
+      "text": "The property generally conforms to the neighborhood in functional utility, style, condition, use, and construction. No functional obsolescence noted.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "a35a1786d562",
       "formType": "1004",
       "fieldId": "sales_comparison",
@@ -2541,6 +2971,72 @@
       "text": "C3;Kitchen-updated-less than one year ago;Bathrooms- remodeled-less than one year ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
       "createdAt": "2026-03-07T21:05:38.696Z",
       "updatedAt": "2026-03-07T21:05:38.696Z"
+    },
+    {
+      "id": "a5a289cc9457",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "standard",
+        "cost_approach_not_developed",
+        "income_approach_not_developed"
+      ],
+      "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "a68945b6c5eb",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "illinois",
+        "residential",
+        "template_match",
+        "clinton_il",
+        "detached",
+        "two_story",
+        "traditional"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Woodlawn St, to the South by Van Buren St, to the East by George St, and to the West by Walnut St. The subject is located in a neighborhood on the westside of Clinton, IL. It is a single family detached two-story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "a7607d81c508",
+      "formType": "1004",
+      "fieldId": "prior_sales_subject",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "no_prior_sales",
+        "standard",
+        "36_months"
+      ],
+      "text": "The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "a8286d69a06c",
@@ -2753,6 +3249,28 @@
       "updatedAt": "2026-03-07T21:05:39.933Z"
     },
     {
+      "id": "b5380548cc47",
+      "formType": "1004",
+      "fieldId": "sales_comparison",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "found_in_neighborhood",
+        "eastside_bloomington",
+        "market_time_adjustment"
+      ],
+      "text": "All comparables have been found in the subject's neighborhood on the eastside of Bloomington, IL and were selected to demonstrate the marketability of houses of a similar location, design, age, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its [ADJUSTMENTS]. Comparable #2 has been adjusted for its [ADJUSTMENTS]. Comparable #3 has been adjusted for its [ADJUSTMENTS]. After adjustments are made the comparables provide a good basis for an estimate of market value.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "b60968a11cd7",
       "formType": "1004",
       "fieldId": "adverse_conditions",
@@ -2765,6 +3283,29 @@
       "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses.",
       "createdAt": "2026-03-07T21:05:38.380Z",
       "updatedAt": "2026-03-07T21:05:38.380Z"
+    },
+    {
+      "id": "b60df8a30a13",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "detached",
+        "two_story",
+        "traditional",
+        "eastside_bloomington"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Oakland Ave, to the South by Ireland Grove Rd, to the East by Towanda-Barnes, and West by Hershey Rd. The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family detached two-story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "b721cd5c0665",
@@ -2851,6 +3392,51 @@
       "updatedAt": "2026-03-07T21:05:40.202Z"
     },
     {
+      "id": "bdb8a8322fa4",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "weldon",
+        "detached",
+        "ranch",
+        "rural"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Locust St, to the South by Oakland Ave, to the East by Mercer Ave, and to the West by Main St. The subject is located in a neighborhood North of Weldon, IL proper. It is a single family detached ranch style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "c08edf007a75",
+      "formType": "1004",
+      "fieldId": "adverse_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "no_adverse",
+        "standard",
+        "city_utilities"
+      ],
+      "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "c1097d333d9a",
       "formType": "1004",
       "fieldId": "adverse_conditions",
@@ -2905,6 +3491,29 @@
       "text": "The subject is located in the rural community of Towanda, IL. It is a single family detached one-and-a-half story traditional designed house. It conforms to most other existing homes in the community in design, quality, and condition. Towanda, IL is considered a bedroom community and most residents commute to Bloomington-Normal or farm local land for employment. The subject neighborhood is bordered to the North by Jackson St, to the South by Hely St, to the East by farmland, and to the West by I-55.",
       "createdAt": "2026-03-07T21:05:38.390Z",
       "updatedAt": "2026-03-07T21:05:38.390Z"
+    },
+    {
+      "id": "cc540ef10bf0",
+      "formType": "1004",
+      "fieldId": "sales_comparison",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "found_in_neighborhood",
+        "westside_bloomington",
+        "recently_updated",
+        "market_time_adjustment"
+      ],
+      "text": "All comparables have been found on the westside of Bloomington, IL and were selected to demonstrate the marketability of recently updated homes of a similar location, design, age, quality, and condition. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its [ADJUSTMENTS]. Comparable #2 has been adjusted for its [ADJUSTMENTS]. Comparable #3 has been adjusted for its [ADJUSTMENTS]. After adjustments are made the comparables provide a good basis for an estimate of market value.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "cc68fc5ca289",
@@ -3033,6 +3642,30 @@
       "updatedAt": "2026-03-07T21:05:40.172Z"
     },
     {
+      "id": "d95c04582443",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "attached",
+        "ranch",
+        "zero_lot_line",
+        "pud",
+        "eastside_bloomington"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Shepard Rd, to the South by College Ave, to the East by Airport Rd, and to the West by Hershey Rd. The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family attached ranch style zero lot line. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "d9f13212088f",
       "formType": "1004",
       "fieldId": "listing_history",
@@ -3101,6 +3734,29 @@
       "text": "The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred.",
       "createdAt": "2026-03-07T21:05:39.810Z",
       "updatedAt": "2026-03-07T21:05:39.810Z"
+    },
+    {
+      "id": "dd127843a66a",
+      "formType": "1004",
+      "fieldId": "market_conditions",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "under_30_days",
+        "average_appeal",
+        "rates_decreased",
+        "southside_bloomington"
+      ],
+      "text": "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have slightly decreased in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is average. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "df5755284ed2",
@@ -3187,6 +3843,29 @@
       "updatedAt": "2026-03-07T21:05:39.958Z"
     },
     {
+      "id": "e6ce7c5c947f",
+      "formType": "1004",
+      "fieldId": "sales_comparison",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "limited_sales",
+        "extended_search",
+        "zero_lot_line",
+        "pud"
+      ],
+      "text": "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find zero lot lines of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its site size, age, inferior condition, bathroom count, GLA, basement finished room count, and lack of a fence. Comparable #2 has been adjusted for its site size, view, age, bathroom count, GLA, basement, and lack of fence. Comparable #3 has been adjusted for its site size, view, age, bathroom count, basement, and lack of a fence. See Comparable #4.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "e7b03f56a27a",
       "formType": "1004",
       "fieldId": "sales_comparison",
@@ -3257,6 +3936,29 @@
       "updatedAt": "2026-03-07T21:05:38.678Z"
     },
     {
+      "id": "ef659f121184",
+      "formType": "1004",
+      "fieldId": "subject_improvements",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "c3_condition",
+        "kitchen_updated",
+        "bathrooms_updated",
+        "less_than_one_year"
+      ],
+      "text": "C3;Kitchen-updated-less than one year ago;Bathrooms-updated-less than one year ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
       "id": "f09ab016484a",
       "formType": "1004",
       "fieldId": "final_value_opinion",
@@ -3269,6 +3971,52 @@
       "text": "The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value.",
       "createdAt": "2026-03-07T21:05:38.195Z",
       "updatedAt": "2026-03-07T21:05:38.195Z"
+    },
+    {
+      "id": "f102c88bc67e",
+      "formType": "1004",
+      "fieldId": "contract_analysis",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "purchase",
+        "seller_concession",
+        "buyer_brokerage",
+        "percent_concession"
+      ],
+      "text": "The Residential Sales Contract lists the contract price as $105,000 with sales concessions in the form of the seller providing 3.0% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "f38a6b89f8c7",
+      "formType": "1004",
+      "fieldId": "subject_improvements",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "c3_condition",
+        "kitchen_remodeled",
+        "bathrooms_updated",
+        "1_to_5_years"
+      ],
+      "text": "C3;Kitchen-remodeled-one to five years ago;Bathrooms-updated-one to five years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "f4d4e3316d74",
@@ -3311,6 +4059,55 @@
       "text": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained. The subject feature three above grade bedrooms, two above grade bathrooms, living room fireplace, finished basement family room, bedroom, and half bathroom, attached two-car garage, covered patio, and shed.",
       "createdAt": "2026-03-07T21:05:38.214Z",
       "updatedAt": "2026-03-07T21:05:38.214Z"
+    },
+    {
+      "id": "fcba02f25242",
+      "formType": "1004",
+      "fieldId": "neighborhood_description",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 90,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "detached",
+        "two_story",
+        "traditional",
+        "normal_il",
+        "eastside"
+      ],
+      "text": "The subject neighborhood is bordered to the North by Raab Rd, to the South by Fort Jesse Rd, to the East by Airport Rd, and to the West by Hershey Rd. The subject is located in a neighborhood on the eastside of Normal, IL. It is a single family detached two story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "recon_visual_inspect_95",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "propertyType": "residential",
+      "marketType": "suburban",
+      "marketArea": "bloomington_normal",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "visual_inspection",
+        "charles_cresci_voice",
+        "standard",
+        "as_is_condition",
+        "no_personal_property",
+        "sales_comparison_primary"
+      ],
+      "text": "Based on a complete visual inspection of the interior and exterior areas of the subject property, defined scope of work, statement of assumptions and limiting conditions, and appraiser's certification, my (our) opinion of the market value, as defined, of the real property that is the subject of this report is $[INSERT value] as of [INSERT date], which is the date of inspection and the effective date of this appraisal. The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+      "createdAt": "2026-03-18T05:38:45.000Z",
+      "updatedAt": "2026-03-18T05:38:45.000Z"
     },
     {
       "id": "0d97aa26195d",

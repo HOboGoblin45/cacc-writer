@@ -1,14 +1,16 @@
 {
-  "id": "02fd5a1a0bf2",
-  "formType": "1004",
-  "fieldId": "market_conditions",
-  "propertyType": "residential",
-  "marketType": "suburban",
-  "marketArea": "",
-  "sourceType": "approved_edit",
-  "qualityScore": 90,
-  "tags": [],
-  "text": "Market conditions are stable with moderate demand.",
-  "createdAt": "2026-03-09T04:32:51.534Z",
-  "updatedAt": "2026-03-09T04:32:51.534Z"
+    "id":  "02fd5a1a0bf2",
+    "formType":  "1004",
+    "fieldId":  "market_conditions",
+    "propertyType":  "residential",
+    "marketType":  "suburban",
+    "marketArea":  "",
+    "sourceType":  "approved_edit",
+    "qualityScore":  10,
+    "tags":  [
+
+             ],
+    "text":  "Market conditions are stable with moderate demand.",
+    "createdAt":  "2026-03-09T04:32:51.534Z",
+    "updatedAt":  "2026-03-18T02:51:30.648Z"
 }
