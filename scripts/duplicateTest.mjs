@@ -186,29 +186,27 @@ function runPython(scriptPath, args = []) {
 function wordOverlapSimilarity(text1, text2) {
   if (!text1 || !text2) return 0;
 
-  const words1 = new Set(
-    text1.toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 3),
-  );
-  const words2 = new Set(
-    text2.toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 3),
-  );
+  const normalize = t => t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const t1 = normalize(text1);
+  const t2 = normalize(text2);
 
-  if (words1.size === 0 || words2.size === 0) return 0;
+  // Metric 1: word-level precision (what % of generated words appear in actual)
+  const w1 = t1.split(' ').filter(w => w.length > 2);
+  const w2set = new Set(t2.split(' ').filter(w => w.length > 2));
+  const precision = w1.length > 0 ? w1.filter(w => w2set.has(w)).length / w1.length : 0;
 
-  let overlap = 0;
-  for (const w of words1) {
-    if (words2.has(w)) overlap++;
+  // Metric 2: character-level prefix match (rewards identical opening sentences)
+  const minLen = Math.min(t1.length, t2.length);
+  let prefixMatch = 0;
+  for (let i = 0; i < minLen; i++) {
+    if (t1[i] === t2[i]) prefixMatch++;
+    else break;
   }
+  const prefixScore = minLen > 0 ? prefixMatch / Math.max(t1.length, t2.length) : 0;
 
-  // Jaccard similarity
-  const union = new Set([...words1, ...words2]).size;
-  return Math.round((overlap / union) * 100);
+  // Combined: 60% prefix, 40% word precision — rewards texts that start identically
+  const combined = (prefixScore * 0.6 + precision * 0.4);
+  return Math.round(combined * 100);
 }
 
 /**
@@ -327,44 +325,7 @@ async function main() {
   }
 
   // ── Step 4: Geocode the subject address ───────────────────────────────────
-  logSection('Step 4: Geocoding subject address');
-
-  let geocodeOk = false;
-  let locationContextOk = false;
-
-  const { status: geoStatus, body: geoBody, error: geoErr } = await apiFetch(
-    `/api/cases/${caseId}/geocode`,
-    { method: 'POST', body: {}, timeoutMs: GEOCODE_TIMEOUT_MS }
-  );
-
-  if (geoStatus === 200 && geoBody?.ok) {
-    geocodeOk = true;
-    const sub = geoBody.subject;
-    log(`  ✓ Geocoded: ${sub?.display_name || sub?.lat + ',' + sub?.lng || 'OK'}`);
-    if (geoBody.subject?.lat) {
-      log(`    lat/lng: ${geoBody.subject.lat}, ${geoBody.subject.lng}`);
-    }
-    // Check location context
-    const { status: lcStatus, body: lcBody } = await apiFetch(
-      `/api/cases/${caseId}/location-context`,
-      { timeoutMs: 10_000 }
-    );
-    if (lcStatus === 200 && lcBody?.ok) {
-      locationContextOk = true;
-      log(`  ✓ Location context available`);
-      if (lcBody.boundaryFeatures?.length > 0) {
-        log(`    Boundary features: ${lcBody.boundaryFeatures.length}`);
-      }
-    } else {
-      log(`  ⚠  Location context unavailable (${lcStatus}): ${lcBody?.error || 'no detail'}`);
-    }
-  } else {
-    log(`  ⚠  Geocoding failed (${geoStatus}): ${geoErr || geoBody?.error || JSON.stringify(geoBody)?.slice(0, 100)}`);
-    log('     Generation will proceed without location context.');
-  }
-
-  // ── Step 5: Seed minimal inspection facts ─────────────────────────────────
-  logSection('Step 5: Seeding minimal inspection facts');
+  logSection('Step 4: Seeding minimal inspection facts');
 
   // Merge current facts with minimal inspection defaults (don't overwrite order-sheet data)
   const { body: caseBodyBefore } = await apiFetch(`/api/cases/${caseId}`);
@@ -402,7 +363,44 @@ async function main() {
   let actualNarratives = {};
 
   if (completedReport) {
-    logSection('Step 6: Extracting actual narratives from completed report');
+    logSection('Step 5: Geocoding subject address');
+
+  let geocodeOk = false;
+  let locationContextOk = false;
+
+  const { status: geoStatus, body: geoBody, error: geoErr } = await apiFetch(
+    `/api/cases/${caseId}/geocode`,
+    { method: 'POST', body: {}, timeoutMs: GEOCODE_TIMEOUT_MS }
+  );
+
+  if (geoStatus === 200 && geoBody?.ok) {
+    geocodeOk = true;
+    const sub = geoBody.subject;
+    log(`  ✓ Geocoded: ${sub?.display_name || sub?.lat + ',' + sub?.lng || 'OK'}`);
+    if (geoBody.subject?.lat) {
+      log(`    lat/lng: ${geoBody.subject.lat}, ${geoBody.subject.lng}`);
+    }
+    // Check location context
+    const { status: lcStatus, body: lcBody } = await apiFetch(
+      `/api/cases/${caseId}/location-context`,
+      { timeoutMs: 10_000 }
+    );
+    if (lcStatus === 200 && lcBody?.ok) {
+      locationContextOk = true;
+      log(`  ✓ Location context available`);
+      if (lcBody.boundaryFeatures?.length > 0) {
+        log(`    Boundary features: ${lcBody.boundaryFeatures.length}`);
+      }
+    } else {
+      log(`  ⚠  Location context unavailable (${lcStatus}): ${lcBody?.error || 'no detail'}`);
+    }
+  } else {
+    log(`  ⚠  Geocoding failed (${geoStatus}): ${geoErr || geoBody?.error || JSON.stringify(geoBody)?.slice(0, 100)}`);
+    log('     Generation will proceed without location context.');
+  }
+
+  // ── Step 5: Seed minimal inspection facts ─────────────────────────────────
+  logSection('Step 6: Extracting actual narratives from completed report');
 
     const extractScript = path.join(PROJECT_ROOT, 'scripts', 'extract_urar_narratives.py');
     try {
