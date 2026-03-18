@@ -1,14 +1,16 @@
 {
-  "id": "7fa9a783effb",
-  "formType": "1004",
-  "fieldId": "market_conditions",
-  "propertyType": "residential",
-  "marketType": "suburban",
-  "marketArea": "",
-  "sourceType": "approved_edit",
-  "qualityScore": 90,
-  "tags": [],
-  "text": "Based on available data, the subject market area is reportedly stable. Supply and demand are indicated to be generally balanced, with marketing times described as typical for the area. No significant oversupply or undersupply has been reported. Available information does not indicate notable appreciation or depreciation in values over the past 12 months. These conditions are reportedly typical of suburban residential markets in Sangamon County, Illinois. The appraiser's conclusions are based on available information and should not be interpreted as a guarantee of market performance.",
-  "createdAt": "2026-03-09T22:54:46.638Z",
-  "updatedAt": "2026-03-09T22:54:46.638Z"
+    "id":  "7fa9a783effb",
+    "formType":  "1004",
+    "fieldId":  "market_conditions",
+    "propertyType":  "residential",
+    "marketType":  "suburban",
+    "marketArea":  "",
+    "sourceType":  "approved_edit",
+    "qualityScore":  10,
+    "tags":  [
+
+             ],
+    "text":  "Based on available data, the subject market area is reportedly stable. Supply and demand are indicated to be generally balanced, with marketing times described as typical for the area. No significant oversupply or undersupply has been reported. Available information does not indicate notable appreciation or depreciation in values over the past 12 months. These conditions are reportedly typical of suburban residential markets in Sangamon County, Illinois. The appraiser\u0027s conclusions are based on available information and should not be interpreted as a guarantee of market performance.",
+    "createdAt":  "2026-03-09T22:54:46.638Z",
+    "updatedAt":  "2026-03-18T02:51:41.112Z"
 }
