@@ -7450,3 +7450,135 @@ async function lrnCloseFeedbackLoop() {
     setStatus('lrnArchiveStatus', res?.error || 'Failed to close loop.', 'err');
   }
 }
+
+
+// ── INTAKE TAB ─────────────────────────────────────────────────────────────
+
+let intakeCaseId = null;
+let intakeExtracted = null;
+
+function handleIntakeDrop(e) {
+  e.preventDefault();
+  document.getElementById('intake-drop-zone').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.toLowerCase().endsWith('.pdf')) {
+    handleIntakeFile(file);
+  } else {
+    showIntakeStatus('Please drop a PDF file.', 'err');
+  }
+}
+
+async function handleIntakeFile(file) {
+  if (!file) return;
+  showIntakeStatus(`Processing ${file.name}...`, '');
+  document.getElementById('intake-result').style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API}/intake/order`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.ok && data.caseId) {
+      intakeCaseId = data.caseId;
+      intakeExtracted = data.extracted;
+      showIntakeResult(data);
+      showIntakeStatus(`✓ Case created: ${data.caseId}`, 'ok');
+    } else {
+      showIntakeStatus(data.error || 'Failed to parse order sheet.', 'err');
+    }
+  } catch (e) {
+    showIntakeStatus('Server error: ' + e.message, 'err');
+  }
+}
+
+function showIntakeStatus(msg, type) {
+  const el = document.getElementById('intake-status');
+  el.style.display = 'block';
+  el.style.color = type === 'ok' ? 'var(--ok)' : type === 'err' ? 'var(--danger)' : 'var(--muted)';
+  el.style.fontSize = '13px';
+  el.style.padding = '8px 0';
+  el.textContent = msg;
+}
+
+function showIntakeResult(data) {
+  const el = document.getElementById('intake-extracted');
+  const extracted = data.extracted || {};
+  const missing = data.missingFields || [];
+
+  const fields = [
+    ['Order ID', extracted.orderID],
+    ['Address', extracted.address],
+    ['Borrower(s)', extracted.borrowerName],
+    ['Lender', extracted.lenderName],
+    ['Form Type', extracted.formType],
+    ['Loan Type', extracted.loanType],
+    ['Transaction', extracted.transactionType],
+    ['Fee', extracted.fee ? `$${extracted.fee}` : null],
+    ['Delivery Date', extracted.deliveryDate],
+    ['Contact', extracted.contactName ? `${extracted.contactName} ${extracted.contactPhone || ''}` : null],
+  ];
+
+  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px">';
+  for (const [label, value] of fields) {
+    const style = value ? 'color:var(--text)' : 'color:var(--muted);font-style:italic';
+    html += `<div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">${label}</div>
+      <div style="font-size:12px;${style};margin-top:1px">${value || 'not found'}</div>
+    </div>`;
+  }
+  html += '</div>';
+
+  if (missing.length > 0) {
+    html += `<div style="margin-top:10px;font-size:11px;color:var(--warn)">⚠ Missing: ${missing.join(', ')}</div>`;
+  }
+
+  el.innerHTML = html;
+  document.getElementById('intake-result').style.display = 'block';
+  document.getElementById('intake-goto-case-btn').style.display = 'inline-block';
+  document.getElementById('intake-create-folder-btn').style.display = 'inline-block';
+
+  // Add to recent list
+  const recentEl = document.getElementById('intake-recent-list');
+  const entry = document.createElement('div');
+  entry.style.cssText = 'padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer';
+  entry.innerHTML = `<div style="color:var(--gold);font-weight:700">${extracted.address || 'Unknown address'}</div>
+    <div style="color:var(--muted)">${extracted.borrowerName || ''} · ${extracted.formType || ''}</div>`;
+  entry.onclick = () => gotoIntakeCase();
+  if (recentEl.textContent === 'No recent intakes.') recentEl.textContent = '';
+  recentEl.prepend(entry);
+}
+
+function gotoIntakeCase() {
+  if (!intakeCaseId) return;
+  activeCaseId = intakeCaseId;
+  showTab('case');
+  loadCaseList();
+  loadCase(intakeCaseId);
+}
+
+async function createIntakeFolder() {
+  if (!intakeCaseId || !intakeExtracted) return;
+  const statusEl = document.getElementById('intake-folder-status');
+  statusEl.textContent = 'Creating folder...';
+
+  const body = {
+    caseId: intakeCaseId,
+    orderDate: new Date().toISOString().slice(0, 10),
+    borrowerName: intakeExtracted.borrowerName || intakeExtracted.borrower1 || 'Unknown',
+    address: intakeExtracted.address || '',
+  };
+
+  const res = await apiFetch('/intake/create-folder', { method: 'POST', body }).catch(() => null);
+  if (res && res.ok) {
+    statusEl.style.color = 'var(--ok)';
+    statusEl.textContent = '✓ Folder created: ' + (res.folderPath || '');
+  } else {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = (res && res.error) || 'Folder creation failed.';
+  }
+}
