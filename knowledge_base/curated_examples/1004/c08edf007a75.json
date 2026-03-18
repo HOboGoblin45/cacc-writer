@@ -1,0 +1,22 @@
+{
+  "id": "c08edf007a75",
+  "formType": "1004",
+  "fieldId": "adverse_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "no_adverse",
+    "standard",
+    "city_utilities"
+  ],
+  "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

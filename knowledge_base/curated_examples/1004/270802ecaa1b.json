@@ -1,0 +1,22 @@
+{
+  "id": "270802ecaa1b",
+  "formType": "1004",
+  "fieldId": "adverse_conditions",
+  "propertyType": "residential",
+  "marketType": "rural",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "well_septic",
+    "rural",
+    "private_utilities"
+  ],
+  "text": "The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

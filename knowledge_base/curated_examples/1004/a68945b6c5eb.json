@@ -1,0 +1,22 @@
+{
+  "id": "a68945b6c5eb",
+  "formType": "1004",
+  "fieldId": "neighborhood_description",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "illinois",
+    "residential",
+    "template_match",
+    "clinton_il",
+    "detached",
+    "two_story",
+    "traditional"
+  ],
+  "text": "The subject neighborhood is bordered to the North by Woodlawn St, to the South by Van Buren St, to the East by George St, and to the West by Walnut St. The subject is located in a neighborhood on the westside of Clinton, IL. It is a single family detached two-story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6af807074b27",
+  "formType": "1004",
+  "fieldId": "subject_improvements",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "c3_condition",
+    "kitchen_updated",
+    "bathrooms_updated",
+    "6_to_10_years"
+  ],
+  "text": "C3;Kitchen-updated-six to ten years ago;Bathrooms-updated-six to ten years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

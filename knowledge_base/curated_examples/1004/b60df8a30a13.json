@@ -1,0 +1,23 @@
+{
+  "id": "b60df8a30a13",
+  "formType": "1004",
+  "fieldId": "neighborhood_description",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "detached",
+    "two_story",
+    "traditional",
+    "eastside_bloomington"
+  ],
+  "text": "The subject neighborhood is bordered to the North by Oakland Ave, to the South by Ireland Grove Rd, to the East by Towanda-Barnes, and West by Hershey Rd. The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family detached two-story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}
