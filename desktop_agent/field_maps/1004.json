@@ -14,6 +14,8 @@
     "control_index": "0-based index among ALL text-input controls - last resort fallback",
     "expected_classes": "Expected Windows control classes for this field - used for validation",
     "verification_mode": "How to verify insertion: tx32_readback | uia_get_value | skip",
+    "report_click_ratio": "Optional [x,y] ratio inside ACIFormView used to activate the visible report box before TX32 targeting",
+    "report_click_delay_ms": "Optional delay after a report-surface click before re-discovering TX32 controls",
     "live_calibration_status": "Current truth state: live_confirmed | corpus_backed_pending_navigation_fix",
     "notes": "Human notes about this field"
   },
@@ -90,7 +92,9 @@
     "calibrated": false,
     "live_calibration_status": "corpus_backed_pending_navigation_fix",
     "calibration_method": "label_proximity:Sales Comparison Comments",
-    "notes": "Sales comparison narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. Use corpus-backed surface hints until visual navigation is deterministic."
+    "report_click_ratio": [0.20, 0.57],
+    "report_click_delay_ms": 800,
+    "notes": "Sales comparison narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. A March 16, 2026 live anchor on the sales page summary box reliably opened the 'Comments on Sales Comparison' editor."
   },
   "reconciliation": {
     "label": "Reconciliation Comments",

@@ -112,6 +112,16 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getInsertionTimeoutMs({ manifest, targetSoftware, totalFields }) {
+  const configured = Number(manifest.insertion?.timeoutMs || 0);
+  const fields = Math.max(1, Number(totalFields || 0));
+  const dynamic =
+    targetSoftware === 'aci'
+      ? (60000 + fields * 45000)
+      : (30000 + fields * 15000);
+  return Math.max(configured || 120000, dynamic);
+}
+
 async function apiJson(baseUrl, method, route, body = null, timeoutMs = 20000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -511,8 +521,14 @@ async function runFixture(baseUrl, fixtureDir, options, capabilities) {
     }
     const insertionRunId = insertionStart.body.runId || insertionStart.body.run?.id;
     report.insertionRunId = insertionRunId;
+    const insertionTargetSoftware = manifest.insertion?.targetSoftware || inferTargetSoftware(manifest.formType);
+    const insertionTimeoutMs = getInsertionTimeoutMs({
+      manifest,
+      targetSoftware: insertionTargetSoftware,
+      totalFields: insertionStart.body?.totalFields || insertionStart.body?.run?.totalFields || 0,
+    });
 
-    const insertionDeadline = Date.now() + (manifest.insertion?.timeoutMs || 120000);
+    const insertionDeadline = Date.now() + insertionTimeoutMs;
     let insertionStatus = null;
     while (Date.now() < insertionDeadline) {
       const runRes = await apiJson(baseUrl, 'GET', `/api/insertion/run/${insertionRunId}`, null, 15000);
