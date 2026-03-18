@@ -8,10 +8,14 @@
  *  1. Locate the job folder (default: 48759 - 14 Maple Pl Normal)
  *  2. Find the assignment sheet PDF + completed appraisal PDF
  *  3. Extract facts from the assignment sheet via POST /api/intake/order
- *  4. Extract narratives Charles wrote from the completed PDF via Python
- *  5. Create a case and generate narratives via the API
- *  6. Compare generated vs actual (word overlap similarity)
- *  7. Print a grading table
+ *  4. Geocode the subject address (POST /api/cases/:id/geocode) to derive
+ *     neighborhood context (boundary roads, location side, amenity proximity)
+ *  5. Seed minimal inspection facts that can't be derived from geocoding
+ *     (condition_rating, kitchen/bath updates, marketing_time_days)
+ *  6. Extract narratives Charles wrote from the completed PDF via Python
+ *  7. Generate narratives via POST /api/cases/:id/generate-all
+ *  8. Compare generated vs actual (word overlap similarity)
+ *  9. Print a grading table
  *
  * Usage:
  *   node scripts/duplicateTest.mjs [job_folder_path]
@@ -39,7 +43,8 @@ const DEFAULT_JOB_FOLDER =
 
 const JOB_FOLDER = process.argv[2] || DEFAULT_JOB_FOLDER;
 const SERVER_BASE = process.env.SERVER_BASE || 'http://127.0.0.1:5178';
-const TIMEOUT_MS = 30000;
+const TIMEOUT_MS = 60_000;     // 60s for generation
+const GEOCODE_TIMEOUT_MS = 30_000;
 
 const NARRATIVE_FIELDS = [
   'neighborhood_description',
@@ -50,6 +55,20 @@ const NARRATIVE_FIELDS = [
   'sales_comparison_commentary',
   'reconciliation',
 ];
+
+// Minimal inspection facts that can't be derived from geocoding or the order sheet.
+// Used to unblock the pre-draft gate for testing purposes.
+const MINIMAL_INSPECTION_FACTS = {
+  improvements: {
+    condition_rating:   { value: 'C3', confidence: 'low' },
+    kitchen_update:     { value: 'updated-one to five years ago', confidence: 'low' },
+    bathroom_update:    { value: 'updated-one to five years ago', confidence: 'low' },
+  },
+  market: {
+    marketing_time_days: { value: '30', confidence: 'low' },
+    rate_trend:          { value: 'decreased', confidence: 'low' },
+  },
+};
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -63,18 +82,26 @@ function logSection(title) {
   console.log('═'.repeat(60));
 }
 
-async function apiPost(urlPath, body) {
+async function apiFetch(urlPath, { method = 'GET', body = null, timeoutMs = TIMEOUT_MS } = {}) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(`${SERVER_BASE}${urlPath}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    const opts = {
+      method,
       signal: ctrl.signal,
-    });
+    };
+    if (body !== null) {
+      opts.headers = { 'Content-Type': 'application/json' };
+      opts.body = JSON.stringify(body);
+    }
+    const res = await fetch(`${SERVER_BASE}${urlPath}`, opts);
     const json = await res.json().catch(() => null);
     return { status: res.status, body: json };
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return { status: 0, body: null, error: `Request timed out after ${timeoutMs}ms` };
+    }
+    return { status: 0, body: null, error: err.message };
   } finally {
     clearTimeout(timer);
   }
@@ -91,21 +118,8 @@ async function apiPostForm(urlPath, formData) {
     });
     const json = await res.json().catch(() => null);
     return { status: res.status, body: json };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function apiGet(urlPath) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-  try {
-    const res = await fetch(`${SERVER_BASE}${urlPath}`, {
-      method: 'GET',
-      signal: ctrl.signal,
-    });
-    const json = await res.json().catch(() => null);
-    return { status: res.status, body: json };
+  } catch (err) {
+    return { status: 0, body: null, error: err.message };
   } finally {
     clearTimeout(timer);
   }
@@ -187,7 +201,14 @@ function findJobFiles(folderPath) {
     .filter(e => e.isFile() && /\.pdf$/i.test(e.name))
     .map(e => path.join(folderPath, e.name));
 
-  const ASSIGNMENT_PATTERNS = [/assignment[_\s-]*sheet/i, /order[_\s-]*sheet/i, /request[_\s-]*form/i];
+  const ASSIGNMENT_PATTERNS = [
+    /assignment[_\s-]*sheet/i,
+    /order[_\s-]*sheet/i,
+    /request[_\s-]*form/i,
+    /appraisal[_\s-]*(?:assignment|order|request)/i,
+    /order\s*form/i,
+    /gmail/i,   // email-style request PDFs
+  ];
   const REPORT_PATTERNS = [/^\d{4,6}\.pdf$/i, /final[_\s-]*report/i, /completed/i];
 
   let assignmentSheet = null;
@@ -198,8 +219,8 @@ function findJobFiles(folderPath) {
     const isAssignment = ASSIGNMENT_PATTERNS.some(p => p.test(name));
     const isReport = REPORT_PATTERNS.some(p => p.test(name));
 
-    if (isAssignment) assignmentSheet = f;
-    else if (isReport) completedReport = f;
+    if (isAssignment && !assignmentSheet) assignmentSheet = f;
+    else if (isReport && !completedReport) completedReport = f;
   }
 
   // Fallback: if 2 PDFs and one is assignment, other is report
@@ -249,11 +270,7 @@ async function main() {
   // ── Step 2: Check server health ───────────────────────────────────────────
   logSection('Step 2: Server health check');
 
-  const { status: healthStatus, body: healthBody } = await apiGet('/api/health').catch(err => ({
-    status: 0,
-    body: null,
-    error: err.message,
-  }));
+  const { status: healthStatus, body: healthBody } = await apiFetch('/api/health');
 
   if (healthStatus !== 200) {
     log(`  ❌ Server not responding (${healthStatus}). Is it running at ${SERVER_BASE}?`);
@@ -286,11 +303,83 @@ async function main() {
     log(`  ⚠  Missing required fields: ${missingFields.join(', ')}`);
   }
 
-  // ── Step 4: Extract Charles's actual narratives ───────────────────────────
+  // ── Step 4: Geocode the subject address ───────────────────────────────────
+  logSection('Step 4: Geocoding subject address');
+
+  let geocodeOk = false;
+  let locationContextOk = false;
+
+  const { status: geoStatus, body: geoBody, error: geoErr } = await apiFetch(
+    `/api/cases/${caseId}/geocode`,
+    { method: 'POST', body: {}, timeoutMs: GEOCODE_TIMEOUT_MS }
+  );
+
+  if (geoStatus === 200 && geoBody?.ok) {
+    geocodeOk = true;
+    const sub = geoBody.subject;
+    log(`  ✓ Geocoded: ${sub?.display_name || sub?.lat + ',' + sub?.lng || 'OK'}`);
+    if (geoBody.subject?.lat) {
+      log(`    lat/lng: ${geoBody.subject.lat}, ${geoBody.subject.lng}`);
+    }
+    // Check location context
+    const { status: lcStatus, body: lcBody } = await apiFetch(
+      `/api/cases/${caseId}/location-context`,
+      { timeoutMs: 10_000 }
+    );
+    if (lcStatus === 200 && lcBody?.ok) {
+      locationContextOk = true;
+      log(`  ✓ Location context available`);
+      if (lcBody.boundaryFeatures?.length > 0) {
+        log(`    Boundary features: ${lcBody.boundaryFeatures.length}`);
+      }
+    } else {
+      log(`  ⚠  Location context unavailable (${lcStatus}): ${lcBody?.error || 'no detail'}`);
+    }
+  } else {
+    log(`  ⚠  Geocoding failed (${geoStatus}): ${geoErr || geoBody?.error || JSON.stringify(geoBody)?.slice(0, 100)}`);
+    log('     Generation will proceed without location context.');
+  }
+
+  // ── Step 5: Seed minimal inspection facts ─────────────────────────────────
+  logSection('Step 5: Seeding minimal inspection facts');
+
+  // Merge current facts with minimal inspection defaults (don't overwrite order-sheet data)
+  const { body: caseBodyBefore } = await apiFetch(`/api/cases/${caseId}`);
+  const existingFacts = caseBodyBefore?.facts || {};
+
+  const seedFacts = {};
+  for (const [section, fields] of Object.entries(MINIMAL_INSPECTION_FACTS)) {
+    if (!existingFacts[section]) {
+      seedFacts[section] = fields;
+    } else {
+      // Only seed fields that don't exist yet
+      const sectionSeeds = {};
+      for (const [k, v] of Object.entries(fields)) {
+        if (!existingFacts[section][k]) sectionSeeds[k] = v;
+      }
+      if (Object.keys(sectionSeeds).length > 0) seedFacts[section] = sectionSeeds;
+    }
+  }
+
+  if (Object.keys(seedFacts).length > 0) {
+    const { status: seedStatus, body: seedBody } = await apiFetch(
+      `/api/cases/${caseId}/facts`,
+      { method: 'PUT', body: seedFacts }
+    );
+    if (seedStatus === 200 && seedBody?.ok) {
+      log(`  ✓ Seeded inspection defaults: ${Object.keys(seedFacts).join(', ')}`);
+    } else {
+      log(`  ⚠  Fact seeding failed (${seedStatus}): ${seedBody?.error || 'unknown'}`);
+    }
+  } else {
+    log(`  ✓ No seeding needed — facts already present`);
+  }
+
+  // ── Step 6: Extract Charles's actual narratives ───────────────────────────
   let actualNarratives = {};
 
   if (completedReport) {
-    logSection('Step 4: Extracting actual narratives from completed report');
+    logSection('Step 6: Extracting actual narratives from completed report');
 
     const extractScript = path.join(PROJECT_ROOT, 'scripts', 'extract_urar_narratives.py');
     try {
@@ -305,62 +394,63 @@ async function main() {
       log('     Will still generate and compare what we can.');
     }
   } else {
-    logSection('Step 4: Skipping narrative extraction (no completed report found)');
+    logSection('Step 6: Skipping narrative extraction (no completed report found)');
   }
 
-  // ── Step 5: Generate narratives via cacc-writer ───────────────────────────
-  logSection('Step 5: Generating narratives with cacc-writer');
+  // ── Step 7: Generate narratives via cacc-writer ───────────────────────────
+  logSection('Step 7: Generating narratives with cacc-writer');
 
-  log('  Triggering generate-all (requires OpenAI API key)...');
-  const { status: genStatus, body: genBody } = await apiPost(
+  log('  Triggering generate-all (forceGateBypass=true)...');
+  const { status: genStatus, body: genBody, error: genErr } = await apiFetch(
     `/api/cases/${caseId}/generate-all`,
-    { forceGateBypass: true },
-  ).catch(err => ({ status: 0, body: null }));
+    { method: 'POST', body: { forceGateBypass: true }, timeoutMs: TIMEOUT_MS }
+  );
 
   let generatedNarratives = {};
+  let generateOk = false;
 
   if (genStatus === 503) {
     log('  ⚠  OpenAI API key not configured — generation skipped.');
     log('     Set OPENAI_API_KEY in .env to enable generation comparison.');
-    // Pull any existing outputs
-    const { body: caseBody } = await apiGet(`/api/cases/${caseId}`);
-    generatedNarratives = caseBody?.outputs || {};
   } else if (genStatus === 200 && genBody?.ok) {
-    log(`  ✓ Generated ${Object.keys(genBody.results || {}).length} sections`);
+    generateOk = true;
+    const nGenerated = Object.keys(genBody.results || {}).length;
+    const nErrors    = Object.keys(genBody.errors || {}).length;
+    log(`  ✓ Generated ${nGenerated} sections (${nErrors} errors)`);
+    if (nErrors > 0) {
+      log(`  Errors: ${JSON.stringify(genBody.errors).slice(0, 200)}`);
+    }
     generatedNarratives = genBody.results || {};
-    // Also check outputs
-    const { body: caseBody } = await apiGet(`/api/cases/${caseId}`);
-    const outputs = caseBody?.outputs || {};
+    // Also pull outputs from case record
+    const { body: caseBodyAfter } = await apiFetch(`/api/cases/${caseId}`);
+    const outputs = caseBodyAfter?.outputs || {};
     for (const [k, v] of Object.entries(outputs)) {
       if (v?.text && !generatedNarratives[k]) {
         generatedNarratives[k] = { text: v.text };
       }
     }
   } else if (genStatus === 409) {
-    log(`  ⚠  Generation blocked by pre-draft gate (no facts to work with)`);
-    log('     This is expected for a bare case with minimal facts.');
+    log(`  ⚠  Generation blocked by pre-draft gate: ${genBody?.error || ''}`);
+    log(`     Gate details: ${JSON.stringify(genBody?.gate || {}).slice(0, 200)}`);
   } else {
-    log(`  ⚠  Generation returned status ${genStatus}: ${JSON.stringify(genBody)?.slice(0, 100)}`);
+    log(`  ⚠  Generation returned status ${genStatus}: ${genErr || JSON.stringify(genBody)?.slice(0, 150)}`);
   }
 
-  // ── Step 6: Compare and grade ─────────────────────────────────────────────
-  logSection('Step 6: Comparison Report');
+  // ── Step 8: Compare and grade ─────────────────────────────────────────────
+  logSection('Step 8: Comparison Report');
 
   if (Object.keys(actualNarratives).length === 0 && Object.keys(generatedNarratives).length === 0) {
     log('  ⚠  No narratives available for comparison.');
     log('     Either the completed report could not be found/parsed, or generation was not run.');
   } else {
-    // Build comparison table
     const fields = [
       ...new Set([...Object.keys(actualNarratives), ...Object.keys(generatedNarratives)]),
     ].filter(f => NARRATIVE_FIELDS.includes(f) || actualNarratives[f] || generatedNarratives[f]);
 
-    const COL_WIDTHS = { field: 30, similarity: 12, generated: 50, actual: 50 };
-
     log('');
     log('  SIMILARITY SCORES (word overlap):');
     log('  ' + '─'.repeat(100));
-    log(`  ${'Field'.padEnd(COL_WIDTHS.field)} ${'Sim %'.padEnd(COL_WIDTHS.similarity)} ${'Generated (first 60 chars)'.padEnd(COL_WIDTHS.generated)}`);
+    log(`  ${'Field'.padEnd(30)} ${'Sim %'.padEnd(12)} ${'Generated (first 60 chars)'.padEnd(50)}`);
     log('  ' + '─'.repeat(100));
 
     const scores = [];
@@ -372,12 +462,11 @@ async function main() {
 
       const genPreview = String(generated).replace(/\n/g, ' ').slice(0, 60) || '(not generated)';
       const marker = similarity >= 40 ? '✓' : similarity >= 20 ? '~' : actual ? '✗' : '-';
-      log(`  ${field.padEnd(COL_WIDTHS.field)} [${String(similarity).padStart(3)}%] ${marker}  ${genPreview}`);
+      log(`  ${field.padEnd(30)} [${String(similarity).padStart(3)}%] ${marker}  ${genPreview}`);
     }
 
     log('  ' + '─'.repeat(100));
 
-    // Summary stats
     const scoredFields = scores.filter(s => s.actual && s.generated);
     if (scoredFields.length > 0) {
       const avgSim = Math.round(scoredFields.reduce((a, s) => a + s.similarity, 0) / scoredFields.length);
@@ -392,9 +481,13 @@ async function main() {
       log('  10-30% = Some overlap (facts present, style diverges)');
       log('  30-50% = Good overlap (similar structure and content)');
       log('  50%+   = Strong match (similar to how Charles writes it)');
+    } else if (scores.length > 0 && !completedReport) {
+      log('');
+      log('  (No completed report available for comparison — generation-only mode)');
+      log(`  Generated ${scores.filter(s => s.generated).length} section(s) successfully.`);
     }
 
-    // Show actual vs generated for each field
+    // Detailed comparison
     if (scores.some(s => s.actual && s.generated)) {
       log('');
       log('\n  DETAILED COMPARISON:');
@@ -415,11 +508,7 @@ async function main() {
 
   // ── Cleanup ───────────────────────────────────────────────────────────────
   logSection('Cleanup');
-  const { status: deleteStatus } = await apiPost(`/api/cases/${caseId}`, null)
-    .then(() => ({ status: 0 }))
-    .catch(() => ({ status: 0 }));
 
-  // Use actual DELETE
   const { status: delStatus } = await fetch(`${SERVER_BASE}/api/cases/${caseId}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
