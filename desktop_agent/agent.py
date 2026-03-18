@@ -353,10 +353,10 @@ def test_field():
         try:
             win32_win = app32.top_window()
             if tab_name:
-                core.navigate_tab(win32_win, tab_name, form_type)
+                core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
                 time.sleep(0.4)
-            ctrl, score, method = core.find_tx32_by_label(
-                win32_win, field_label, aliases)
+            ctrl, score, method = core.locate_field_tx32(
+                win32_win, field_cfg, form_type)
             strategies['tx32_label_proximity'] = {
                 'found': ctrl is not None, 'score': score, 'method': method}
             disc = core.discover_tx32(win32_win)
@@ -420,12 +420,12 @@ def probe():
     win32_win     = app32.top_window()
     tab_navigated = False
     if tab_name:
-        tab_navigated = core.navigate_tab(win32_win, tab_name, form_type)
+        tab_navigated = core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
         if tab_navigated:
             time.sleep(0.5)
 
     disc = core.discover_tx32(win32_win)
-    ctrl, score, method = core.find_tx32_by_label(win32_win, field_label, aliases)
+    ctrl, score, method = core.locate_field_tx32(win32_win, field_cfg, form_type)
 
     best = None
     if ctrl is not None:
@@ -548,14 +548,14 @@ def read_field():
 
     win32_win = app32.top_window()
     if tab_name:
-        core.navigate_tab(win32_win, tab_name, form_type)
+        core.navigate_tab(win32_win, tab_name, form_type, field_cfg)
         time.sleep(0.5)
 
     ctrl = core.find_tx32_by_rect(win32_win, target_rect)
     score = None
     method = 'tx32_rect_match'
     if ctrl is None:
-        ctrl, score, method = core.find_tx32_by_label(win32_win, field_label, aliases)
+        ctrl, score, method = core.locate_field_tx32(win32_win, field_cfg, form_type)
     if ctrl is None:
         return jsonify({
             'ok': False, 'fieldId': field_id, 'fieldLabel': field_label,
