@@ -82,7 +82,7 @@ TEMPLATE 4: ADVERSE SITE CONDITIONS
 ============================================================
 
 EXACT TEMPLATE (standard):
-"There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses."
+"There are no apparent adverse site conditions, encroachments, environmental conditions, or land uses."
 
 ALTERNATE (well/septic):
 "The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability."

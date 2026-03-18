@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-18T07:52:23.256Z",
+  "lastUpdated": "2026-03-18T09:54:16.411Z",
   "counts": {
     "approved_edits": 73,
-    "curated_examples": 33,
+    "curated_examples": 41,
     "imported_examples": 296,
     "phrases": 18
   },
@@ -3165,6 +3165,50 @@
       "updatedAt": "2026-03-07T21:05:38.385Z"
     },
     {
+      "id": "adverse-standard-01",
+      "formType": "1004",
+      "fieldId": "adverse_conditions",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "standard",
+        "no_adverse"
+      ],
+      "text": "There are no apparent adverse site conditions, encroachments, environmental conditions, or land uses."
+    },
+    {
+      "id": "adverse-standard-02",
+      "formType": "1004",
+      "fieldId": "adverse_conditions",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "standard",
+        "no_adverse"
+      ],
+      "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses. The subject appears to have no adverse conditions that would affect the livability, soundness, or structural integrity of the improvements."
+    },
+    {
+      "id": "adverse-well-septic-01",
+      "formType": "1004",
+      "fieldId": "adverse_conditions",
+      "sourceType": "curated",
+      "qualityScore": 92,
+      "tags": [
+        "illinois",
+        "residential",
+        "well_septic",
+        "rural"
+      ],
+      "text": "The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability."
+    },
+    {
       "id": "b088de6addad",
       "formType": "1004",
       "fieldId": "adverse_conditions",
@@ -4083,6 +4127,76 @@
       "text": "The subject neighborhood is bordered to the North by Raab Rd, to the South by Fort Jesse Rd, to the East by Airport Rd, and to the West by Hershey Rd. The subject is located in a neighborhood on the eastside of Normal, IL. It is a single family detached two story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment.",
       "createdAt": "2026-03-18T05:38:45.000Z",
       "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "functional-utility-01",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match"
+      ],
+      "text": "The subject features four above grade bedrooms, two above grade bathrooms, living room fireplace, partially finished full basement with family room, attached two-car garage, and patio."
+    },
+    {
+      "id": "functional-utility-02",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "sourceType": "curated",
+      "qualityScore": 94,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential"
+      ],
+      "text": "The subject features three above grade bedrooms, two above grade bathrooms, finished basement family room, den, and bathroom, attached two-car garage, and oversized detached two-car garage."
+    },
+    {
+      "id": "functional-utility-03",
+      "formType": "1004",
+      "fieldId": "functional_utility",
+      "sourceType": "curated",
+      "qualityScore": 94,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "zero_lot_line"
+      ],
+      "text": "The subject features two above grade bedrooms, two-and-a-half above grade bathrooms, den fireplace, partial finished basement with recreation room, attached two-car garage, covered patio, and fence."
+    },
+    {
+      "id": "reconciliation-standard-01",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "standard",
+        "template_match"
+      ],
+      "text": "Based on a complete visual inspection of the interior and exterior areas of the subject property, defined scope of work, statement of assumptions and limiting conditions, and appraiser's certification, my (our) opinion of the market value, as defined, of the real property that is the subject of this report is $[INSERT value], as of [INSERT date]."
+    },
+    {
+      "id": "reconciliation-standard-02",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "sourceType": "curated",
+      "qualityScore": 93,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "standard"
+      ],
+      "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data. The appraisal is made with the subject in 'as is' condition. There is no personal property included in the final estimate of value."
     },
     {
       "id": "recon_visual_inspect_95",

@@ -1,0 +1,15 @@
+{
+  "id": "adverse-standard-02",
+  "formType": "1004",
+  "fieldId": "adverse_conditions",
+  "sourceType": "curated",
+  "qualityScore": 95,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "standard",
+    "no_adverse"
+  ],
+  "text": "There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses. The subject appears to have no adverse conditions that would affect the livability, soundness, or structural integrity of the improvements."
+}
