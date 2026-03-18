@@ -1,0 +1,22 @@
+{
+  "id": "a5a289cc9457",
+  "formType": "1004",
+  "fieldId": "reconciliation",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "standard",
+    "cost_approach_not_developed",
+    "income_approach_not_developed"
+  ],
+  "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "e6ce7c5c947f",
+  "formType": "1004",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "limited_sales",
+    "extended_search",
+    "zero_lot_line",
+    "pud"
+  ],
+  "text": "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find zero lot lines of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its site size, age, inferior condition, bathroom count, GLA, basement finished room count, and lack of a fence. Comparable #2 has been adjusted for its site size, view, age, bathroom count, GLA, basement, and lack of fence. Comparable #3 has been adjusted for its site size, view, age, bathroom count, basement, and lack of a fence. See Comparable #4.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

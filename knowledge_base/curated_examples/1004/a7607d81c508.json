@@ -1,0 +1,22 @@
+{
+  "id": "a7607d81c508",
+  "formType": "1004",
+  "fieldId": "prior_sales_subject",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "no_prior_sales",
+    "standard",
+    "36_months"
+  ],
+  "text": "The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

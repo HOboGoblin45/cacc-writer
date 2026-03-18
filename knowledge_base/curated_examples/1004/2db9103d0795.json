@@ -1,0 +1,22 @@
+{
+  "id": "2db9103d0795",
+  "formType": "1004",
+  "fieldId": "market_conditions",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "under_30_days",
+    "good_appeal",
+    "rates_decreased"
+  ],
+  "text": "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have decreased slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

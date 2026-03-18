@@ -1,0 +1,22 @@
+{
+  "id": "9e9316d341c4",
+  "formType": "1004",
+  "fieldId": "functional_utility",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "standard",
+    "no_obsolescence",
+    "alternate"
+  ],
+  "text": "The property generally conforms to the neighborhood in functional utility, style, condition, use, and construction. No functional obsolescence noted.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

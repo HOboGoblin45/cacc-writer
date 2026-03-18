@@ -1,20 +1,218 @@
-Charles Cresci writing style guide
+CHARLES CRESCI - APPRAISAL NARRATIVE STYLE GUIDE
+Cresci Appraisal & Consulting Company, Bloomington/Normal, IL
+============================================================
 
-Tone:
-Professional, concise, lender-ready.
+PURPOSE: This guide captures the EXACT narrative patterns Charles Cresci uses in his appraisal reports.
+The AI must follow these templates precisely. ONLY the facts change. The structure stays the same.
+Do NOT invent new sentence structures. Do NOT paraphrase templates. Fill in the [PLACEHOLDERS].
 
-Sentence style:
-Short-to-medium sentences.
+============================================================
+TONE AND VOICE
+============================================================
 
-Language patterns frequently used:
-"This aspect has minimal impact on marketability."
-"The market segment interested in the subject..."
-"This is considered typical for the market area."
-"Accordingly..."
-"Overall..."
+- Professional, concise, lender-ready
+- No speculation, no exaggeration, no marketing language
+- No first-person ("I believe", "I found")
+- Short-to-medium sentences
+- Objective and neutral throughout
+- Every statement must be defensible in a professional appraisal context
 
-General behavior:
-Avoid exaggeration.
-Avoid speculation.
-Focus on supportable reasoning.
-Prefer practical market language rather than academic wording.
+============================================================
+TEMPLATE 1: NEIGHBORHOOD DESCRIPTION
+============================================================
+
+EXACT TEMPLATE:
+"The subject neighborhood is bordered to the North by [NORTH_BOUNDARY], to the South by [SOUTH_BOUNDARY], to the East by [EAST_BOUNDARY], and to the West by [WEST_BOUNDARY]. The subject is located in a neighborhood on the [DIRECTION]side of [CITY], IL. It is a single family [attached/detached] [STYLE] [style] [house/home/zero lot line]. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
+
+NOTES:
+- Direction: eastside, westside, southside, northside OR "North of [city] proper"
+- Style: ranch, two-story, traditional, tri-level, bi-level, etc.
+- attached/detached: always specify
+- Zero lot line: use "zero lot line" instead of "house" for ZLL properties
+- PUD note (when applicable, added separately): "The subject neighborhood is not legally classified as a Planned Unit Development. However, pursuant to GSE guidelines, the subdivision meets all the following criteria to operate like a PUD: mandatory membership in a homeowner's association; mandatory payment of monthly or annual assessments; and the presence of common elements."
+
+REAL EXAMPLES FROM REPORTS:
+- Hundman: "The subject neighborhood is bordered to the North by Shepard Rd, to the South by College Ave, to the East by Airport Rd, and to the West by Hershey Rd. The subject is located in a neighborhood on the eastside of Bloomington, IL. It is a single family attached ranch style zero lot line. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
+- Betsworth: "The subject neighborhood is bordered to the North by Locust St, to the South by Oakland Ave, to the East by Mercer Ave, and to the West by Main St. The subject is located in a neighborhood North of Weldon, IL proper. It is a single family detached ranch style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
+- Mirza: "The subject neighborhood is bordered to the North by Raab Rd, to the South by Fort Jesse Rd, to the East by Airport Rd, and to the West by Hershey Rd. The subject is located in a neighborhood on the eastside of Normal, IL. It is a single family detached two story traditional style house. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
+
+============================================================
+TEMPLATE 2: MARKET CONDITIONS (Addendum)
+============================================================
+
+EXACT TEMPLATE:
+"Fixed rate and ARM financing is readily available for qualified borrowers. Rates have [increased/decreased] slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under [N] days. Neighborhood appeal is [good/average]. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand."
+
+NOTES:
+- Marketing times: typically "under 30 days" or "under 60 days" — use the correct figure from case data
+- Neighborhood appeal: "good" (most cases) or "average" (some Bloomington southside cases)
+- Rates direction: "decreased slightly" or "increased slightly" — match current market conditions
+- "Supply and demand of similar homes appear to be in favor of demand." — consistent phrasing
+- Alternative ending seen: "Supply and demand are considered in balance." (less common)
+
+REAL EXAMPLES FROM REPORTS:
+- Hundman: "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have decreased slightly in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand."
+- Ryan Stewart: "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have slightly decreased in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 30 days. Neighborhood appeal is average. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand."
+- Betsworth: "Fixed rate and ARM financing is readily available for qualified borrowers. Rates have slightly decreased in the last few months. The area employment remains above average. Local market conditions are considered average. Typical marketing times are under 60 days. Neighborhood appeal is good. Typical sales do involve seller paid concessions. Supply and demand of similar homes appear to be in favor of demand."
+
+============================================================
+TEMPLATE 3: SUBJECT IMPROVEMENTS / CONDITION
+============================================================
+
+EXACT TEMPLATE (with updates):
+"[CONDITION_RATING];Kitchen-[updated/remodeled]-[TIMEFRAME];Bathrooms-[updated/remodeled]-[TIMEFRAME];The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+
+NOTES:
+- Condition rating: C3 (most common), C4 (less common), C2 (excellent/like new)
+- Update vs remodel: "updated" = cosmetic; "remodeled" = more substantial work
+- Timeframes used: "less than one year ago", "one to five years ago", "six to ten years ago"
+- The last three sentences are ALWAYS identical — never change them
+- Sometimes the condition prefix line is omitted (refinance reports where condition is straightforward)
+
+ALTERNATE (shorter, no UAD prefix):
+"The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+
+REAL EXAMPLES FROM REPORTS:
+- Hundman: "C3;Kitchen-remodeled-one to five years ago;Bathrooms-updated-one to five years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+- Soddy: "C3;Kitchen-remodeled-six to ten years ago;Bathrooms-remodeled-six to ten years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+- 47674: "C3;Kitchen-updated-less than one year ago;Bathrooms-updated-less than one year ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+
+============================================================
+TEMPLATE 4: ADVERSE SITE CONDITIONS
+============================================================
+
+EXACT TEMPLATE (standard):
+"There are no apparent adverse site conditions, easements, encroachments, environmental conditions, or land uses."
+
+ALTERNATE (well/septic):
+"The subject utilizes a private well and septic system. This aspect of the subject property is typical for the market area and has limited impact on marketability."
+
+NOTES:
+- Standard template used in vast majority of Bloomington/Normal properties
+- Well/septic version used for rural or semi-rural properties
+- NEVER add engineering or environmental certifications
+- NEVER say "no environmental hazards exist"
+
+============================================================
+TEMPLATE 5: FUNCTIONAL UTILITY
+============================================================
+
+EXACT TEMPLATE (standard):
+"[Subject/The property] generally conforms to most other homes in the neighborhood in functional utility, style, condition, use, and quality of construction."
+
+ALTERNATE (full sentence):
+"The property generally conforms to the neighborhood in functional utility, style, condition, use, and construction. No functional obsolescence noted."
+
+NOTES:
+- "quality of construction" or "construction" — both acceptable
+- Subject can be "[Property address]" or "The subject" or "The property"
+- No functional obsolescence is the default — only note it if present
+
+REAL EXAMPLES FROM REPORTS:
+- Betsworth: "generally conforms to most other homes in the neighborhood in functional utility, style, condition, use, and quality of construction."
+- Mirza: "generally conforms to most other homes in the neighborhood in functional utility, style, condition, use, and quality of construction."
+- Most reports: identical phrasing
+
+============================================================
+TEMPLATE 6: SALES COMPARISON APPROACH COMMENTARY
+============================================================
+
+TEMPLATE A (comparable sales found in subject's neighborhood):
+"All comparables have been found in the subject's neighborhood [on the [DIRECTION]side of [CITY], IL] and were selected to demonstrate the marketability of houses of a similar location, design, age, [quality,] condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for [ADJUSTMENT LIST]. Comparable #2 has been adjusted for [ADJUSTMENT LIST]. Comparable #3 has been adjusted for [ADJUSTMENT LIST]. [After adjustments are made the comparables provide a good basis for an estimate of market value.] [See Comparable #4.]"
+
+TEMPLATE B (limited sales, extended search):
+"Due to a lack of recent comparable sales in [the subject's neighborhood / CITY, IL], an extensive search was made to find [zero lot lines / comparables] in [AREA/COMPETING MARKET] of a similar location, design, [age,] quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for [ADJUSTMENT LIST]. Comparable #2 has been adjusted for [ADJUSTMENT LIST]. Comparable #3 has been adjusted for [ADJUSTMENT LIST]. See Comparable[s] #[N]."
+
+NOTES:
+- Always cite the sales statistics chart for market time adjustment percentage
+- Adjustment list items: site size, age, condition, GLA, basement finished room count, bathroom count, garage space count, view, enclosed porch, patio, fence, deck, shed
+- "recevied" (sic) appears in some reports — do NOT reproduce this typo; use "received"
+- Market time adjustment: always expressed as X.X% (one decimal place)
+
+REAL EXAMPLES FROM REPORTS:
+- Soddy: "All comparables have been found in the subject's neighborhood on the eastside of Bloomington, IL and were selected to demonstrate the marketability of houses of a similar location, design, age, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report."
+- Hundman: "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find zero lot lines of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of 3.9% based on the sales statistics chart included in this report."
+- 47773: "Due to a lack of recent comparable sales in Clinton, IL, an extensive search was made to find comparables in Clinton, IL and the competing community of Lincoln, IL. The comparables were selected to demonstrate the marketability of houses of a similar age and design that have been recently updated to appeal to a similar market segment as the subject."
+
+============================================================
+TEMPLATE 7: RECONCILIATION
+============================================================
+
+EXACT TEMPLATE:
+"The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data."
+
+ADDENDUM LINE:
+"The appraisal is made with the subject in 'as is' condition. There is no personal property included in the final estimate of value."
+
+NOTES:
+- This template is nearly identical across ALL reports — never change the structure
+- Cost Approach not developed = at lender request (standard)
+- Income Approach not developed = lack of market data (standard)
+
+============================================================
+TEMPLATE 8: CONTRACT ANALYSIS
+============================================================
+
+TEMPLATE (purchase transaction):
+"The Residential Sales Contract lists the contract price as $[AMOUNT] with sales concessions in the form of [CONCESSION DESCRIPTION]. Sales concessions are typical for the market area and have not significantly impacted the sale price."
+
+TEMPLATE (refinance / no contract):
+[No contract analysis section required — leave blank or note refinance transaction]
+
+TEMPLATE (offering history):
+"It appears that the subject has not been offered for sale in the twelve months prior to the effective date of this appraisal."
+
+NOTES:
+- Concessions often: "seller paying [X]% of sale price to buyer's brokerage" or "seller providing $[X] towards buyer's closing costs and $[X] to buyer's brokerage"
+- "Sales concessions are typical for the market area and have not significantly impacted the sale price." — always include this sentence
+
+REAL EXAMPLES FROM REPORTS:
+- Gobtop: "The Residential Sales Contract lists the contract price as $105,000 with sales concessions in the form of the seller providing 3.0% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price."
+- 47674: "The Residential Sales Contract lists the contract price as $155,000 with sales concessions in the form of the seller paying 3% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price."
+- 47773: "The Residential Sales Contract lists the contract price as $185,000 with sales concessions in the form of the seller providing $2,500 towards buyer's closing costs and $5,500 to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price."
+
+============================================================
+TEMPLATE 9: PRIOR SALES / OFFERING HISTORY
+============================================================
+
+EXACT TEMPLATE:
+"The subject property has not sold in the past 36 months. All previous sales of the comparable properties have been reported. All sales appear to reflect arms length transactions for the period which the sale occurred."
+
+NOTES:
+- "arms length" (no hyphen) — Charles's consistent spelling
+- "for the period which the sale occurred" — exact phrasing, not "at the time of the sale"
+
+============================================================
+COMMON PHRASES AND SENTENCE PATTERNS
+============================================================
+
+Frequently used phrases (use these over invented alternatives):
+- "It conforms to most other existing homes in the neighborhood in design, quality, and condition."
+- "The area is within a mile of schools, recreation, shopping, and centers of employment."
+- "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear."
+- "Some components, but not every major building component, may be updated or recently rehabilitated."
+- "The structure has been well maintained."
+- "Local market conditions are considered average."
+- "Typical sales do involve seller paid concessions."
+- "The area employment remains above average."
+- "Sales concessions are typical for the market area and have not significantly impacted the sale price."
+- "It provides the best indication to market value."
+- "Information is held in the appraiser's file to complete the Cost Approach if required."
+- "The Income Approach was not developed due to the lack of market data."
+- "There is no personal property included in the final estimate of value."
+- "All sales appear to reflect arms length transactions for the period which the sale occurred."
+- "Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report."
+
+============================================================
+WHAT TO AVOID
+============================================================
+
+- Do NOT say "I believe", "I found", "I observed" (no first person)
+- Do NOT say "extensive analysis confirms", "thorough review shows"
+- Do NOT say "the property is in excellent condition" without a UAD C2 rating
+- Do NOT fabricate market statistics, adjustment percentages, or boundary roads
+- Do NOT write multi-paragraph essays — Charles writes concisely
+- Do NOT use academic or overly formal language
+- Do NOT use "however" as a sentence opener (except in reconciliation template)
+- Do NOT add qualifiers like "it should be noted that" or "it is important to mention"
+- Do NOT change the template structure — only change the facts inside [PLACEHOLDERS]

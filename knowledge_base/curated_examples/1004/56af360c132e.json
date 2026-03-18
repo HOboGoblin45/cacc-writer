@@ -1,0 +1,23 @@
+{
+  "id": "56af360c132e",
+  "formType": "1004",
+  "fieldId": "contract_analysis",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "purchase",
+    "seller_concession",
+    "buyer_brokerage",
+    "percent_concession"
+  ],
+  "text": "The Residential Sales Contract lists the contract price as $155,000 with sales concessions in the form of the seller paying 3% of sale price to buyer's brokerage. Sales concessions are typical for the market area and have not significantly impacted the sale price.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

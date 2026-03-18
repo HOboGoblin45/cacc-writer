@@ -1,0 +1,23 @@
+{
+  "id": "cc540ef10bf0",
+  "formType": "1004",
+  "fieldId": "sales_comparison",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "found_in_neighborhood",
+    "westside_bloomington",
+    "recently_updated",
+    "market_time_adjustment"
+  ],
+  "text": "All comparables have been found on the westside of Bloomington, IL and were selected to demonstrate the marketability of recently updated homes of a similar location, design, age, quality, and condition. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for its [ADJUSTMENTS]. Comparable #2 has been adjusted for its [ADJUSTMENTS]. Comparable #3 has been adjusted for its [ADJUSTMENTS]. After adjustments are made the comparables provide a good basis for an estimate of market value.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}

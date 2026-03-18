@@ -1,0 +1,22 @@
+{
+  "id": "16c63e377d88",
+  "formType": "1004",
+  "fieldId": "listing_history",
+  "propertyType": "residential",
+  "marketType": "suburban",
+  "marketArea": "bloomington_normal",
+  "sourceType": "curated",
+  "qualityScore": 90,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "template_match",
+    "not_listed",
+    "refinance",
+    "standard"
+  ],
+  "text": "It appears that the subject has not been offered for sale in the twelve months prior to the effective date of this appraisal.",
+  "createdAt": "2026-03-18T05:38:45.000Z",
+  "updatedAt": "2026-03-18T05:38:45.000Z"
+}
