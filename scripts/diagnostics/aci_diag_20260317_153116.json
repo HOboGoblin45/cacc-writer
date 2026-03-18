@@ -1,0 +1,725 @@
+{
+  "metadata": {
+    "type": "aci_diagnostic",
+    "timestamp": "2026-03-17T15:31:16.928606",
+    "backend": "uia",
+    "warning": "Diagnostic only. Do not overwrite desktop_agent/field_maps/1004.json with this.",
+    "screenshot": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\scripts\\diagnostics\\aci_diag_20260317_153116.png",
+    "status": "COMPLETE"
+  },
+  "report32main": {
+    "title": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+    "class_name": "Report32Main",
+    "handle": 15271094,
+    "rect": {
+      "left": -9,
+      "top": 0,
+      "width": 974,
+      "height": 1039
+    }
+  },
+  "window_hierarchy": [
+    {
+      "depth": 0,
+      "class": "Report32Main",
+      "type": "Window",
+      "title": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci]",
+      "visible": true
+    },
+    {
+      "depth": 1,
+      "class": "MDIClient",
+      "type": "Pane",
+      "title": "Workspace",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "OWL_Window",
+      "type": "Window",
+      "title": "C:\\Program Files (x86)\\ACI32\\REPORTS\\testtesttest.aci",
+      "visible": true
+    },
+    {
+      "depth": 3,
+      "class": "ACIRpdView",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "ACIRpdCompView",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 5,
+      "class": "",
+      "type": "ScrollBar",
+      "title": "Vertical",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "Button",
+      "title": "Line up",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "Button",
+      "title": "Page up",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "Thumb",
+      "title": "Position",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "Button",
+      "title": "Page down",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "Button",
+      "title": "Line down",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "ACIFormViewLayout",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 5,
+      "class": "ACIFormView",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "ACINumericEditField",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "",
+      "type": "ScrollBar",
+      "title": "Vertical",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Button",
+      "title": "Line up",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Button",
+      "title": "Page up",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Thumb",
+      "title": "Position",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Button",
+      "title": "Line down",
+      "visible": true
+    },
+    {
+      "depth": 5,
+      "class": "ACISectionTabs",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 6,
+      "class": "msctls_updown32",
+      "type": "Spinner",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Button",
+      "title": "More",
+      "visible": true
+    },
+    {
+      "depth": 7,
+      "class": "",
+      "type": "Button",
+      "title": "Less",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "ACIPaneTitle",
+      "type": "Pane",
+      "title": "1004_05UAD",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "ACISplitterBar",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 3,
+      "class": "",
+      "type": "TitleBar",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 1,
+      "class": "OWL_Window:F",
+      "type": "Pane",
+      "title": "BorderSlip",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "OWL_Window:F",
+      "type": "Pane",
+      "title": "Main",
+      "visible": true
+    },
+    {
+      "depth": 3,
+      "class": "ComboBox",
+      "type": "ComboBox",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "Edit",
+      "type": "Edit",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 4,
+      "class": "",
+      "type": "Button",
+      "title": "Open",
+      "visible": true
+    },
+    {
+      "depth": 1,
+      "class": "OWL_Window:F",
+      "type": "Pane",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 1,
+      "class": "",
+      "type": "TitleBar",
+      "title": "",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuBar",
+      "title": "System",
+      "visible": true
+    },
+    {
+      "depth": 3,
+      "class": "",
+      "type": "MenuItem",
+      "title": "System",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Minimize",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Maximize",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Close",
+      "visible": true
+    },
+    {
+      "depth": 1,
+      "class": "",
+      "type": "MenuBar",
+      "title": "Application",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Document Window",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "File",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Edit",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "View",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Format",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Comps",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "eServices",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Tools",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Options",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Window",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "MenuItem",
+      "title": "Help",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Minimize",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Restore",
+      "visible": true
+    },
+    {
+      "depth": 2,
+      "class": "",
+      "type": "Button",
+      "title": "Close",
+      "visible": true
+    }
+  ],
+  "tx32_controls": [],
+  "section_tabs": [
+    {
+      "class_name": "ACISectionTabs",
+      "control_type": "Pane",
+      "title": "",
+      "automation_id": "311",
+      "rect": {
+        "left": 102,
+        "top": 983,
+        "width": 853,
+        "height": 25
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 5
+    }
+  ],
+  "form_views": [
+    {
+      "class_name": "ACIFormViewLayout",
+      "control_type": "Pane",
+      "title": "",
+      "automation_id": "",
+      "rect": {
+        "left": 102,
+        "top": 89,
+        "width": 853,
+        "height": 919
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 4
+    },
+    {
+      "class_name": "ACIFormView",
+      "control_type": "Pane",
+      "title": "",
+      "automation_id": "",
+      "rect": {
+        "left": 102,
+        "top": 89,
+        "width": 853,
+        "height": 894
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 5
+    }
+  ],
+  "popups": [],
+  "helper_buttons": [
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Line up",
+      "automation_id": "UpButton",
+      "rect": {
+        "left": 79,
+        "top": 80,
+        "width": 17,
+        "height": 17
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 6
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Page up",
+      "automation_id": "UpPageButton",
+      "rect": {
+        "left": 79,
+        "top": 97,
+        "width": 17,
+        "height": 453
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 6
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Page down",
+      "automation_id": "DownPageButton",
+      "rect": {
+        "left": 79,
+        "top": 567,
+        "width": 17,
+        "height": 422
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 6
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Line down",
+      "automation_id": "DownButton",
+      "rect": {
+        "left": 79,
+        "top": 989,
+        "width": 17,
+        "height": 17
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 6
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Line up",
+      "automation_id": "UpButton",
+      "rect": {
+        "left": 936,
+        "top": 91,
+        "width": 17,
+        "height": 17
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 7
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Page up",
+      "automation_id": "UpPageButton",
+      "rect": {
+        "left": 936,
+        "top": 108,
+        "width": 17,
+        "height": 839
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 7
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Line down",
+      "automation_id": "DownButton",
+      "rect": {
+        "left": 936,
+        "top": 964,
+        "width": 17,
+        "height": 17
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 7
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "More",
+      "automation_id": "MoreButton",
+      "rect": {
+        "left": 929,
+        "top": 993,
+        "width": 12,
+        "height": 14
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 7
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Less",
+      "automation_id": "LessButton",
+      "rect": {
+        "left": 941,
+        "top": 993,
+        "width": 12,
+        "height": 14
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 7
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Open",
+      "automation_id": "DropDown",
+      "rect": {
+        "left": 728,
+        "top": 53,
+        "width": 15,
+        "height": 19
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 4
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Minimize",
+      "automation_id": "",
+      "rect": {
+        "left": 818,
+        "top": 1,
+        "width": 47,
+        "height": 30
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Maximize",
+      "automation_id": "",
+      "rect": {
+        "left": 865,
+        "top": 1,
+        "width": 46,
+        "height": 30
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Close",
+      "automation_id": "",
+      "rect": {
+        "left": 911,
+        "top": 1,
+        "width": 47,
+        "height": 30
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Minimize",
+      "automation_id": "",
+      "rect": {
+        "left": 900,
+        "top": 31,
+        "width": 19,
+        "height": 19
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Restore",
+      "automation_id": "",
+      "rect": {
+        "left": 919,
+        "top": 31,
+        "width": 19,
+        "height": 19
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    },
+    {
+      "class_name": "",
+      "control_type": "Button",
+      "title": "Close",
+      "automation_id": "",
+      "rect": {
+        "left": 938,
+        "top": 31,
+        "width": 19,
+        "height": 19
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 2
+    }
+  ],
+  "editable_controls": [
+    {
+      "class_name": "ComboBox",
+      "control_type": "ComboBox",
+      "title": "",
+      "automation_id": "6512",
+      "rect": {
+        "left": 659,
+        "top": 52,
+        "width": 85,
+        "height": 21
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 3
+    },
+    {
+      "class_name": "Edit",
+      "control_type": "Edit",
+      "title": "",
+      "automation_id": "1001",
+      "rect": {
+        "left": 662,
+        "top": 55,
+        "width": 62,
+        "height": 15
+      },
+      "is_visible": true,
+      "is_enabled": true,
+      "depth": 4
+    }
+  ],
+  "surface_anchors": [],
+  "live_fieldmap_comparison": {
+    "live_field_count": 0,
+    "discovered_tx32_count": 0,
+    "discovered_editable_count": 2
+  }
+}

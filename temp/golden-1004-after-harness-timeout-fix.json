@@ -1,0 +1,240 @@
+{
+  "runAt": "2026-03-17T00:07:45.937Z",
+  "baseUrl": "http://localhost:5223",
+  "options": {
+    "allowDryRunInsertion": false,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": true,
+      "rq": true
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Residential 1004 Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\1004-case",
+      "formType": "1004",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "c3f4b13e",
+      "generationRunId": "1678e0e4-f7af-4426-aef9-886930bc7ac0",
+      "qcRunId": "f17a0880-0615-4839-9145-5ce43f313258",
+      "insertionRunId": "irun_88c5fb01-fff",
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case c3f4b13e"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-order-sheet.pdf -> order_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-contract.pdf -> contract"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-mls-sheet.pdf -> mls_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 15 fact(s), rejected 16"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 15 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 12 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 18 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 1678e0e4-f7af-4426-aef9-886930bc7ac0"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 6 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=1",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 4
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "destination_probe",
+          "status": "passed",
+          "detail": "Live destination located 1/2 probe field(s)",
+          "probeFieldIds": [
+            "neighborhood_description",
+            "site_comments"
+          ]
+        },
+        {
+          "name": "insertion_status",
+          "status": "failed",
+          "detail": "Insertion run timed out",
+          "payload": {
+            "id": "irun_88c5fb01-fff",
+            "caseId": "c3f4b13e",
+            "generationRunId": "1678e0e4-f7af-4426-aef9-886930bc7ac0",
+            "formType": "1004",
+            "targetSoftware": "aci",
+            "status": "running",
+            "totalFields": 8,
+            "completedFields": 5,
+            "failedFields": 0,
+            "skippedFields": 0,
+            "verifiedFields": 0,
+            "qcRunId": "f17a0880-0615-4839-9145-5ce43f313258",
+            "qcBlockerCount": 0,
+            "qcGatePassed": true,
+            "config": {
+              "dryRun": false,
+              "verifyAfter": true,
+              "skipQcBlockers": false,
+              "forceReinsert": false,
+              "maxRetries": 3,
+              "defaultFallback": "retry_then_clipboard",
+              "timeout": 15000,
+              "verificationMode": "tx32_readback"
+            },
+            "summary": {},
+            "replayPackage": {},
+            "rollbackFields": 0,
+            "originalRunId": null,
+            "runType": "standard",
+            "startedAt": "2026-03-17T00:00:45.167Z",
+            "completedAt": null,
+            "durationMs": null,
+            "createdAt": "2026-03-17T00:00:45.166Z"
+          }
+        }
+      ],
+      "error": {
+        "step": "insertion_status",
+        "message": "Insertion run timed out",
+        "payload": {
+          "id": "irun_88c5fb01-fff",
+          "caseId": "c3f4b13e",
+          "generationRunId": "1678e0e4-f7af-4426-aef9-886930bc7ac0",
+          "formType": "1004",
+          "targetSoftware": "aci",
+          "status": "running",
+          "totalFields": 8,
+          "completedFields": 5,
+          "failedFields": 0,
+          "skippedFields": 0,
+          "verifiedFields": 0,
+          "qcRunId": "f17a0880-0615-4839-9145-5ce43f313258",
+          "qcBlockerCount": 0,
+          "qcGatePassed": true,
+          "config": {
+            "dryRun": false,
+            "verifyAfter": true,
+            "skipQcBlockers": false,
+            "forceReinsert": false,
+            "maxRetries": 3,
+            "defaultFallback": "retry_then_clipboard",
+            "timeout": 15000,
+            "verificationMode": "tx32_readback"
+          },
+          "summary": {},
+          "replayPackage": {},
+          "rollbackFields": 0,
+          "originalRunId": null,
+          "runType": "standard",
+          "startedAt": "2026-03-17T00:00:45.167Z",
+          "completedAt": null,
+          "durationMs": null,
+          "createdAt": "2026-03-17T00:00:45.166Z"
+        }
+      }
+    }
+  ]
+}

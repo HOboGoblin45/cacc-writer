@@ -81,7 +81,7 @@ export function prepareInsertionRun({
   });
 
   // Check QC gate
-  const qcGate = checkQcGate(caseId, mergedConfig);
+  const qcGate = checkQcGate(caseId, mergedConfig, generationRunId);
 
   // Create the run
   const run = createInsertionRun({
@@ -559,8 +559,33 @@ export function evaluateInsertionQcGate({
  * @param {Object} config
  * @returns {import('./types.js').QCGateResult}
  */
-function checkQcGate(caseId, config) {
+function checkQcGate(caseId, config, generationRunId = null) {
   const db = getDb();
+
+  // If a generationRunId is provided, require a fresh QC run linked to it
+  if (generationRunId) {
+    let freshQcRun = null;
+    try {
+      freshQcRun = db.prepare(
+        "SELECT * FROM qc_runs WHERE case_id = ? AND generation_run_id = ? ORDER BY created_at DESC LIMIT 1"
+      ).get(caseId, generationRunId);
+    } catch {
+      // Column may not exist yet; fall through to general check
+    }
+    if (!freshQcRun) {
+      return {
+        passed: false,
+        qcRunId: null,
+        blockerCount: 0,
+        highCount: 0,
+        blockerMessages: [],
+        highMessages: [],
+        recommendation: 'blocked',
+        reason: 'missing_fresh_generation_qc',
+        overrideAllowed: false,
+      };
+    }
+  }
 
   // Find the latest QC run for this case
   let qcRun = null;
@@ -573,6 +598,20 @@ function checkQcGate(caseId, config) {
   }
 
   if (!qcRun) {
+    // If requireQcRun is set, treat missing QC run as a blocker
+    if (config && config.requireQcRun) {
+      return {
+        passed: false,
+        qcRunId: null,
+        blockerCount: 0,
+        highCount: 0,
+        blockerMessages: [],
+        highMessages: [],
+        recommendation: 'blocked',
+        reason: 'missing_qc_run',
+        overrideAllowed: false,
+      };
+    }
     return {
       passed: true,
       qcRunId: null,
