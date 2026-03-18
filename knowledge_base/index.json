@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-18T09:56:57.994Z",
+  "lastUpdated": "2026-03-18T10:34:53.151Z",
   "counts": {
     "approved_edits": 73,
-    "curated_examples": 41,
+    "curated_examples": 42,
     "imported_examples": 296,
     "phrases": 18
   },
@@ -4168,6 +4168,21 @@
         "zero_lot_line"
       ],
       "text": "The subject features two above grade bedrooms, two-and-a-half above grade bathrooms, den fireplace, partial finished basement with recreation room, attached two-car garage, covered patio, and fence."
+    },
+    {
+      "id": "reconciliation-exact-01",
+      "formType": "1004",
+      "fieldId": "reconciliation",
+      "sourceType": "curated",
+      "qualityScore": 98,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "template_match",
+        "exact"
+      ],
+      "text": "The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data. The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value."
     },
     {
       "id": "reconciliation-standard-01",
