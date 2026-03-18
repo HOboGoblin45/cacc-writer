@@ -731,39 +731,38 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     const results = {};
     const errors = {};
     const statuses = {};
-    const CONCURRENCY = 3;
-    let qi = 0;
+    // Sequential generation with small delay to avoid hitting OpenAI TPM limits.
+    // 30K TPM limit with ~3-4K tokens per field = max ~8 fields/min safely.
+    // Running sequentially with a 2s gap keeps us well under the limit.
+    const INTER_FIELD_DELAY_MS = 2000;
 
-    async function runAll() {
-      while (qi < allFields.length) {
-        const field = allFields[qi++];
-        const sid = trimText(field?.id || field, 80);
-        try {
-          const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType, fieldId: sid });
-          const messages = buildPromptMessages({
-            formType,
-            fieldId: sid,
-            facts: enrichedFacts,
-            voiceExamples,
-            examples: otherExamples,
-            locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? locationContext : null,
-            assignmentMeta,
-          });
-          const text = await callAI(messages);
-          results[sid] = {
-            title: field?.title || sid,
-            text,
-            examplesUsed: voiceExamples.length + otherExamples.length,
-          };
-          statuses[sid] = 'drafted';
-        } catch (e) {
-          errors[sid] = e?.message || 'Unknown error';
-          statuses[sid] = 'error';
-        }
+    for (const field of allFields) {
+      const sid = trimText(field?.id || field, 80);
+      try {
+        const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType, fieldId: sid });
+        const messages = buildPromptMessages({
+          formType,
+          fieldId: sid,
+          facts: enrichedFacts,
+          voiceExamples,
+          examples: otherExamples,
+          locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? locationContext : null,
+          assignmentMeta,
+        });
+        const text = await callAI(messages);
+        results[sid] = {
+          title: field?.title || sid,
+          text,
+          examplesUsed: voiceExamples.length + otherExamples.length,
+        };
+        statuses[sid] = 'drafted';
+      } catch (e) {
+        errors[sid] = e?.message || 'Unknown error';
+        statuses[sid] = 'error';
       }
+      // Small delay between fields to stay under token rate limits
+      await new Promise(r => setTimeout(r, INTER_FIELD_DELAY_MS));
     }
-
-    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, allFields.length) }, runAll));
     persistGeneratedOutputs({
       caseId: req.params.caseId,
       projection,

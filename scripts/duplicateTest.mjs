@@ -43,7 +43,7 @@ const DEFAULT_JOB_FOLDER =
 
 const JOB_FOLDER = process.argv[2] || DEFAULT_JOB_FOLDER;
 const SERVER_BASE = process.env.SERVER_BASE || 'http://127.0.0.1:5178';
-const TIMEOUT_MS = 60_000;     // 60s for generation
+const TIMEOUT_MS = 180_000;    // 180s for generation (sequential with delays)
 const GEOCODE_TIMEOUT_MS = 30_000;
 
 const NARRATIVE_FIELDS = [
