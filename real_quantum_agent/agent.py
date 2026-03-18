@@ -64,6 +64,7 @@ How to extend:
 
 import json
 import os
+import re
 import sys
 import time
 import logging
@@ -550,6 +551,41 @@ def insert_text(page, field_config: dict, text: str) -> bool:
     # ── Strategy 3: Clipboard paste fallback ──────────────────────────────────
     return fallback_clipboard(page, field_config, text)
 
+_last_tinymce_polls = 0  # polls taken in most recent _wait_for_tinymce_init call
+
+
+def _wait_for_tinymce_init(page, tinymce_id: str, max_attempts: int = 10, interval_ms: int = 500) -> bool:
+    """Poll until tinymce.get(id) is initialized or timeout (max_attempts * interval_ms ms).
+
+    Updates the module-level _last_tinymce_polls counter for diagnostic reporting.
+    """
+    global _last_tinymce_polls
+    _last_tinymce_polls = 0
+    for i in range(max_attempts):
+        try:
+            ready = page.evaluate(
+                f"typeof tinymce !== 'undefined' && tinymce.get('{tinymce_id}') !== null"
+            )
+            if ready:
+                _last_tinymce_polls = i + 1
+                log.info(f"TinyMCE '{tinymce_id}' ready after {i + 1} poll(s)")
+                return True
+        except Exception as e:
+            log.debug(f"TinyMCE poll {i + 1} error: {e}")
+        time.sleep(interval_ms / 1000.0)
+    _last_tinymce_polls = max_attempts
+    log.warning(
+        f"TinyMCE '{tinymce_id}' not initialized after {max_attempts} polls "
+        f"({max_attempts * interval_ms}ms)"
+    )
+    return False
+
+
+def _strip_html(html: str) -> str:
+    """Strip HTML tags from a string and return plain text."""
+    return re.sub(r'<[^>]+>', '', html or '').strip()
+
+
 def _insert_tinymce(page, field_config: dict, text: str) -> bool:
     """
     Insert text into a TinyMCE rich text editor.
@@ -608,17 +644,14 @@ def _insert_tinymce(page, field_config: dict, text: str) -> bool:
                 const el = document.querySelector('{iframe_sel}');
                 if (el) el.scrollIntoView({{behavior: 'instant', block: 'center'}});
             """)
-            time.sleep(1.5)  # Wait for TinyMCE to initialize after scroll
+            # Poll for TinyMCE init instead of static sleep (up to 5 seconds)
+            initialized = _wait_for_tinymce_init(page, tinymce_id) if tinymce_id else False
 
             # Retry TinyMCE JS API after scroll
-            if tinymce_id:
-                initialized = page.evaluate(
-                    f"typeof tinymce !== 'undefined' && tinymce.get('{tinymce_id}') !== null"
-                )
-                if initialized:
-                    page.evaluate(f"tinymce.get('{tinymce_id}').setContent({json.dumps(text)})")
-                    log.info(f"Inserted via TinyMCE JS (after scroll): {tinymce_id}")
-                    return True
+            if tinymce_id and initialized:
+                page.evaluate(f"tinymce.get('{tinymce_id}').setContent({json.dumps(text)})")
+                log.info(f"Inserted via TinyMCE JS (after scroll): {tinymce_id}")
+                return True
 
             # Click inside the iframe body and paste
             iframe_el = page.frame_locator(f"iframe#{tinymce_iframe_id}")
@@ -688,8 +721,10 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
     """
     Read the field value back and verify the text was inserted correctly.
 
-    Checks that the field contains at least the first 60 characters of
-    the expected text (full match may fail due to HTML encoding differences).
+    Checks that the field contains at least the first 100 characters of
+    the expected text. HTML tags are stripped from the readback value before
+    comparison so that TinyMCE's HTML output (e.g. <p>text</p>) correctly
+    matches plain-text input.
 
     Args:
         page:          Playwright Page object
@@ -700,14 +735,16 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
         True if verification passed, False otherwise (non-fatal).
     """
     try:
-        check = expected_text[:60].strip()
-        actual = read_field_value(page, field_config)
+        check = expected_text[:100].strip()
+        raw_actual = read_field_value(page, field_config)
+        actual = _strip_html(raw_actual)
 
         passed = check in actual
         if passed:
             log.info("Verification passed ✓")
         else:
             log.warning(f"Verification FAILED. Expected to find: '{check[:40]}...'")
+            log.debug(f"Verification readback (stripped): '{actual[:80]}'")
         return passed
 
     except Exception as e:
@@ -865,12 +902,13 @@ def insert():
             capture_screenshot(page, f'verify_fail_{field_id}')
 
     return jsonify({
-        'ok':         True,
-        'inserted':   True,
-        'verified':   verified,
-        'method':     field_config.get('input_type', 'direct_fill'),
-        'fieldId':    field_id,
-        'fieldLabel': field_label,
+        'ok':           True,
+        'inserted':     True,
+        'verified':     verified,
+        'method':       field_config.get('input_type', 'direct_fill'),
+        'fieldId':      field_id,
+        'fieldLabel':   field_label,
+        'tinymce_polls': _last_tinymce_polls,
     })
 
 @flask_app.route('/insert-batch', methods=['POST'])
@@ -946,6 +984,7 @@ def insert_batch():
             results[field_id] = {
                 'ok': True, 'method': field_config.get('input_type', 'direct_fill'),
                 'verified': verified, 'fieldLabel': field_label,
+                'tinymce_polls': _last_tinymce_polls,
             }
         else:
             capture_screenshot(page, f'batch_fail_{field_id}')

@@ -21,13 +21,19 @@
   },
   "neighborhood_description": {
     "label": "Neighborhood Description",
-    "aliases": ["Neighborhood Desc", "Neighborhood", "Neigh Description"],
+    "aliases": [
+      "Neighborhood Desc",
+      "Neighborhood",
+      "Neigh Description"
+    ],
     "tab_name": "Neig",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -36,13 +42,19 @@
   },
   "market_conditions": {
     "label": "Market Conditions Comments",
-    "aliases": ["Market Conditions", "Market Conditions Addendum", "Market Cond"],
+    "aliases": [
+      "Market Conditions",
+      "Market Conditions Addendum",
+      "Market Cond"
+    ],
     "tab_name": "Neig",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -51,13 +63,19 @@
   },
   "site_comments": {
     "label": "Site Comments",
-    "aliases": ["Site", "Site Description", "Site Comment"],
+    "aliases": [
+      "Site",
+      "Site Description",
+      "Site Comment"
+    ],
     "tab_name": "Site",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -66,13 +84,20 @@
   },
   "improvements_condition": {
     "label": "Improvements Comments",
-    "aliases": ["Improvements", "Improvements Condition", "Condition of Improvements", "Subject Improvements"],
+    "aliases": [
+      "Improvements",
+      "Improvements Condition",
+      "Condition of Improvements",
+      "Subject Improvements"
+    ],
     "tab_name": "Impro",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -81,45 +106,72 @@
   },
   "sales_comparison_commentary": {
     "label": "Sales Comparison Comments",
-    "aliases": ["Sales Comparison Analysis", "Sales Comparison", "Sales Comparison Approach", "Sales Comp Analysis"],
+    "aliases": [
+      "Sales Comparison Analysis",
+      "Sales Comparison",
+      "Sales Comparison Approach",
+      "Sales Comp Analysis"
+    ],
     "tab_name": "Sales",
+    "insert_mode": "report_direct_paste",
+    "mode_required": true,
+    "skip_tab_navigation": false,
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
     "calibration_method": "label_proximity:Sales Comparison Comments",
-    "report_click_ratio": [0.20, 0.57],
+    "report_click_ratio": [
+      0.475,
+      0.603
+    ],
     "report_click_delay_ms": 800,
-    "notes": "Sales comparison narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. A March 16, 2026 live anchor on the sales page summary box reliably opened the 'Comments on Sales Comparison' editor."
+    "notes": "Sales comparison narrative. A March 17, 2026 operator calibration confirmed the correct yellow 'Summary of Sales Comparison Approach' row is directly writable after a single row click. This field must fail closed if the report-row activation misses.",
+    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
   },
   "reconciliation": {
     "label": "Reconciliation Comments",
-    "aliases": ["Reconciliation", "Final Reconciliation", "Value Reconciliation"],
+    "aliases": [
+      "Reconciliation",
+      "Final Reconciliation",
+      "Value Reconciliation"
+    ],
     "tab_name": "Reco",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
     "calibration_method": "label_proximity:Reconciliation Comments",
-    "notes": "Reconciliation narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. Use corpus-backed surface hints until visual navigation is deterministic."
+    "notes": "Reconciliation narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. Use corpus-backed surface hints until visual navigation is deterministic.",
+    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
   },
   "cost_approach": {
     "label": "Cost Approach Comments",
-    "aliases": ["Cost Approach", "Cost Approach Analysis", "Cost Approach Narrative"],
+    "aliases": [
+      "Cost Approach",
+      "Cost Approach Analysis",
+      "Cost Approach Narrative"
+    ],
     "tab_name": "Cost",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -128,13 +180,19 @@
   },
   "income_approach": {
     "label": "Income Approach Comments",
-    "aliases": ["Income Approach", "Income Approach Analysis", "Income Approach Narrative"],
+    "aliases": [
+      "Income Approach",
+      "Income Approach Analysis",
+      "Income Approach Narrative"
+    ],
     "tab_name": "Income",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -143,43 +201,76 @@
   },
   "offering_history": {
     "label": "Offering History",
-    "aliases": ["Prior Sales History", "Offering History Comments", "Prior Listing History"],
-    "tab_name": "Sales",
+    "aliases": [
+      "Prior Sales History",
+      "Offering History Comments",
+      "Prior Listing History"
+    ],
+    "tab_name": "Contr",
+    "payload_mode": "offering_history_popup",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
     "calibration_method": "label_proximity",
-    "notes": "Offering and prior sale history narrative. Earlier label matching exists, but March 13, 2026 live testing showed wrong-box risk when Sales tab navigation was not deterministic."
+    "notes": "Offering and prior sale history narrative. Earlier label matching exists, but March 13, 2026 live testing showed wrong-box risk when Sales tab navigation was not deterministic.",
+    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
   },
   "contract_analysis": {
     "label": "Contract Analysis",
-    "aliases": ["Contract Comments", "Purchase Contract Analysis", "Contract"],
-    "tab_name": "Sales",
+    "aliases": [
+      "Contract Comments",
+      "Purchase Contract Analysis",
+      "Contract"
+    ],
+    "tab_name": "Contr",
+    "insert_mode": "uad_dialog",
+    "payload_mode": "contract_analysis_popup",
+    "mode_required": true,
+    "skip_tab_navigation": true,
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
-    "verification_mode": "tx32_readback",
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "skip",
     "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
     "calibration_method": "label_proximity",
-    "notes": "Contract analysis narrative. Earlier label matching exists, but March 13, 2026 live testing showed wrong-box risk when Sales tab navigation was not deterministic."
+    "report_click_ratio": [
+      0.317,
+      0.213
+    ],
+    "uad_button_ratio": [
+      0.045,
+      0.213
+    ],
+    "uad_dialog_title": "Analysis of Contract",
+    "notes": "Contract analysis is on page 1 of the 1004 contract block, not the later Sales page. A March 17, 2026 operator calibration confirmed that the row must be selected and then edited through the green UAD extension arrow, which opens the Analysis of Contract popup.",
+    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
   },
   "functional_utility": {
     "label": "Functional Utility",
-    "aliases": ["Functional Obsolescence", "Functional Utility Comments"],
+    "aliases": [
+      "Functional Obsolescence",
+      "Functional Utility Comments"
+    ],
     "tab_name": "Impro",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
@@ -188,13 +279,19 @@
   },
   "adverse_conditions": {
     "label": "Adverse Conditions",
-    "aliases": ["Adverse Site Conditions", "External Factors", "Adverse Conditions Comments"],
+    "aliases": [
+      "Adverse Site Conditions",
+      "External Factors",
+      "Adverse Conditions Comments"
+    ],
     "tab_name": "Site",
     "automation_id": "",
     "class_name": "",
     "class_index": null,
     "control_index": null,
-    "expected_classes": ["TX32"],
+    "expected_classes": [
+      "TX32"
+    ],
     "verification_mode": "tx32_readback",
     "calibrated": true,
     "live_calibration_status": "live_confirmed",
