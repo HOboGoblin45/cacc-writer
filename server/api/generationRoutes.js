@@ -19,6 +19,7 @@
 
 import { Router } from 'express';
 import path from 'path';
+import { z } from 'zod';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
@@ -59,6 +60,7 @@ import { runLegacyKbImport, getMemoryItemStats } from '../migration/legacyKbImpo
 import { getDb, getDbPath, getDbSizeBytes, getTableCounts } from '../db/database.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
+import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
 import log from '../logger.js';
 
 // ── In-memory run result store (LRU-bounded) ─────────────────────────────────
@@ -90,12 +92,30 @@ function toSectionIds(fields) {
   return ids;
 }
 
+const GATE_BYPASS_ALLOWED = process.env.CACC_ALLOW_FORCE_GATE_BYPASS !== '0';
+
 function shouldBypassPreDraftGate(req) {
   return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
 }
 
+/**
+ * Enforce the pre-draft gate. Returns true if generation can proceed.
+ * Sends error response and returns false if blocked.
+ * Accepts optional `caseIdForQueue` for building the decision queue path.
+ */
 function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) {
-  if (shouldBypassPreDraftGate(req)) return true;
+  // Check if forceGateBypass is requested
+  if (shouldBypassPreDraftGate(req)) {
+    if (!GATE_BYPASS_ALLOWED) {
+      res.status(403).json({
+        ok: false,
+        code: 'PRE_DRAFT_GATE_BYPASS_DISABLED',
+        error: 'Force gate bypass is disabled in this environment.',
+      });
+      return false;
+    }
+    return true;
+  }
 
   const gate = evaluatePreDraftGate({ caseId, formType, sectionIds });
   if (!gate) {
@@ -105,11 +125,23 @@ function enforcePreDraftGate(req, res, { caseId, formType, sectionIds = null }) 
 
   if (gate.ok) return true;
 
+  let factReviewQueuePath = null;
+  let factReviewQueueSummary = null;
+  try {
+    factReviewQueuePath = `/api/cases/${caseId}/fact-review-queue`;
+    const decisionQueue = buildFactDecisionQueue(caseId);
+    factReviewQueueSummary = decisionQueue?.summary || null;
+  } catch {
+    // non-fatal
+  }
+
   res.status(409).json({
     ok: false,
     code: 'PRE_DRAFT_GATE_BLOCKED',
     error: 'Pre-draft integrity gate blocked generation',
     gate,
+    factReviewQueuePath,
+    factReviewQueueSummary,
     hint: 'Resolve blocker items from GET /api/cases/:caseId/pre-draft-check, or pass forceGateBypass=true.',
   });
   return false;
@@ -388,9 +420,18 @@ router.post('/generate-batch', ensureAI, async (req, res) => {
 });
 
 // ── POST /similar-examples (legacy compat, now modular) ──────────────────────
+const similarExamplesSchema = z.object({
+  fieldId: z.string().max(80).optional().nullable(),
+  formType: z.string().max(40).optional().nullable(),
+  limit: z.number().int().min(1).max(10).optional(),
+}).passthrough();
+
 router.post('/similar-examples', (req, res) => {
+  const body = parseGenPayload(similarExamplesSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    const { fieldId, limit = 3, formType } = req.body;
+    const { fieldId, limit = 3, formType } = body;
     const safeLimit = Math.max(1, Math.min(Number(limit) || 3, 10));
     const normalized = formType ? normalizeFormType(formType) : null;
     res.json({
@@ -402,7 +443,27 @@ router.post('/similar-examples', (req, res) => {
   }
 });
 
+const generateCoreSchema = z.object({
+  fields: z.array(z.string().max(80)).max(200).optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: z.record(z.unknown()).optional(),
+}).passthrough();
+
+const generateCompCommentarySchema = z.object({
+  comps: z.array(z.unknown()).max(100).optional(),
+  compFocus: z.string().max(40).optional(),
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+
+const generateAllSchema = z.object({
+  forceGateBypass: z.boolean().optional(),
+  options: z.record(z.unknown()).optional(),
+}).passthrough();
+
 router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
+  const body = parseGenPayload(generateCoreSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -509,6 +570,9 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
 });
 
 router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
+  const body = parseGenPayload(generateCompCommentarySchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -602,6 +666,9 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
 });
 
 router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
+  const body = parseGenPayload(generateAllSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
     const runtime = loadCaseRuntime(req.params.caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
@@ -688,6 +755,46 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
 });
 
 // ── POST /cases/:caseId/generate-full-draft ───────────────────────────────────
+// ── Payload schemas ───────────────────────────────────────────────────────────
+
+const generateOptionsSchema = z.object({
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+
+const generateFullDraftSchema = z.object({
+  formType: z.string().max(40).optional(),
+  options: generateOptionsSchema.optional(),
+  forceGateBypass: z.boolean().optional(),
+}).strict();
+
+const generateFullDraftBodySchema = z.object({
+  caseId: z.string().regex(/^[a-f0-9]{8}$/i),
+  formType: z.string().max(40).optional(),
+  options: generateOptionsSchema.optional(),
+  forceGateBypass: z.boolean().optional(),
+}).strict();
+
+const regenerateSectionSchema = z.object({
+  runId: z.string().min(1).max(120),
+  sectionId: z.string().min(1).max(120),
+  caseId: z.string().regex(/^[a-f0-9]{8}$/i),
+}).strict();
+
+function parseGenPayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    details: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
+
 /**
  * Trigger full-draft generation for a case via the orchestrator.
  * Runs asynchronously — returns runId immediately for polling.
@@ -697,7 +804,10 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
  */
 router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
   const { caseId }           = req.params;
-  const { formType, options = {} } = req.body || {};
+  // Validate payload first
+  const parsedBody = parseGenPayload(generateFullDraftSchema, req.body || {}, res);
+  if (!parsedBody) return;
+  const { formType, options = {} } = parsedBody;
 
   // Scope enforcement — deferred forms blocked
   const resolvedFormType = formType || 'unknown';
@@ -789,10 +899,14 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/generation/full-draft', async (req, res) => {
-  const { caseId, formType, options = {} } = req.body || {};
+  // Validate payload first
+  const parsedBody = parseGenPayload(generateFullDraftBodySchema, req.body || {}, res);
+  if (!parsedBody) return;
+
+  const { caseId, formType, options = {} } = parsedBody;
 
   if (!caseId) {
-    return res.status(400).json({ ok: false, error: 'caseId is required in request body' });
+    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'caseId is required in request body' });
   }
 
   // Delegate to the canonical route handler by forwarding to the same logic
@@ -1126,19 +1240,36 @@ router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
 });
 
 router.post('/generation/regenerate-section', async (req, res) => {
-  const { runId, sectionId, caseId } = req.body || {};
+  // Validate payload
+  const parsedBody = parseGenPayload(regenerateSectionSchema, req.body || {}, res);
+  if (!parsedBody) return;
 
-  if (!runId || !sectionId || !caseId) {
-    return res.status(400).json({ ok: false, error: 'runId, sectionId, and caseId are required' });
-  }
+  const { runId, sectionId, caseId } = parsedBody;
 
   try {
-    const runStatus = getRunStatus(runId);
-    if (!runStatus) {
+    // Check run exists
+    const run = getRunById(runId);
+    if (!run) {
       return res.status(404).json({ ok: false, error: `Run not found: ${runId}` });
     }
 
-    const formType   = runStatus.formType || '1004';
+    // Check run/case mismatch
+    const runCaseId = run.case_id;
+    if (runCaseId && runCaseId !== caseId) {
+      return res.status(409).json({
+        ok: false,
+        code: 'RUN_CASE_MISMATCH',
+        error: `Run ${runId} belongs to case ${runCaseId}, not ${caseId}`,
+        runCaseId,
+      });
+    }
+
+    const formType = run.form_type || '1004';
+
+    // Enforce pre-draft gate
+    if (!enforcePreDraftGate(req, res, { caseId, formType, sectionIds: [sectionId] })) return;
+
+    const runStatus = getRunStatus(runId);
     const sectionDef = getSectionDef(formType, sectionId);
     if (!sectionDef) {
       return res.status(400).json({ ok: false, error: `Unknown section: ${sectionId} for form ${formType}` });
@@ -1187,7 +1318,12 @@ router.post('/generation/regenerate-section', async (req, res) => {
  *
  * Returns: { ok, imported, skipped, upgraded, errors, sources, durationMs }
  */
-router.post('/db/migrate-legacy-kb', async (_req, res) => {
+router.post('/db/migrate-legacy-kb', async (req, res) => {
+  // Reject unexpected payload fields
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.keys(body).length > 0) {
+    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'Unexpected payload fields' });
+  }
   try {
     log.info('[db] Starting legacy KB migration...');
     const result = await runLegacyKbImport();

@@ -1,0 +1,259 @@
+{
+  "runAt": "2026-03-16T23:26:21.518Z",
+  "baseUrl": "http://localhost:5218",
+  "options": {
+    "allowDryRunInsertion": false,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": true,
+      "rq": true
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Commercial Narrative Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\commercial-case",
+      "formType": "commercial",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "61a7e5d9",
+      "generationRunId": "6ebf9d16-937a-427c-bcd6-87d128d14393",
+      "qcRunId": "116eb6c1-0e3c-4cde-a563-6fc368e6d573",
+      "insertionRunId": "irun_1a88a2fa-da0",
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case 61a7e5d9"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-engagement-letter.pdf -> engagement_letter"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "commercial-property-summary.pdf -> mls_sheet"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 7 fact(s), rejected 13"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 7 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 6 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 11 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 6ebf9d16-937a-427c-bcd6-87d128d14393"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 14 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 14 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=0",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 12
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "destination_probe",
+          "status": "passed",
+          "detail": "Live destination located 2/2 probe field(s)",
+          "probeFieldIds": [
+            "market_area",
+            "site_description"
+          ]
+        },
+        {
+          "name": "insertion_status",
+          "status": "failed",
+          "detail": "Live insertion verification was insufficient (0/1 verified field(s))",
+          "payload": {
+            "id": "irun_1a88a2fa-da0",
+            "caseId": "61a7e5d9",
+            "generationRunId": "6ebf9d16-937a-427c-bcd6-87d128d14393",
+            "formType": "commercial",
+            "targetSoftware": "real_quantum",
+            "status": "completed",
+            "totalFields": 14,
+            "completedFields": 14,
+            "failedFields": 0,
+            "skippedFields": 0,
+            "verifiedFields": 0,
+            "qcRunId": "116eb6c1-0e3c-4cde-a563-6fc368e6d573",
+            "qcBlockerCount": 0,
+            "qcGatePassed": true,
+            "config": {
+              "dryRun": false,
+              "verifyAfter": true,
+              "skipQcBlockers": false,
+              "forceReinsert": false,
+              "maxRetries": 3,
+              "defaultFallback": "retry_then_clipboard",
+              "timeout": 20000,
+              "verificationMode": "contains_text",
+              "chromeDebugPort": 9222
+            },
+            "summary": {
+              "totalFields": 14,
+              "inserted": 14,
+              "verified": 0,
+              "failed": 0,
+              "skipped": 0,
+              "fallbackUsed": 0,
+              "durationMs": 78501,
+              "failedFieldIds": [],
+              "mismatchFieldIds": [],
+              "readinessSignal": "ready"
+            },
+            "replayPackage": {},
+            "rollbackFields": 0,
+            "originalRunId": null,
+            "runType": "standard",
+            "startedAt": "2026-03-16T23:25:02.152Z",
+            "completedAt": "2026-03-16T23:26:20.651Z",
+            "durationMs": 78501,
+            "createdAt": "2026-03-16T23:25:02.150Z"
+          }
+        }
+      ],
+      "error": {
+        "step": "insertion_status",
+        "message": "Live insertion verification was insufficient (0/1 verified field(s))",
+        "payload": {
+          "id": "irun_1a88a2fa-da0",
+          "caseId": "61a7e5d9",
+          "generationRunId": "6ebf9d16-937a-427c-bcd6-87d128d14393",
+          "formType": "commercial",
+          "targetSoftware": "real_quantum",
+          "status": "completed",
+          "totalFields": 14,
+          "completedFields": 14,
+          "failedFields": 0,
+          "skippedFields": 0,
+          "verifiedFields": 0,
+          "qcRunId": "116eb6c1-0e3c-4cde-a563-6fc368e6d573",
+          "qcBlockerCount": 0,
+          "qcGatePassed": true,
+          "config": {
+            "dryRun": false,
+            "verifyAfter": true,
+            "skipQcBlockers": false,
+            "forceReinsert": false,
+            "maxRetries": 3,
+            "defaultFallback": "retry_then_clipboard",
+            "timeout": 20000,
+            "verificationMode": "contains_text",
+            "chromeDebugPort": 9222
+          },
+          "summary": {
+            "totalFields": 14,
+            "inserted": 14,
+            "verified": 0,
+            "failed": 0,
+            "skipped": 0,
+            "fallbackUsed": 0,
+            "durationMs": 78501,
+            "failedFieldIds": [],
+            "mismatchFieldIds": [],
+            "readinessSignal": "ready"
+          },
+          "replayPackage": {},
+          "rollbackFields": 0,
+          "originalRunId": null,
+          "runType": "standard",
+          "startedAt": "2026-03-16T23:25:02.152Z",
+          "completedAt": "2026-03-16T23:26:20.651Z",
+          "durationMs": 78501,
+          "createdAt": "2026-03-16T23:25:02.150Z"
+        }
+      }
+    }
+  ]
+}

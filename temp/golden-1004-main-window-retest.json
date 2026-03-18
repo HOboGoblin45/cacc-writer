@@ -1,0 +1,219 @@
+{
+  "runAt": "2026-03-17T02:00:08.362Z",
+  "baseUrl": "http://localhost:5227",
+  "options": {
+    "allowDryRunInsertion": false,
+    "cleanup": true
+  },
+  "capabilities": {
+    "aiKeySet": true,
+    "agents": {
+      "aci": false,
+      "rq": false
+    }
+  },
+  "reports": [
+    {
+      "fixture": "Residential 1004 Golden Path",
+      "fixtureDir": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\fixtures\\golden\\1004-case",
+      "formType": "1004",
+      "mode": "strict",
+      "status": "failed",
+      "caseId": "dccddacb",
+      "generationRunId": "794c17d3-b2c1-499e-b149-b908ab67f356",
+      "qcRunId": "1745771f-b653-46aa-9e29-c4a55b4c67e1",
+      "insertionRunId": null,
+      "steps": [
+        {
+          "name": "case_creation",
+          "status": "passed",
+          "detail": "Created case dccddacb"
+        },
+        {
+          "name": "case_patch",
+          "status": "passed",
+          "detail": "Applied fixture assignment metadata"
+        },
+        {
+          "name": "pipeline_extracting",
+          "status": "passed",
+          "detail": "Pipeline moved to extracting"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-order-sheet.pdf -> order_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-contract.pdf -> contract"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-mls-sheet.pdf -> mls_sheet"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-tax-record.pdf -> assessor_record"
+        },
+        {
+          "name": "document_upload",
+          "status": "passed",
+          "detail": "1004-zoning-letter.pdf -> zoning_document"
+        },
+        {
+          "name": "extraction_summary",
+          "status": "passed",
+          "detail": "Loaded extraction summary"
+        },
+        {
+          "name": "fact_review",
+          "status": "passed",
+          "detail": "Accepted 15 fact(s), rejected 16"
+        },
+        {
+          "name": "fact_merge",
+          "status": "passed",
+          "detail": "Merged 15 fact(s)"
+        },
+        {
+          "name": "fact_provenance_extracted",
+          "status": "passed",
+          "detail": "Recorded provenance for 12 extracted fact(s)"
+        },
+        {
+          "name": "section_review",
+          "status": "passed",
+          "detail": "Reviewed 0 extracted section candidate(s)"
+        },
+        {
+          "name": "workspace_load_initial",
+          "status": "passed",
+          "detail": "Loaded canonical case projection"
+        },
+        {
+          "name": "manual_facts",
+          "status": "passed",
+          "detail": "Applied explicit operator-entered fixture facts"
+        },
+        {
+          "name": "manual_fact_sources",
+          "status": "passed",
+          "detail": "Added 18 operator provenance link(s)"
+        },
+        {
+          "name": "pipeline_generating",
+          "status": "passed",
+          "detail": "Pipeline moved to generating"
+        },
+        {
+          "name": "pre_draft_gate",
+          "status": "passed",
+          "detail": "Case is ready to generate with no blockers"
+        },
+        {
+          "name": "generation_start",
+          "status": "passed",
+          "detail": "Started generation run 794c17d3-b2c1-499e-b149-b908ab67f356"
+        },
+        {
+          "name": "reviewed_sections",
+          "status": "passed",
+          "detail": "Applied operator-reviewed text to 6 section(s)"
+        },
+        {
+          "name": "generation_result",
+          "status": "passed",
+          "detail": "Generated 11 section(s)"
+        },
+        {
+          "name": "draft_model",
+          "status": "passed",
+          "detail": "Internal draft source=ready_for_review insertion=needs_destination_review aliasBackfilled=1",
+          "missingRequiredFields": 0,
+          "insertionReadyFields": 4
+        },
+        {
+          "name": "pipeline_review",
+          "status": "passed",
+          "detail": "Pipeline moved to review"
+        },
+        {
+          "name": "qc_summary",
+          "status": "passed",
+          "detail": "QC readiness=not_ready high=4"
+        },
+        {
+          "name": "destination_probe",
+          "status": "failed",
+          "detail": "ACI agent is not reachable",
+          "payload": {
+            "ok": true,
+            "caseId": "dccddacb",
+            "formType": "1004",
+            "targetSoftware": "aci",
+            "probeFieldIds": [
+              "sales_comparison_commentary",
+              "neighborhood_description",
+              "site_comments"
+            ],
+            "probe": {
+              "targetSoftware": "aci",
+              "agentBaseUrl": "http://localhost:5180",
+              "reachable": false,
+              "ready": false,
+              "sessionReady": false,
+              "reason": "ACI agent is not reachable",
+              "foundCount": 0,
+              "probedCount": 0,
+              "fieldResults": [],
+              "sessionProbe": {
+                "reachable": false,
+                "ready": false,
+                "reason": "ACI agent is not reachable",
+                "health": null,
+                "windows": null
+              }
+            }
+          }
+        }
+      ],
+      "error": {
+        "step": "destination_probe",
+        "message": "ACI agent is not reachable",
+        "payload": {
+          "ok": true,
+          "caseId": "dccddacb",
+          "formType": "1004",
+          "targetSoftware": "aci",
+          "probeFieldIds": [
+            "sales_comparison_commentary",
+            "neighborhood_description",
+            "site_comments"
+          ],
+          "probe": {
+            "targetSoftware": "aci",
+            "agentBaseUrl": "http://localhost:5180",
+            "reachable": false,
+            "ready": false,
+            "sessionReady": false,
+            "reason": "ACI agent is not reachable",
+            "foundCount": 0,
+            "probedCount": 0,
+            "fieldResults": [],
+            "sessionProbe": {
+              "reachable": false,
+              "ready": false,
+              "reason": "ACI agent is not reachable",
+              "health": null,
+              "windows": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

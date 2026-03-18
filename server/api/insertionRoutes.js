@@ -24,6 +24,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
 import {
   getInsertionRun, listInsertionRuns, getInsertionRunItems,
@@ -39,22 +40,91 @@ import { probeDestinationFields, selectProbeFieldIds } from '../insertion/agentP
 
 const router = Router();
 
+// ── Payload validation helpers ────────────────────────────────────────────────
+
+const insertionConfigSchema = z.object({
+  dryRun: z.boolean().optional(),
+  verifyAfter: z.boolean().optional(),
+  skipQcBlockers: z.boolean().optional(),
+  forceReinsert: z.boolean().optional(),
+  maxRetries: z.number().int().min(0).max(10).optional(),
+  defaultFallback: z.string().max(60).optional(),
+  fieldIds: z.array(z.string().max(80)).max(200).optional(),
+  requireQcRun: z.boolean().optional(),
+  requireFreshQcForGeneration: z.boolean().optional(),
+  agentTimeoutMs: z.number().int().min(0).optional(),
+}).strict();
+
+const prepareInsertionSchema = z.object({
+  caseId: z.string().regex(/^[a-f0-9]{8}$/i),
+  formType: z.string().min(1).max(40),
+  targetSoftware: z.string().max(60).optional(),
+  generationRunId: z.string().max(120).optional().nullable(),
+  config: insertionConfigSchema.optional(),
+});
+
+const profileUpdateSchema = z.object({
+  active: z.boolean().optional(),
+  name: z.string().max(120).optional(),
+  config: z.record(z.unknown()).optional(),
+}).passthrough();
+
+function parsePayload(schema, payload, res) {
+  const parsed = schema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+  res.status(400).json({
+    ok: false,
+    code: 'INVALID_PAYLOAD',
+    error: 'Invalid request payload',
+    issues: parsed.error.issues.map(i => ({
+      path: i.path.join('.') || '(root)',
+      message: i.message,
+    })),
+  });
+  return null;
+}
+
+function rejectUnexpectedFields(body, res) {
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.keys(body).length > 0) {
+    res.status(400).json({
+      ok: false,
+      code: 'INVALID_PAYLOAD',
+      error: 'Unexpected payload fields',
+    });
+    return true;
+  }
+  return false;
+}
+
 // ── Prepare Insertion Run ─────────────────────────────────────────────────────
 
 router.post('/insertion/prepare', (req, res) => {
-  try {
-    const { caseId, formType, targetSoftware, generationRunId, config } = req.body;
+  const body = parsePayload(prepareInsertionSchema, req.body || {}, res);
+  if (!body) return;
 
-    if (!caseId || !formType) {
-      return res.status(400).json({ error: 'caseId and formType are required' });
+  // Validate config shape separately for detailed issues
+  if (body.config !== undefined && body.config !== null) {
+    const configParsed = insertionConfigSchema.safeParse(body.config);
+    if (!configParsed.success) {
+      return res.status(400).json({
+        ok: false,
+        code: 'INVALID_PAYLOAD',
+        error: 'Invalid config shape',
+        issues: configParsed.error.issues.map(i => ({
+          path: i.path.join('.') || '(root)',
+          message: i.message,
+        })),
+      });
     }
+  }
 
+  try {
     const result = prepareInsertionRun({
-      caseId,
-      formType,
-      targetSoftware,
-      generationRunId,
-      config: config || {},
+      caseId: body.caseId,
+      formType: body.formType,
+      targetSoftware: body.targetSoftware,
+      generationRunId: body.generationRunId,
+      config: body.config || {},
     });
 
     res.json({
@@ -66,23 +136,30 @@ router.post('/insertion/prepare', (req, res) => {
     });
   } catch (err) {
     log.error('insertion:prepare', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // ── Execute Insertion Run ─────────────────────────────────────────────────────
 
 router.post('/insertion/execute/:runId', async (req, res) => {
+  // Reject unexpected payload fields
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.keys(body).length > 0) {
+    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'Unexpected payload fields' });
+  }
+
   try {
     const { runId } = req.params;
     const run = getInsertionRun(runId);
 
     if (!run) {
-      return res.status(404).json({ error: 'Insertion run not found' });
+      return res.status(404).json({ ok: false, code: 'INSERTION_RUN_NOT_FOUND', error: 'Insertion run not found' });
     }
 
     if (run.status !== 'queued' && run.status !== 'preparing') {
       return res.status(400).json({
+        ok: false,
         error: `Cannot execute run in status '${run.status}' — must be 'queued'`,
       });
     }
@@ -102,7 +179,7 @@ router.post('/insertion/execute/:runId', async (req, res) => {
     });
   } catch (err) {
     log.error('insertion:execute', { error: err.message });
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -124,14 +201,21 @@ router.post('/insertion/run', async (req, res) => {
       config: config || {},
     });
 
-    // If QC gate blocked and not overridden
-    if (!prepared.qcGate.passed && !(config || {}).skipQcBlockers) {
-      return res.json({
-        run: prepared.run,
-        qcGate: prepared.qcGate,
-        blocked: true,
-        message: 'QC gate blocked insertion — resolve blockers or set skipQcBlockers',
-      });
+    // If QC gate blocked — check if override is allowed
+    if (!prepared.qcGate.passed) {
+      const skipQcBlockers = Boolean((config || {}).skipQcBlockers);
+      const overrideAllowed = prepared.qcGate.overrideAllowed !== false;
+      if (!skipQcBlockers || !overrideAllowed) {
+        return res.json({
+          run: prepared.run,
+          qcGate: prepared.qcGate,
+          blocked: true,
+          overrideAllowed,
+          message: overrideAllowed
+            ? 'QC gate blocked insertion — resolve blockers or set skipQcBlockers'
+            : 'QC gate blocked insertion — override not allowed for this gate type',
+        });
+      }
     }
 
     // Return immediately, execute in background
@@ -195,9 +279,15 @@ router.get('/insertion/run/:runId/items', (req, res) => {
 // ── Cancel Run ────────────────────────────────────────────────────────────────
 
 router.post('/insertion/run/:runId/cancel', (req, res) => {
+  // Reject unexpected payload fields
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.keys(body).length > 0) {
+    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'Unexpected payload fields' });
+  }
+
   try {
     const run = getInsertionRun(req.params.runId);
-    if (!run) return res.status(404).json({ error: 'Run not found' });
+    if (!run) return res.status(404).json({ ok: false, error: 'Run not found' });
 
     if (run.status === 'completed' || run.status === 'failed' || run.status === 'cancelled') {
       return res.status(400).json({ error: `Cannot cancel run in status '${run.status}'` });
@@ -220,8 +310,28 @@ router.post('/insertion/run/:runId/cancel', (req, res) => {
 // ── Retry Single Item ─────────────────────────────────────────────────────────
 
 router.post('/insertion/retry/:itemId', async (req, res) => {
+  // Reject unexpected payload fields
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.keys(body).length > 0) {
+    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'Unexpected payload fields' });
+  }
+
   try {
     const { itemId } = req.params;
+
+    // Check if the item exists in the DB
+    const db = getDb();
+    let item = null;
+    try {
+      item = db.prepare('SELECT * FROM insertion_run_items WHERE id = ? LIMIT 1').get(itemId);
+    } catch {
+      // Table may not have rows yet
+    }
+
+    if (!item) {
+      return res.status(404).json({ ok: false, code: 'INSERTION_ITEM_NOT_FOUND', error: 'Insertion item not found' });
+    }
+
     // For now, reset the item status to queued and re-execute
     // Full retry logic would re-run processItem
     updateInsertionRunItem(itemId, {
@@ -231,9 +341,9 @@ router.post('/insertion/retry/:itemId', async (req, res) => {
       attemptCount: 0,
       verificationStatus: 'pending',
     });
-    res.json({ message: 'Item reset for retry', itemId });
+    res.json({ ok: true, message: 'Item reset for retry', itemId });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
@@ -354,12 +464,15 @@ router.get('/insertion/profile/:id', (req, res) => {
 });
 
 router.put('/insertion/profile/:id', (req, res) => {
+  const body = parsePayload(profileUpdateSchema, req.body || {}, res);
+  if (!body) return;
+
   try {
-    updateDestinationProfile(req.params.id, req.body);
+    updateDestinationProfile(req.params.id, body);
     const profile = getDestinationProfile(req.params.id);
-    res.json({ profile });
+    res.json({ ok: true, profile });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

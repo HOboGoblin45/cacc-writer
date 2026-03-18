@@ -1,0 +1,19 @@
+[dotenv@17.3.1] injecting env (15) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+{"ts":"2026-03-17T06:29:21.462Z","level":"info","msg":"server:start","model":"gpt-4.1","port":5178}
+CACC Writer server running on port 5178
+Model: gpt-4.1
+Cases dir: C:\Users\ccres\OneDrive\Desktop\cacc-writer\cases
+Active forms: 1004, commercial
+Deferred forms: 1025, 1073, 1004c
+{"ts":"2026-03-17T06:29:21.472Z","level":"info","msg":"audit-logger:init","status":"ready"}
+{"ts":"2026-03-17T20:27:54.698Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":7}
+{"ts":"2026-03-17T20:27:54.742Z","level":"info","msg":"http","method":"POST","path":"/generate","status":400,"ms":3}
+{"ts":"2026-03-17T20:27:54.752Z","level":"info","msg":"http","method":"POST","path":"/","status":200,"ms":7}
+{"ts":"2026-03-17T20:27:54.757Z","level":"info","msg":"http","method":"POST","path":"/0ecc3523/review-section","status":400,"ms":3}
+{"ts":"2026-03-17T20:27:54.763Z","level":"info","msg":"http","method":"DELETE","path":"/0ecc3523","status":200,"ms":4}
+{"ts":"2026-03-17T20:39:29.121Z","level":"info","msg":"http","method":"GET","path":"/health","status":200,"ms":0}
+{"ts":"2026-03-17T20:39:29.129Z","level":"info","msg":"http","method":"POST","path":"/generate","status":400,"ms":1}
+{"ts":"2026-03-17T20:39:29.135Z","level":"info","msg":"http","method":"POST","path":"/","status":200,"ms":2}
+{"ts":"2026-03-17T20:39:29.138Z","level":"info","msg":"http","method":"POST","path":"/7f48e94d/review-section","status":400,"ms":1}
+{"ts":"2026-03-17T20:39:29.141Z","level":"info","msg":"http","method":"DELETE","path":"/7f48e94d","status":200,"ms":2}
