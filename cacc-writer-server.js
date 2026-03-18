@@ -6,7 +6,7 @@
  */
 
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ override: true });
 
 import express from 'express';
 import path from 'path';
@@ -166,3 +166,4 @@ server.on('error', (err) => {
 });
 
 export default app;
+
