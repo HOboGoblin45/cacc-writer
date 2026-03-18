@@ -22,7 +22,7 @@ TEMPLATE 1: NEIGHBORHOOD DESCRIPTION
 ============================================================
 
 EXACT TEMPLATE:
-"The subject neighborhood is bordered to the North by [NORTH_BOUNDARY], to the South by [SOUTH_BOUNDARY], to the East by [EAST_BOUNDARY], and to the West by [WEST_BOUNDARY]. The subject is located in a neighborhood on the [DIRECTION]side of [CITY], IL. It is a single family [attached/detached] [STYLE] [style] [house/home/zero lot line]. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
+"The subject neighborhood is bordered to the North by NORTH_BOUNDARY, to the South by SOUTH_BOUNDARY, to the East by EAST_BOUNDARY, and to the West by WEST_BOUNDARY. The subject is located in a neighborhood on the DIRECTION-side of CITY, IL. It is a single family [attached/detached] [STYLE] [style] [house/home/zero lot line]. It conforms to most other existing homes in the neighborhood in design, quality, and condition. The area is within a mile of schools, recreation, shopping, and centers of employment."
 
 NOTES:
 - Direction: eastside, westside, southside, northside OR "North of [city] proper"
@@ -118,7 +118,7 @@ TEMPLATE 6: SALES COMPARISON APPROACH COMMENTARY
 ============================================================
 
 TEMPLATE A (comparable sales found in subject's neighborhood):
-"All comparables have been found in the subject's neighborhood [on the [DIRECTION]side of [CITY], IL] and were selected to demonstrate the marketability of houses of a similar location, design, age, [quality,] condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for [ADJUSTMENT LIST]. Comparable #2 has been adjusted for [ADJUSTMENT LIST]. Comparable #3 has been adjusted for [ADJUSTMENT LIST]. [After adjustments are made the comparables provide a good basis for an estimate of market value.] [See Comparable #4.]"
+"All comparables have been found in the subject's neighborhood [on the DIRECTION-side of CITY, IL] and were selected to demonstrate the marketability of houses of a similar location, design, age, [quality,] condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for [ADJUSTMENT LIST]. Comparable #2 has been adjusted for [ADJUSTMENT LIST]. Comparable #3 has been adjusted for [ADJUSTMENT LIST]. [After adjustments are made the comparables provide a good basis for an estimate of market value.] [See Comparable #4.]"
 
 TEMPLATE B (limited sales, extended search):
 "Due to a lack of recent comparable sales in [the subject's neighborhood / CITY, IL], an extensive search was made to find [zero lot lines / comparables] in [AREA/COMPETING MARKET] of a similar location, design, [age,] quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report. Comparable #1 has been adjusted for [ADJUSTMENT LIST]. Comparable #2 has been adjusted for [ADJUSTMENT LIST]. Comparable #3 has been adjusted for [ADJUSTMENT LIST]. See Comparable[s] #[N]."
