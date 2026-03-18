@@ -78,6 +78,12 @@ LABEL_STOPWORDS    = frozenset({
 
 log = logging.getLogger('cacc_agent')
 
+# ── 32-bit Python check ───────────────────────────────────────────────────────
+import struct
+if struct.calcsize("P") == 8:
+    log.warning("Running 64-bit Python against 32-bit ACI. Consider using 32-bit Python "
+                "at C:\\Python32\\ for more reliable pywinauto control enumeration.")
+
 # ── Screenshot ────────────────────────────────────────────────────────────────
 
 def capture_screenshot(label: str) -> str | None:
@@ -180,14 +186,33 @@ def load_learned() -> dict:
     return _learned
 
 def save_learned(form_type: str, field_id: str, data: dict) -> None:
+    """
+    Persist a successful insertion strategy to learned_targets.json.
+
+    `verified` means readback confirmed the text is present.
+    `insertion_ok` means the paste/write went through (separate from readback).
+
+    Saving policy:
+      - Always save when verified=True (confirmed readback).
+      - Also save when verified=False but insertion_ok=True and the
+        accumulated success_count would reach >= 3, meaning the field
+        has worked repeatedly even without readback confirmation.
+    """
     global _learned
-    if not data.get('verified', False):
-        log.info(f"Learned target skipped for {form_type}::{field_id} "
-                 f"(verification did not pass)")
-        return
+    verified     = bool(data.get('verified', False))
+    insertion_ok = bool(data.get('insertion_ok', False))
+
     targets  = load_learned()
     key      = f'{form_type}::{field_id}'
     existing = targets.get(key, {})
+    new_count = existing.get('success_count', 0) + 1
+
+    if not verified and not (insertion_ok and new_count >= 3):
+        log.info(f"Learned target skipped for {form_type}::{field_id} "
+                 f"(verified=False, insertion_ok={insertion_ok}, "
+                 f"success_count_would_be={new_count})")
+        return
+
     targets[key] = {
         'formType':         form_type,
         'fieldId':          field_id,
@@ -197,15 +222,17 @@ def save_learned(form_type: str, field_id: str, data: dict) -> None:
         'tx32_rect':        data.get('tx32_rect'),
         'label_matched':    data.get('label_matched', ''),
         'window_signature': data.get('window_signature', ''),
-        'success_count':    existing.get('success_count', 0) + 1,
+        'success_count':    new_count,
         'last_success':     datetime.now().isoformat(),
-        'verified':         data.get('verified', False),
+        'verified':         verified,
+        'insertion_ok':     insertion_ok,
     }
     _learned = targets
     try:
         with open(LEARNED_TARGETS_FILE, 'w') as f:
             json.dump(targets, f, indent=2)
-        log.info(f"Learned: {key} (n={targets[key]['success_count']})")
+        log.info(f"Learned: {key} (n={new_count} verified={verified} "
+                 f"insertion_ok={insertion_ok})")
     except Exception as e:
         log.warning(f"Could not save learned target: {e}")
 
@@ -217,6 +244,12 @@ def get_learned(form_type: str, field_id: str) -> dict | None:
 def connect_uia():
     if not PYWINAUTO_AVAILABLE:
         return None
+    hwnd = _find_aci_window_handle()
+    if hwnd:
+        try:
+            return Application(backend='uia').connect(handle=hwnd, timeout=5)
+        except Exception as e:
+            log.debug(f"UIA handle connect failed: {e}")
     try:
         return Application(backend='uia').connect(
             title_re=ACI_WINDOW_PATTERN, timeout=5)
@@ -229,7 +262,8 @@ def _find_aci_window_handle():
     if not WIN32_AVAILABLE:
         return None
 
-    matches = []
+    primary_matches = []
+    fallback_matches = []
 
     def _enum(hwnd, _extra):
         try:
@@ -239,8 +273,11 @@ def _find_aci_window_handle():
                 return
             title_upper = title.upper()
             cls_upper = cls.upper()
-            if 'REPORT32MAIN' in cls_upper or 'ACI REPORT' in title_upper or '\\ACI32\\REPORTS\\' in title_upper:
-                matches.append(hwnd)
+            if 'REPORT32MAIN' in cls_upper or '\\ACI32\\REPORTS\\' in title_upper:
+                primary_matches.append(hwnd)
+                return
+            if 'ACI REPORT' in title_upper:
+                fallback_matches.append(hwnd)
         except Exception:
             return
 
@@ -250,7 +287,9 @@ def _find_aci_window_handle():
         log.debug(f'EnumWindows failed: {e}')
         return None
 
-    return matches[0] if matches else None
+    if primary_matches:
+        return primary_matches[0]
+    return fallback_matches[0] if fallback_matches else None
 
 def connect_win32():
     if not PYWINAUTO_AVAILABLE:
@@ -267,6 +306,71 @@ def connect_win32():
     except Exception as e:
         log.debug(f"win32 connect failed: {e}")
         return None
+
+
+def get_win32_main_window(app32=None):
+    if not PYWINAUTO_AVAILABLE:
+        return None
+    app32 = app32 or connect_win32()
+    if not app32:
+        return None
+    hwnd = _find_aci_window_handle()
+    if hwnd:
+        try:
+            return app32.window(handle=hwnd)
+        except Exception as e:
+            log.debug(f"win32 main window lookup failed: {e}")
+    try:
+        return app32.top_window()
+    except Exception:
+        return None
+
+
+def get_uia_main_window(app=None):
+    if not PYWINAUTO_AVAILABLE:
+        return None
+    app = app or connect_uia()
+    if not app:
+        return None
+    hwnd = _find_aci_window_handle()
+    if hwnd:
+        try:
+            return app.window(handle=hwnd)
+        except Exception as e:
+            log.debug(f"UIA main window lookup failed: {e}")
+    try:
+        return app.top_window()
+    except Exception:
+        return None
+
+
+def ensure_main_report_surface(app32=None, app=None):
+    """Dismiss transient ACI popups and return the main Report32Main window."""
+    app32 = app32 or connect_win32()
+    top = None
+    if app32:
+        try:
+            top = app32.top_window()
+        except Exception:
+            top = None
+    if top is not None:
+        try:
+            if (top.class_name() or '') != 'Report32Main':
+                bring_to_foreground(top)
+                time.sleep(0.2)
+                send_keys('{ESC}')
+                time.sleep(0.8)
+        except Exception as e:
+            log.debug(f"Popup dismiss failed: {e}")
+    if app32:
+        main = get_win32_main_window(app32)
+        if main is not None:
+            return main
+    if app:
+        main = get_uia_main_window(app)
+        if main is not None:
+            return main
+    return None
 
 def bring_to_foreground(win32_win) -> None:
     if not WIN32_AVAILABLE:
@@ -529,17 +633,35 @@ def find_tx32_by_label(win32_win, label: str,
 
 
 def read_tx32(ctrl) -> str:
-    """Read text from a TX32 control."""
-    try:
-        t = ctrl.window_text() or ''
-        if t:
-            return t
-    except Exception:
-        pass
-    try:
-        return ' '.join(t for t in ctrl.texts() if t).strip()
-    except Exception:
-        return ''
+    """
+    Read text from a TX32 control.
+
+    ACI's TX32 controls often return '' from window_text() right after a paste
+    due to buffering/timing. We retry up to 3 times (300 ms apart) and also
+    try ctrl.get_value() as an additional method before giving up.
+    """
+    for attempt in range(3):
+        if attempt > 0:
+            time.sleep(0.3)
+        try:
+            t = ctrl.window_text() or ''
+            if t:
+                return t
+        except Exception:
+            pass
+        try:
+            t = ctrl.get_value() or ''
+            if t:
+                return t
+        except Exception:
+            pass
+        try:
+            t = ' '.join(s for s in ctrl.texts() if s).strip()
+            if t:
+                return t
+        except Exception:
+            pass
+    return ''
 
 
 def find_tx32_by_rect(win32_win, rect: dict | None, tolerance: int = 24):
@@ -610,6 +732,37 @@ def activate_report_field_anchor(win32_win, field_cfg: dict | None) -> bool:
         return False
 
 
+def click_report_ratio(win32_win, ratio_xy, *, click_count: int = 1,
+                       delay_ms: int = 700, reason: str = 'report_ratio') -> bool:
+    if not isinstance(ratio_xy, (list, tuple)) or len(ratio_xy) != 2:
+        return False
+    try:
+        x_ratio = float(ratio_xy[0])
+        y_ratio = float(ratio_xy[1])
+    except Exception:
+        return False
+
+    try:
+        form = win32_win.child_window(class_name='ACIFormView')
+        r = form.rectangle()
+        ctrl_w = r.right - r.left
+        ctrl_h = r.bottom - r.top
+        if ctrl_w <= 0 or ctrl_h <= 0:
+            return False
+        click_x = int(ctrl_w * max(0.02, min(0.98, x_ratio)))
+        click_y = int(ctrl_h * max(0.02, min(0.98, y_ratio)))
+        bring_to_foreground(win32_win)
+        time.sleep(0.2)
+        for _ in range(max(1, int(click_count))):
+            form.click_input(coords=(click_x, click_y))
+            time.sleep(max(100, int(delay_ms)) / 1000.0)
+        log.info(f"  Report click ({click_x},{click_y}) via {reason}")
+        return True
+    except Exception as e:
+        log.debug(f"  Report ratio click failed ({reason}): {e}")
+        return False
+
+
 def locate_field_tx32(win32_win, field_cfg: dict, form_type: str = '1004'):
     label = field_cfg.get('label', '')
     aliases = field_cfg.get('aliases', [])
@@ -624,6 +777,204 @@ def locate_field_tx32(win32_win, field_cfg: dict, form_type: str = '1004'):
     if retry_ctrl is not None:
         return retry_ctrl, retry_score, f'report_anchor:{retry_method}'
     return None, retry_score, f'report_anchor:{retry_method}'
+
+
+def _wait_for_popup_window(app32=None, title_terms: list[str] | None = None,
+                           timeout_s: float = 2.5):
+    if not PYWINAUTO_AVAILABLE:
+        return None
+    app32 = app32 or connect_win32()
+    deadline = time.time() + max(0.2, float(timeout_s))
+    title_terms = [term.lower() for term in (title_terms or []) if term]
+    while time.time() < deadline:
+        try:
+            top = app32.top_window()
+        except Exception:
+            top = None
+        if top is not None:
+            try:
+                title = (top.window_text() or '').strip()
+                cls = (top.class_name() or '').strip()
+                if cls != 'Report32Main':
+                    if not title_terms or any(term in title.lower() for term in title_terms):
+                        return top
+            except Exception:
+                pass
+        time.sleep(0.15)
+    return None
+
+
+def _close_popup_window(popup_win) -> None:
+    if popup_win is None:
+        return
+    try:
+        popup_win.child_window(title='Cancel', control_type='Button').click_input()
+        time.sleep(0.4)
+        return
+    except Exception:
+        pass
+    try:
+        bring_to_foreground(popup_win)
+        time.sleep(0.15)
+        send_keys('{ESC}')
+        time.sleep(0.5)
+    except Exception:
+        pass
+
+
+def _set_popup_text_value(popup_win, text: str) -> bool:
+    if not (PYPERCLIP_AVAILABLE and PYWINAUTO_AVAILABLE):
+        return False
+    try:
+        popup_uia = Application(backend='uia').connect(handle=popup_win.handle).window(handle=popup_win.handle)
+    except Exception as e:
+        log.debug(f"  Popup UIA bind failed: {e}")
+        return False
+
+    edits = []
+    try:
+        for ctrl in popup_uia.descendants(control_type='Edit'):
+            try:
+                rect = ctrl.rectangle()
+                area = max(0, rect.right - rect.left) * max(0, rect.bottom - rect.top)
+                edits.append((area, ctrl))
+            except Exception:
+                continue
+    except Exception as e:
+        log.debug(f"  Popup edit enumeration failed: {e}")
+
+    if not edits:
+        return False
+
+    _, target = max(edits, key=lambda item: item[0])
+    try:
+        pyperclip.copy(text)
+        target.click_input()
+        time.sleep(0.15)
+        send_keys('^a')
+        time.sleep(0.05)
+        send_keys('^v')
+        time.sleep(0.2)
+        return True
+    except Exception as e:
+        log.debug(f"  Popup text paste failed: {e}")
+        return False
+
+
+def _confirm_popup_ok(popup_win) -> bool:
+    if popup_win is None:
+        return False
+    try:
+        popup_win.child_window(title='OK', control_type='Button').click_input()
+        time.sleep(0.5)
+        return True
+    except Exception:
+        pass
+
+    try:
+        popup_uia = Application(backend='uia').connect(handle=popup_win.handle).window(handle=popup_win.handle)
+    except Exception as e:
+        log.debug(f"  Popup UIA bind for OK failed: {e}")
+        return False
+
+    buttons = []
+    try:
+        for ctrl in popup_uia.descendants(control_type='Button'):
+            try:
+                rect = ctrl.rectangle()
+                buttons.append({
+                    'ctrl': ctrl,
+                    'title': (ctrl.window_text() or '').strip(),
+                    'left': rect.left,
+                    'top': rect.top,
+                    'right': rect.right,
+                    'bottom': rect.bottom,
+                })
+            except Exception:
+                continue
+    except Exception as e:
+        log.debug(f"  Popup button enumeration failed: {e}")
+        return False
+
+    if not buttons:
+        return False
+
+    for candidate in buttons:
+        if candidate['title'].lower() == 'ok':
+            try:
+                candidate['ctrl'].click_input()
+                time.sleep(0.5)
+                return True
+            except Exception as e:
+                log.debug(f"  Popup OK click failed: {e}")
+
+    # Fallback: the save/confirm action is the bottom-right button in this dialog.
+    buttons.sort(key=lambda item: (item['bottom'], item['right']))
+    candidate = buttons[-1]
+    try:
+        candidate['ctrl'].click_input()
+        time.sleep(0.5)
+        return True
+    except Exception as e:
+        log.debug(f"  Popup fallback button click failed: {e}")
+        return False
+
+
+def _probe_report_direct(field_cfg: dict, form_type: str = '1004') -> dict:
+    app32 = connect_win32()
+    if not app32:
+        return {'found': False, 'method': 'report_direct:no_win32'}
+    win = ensure_main_report_surface(app32=app32)
+    if not win:
+        return {'found': False, 'method': 'report_direct:no_main_window'}
+    tab = '' if field_cfg.get('skip_tab_navigation') else (field_cfg.get('tab_name') or '').strip()
+    if tab:
+        navigate_tab(win, tab, form_type, field_cfg)
+        time.sleep(0.4)
+    ok = activate_report_field_anchor(win, field_cfg)
+    return {'found': ok, 'method': 'report_direct:anchor' if ok else 'report_direct:anchor_failed'}
+
+
+def _probe_uad_dialog(field_cfg: dict, form_type: str = '1004') -> dict:
+    app32 = connect_win32()
+    if not app32:
+        return {'found': False, 'method': 'uad_dialog:no_win32'}
+    win = ensure_main_report_surface(app32=app32)
+    if not win:
+        return {'found': False, 'method': 'uad_dialog:no_main_window'}
+    tab = '' if field_cfg.get('skip_tab_navigation') else (field_cfg.get('tab_name') or '').strip()
+    if tab:
+        navigate_tab(win, tab, form_type, field_cfg)
+        time.sleep(0.4)
+    if not activate_report_field_anchor(win, field_cfg):
+        return {'found': False, 'method': 'uad_dialog:anchor_failed'}
+    bring_to_foreground(win)
+    time.sleep(0.15)
+    send_keys('^h')
+    time.sleep(0.5)
+    title_terms = [
+        field_cfg.get('uad_dialog_title', ''),
+        'uad compliance',
+    ]
+    popup = _wait_for_popup_window(app32=app32, title_terms=title_terms, timeout_s=2.0)
+    if popup is None:
+        arrow_ratio = field_cfg.get('uad_button_ratio')
+        if click_report_ratio(win, arrow_ratio, reason='uad_button'):
+            popup = _wait_for_popup_window(app32=app32, title_terms=title_terms, timeout_s=2.0)
+    if popup is None:
+        return {'found': False, 'method': 'uad_dialog:not_opened'}
+    _close_popup_window(popup)
+    ensure_main_report_surface(app32=app32)
+    return {'found': True, 'method': 'uad_dialog:opened'}
+
+
+def probe_field_strategy(field_cfg: dict, form_type: str = '1004') -> dict:
+    mode = normalize(field_cfg.get('insert_mode', ''))
+    if mode == 'report direct paste':
+        return {'supported': True, **_probe_report_direct(field_cfg, form_type)}
+    if mode == 'uad dialog':
+        return {'supported': True, **_probe_uad_dialog(field_cfg, form_type)}
+    return {'supported': False, 'found': False, 'method': 'tx32_default'}
 
 # ── Tab navigation ────────────────────────────────────────────────────────────
 
@@ -667,6 +1018,24 @@ def get_pane_title(win32_win) -> str:
         return (win32_win.child_window(class_name='ACIPaneTitle').window_text() or '').strip()
     except Exception:
         return ''
+
+
+def wait_for_pane_title(win32_win, expected_partial: str,
+                        timeout_s: float = 3.0) -> bool:
+    """
+    Poll ACIPaneTitle until it contains `expected_partial` (case-insensitive)
+    or the timeout expires.
+
+    Returns True if the expected title was seen within the timeout.
+    """
+    deadline = time.time() + max(0.1, float(timeout_s))
+    needle   = expected_partial.lower()
+    while time.time() < deadline:
+        title = get_pane_title(win32_win).lower()
+        if needle in title:
+            return True
+        time.sleep(0.15)
+    return False
 
 
 def _click_sidebar_entry(win32_win, entry: dict) -> bool:
@@ -752,17 +1121,46 @@ def _navigate_tab_by_position(win32_win, tab_name: str,
     individual tab buttons. The only way to click them programmatically is to
     calculate the X coordinate based on the known tab order and the control width.
 
+    After the click, confirms landing by reading ACIPaneTitle. If the title
+    does not match within 3 s, retries up to 2 more times (500 ms apart).
+
     IMPORTANT: The window must be in the foreground before clicking.
-    Returns True if the click was sent.
+    Returns True if the click was sent (even if pane-title confirmation failed).
     """
     tl = tab_name.lower()
     ratio = field_cfg.get('visual_tab_ratio') if field_cfg else None
+
+    def _confirm_and_log(attempt: int, reason: str) -> bool:
+        """After a click, wait for pane title and log result. Always return True."""
+        landed = wait_for_pane_title(win32_win, tab_name, timeout_s=3.0)
+        if landed:
+            actual = get_pane_title(win32_win)
+            log.info(f"  Tab '{tab_name}' confirmed (attempt {attempt}, "
+                     f"via {reason}): pane='{actual}'")
+        else:
+            actual = get_pane_title(win32_win)
+            log.warning(f"  Tab '{tab_name}' pane-title confirmation FAILED "
+                        f"(attempt {attempt}, via {reason}): pane='{actual}'")
+        return True
+
     if ratio is not None:
         label = field_cfg.get('visual_tab_label') or tab_name
-        if _click_section_tabs_ratio(
-            win32_win, ratio, f"surface:{label} form={form_type}"
-        ):
-            return True
+        reason = f"surface:{label} form={form_type}"
+        for attempt in range(1, 4):
+            if _click_section_tabs_ratio(win32_win, ratio, reason):
+                landed = wait_for_pane_title(win32_win, tab_name, timeout_s=3.0)
+                actual = get_pane_title(win32_win)
+                if landed:
+                    log.info(f"  Tab '{tab_name}' confirmed (attempt {attempt}, "
+                             f"via {reason}): pane='{actual}'")
+                    return True
+                log.warning(f"  Tab '{tab_name}' pane-title unconfirmed "
+                            f"(attempt {attempt}/{3}, via {reason}): pane='{actual}'")
+                if attempt < 3:
+                    time.sleep(0.5)
+            else:
+                break  # click itself failed — fall through to position logic
+        # Fall through to position-based approach if ratio click did not confirm
 
     order = _TAB_ORDER.get(form_type, _TAB_ORDER['default'])
     tab_idx = None
@@ -776,30 +1174,46 @@ def _navigate_tab_by_position(win32_win, tab_name: str,
         log.debug(f"  Tab '{tab_name}' not in known order for form {form_type}")
         return False
 
-    try:
-        # Bring window to foreground before clicking owner-drawn tabs
-        bring_to_foreground(win32_win)
-        time.sleep(0.2)
+    for attempt in range(1, 4):
+        try:
+            # Bring window to foreground before clicking owner-drawn tabs
+            bring_to_foreground(win32_win)
+            time.sleep(0.2)
 
-        tabs_ctrl = win32_win.child_window(class_name='ACISectionTabs')
-        r         = tabs_ctrl.rectangle()
-        ctrl_w    = r.right - r.left
-        ctrl_h    = r.bottom - r.top
-        n_tabs    = len(order)
-        tab_w     = ctrl_w / n_tabs
-        # Click at the center of the target tab
-        click_x   = int(tab_idx * tab_w + tab_w / 2)
-        click_y   = int(ctrl_h / 2)
-        tabs_ctrl.click_input(coords=(click_x, click_y))
-        # Give ACI time to redraw the section
-        time.sleep(0.8)
-        log.info(f"  Tab '{tab_name}' via position click "
-                 f"(idx={tab_idx} x={click_x} ctrl_w={ctrl_w} "
-                 f"tab_w={tab_w:.0f} form={form_type})")
-        return True
-    except Exception as e:
-        log.debug(f"  Tab position click failed: {e}")
-        return False
+            tabs_ctrl = win32_win.child_window(class_name='ACISectionTabs')
+            r         = tabs_ctrl.rectangle()
+            ctrl_w    = r.right - r.left
+            ctrl_h    = r.bottom - r.top
+            n_tabs    = len(order)
+            tab_w     = ctrl_w / n_tabs
+            # Click at the center of the target tab
+            click_x   = int(tab_idx * tab_w + tab_w / 2)
+            click_y   = int(ctrl_h / 2)
+            tabs_ctrl.click_input(coords=(click_x, click_y))
+            # Give ACI time to redraw the section
+            time.sleep(0.8)
+            log.info(f"  Tab '{tab_name}' via position click "
+                     f"(idx={tab_idx} x={click_x} ctrl_w={ctrl_w} "
+                     f"tab_w={tab_w:.0f} form={form_type} attempt={attempt})")
+
+            landed = wait_for_pane_title(win32_win, tab_name, timeout_s=3.0)
+            actual = get_pane_title(win32_win)
+            if landed:
+                log.info(f"  Tab '{tab_name}' confirmed (attempt {attempt}, "
+                         f"position): pane='{actual}'")
+                return True
+            log.warning(f"  Tab '{tab_name}' pane-title unconfirmed "
+                        f"(attempt {attempt}/3, position): pane='{actual}'")
+            if attempt < 3:
+                time.sleep(0.5)
+        except Exception as e:
+            log.debug(f"  Tab position click failed (attempt {attempt}): {e}")
+            break
+
+    # We tried — return True if at least one click was dispatched
+    log.warning(f"  Tab '{tab_name}': all confirmation attempts exhausted; "
+                f"proceeding anyway")
+    return True
 
 
 def navigate_to_main_form(win32_win) -> bool:
@@ -955,7 +1369,9 @@ def _ins_tx32(field_cfg: dict, text: str, form_type: str = '1004') -> tuple:
         if not app32:
             return False, 'tx32_no_win32', None, {}
 
-        win = app32.top_window()
+        win = ensure_main_report_surface(app32=app32)
+        if not win:
+            return False, 'tx32_no_main_window', None, {}
         bring_to_foreground(win)
 
         tab = (field_cfg.get('tab_name') or '').strip()
@@ -1004,6 +1420,113 @@ def _ins_tx32(field_cfg: dict, text: str, form_type: str = '1004') -> tuple:
         diag = diag if isinstance(diag, dict) else {}
         diag['error'] = str(e)[:200]
         return False, 'tx32_exception', None, diag
+
+
+def _ins_report_direct(field_cfg: dict, text: str,
+                       form_type: str = '1004') -> tuple:
+    if not (PYPERCLIP_AVAILABLE and PYWINAUTO_AVAILABLE):
+        return False, 'report_direct_unavailable', None, {}
+
+    diag = {}
+    try:
+        app32 = connect_win32()
+        if not app32:
+            return False, 'report_direct_no_win32', None, {}
+
+        win = ensure_main_report_surface(app32=app32)
+        if not win:
+            return False, 'report_direct_no_main_window', None, {}
+        bring_to_foreground(win)
+
+        tab = '' if field_cfg.get('skip_tab_navigation') else (field_cfg.get('tab_name') or '').strip()
+        if tab:
+            nav_ok = navigate_tab(win, tab, form_type, field_cfg)
+            diag['tab_name'] = tab
+            diag['tab_navigated'] = nav_ok
+            if nav_ok:
+                time.sleep(0.4)
+
+        if not activate_report_field_anchor(win, field_cfg):
+            return False, 'report_direct_anchor_failed', None, diag
+
+        pyperclip.copy(text)
+        time.sleep(0.05)
+        if field_cfg.get('report_paste_replace'):
+            send_keys('^a')
+            time.sleep(0.05)
+        send_keys('^v')
+        time.sleep(0.25)
+        return True, 'report_direct_paste', None, diag
+    except Exception as e:
+        log.debug(f"  report_direct failed: {e}")
+        diag['error'] = str(e)[:200]
+        return False, 'report_direct_exception', None, diag
+
+
+def _ins_uad_dialog(field_cfg: dict, text: str,
+                    form_type: str = '1004') -> tuple:
+    if not (PYPERCLIP_AVAILABLE and PYWINAUTO_AVAILABLE):
+        return False, 'uad_dialog_unavailable', None, {}
+
+    diag = {}
+    popup = None
+    try:
+        app32 = connect_win32()
+        if not app32:
+            return False, 'uad_dialog_no_win32', None, {}
+
+        win = ensure_main_report_surface(app32=app32)
+        if not win:
+            return False, 'uad_dialog_no_main_window', None, {}
+        bring_to_foreground(win)
+
+        tab = '' if field_cfg.get('skip_tab_navigation') else (field_cfg.get('tab_name') or '').strip()
+        if tab:
+            nav_ok = navigate_tab(win, tab, form_type, field_cfg)
+            diag['tab_name'] = tab
+            diag['tab_navigated'] = nav_ok
+            if nav_ok:
+                time.sleep(0.4)
+
+        if not activate_report_field_anchor(win, field_cfg):
+            return False, 'uad_dialog_anchor_failed', None, diag
+
+        bring_to_foreground(win)
+        time.sleep(0.15)
+        send_keys('^h')
+        time.sleep(0.5)
+        title_terms = [
+            field_cfg.get('uad_dialog_title', ''),
+            'uad compliance',
+        ]
+        popup = _wait_for_popup_window(app32=app32, title_terms=title_terms, timeout_s=2.5)
+        if popup is None:
+            arrow_ratio = field_cfg.get('uad_button_ratio')
+            if not click_report_ratio(win, arrow_ratio, reason='uad_button'):
+                return False, 'uad_dialog_button_failed', None, diag
+            popup = _wait_for_popup_window(app32=app32, title_terms=title_terms, timeout_s=2.5)
+        if popup is None:
+            return False, 'uad_dialog_not_opened', None, diag
+
+        diag['popup_title'] = popup.window_text()
+        diag['popup_class'] = popup.class_name()
+
+        if not _set_popup_text_value(popup, text):
+            _close_popup_window(popup)
+            return False, 'uad_dialog_text_failed', None, diag
+
+        if not _confirm_popup_ok(popup):
+            _close_popup_window(popup)
+            return False, 'uad_dialog_confirm_failed', None, diag
+
+        ensure_main_report_surface(app32=app32)
+        return True, 'uad_dialog', None, diag
+    except Exception as e:
+        if popup is not None:
+            _close_popup_window(popup)
+        log.debug(f"  uad_dialog failed: {e}")
+        diag['error'] = str(e)[:200]
+        return False, 'uad_dialog_exception', None, diag
 
 
 def _ins_automation_id(main_win, aid: str, text: str) -> bool:
@@ -1094,7 +1617,9 @@ def _ins_clipboard(app, label: str, text: str) -> bool:
     try:
         pyperclip.copy(text)
         time.sleep(INSERT_DELAY_MS / 1000)
-        main_win = app.top_window()
+        main_win = ensure_main_report_surface(app=app)
+        if not main_win:
+            return False
         try:
             main_win.child_window(
                 title_re=f'.*{re.escape(label)}.*').set_focus()
@@ -1145,7 +1670,9 @@ def verify_insertion(app, field_cfg: dict, expected: str,
     if not (PYWINAUTO_AVAILABLE and app):
         return {'passed': False, 'method': 'unavailable', 'actual_preview': ''}
 
-    main_win = app.top_window()
+    main_win = ensure_main_report_surface(app=app)
+    if not main_win:
+        return {'passed': False, 'method': 'no_main_window', 'actual_preview': ''}
 
     # UIA automation_id
     if aid:
@@ -1187,17 +1714,38 @@ def insert_field(app, field_cfg: dict, text: str,
 
     Returns: { success, method, attempts, tx32_ctrl, diagnostics }
     """
-    main_win      = app.top_window()
+    attempts      = []
+    last_diag     = {}
+    main_win      = ensure_main_report_surface(app=app)
+    if not main_win:
+        return {'success': False, 'method': 'none',
+                'attempts': ['no_main_window'], 'tx32_ctrl': None,
+                'diagnostics': last_diag}
     label         = field_cfg.get('label', 'unknown')
     aid           = field_cfg.get('automation_id') or ''
     cls           = field_cfg.get('class_name') or ''
     cls_idx       = field_cfg.get('class_index')
     ctrl_idx      = field_cfg.get('control_index')
-    attempts      = []
-    last_diag     = {}
+    insert_mode   = normalize(field_cfg.get('insert_mode', ''))
+    mode_required = bool(field_cfg.get('mode_required'))
 
     log.info(f"  label='{label}' tab='{field_cfg.get('tab_name','')}' "
              f"aliases={field_cfg.get('aliases',[])}")
+
+    if insert_mode in {'report direct paste', 'uad dialog'}:
+        if insert_mode == 'report direct paste':
+            ok, meth, tx32c, diag = _ins_report_direct(field_cfg, text, form_type)
+        else:
+            ok, meth, tx32c, diag = _ins_uad_dialog(field_cfg, text, form_type)
+        last_diag = diag
+        if ok:
+            return {'success': True, 'method': meth,
+                    'attempts': [meth], 'tx32_ctrl': tx32c,
+                    'diagnostics': diag}
+        attempts.append(f'{insert_mode}:{meth}:failed')
+        if mode_required:
+            return {'success': False, 'method': 'none', 'attempts': attempts,
+                    'tx32_ctrl': None, 'diagnostics': last_diag}
 
     # 0. Learned target
     learned = get_learned(form_type, field_id) if field_id else None
