@@ -736,7 +736,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     // Sequential generation with delay to avoid hitting OpenAI TPM limits.
     // 30K TPM limit with ~3-4K tokens per field = max ~8 fields/min safely.
     // 3s gap keeps us under the limit even for longer fields like reconciliation.
-    const INTER_FIELD_DELAY_MS = 3000;
+    const INTER_FIELD_DELAY_MS = 5000;
 
     for (const field of allFields) {
       const sid = trimText(field?.id || field, 80);
