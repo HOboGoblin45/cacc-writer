@@ -723,6 +723,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 </div>
 
 <div class="tabs">
+  <div class="tab" onclick="showTab('intake')">📥 Intake</div>
   <div class="tab active" onclick="showTab('case')">Case</div>
   <div class="tab" onclick="showTab('workspace')">Workspace</div>
   <div class="tab" onclick="showTab('facts')">Facts</div>
@@ -739,6 +740,60 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="tab" onclick="showTab('learning')">Learning</div>
   <div class="tab" onclick="showTab('system')">System</div>
 </div>
+
+<!-- ===== TAB: INTAKE ===== -->
+<div class="page" id="tab-intake">
+  <div class="col wide">
+    <div class="card">
+      <div class="card-head"><h3>📥 New Order Intake</h3><span style="color:var(--muted);font-size:11px">Drop assignment sheet → case auto-created</span></div>
+      <div class="card-body">
+        <label>Upload Assignment Sheet PDF (First State Mortgage, First State Bank, etc.)</label>
+        <div id="intake-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:12px;" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleIntakeDrop(event)">
+          <div style="font-size:28px;margin-bottom:8px">📄</div>
+          <div style="color:var(--muted);font-size:13px">Drag &amp; drop your order PDF here, or</div>
+          <label style="display:inline-block;margin-top:10px;cursor:pointer;color:var(--gold);font-weight:700;font-size:13px;border:1px solid var(--gold);padding:6px 16px;border-radius:6px;">
+            Browse Files
+            <input type="file" id="intake-file-input" accept=".pdf" style="display:none" onchange="handleIntakeFile(this.files[0])">
+          </label>
+        </div>
+        <div id="intake-status" style="display:none"></div>
+        <div id="intake-result" style="display:none">
+          <div class="card" style="margin-top:12px">
+            <div class="card-head"><h3>Extracted Fields</h3></div>
+            <div class="card-body" id="intake-extracted"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">→ Open Case</button>
+            <button class="btn" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">📁 Create Job Folder</button>
+          </div>
+          <div id="intake-folder-status" style="margin-top:8px;font-size:12px;color:var(--ok)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col narrow">
+    <div class="card">
+      <div class="card-head"><h3>How It Works</h3></div>
+      <div class="card-body" style="font-size:12px;color:var(--muted);line-height:1.7">
+        <p>1. Upload the assignment sheet PDF from your email</p>
+        <p>2. Order details are extracted automatically</p>
+        <p>3. A case is created with facts pre-filled</p>
+        <p>4. Click "Open Case" to review &amp; generate</p>
+        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+        <p><strong style="color:var(--text)">Supported formats:</strong></p>
+        <p>• First State Mortgage Assignment Sheet</p>
+        <p>• First State Bank Request Form</p>
+        <p>• Any structured appraisal order PDF</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Recent Intakes</h3></div>
+      <div class="card-body" id="intake-recent-list" style="font-size:12px;color:var(--muted)">
+        No recent intakes.
+      </div>
+    </div>
+  </div>
+</div><!-- /#tab-intake -->
 
 <!-- ===== TAB: CASE ===== -->
 <div class="page active" id="tab-case">
