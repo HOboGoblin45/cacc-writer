@@ -680,6 +680,9 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
 
     const geo = readJSON(path.join(caseDir, 'geocode.json'), null);
     let locationContext = null;
+    // Enrich facts with boundary roads and location data from geocode/Overpass
+    // so [NORTH_BOUNDARY] etc. in style guide templates can be filled by the AI
+    let enrichedFacts = { ...facts };
     if (geo?.subject?.result?.lat) {
       try {
         const { lat, lng } = geo.subject.result;
@@ -689,9 +692,30 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
           comps: geo.comps || [],
           boundaryFeatures,
         });
+        // Inject boundary roads and location data into facts so formatFactsBlock
+        // includes them as high-confidence facts (fills [NORTH_BOUNDARY] etc.)
+        const br = boundaryFeatures?.boundaryRoads || {};
+        const sr = geo.subject?.result || {};
+        const neighborhoodFacts = { ...(enrichedFacts.neighborhood || {}) };
+        if (br.north) neighborhoodFacts.boundary_north = { value: br.north, confidence: 'high' };
+        if (br.south) neighborhoodFacts.boundary_south = { value: br.south, confidence: 'high' };
+        if (br.east)  neighborhoodFacts.boundary_east  = { value: br.east,  confidence: 'high' };
+        if (br.west)  neighborhoodFacts.boundary_west  = { value: br.west,  confidence: 'high' };
+        if (sr.city)  neighborhoodFacts.city            = { value: sr.city,  confidence: 'high' };
+        if (sr.suburb || sr.neighborhood) {
+          neighborhoodFacts.subdivision = { value: sr.suburb || sr.neighborhood, confidence: 'high' };
+        }
+        enrichedFacts = { ...enrichedFacts, neighborhood: neighborhoodFacts };
       } catch (e) {
         log.warn('[generate-all] location context unavailable:', e.message);
       }
+    }
+    // Also inject subject city from geo if not already in facts
+    if (geo?.subject?.result?.city && !enrichedFacts.subject?.city?.value) {
+      enrichedFacts.subject = {
+        ...(enrichedFacts.subject || {}),
+        city: { value: geo.subject.result.city, confidence: 'high' },
+      };
     }
 
     const allFields = formConfig.workflowFields || CORE_SECTIONS[formType] || [];
@@ -719,7 +743,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
           const messages = buildPromptMessages({
             formType,
             fieldId: sid,
-            facts,
+            facts: enrichedFacts,
             voiceExamples,
             examples: otherExamples,
             locationContext: LOCATION_CONTEXT_FIELDS.has(sid) ? locationContext : null,
