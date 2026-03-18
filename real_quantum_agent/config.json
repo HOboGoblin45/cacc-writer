@@ -13,12 +13,12 @@
   "_comment_browser": "Browser to use. 'chromium' works with both Chrome and Chromium. Change to 'chrome' if needed.",
   "browser": "chromium",
 
-  "insert_delay_ms": 300,
+  "insert_delay_ms": 400,
   "max_retries": 3,
   "verify_insertion": true,
 
   "_comment_nav": "Timeout in milliseconds for waiting on navigation selectors to appear.",
-  "navigation_timeout_ms": 10000,
+  "navigation_timeout_ms": 15000,
 
   "_comment_verify": "verify_insertion reads the field back after insert to confirm success. Disable if it causes slowness.",
 
