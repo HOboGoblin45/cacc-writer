@@ -1716,6 +1716,28 @@ router.post('/:caseId/geocode', async (req, res) => {
     };
     writeJSON(path.join(cd, 'geocode.json'), geocodeData);
 
+    // After geocoding, fetch boundary roads from Overpass and write them into facts
+    // so template placeholders like [INSERT NORTH_BOUNDARY] can be substituted.
+    try {
+      const boundaryFeatures = await getNeighborhoodBoundaryFeatures(subjectResult.lat, subjectResult.lng, 1.5);
+      if (boundaryFeatures?.boundaryRoads) {
+        const { north, south, east, west } = boundaryFeatures.boundaryRoads;
+        const existingFacts = readJSON(path.join(cd, 'facts.json'), {});
+        const updatedFacts  = {
+          ...existingFacts,
+          neighborhood_boundary_north: north || existingFacts.neighborhood_boundary_north || null,
+          neighborhood_boundary_south: south || existingFacts.neighborhood_boundary_south || null,
+          neighborhood_boundary_east:  east  || existingFacts.neighborhood_boundary_east  || null,
+          neighborhood_boundary_west:  west  || existingFacts.neighborhood_boundary_west  || null,
+        };
+        writeJSON(path.join(cd, 'facts.json'), updatedFacts);
+        log.info('geocode:boundary-roads-saved', { north, south, east, west });
+      }
+    } catch (boundaryErr) {
+      log.warn('geocode:boundary-roads-failed', { error: boundaryErr.message });
+      // Non-fatal — continue without boundary roads
+    }
+
     res.json({
       ok:      true,
       subject: {
