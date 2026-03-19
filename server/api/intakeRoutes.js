@@ -20,6 +20,7 @@ import { z } from 'zod';
 import { upload } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { parseOrderText, getMissingRequiredFields, buildFactsFromOrder } from '../intake/orderParser.js';
+import { parseAciXml, extractAndSavePdf, buildFactsFromXml } from '../intake/xmlParser.js';
 import { casePath, normalizeFormType } from '../utils/caseUtils.js';
 import { applyMetaDefaults, extractMetaFields } from '../caseMetadata.js';
 import { trimText } from '../utils/textUtils.js';
@@ -443,6 +444,171 @@ router.post('/intake/scan-job-folder', (req, res) => {
     });
   } catch (err) {
     log.error('intake:scan-job-folder', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/intake/xml ──────────────────────────────────────────────────────
+
+/**
+ * Accept an ACI VALUATION_RESPONSE XML export, extract all structured facts,
+ * create a cacc-writer case, and save the embedded PDF for voice training.
+ *
+ * Multipart body:
+ *   file: XML file (required, .xml or .XML)
+ *
+ * Returns:
+ *   { ok, caseId, extracted, comps, narrativeKeys, hasPdf, savedPdfPath, meta, facts }
+ */
+router.post('/intake/xml', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, code: 'MISSING_FILE', error: 'An XML file is required (multipart field: file)' });
+    }
+
+    const ext = path.extname(req.file.originalname || '').toLowerCase();
+    if (!['.xml'].includes(ext)) {
+      return res.status(415).json({ ok: false, code: 'UNSUPPORTED_FILE_TYPE', error: 'Only .xml files are accepted for XML intake' });
+    }
+
+    const MAX_XML_BYTES = 100 * 1024 * 1024; // 100MB — ACI XMLs can be large (embedded PDF)
+    if (req.file.size > MAX_XML_BYTES) {
+      return res.status(413).json({ ok: false, code: 'FILE_TOO_LARGE', error: `XML file too large (${Math.round(req.file.size / 1024 / 1024)}MB). Maximum is 100MB.` });
+    }
+
+    const xmlContent = req.file.buffer.toString('utf8');
+
+    // Validate it's a VALUATION_RESPONSE
+    if (!xmlContent.includes('<VALUATION_RESPONSE') && !xmlContent.includes('VALUATION_RESPONSE')) {
+      return res.status(422).json({ ok: false, code: 'INVALID_XML_FORMAT', error: 'File does not appear to be an ACI VALUATION_RESPONSE XML. Expected root tag: <VALUATION_RESPONSE>' });
+    }
+
+    // Parse the XML
+    const { extracted, comps, narratives, hasPdf, pdfBase64 } = parseAciXml(xmlContent);
+
+    // Determine form type
+    const formTypeCode = extracted.formTypeCode || '1004';
+
+    // Build case
+    let caseId = '';
+    let caseDir = '';
+    do {
+      caseId = uuidv4().replace(/-/g, '').slice(0, 8);
+      caseDir = casePath(caseId);
+    } while (fs.existsSync(caseDir));
+
+    const baseMeta = {
+      caseId,
+      address: trimText(extracted.address || extracted.streetAddress || '', 240),
+      borrower: trimText(extracted.borrowerName || '', 180),
+      formType: normalizeFormType(formTypeCode),
+      status: 'active',
+      pipelineStage: 'intake',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      intakeSource: 'aci-xml',
+    };
+
+    const metaExtras = {};
+    if (extracted.lenderName) metaExtras.lenderName = trimText(extracted.lenderName, 200);
+    if (extracted.county) metaExtras.county = trimText(extracted.county, 100);
+    if (extracted.city) metaExtras.city = trimText(extracted.city, 100);
+    if (extracted.state) metaExtras.state = trimText(extracted.state, 50);
+    if (extracted.appraiserFileId) metaExtras.notes = `ACI File: ${extracted.appraiserFileId}`;
+
+    const meta = applyMetaDefaults({ ...baseMeta, ...metaExtras });
+    const facts = buildFactsFromXml(extracted, comps);
+
+    // Create case on disk
+    fs.mkdirSync(path.join(caseDir, 'documents'), { recursive: true });
+    saveCaseProjection({ caseId, meta, facts, provenance: {}, outputs: {}, history: {}, docText: {} });
+
+    // Save narratives from addendum
+    if (Object.keys(narratives).length > 0) {
+      writeJSON(path.join(caseDir, 'xml_narratives.json'), narratives);
+    }
+
+    // Save comps
+    if (comps.length > 0) {
+      writeJSON(path.join(caseDir, 'xml_comps.json'), comps);
+    }
+
+    // Extract and save embedded PDF for voice training
+    let savedPdfPath = null;
+    if (hasPdf && pdfBase64) {
+      const baseFilename = extracted.appraiserFileId ||
+        (req.file.originalname || 'aci-report').replace(/\.xml$/i, '');
+      // Save to voice_pdfs/<formType>/ directory
+      const voicePdfDir = path.join(
+        path.dirname(path.dirname(path.dirname(path.dirname(caseDir)))), // workspace root
+        'voice_pdfs',
+        formTypeCode,
+      );
+      savedPdfPath = extractAndSavePdf(pdfBase64, voicePdfDir, baseFilename);
+    }
+
+    log.info('intake:xml:created', {
+      caseId,
+      formTypeCode,
+      address: extracted.address,
+      compsCount: comps.length,
+      narrativeKeys: Object.keys(narratives),
+      hasPdf,
+      savedPdfPath,
+    });
+
+    // Auto-geocode in background
+    if (extracted.lat && extracted.lng) {
+      // Already have lat/lng from MapReferenceIdentifier
+      const geocodeData = {
+        subject: {
+          address: extracted.address || '',
+          result: { lat: extracted.lat, lng: extracted.lng, source: 'aci-xml' },
+        },
+        comps: comps.filter(c => c.lat && c.lng).map(c => ({
+          address: c.address,
+          lat: parseFloat(c.lat),
+          lng: parseFloat(c.lng),
+        })),
+        geocodedAt: new Date().toISOString(),
+        autoGeocoded: true,
+      };
+      writeJSON(path.join(caseDir, 'geocode.json'), geocodeData);
+    } else if (extracted.address) {
+      // Fall back to geocoding API
+      (async () => {
+        try {
+          const geoResult = await geocodeAddress(extracted.address);
+          if (geoResult) {
+            writeJSON(path.join(caseDir, 'geocode.json'), {
+              subject: { address: extracted.address, result: geoResult },
+              comps: [],
+              geocodedAt: new Date().toISOString(),
+              autoGeocoded: true,
+            });
+          }
+        } catch (geoErr) {
+          log.warn('intake:xml:geocode-failed', { caseId, error: geoErr.message });
+        }
+      })();
+    }
+
+    res.json({
+      ok: true,
+      caseId,
+      extracted,
+      comps,
+      narrativeKeys: Object.keys(narratives),
+      narrativeSummary: Object.fromEntries(
+        Object.entries(narratives).map(([k, v]) => [k, v.slice(0, 200) + (v.length > 200 ? '...' : '')])
+      ),
+      hasPdf,
+      savedPdfPath,
+      meta,
+      facts,
+    });
+  } catch (err) {
+    log.error('intake:xml', { error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
