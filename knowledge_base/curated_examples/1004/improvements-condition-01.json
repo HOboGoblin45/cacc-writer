@@ -1,0 +1,16 @@
+{
+  "id": "improvements-condition-01",
+  "formType": "1004",
+  "fieldId": "improvements_condition",
+  "sourceType": "curated",
+  "qualityScore": 95,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "condition_c3",
+    "updated_kitchen",
+    "updated_baths"
+  ],
+  "text": "C3;Kitchen-updated three to five years ago;Bathrooms-updated three to five years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+}

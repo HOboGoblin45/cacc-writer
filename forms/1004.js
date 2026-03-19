@@ -139,7 +139,22 @@ const form1004 = {
       note: 'ACI: Improvements / condition narrative',
       aiEligibility: 'ai_draft',
       requiredFacts: ['subject.gla', 'subject.beds', 'subject.baths', 'subject.condition'],
-      tpl: 'Write the Improvements/Condition narrative in Charlie Cresci\'s style.\nMention overall updates, condition, and key items from subject. Do NOT invent. Use [INSERT] when needed.\nSubject: {{summary}}\nReturn ONLY the narrative text.',
+      tpl: `Write the Improvements/Condition narrative in Charlie Cresci's exact style.
+
+CRITICAL: Use EXACTLY the condition_rating, kitchen_update, and bathroom_update values from the facts block. Do not use values from examples — the facts override everything.
+
+REQUIRED FORMAT (fill in from facts only):
+[condition_rating];Kitchen-[kitchen_update];Bathrooms-[bathroom_update];The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained.
+
+Rules:
+1. condition_rating = subject.condition value from facts (e.g. "C3", "C4"). If missing use [INSERT condition].
+2. kitchen_update = the kitchen update timeframe from facts (e.g. "updated three to five years ago", "original"). If missing use [INSERT kitchen update].
+3. bathroom_update = the bathroom update timeframe from facts (e.g. "updated three to five years ago", "original"). If missing use [INSERT bathroom update].
+4. Keep the trailing sentence VERBATIM as shown above.
+5. Do NOT invent timeframes. Do NOT copy timeframes from examples. Use only facts.
+6. Return ONLY the narrative text.
+
+Subject: {{summary}}`,
     },
     {
       id: 'adverse_conditions', title: 'Adverse Conditions / External Factors',
@@ -174,7 +189,28 @@ const form1004 = {
       note: 'ACI: Sales comparison approach summary narrative',
       aiEligibility: 'ai_draft',
       requiredFacts: ['subject.gla', 'subject.condition'],
-      tpl: 'Write the Sales Comparison Approach summary in Charlie Cresci\'s exact structure and voice.\n\nRULES (strict):\n- Use "Due to a lack of recent comparable sales..." ONLY if explicitly supported by facts.\n- Include market time adjustment sentence ONLY if market_stat is provided and applicable.\n- Do NOT invent comp adjustments. Use [INSERT comp adjustments] for each comparable.\n\nSTRUCTURE:\n1. Search context opener (conditional)\n2. Comparables selection rationale\n3. Market time adjustment (if applicable) referencing sales statistics chart\n4. Comparable #1 has been adjusted for ...\n   Comparable #2 has been adjusted for ...\n   Comparable #3 has been adjusted for ...\n5. EXACT closing: "After adjustments are made the comparables provide a good basis for an estimate of market value."\n\nSubject area: {{area}}\nSubject: {{summary}}\nMarket stat: {{market_stat}}\nReturn ONLY the narrative text.',
+      tpl: `Write the Sales Comparison Approach summary in Charlie Cresci's EXACT style and voice.
+
+CRITICAL: You must choose ONE of two opening variants based on the facts:
+
+VARIANT A — Standard (use when comps found in subject neighborhood):
+"All comparables have been found in the subject's neighborhood on the [north/south/east/west]side of [city], IL and were selected to demonstrate the marketability of houses of a similar location, design, age, [quality,] condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report."
+
+VARIANT B — Extended search (use when facts indicate lack of comparable sales in neighborhood):
+"Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find [property type] of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report."
+
+RULES (strict):
+1. Use Variant B ONLY if facts explicitly indicate extended search / lack of neighborhood comps.
+2. Use Variant A by default if no extended search is indicated.
+3. Fill [X.X]% from market_stat if available (e.g. "0.5%", "1.0%"). If missing, use [INSERT market time adjustment %].
+4. Fill [city] from subject city fact. Fill [north/south/east/west]side from neighborhood facts if available.
+5. Do NOT invent comp adjustments. Do NOT add adjustment detail lines.
+6. End EXACTLY with: "After adjustments are made the comparables provide a good basis for an estimate of market value."
+7. Return ONLY the narrative text — no headers, no extra lines.
+
+Subject area: {{area}}
+Subject: {{summary}}
+Market stat: {{market_stat}}`,
     },
     {
       id: 'reconciliation', title: 'Reconciliation Narrative',

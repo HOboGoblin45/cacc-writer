@@ -17,10 +17,10 @@
 // ============================================================
 
 // ── Active production form types ─────────────────────────────────────────────
-export const ACTIVE_FORMS = ['1004', 'commercial'];
+export const ACTIVE_FORMS = ['1004', '1025', 'commercial'];
 
 // ── Deferred form types (files preserved, not actively extended) ─────────────
-export const DEFERRED_FORMS = ['1025', '1073', '1004c'];
+export const DEFERRED_FORMS = ['1073', '1004c'];
 
 // ── Lane 1: 1004 Single-Family Residential ───────────────────────────────────
 export const ACTIVE_RESIDENTIAL_LANE = {
@@ -28,6 +28,15 @@ export const ACTIVE_RESIDENTIAL_LANE = {
   software:    'aci',
   agentPort:   5180,
   label:       '1004 Single-Family Residential',
+  description: 'ACI desktop automation via pywinauto',
+};
+
+// ── Lane 1b: 1025 Small Residential Income ───────────────────────────────────
+export const ACTIVE_1025_LANE = {
+  formType:    '1025',
+  software:    'aci',
+  agentPort:   5180,
+  label:       '1025 Small Residential Income (2-4 Unit)',
   description: 'ACI desktop automation via pywinauto',
 };
 
@@ -65,7 +74,6 @@ export const PRIORITY_SECTIONS_COMMERCIAL = [
 
 // ── Deferred form metadata (for UI display and logging) ──────────────────────
 export const DEFERRED_FORM_META = {
-  '1025':  { label: '1025 — Small Residential Income',  reason: 'Lower usage frequency; inherits 1004 fields' },
   '1073':  { label: '1073 — Individual Condo Unit',     reason: 'Lower usage frequency; inherits 1004 fields' },
   '1004c': { label: '1004C — Manufactured Home',        reason: 'Lower usage frequency; inherits 1004 fields' },
 };

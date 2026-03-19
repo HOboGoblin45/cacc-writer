@@ -778,6 +778,79 @@ async function generateAll() {
   }
   await runBatch(fields);
 }
+
+async function generateAllAndInsertAll() {
+  // Generate all fields first
+  const fields = getActiveFields().map(f => ({ id: f.id, title: f.title, prompt: buildPrompt(f.tpl) }));
+  if (!fields.length) { alert('No fields to generate. Select a case and form type first.'); return; }
+
+  const btn = document.getElementById('genInsertAllBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⚡ Generating…'; }
+
+  setStatus('genStatus', 'Generating ' + fields.length + ' fields…', 'warn');
+
+  // Run generation
+  await runBatch(fields);
+
+  // Check if agent is running
+  const isCommercial = STATE.formType === 'commercial';
+  const agentOk = isCommercial ? _agentStatus.rq : _agentStatus.aci;
+  if (!agentOk) {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate All + Insert All'; }
+    alert('Generation complete! Agent not running — please insert manually or start the ACI agent and try again.');
+    return;
+  }
+
+  // Insert all generated fields
+  setStatus('genStatus', 'Inserting all generated sections into ACI…', 'warn');
+  if (btn) btn.textContent = '⚡ Inserting…';
+
+  const endpoint = isCommercial ? '/api/insert-rq' : '/api/insert-aci';
+  const outCards = document.querySelectorAll('.outcard');
+  let insertedCount = 0;
+  let failedFields = [];
+
+  for (const card of outCards) {
+    const fieldId = card.dataset.fieldId;
+    const editArea = card.querySelector('.editArea');
+    const outBody = card.querySelector('.outbody');
+    const text = ((editArea ? editArea.value : '') || (outBody ? outBody.textContent : '') || '').trim();
+    if (!text || text === 'Working...') continue;
+
+    try {
+      const d = await apiFetch(endpoint, {
+        method: 'POST',
+        body: { fieldId, text, formType: STATE.formType }
+      });
+      if (d.ok) {
+        insertedCount++;
+        // Visual feedback on the card
+        const tools = card.querySelector('.otools');
+        if (tools) {
+          const chip = document.createElement('span');
+          chip.className = 'chip ok';
+          chip.textContent = '✓ Inserted';
+          tools.prepend(chip);
+        }
+      } else {
+        failedFields.push(fieldId + ': ' + (d.error || 'failed'));
+      }
+    } catch (e) {
+      failedFields.push(fieldId + ': ' + e.message);
+    }
+    // Small delay between insertions to be safe
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate All + Insert All'; }
+
+  if (failedFields.length) {
+    setStatus('genStatus', `Done. ${insertedCount} inserted, ${failedFields.length} failed.`, 'warn');
+    alert('Inserted ' + insertedCount + ' fields.\nFailed:\n' + failedFields.join('\n'));
+  } else {
+    setStatus('genStatus', `✓ All ${insertedCount} fields generated and inserted into ACI.`, 'ok');
+  }
+}
 async function runBatch(fields) {
   showErr('genErrBox','');setStatus('genStatus','Generating '+fields.length+' field(s)...','warn');
   const _regenIds=new Set(fields.map(f=>f.id));
@@ -1713,7 +1786,7 @@ function concCalc(){
 function insertConcession(){const txt=$('concText').textContent;if(!txt)return;navigator.clipboard.writeText(txt).then(()=>alert('Copied to clipboard. Paste into ACI notes or SCA prompt.'));}
 
 // ====== AGENT MANAGEMENT ======
-let _agentStatus = { aci: false, rq: false };
+let _agentStatus = { aci: false, rq: false, openai: null };
 
 async function checkAgentStatus() {
   try {
@@ -1723,6 +1796,19 @@ async function checkAgentStatus() {
     _agentStatus.rq  = !!d.rq;
     updateAgentBadge('aci', _agentStatus.aci);
     updateAgentBadge('rq',  _agentStatus.rq);
+  } catch {}
+  // Also update OpenAI status from health/detailed
+  try {
+    const h = await apiFetch('/api/health/detailed', { timeout: 6000 });
+    if (h.ok) {
+      const openaiReady = h.ai && h.ai.ready;
+      _agentStatus.openai = openaiReady;
+      const dot = document.getElementById('openaiDot');
+      const label = document.getElementById('openaiLabel');
+      if (dot) dot.className = 'dot ' + (openaiReady ? 'ok' : (h.aiKeySet ? 'warn' : 'err'));
+      if (label) label.textContent = openaiReady ? 'OpenAI ✓' : (h.aiKeySet ? 'OpenAI ⚠' : 'OpenAI ✗');
+      if (!dot) {} // badge not present, skip
+    }
   } catch {}
 }
 
@@ -7488,6 +7574,10 @@ async function handleIntakeFile(file) {
       intakeExtracted = data.extracted;
       showIntakeResult(data);
       showIntakeStatus(`✓ Case created: ${data.caseId}`, 'ok');
+      // Auto-switch to Facts tab for this case so Charles can review pre-filled facts
+      activeCaseId = data.caseId;
+      await loadCase(data.caseId);
+      showTab('facts');
     } else {
       showIntakeStatus(data.error || 'Failed to parse order sheet.', 'err');
     }
@@ -7537,9 +7627,18 @@ function showIntakeResult(data) {
     html += `<div style="margin-top:10px;font-size:11px;color:var(--warn)">⚠ Missing: ${missing.join(', ')}</div>`;
   }
 
+  // Show pre-filled vs missing summary
+  const prefilled = fields.filter(([, v]) => v).length;
+  const total = fields.length;
+  html += `<div style="margin-top:10px;padding:8px;background:rgba(215,179,90,.08);border:1px solid rgba(215,179,90,.25);border-radius:6px;font-size:11px;">
+    <strong style="color:var(--gold)">✓ ${prefilled}/${total} fields pre-filled</strong>
+    ${prefilled >= total - 2 ? ' &mdash; <span style="color:var(--ok)">Ready to generate!</span>' : ' &mdash; <span style="color:var(--warn)">Review facts before generating</span>'}
+  </div>`;
+
   el.innerHTML = html;
   document.getElementById('intake-result').style.display = 'block';
   document.getElementById('intake-goto-case-btn').style.display = 'inline-block';
+  document.getElementById('intake-ready-generate-btn').style.display = 'inline-block';
   document.getElementById('intake-create-folder-btn').style.display = 'inline-block';
 
   // Add to recent list
@@ -7559,6 +7658,13 @@ function gotoIntakeCase() {
   showTab('case');
   loadCaseList();
   loadCase(intakeCaseId);
+}
+
+async function intakeReadyToGenerate() {
+  if (!intakeCaseId) return;
+  activeCaseId = intakeCaseId;
+  await loadCase(intakeCaseId);
+  showTab('generate');
 }
 
 async function createIntakeFolder() {
