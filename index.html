@@ -893,6 +893,18 @@ button.sm{padding:5px 9px;font-size:11px;}
             <input type="file" id="intake-file-input" accept=".pdf" style="display:none" onchange="handleIntakeFile(this.files[0])">
           </label>
         </div>
+        <!-- ACI XML intake -->
+        <div style="text-align:center;margin-bottom:8px;color:var(--muted);font-size:11px;">— or import a completed ACI XML export —</div>
+        <div id="intake-xml-drop-zone" style="border:2px dashed rgba(85,209,143,.25);border-radius:10px;padding:20px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;background:rgba(85,209,143,.03);" ondragover="event.preventDefault();this.style.borderColor='var(--ok)';this.style.background='rgba(85,209,143,.08)'" ondragleave="this.style.borderColor='rgba(85,209,143,.25)';this.style.background='rgba(85,209,143,.03)'" ondrop="handleIntakeXmlDrop(event)">
+          <div style="font-size:28px;margin-bottom:6px">📋</div>
+          <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:4px">Drop ACI XML Export here</div>
+          <div style="color:var(--muted);font-size:11px;margin-bottom:12px">Extracts all facts, comps &amp; adjustments — more complete than PDF intake</div>
+          <label style="display:inline-block;cursor:pointer;color:var(--ok);font-weight:700;font-size:12px;border:1px solid var(--ok);padding:6px 18px;border-radius:8px;">
+            📁 Browse XML
+            <input type="file" id="intake-xml-input" accept=".xml,.XML" style="display:none" onchange="handleIntakeXmlFile(this.files[0])">
+          </label>
+        </div>
+        <div id="intake-xml-status" class="status" style="display:none;margin-bottom:10px;"></div>
         <div id="intake-status" style="display:none;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,.2);font-size:13px;margin-bottom:10px;"></div>
 
         <!-- Success card (shown after upload) -->
@@ -1839,13 +1851,47 @@ button.sm{padding:5px 9px;font-size:11px;}
     <div class="card">
       <div class="card-head"><h3>Import Completed Appraisal</h3></div>
       <div class="card-body">
-        <div class="hint" id="voiceImportHint">Upload a completed appraisal PDF to extract your narrative voice. The AI identifies narrative sections and uses them as writing examples for future generation.</div>
+        <div class="hint" id="voiceImportHint">Upload completed appraisal PDFs to extract your narrative voice. The AI identifies narrative sections and uses them as writing examples for future generation.</div>
         <label>Form Type</label>
-        <select id="voiceFormType" onchange="loadVoiceExamples()"><option value="1004">1004 URAR — Single Family</option></select>
-        <label>Select Completed Appraisal PDF</label>
-        <input type="file" id="voicePdfFile" accept=".pdf"/>
-        <div class="btnrow"><button onclick="uploadVoicePdf()">Import PDF</button></div>
+        <select id="voiceFormType" onchange="loadVoiceExamples()">
+          <option value="1004">1004 – Single Family Residential</option>
+          <option value="1025">1025 – Small Residential Income (2-4 Unit)</option>
+          <option value="1073">1073 – Individual Condo Unit</option>
+          <option value="commercial">Commercial</option>
+          <option value="1004c">1004C – Manufactured Home</option>
+        </select>
+        <label style="margin-top:10px;">Drop PDF Reports (multiple OK)</label>
+        <div id="voice-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;margin-bottom:10px;"
+          ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+          ondragleave="this.style.borderColor='var(--border)'"
+          ondrop="handleVoiceDrop(event)">
+          <div style="font-size:24px;margin-bottom:6px">📄</div>
+          <div style="color:var(--muted);font-size:12px">Drop completed appraisal PDFs here (multiple OK)</div>
+          <label style="display:inline-block;margin-top:8px;cursor:pointer;color:var(--gold);font-size:12px;border:1px solid var(--gold);padding:4px 12px;border-radius:6px;">
+            Browse
+            <input type="file" id="voicePdfFile" accept=".pdf" multiple style="display:none" onchange="handleVoiceFileSelect(this.files)">
+          </label>
+        </div>
+        <div id="voice-upload-queue" style="margin-bottom:8px;"></div>
         <div id="voiceImportStatus" class="status"></div>
+        <div class="sep"></div>
+        <label style="margin-bottom:6px;">📋 Upload ACI XML Export</label>
+        <div class="hint" style="margin-bottom:8px;">More powerful than PDF — extracts all structured facts, comps, and adjustments automatically, plus saves the embedded PDF for narrative training.</div>
+        <div id="voice-xml-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;margin-bottom:8px;"
+          ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+          ondragleave="this.style.borderColor='var(--border)'"
+          ondrop="handleVoiceXmlDrop(event)">
+          <div style="font-size:20px;margin-bottom:4px">📋</div>
+          <div style="color:var(--muted);font-size:11px">Drop ACI XML exports here (extracts all facts + comps automatically)</div>
+          <label style="display:inline-block;margin-top:6px;cursor:pointer;color:var(--gold);font-size:11px;border:1px solid var(--gold);padding:3px 10px;border-radius:6px;">
+            Browse XML
+            <input type="file" id="voiceXmlFile" accept=".xml,.XML" multiple style="display:none" onchange="handleVoiceXmlSelect(this.files)">
+          </label>
+        </div>
+        <div id="voice-xml-queue" style="margin-bottom:8px;"></div>
+        <div id="voiceXmlImportStatus" class="status"></div>
+        <div class="sep"></div>
+        <div class="hint" style="margin-bottom:6px;"><strong>Note:</strong> ACI files (.aci) cannot be directly uploaded — they are a proprietary binary format. Please export your completed reports from ACI as PDF first (<em>File → Print → Save as PDF</em>), then upload the PDF here. Or use the XML export option above.</div>
         <div class="sep"></div>
         <div class="hint" style="margin-bottom:6px;">Or scan the <b>voice_pdfs/</b> folder — drop PDFs into the matching subfolder, then click Scan.</div>
         <div id="folderStatus" style="font-size:11px;color:var(--muted);margin-bottom:6px;min-height:16px;"></div>
@@ -1857,9 +1903,10 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>About Voice Training</h3></div>
+      <div class="card-head"><h3>Your Voice Training Library</h3><button class="ghost sm" onclick="refreshVoiceLibrary()">↻ Refresh</button></div>
       <div class="card-body">
-        <div class="hint">Voice training examples are injected into every generation prompt so the AI writes in your exact style.<br><br>Import completed appraisal PDFs one at a time. Select the correct form type before importing.<br><br>More examples = better voice matching. Import 5-10 past reports for best results.</div>
+        <div class="hint" style="margin-bottom:10px;">PDFs already saved in your <code>voice_pdfs/</code> subfolders. Import any that haven't been processed yet.</div>
+        <div id="voiceLibraryStatus" style="font-size:12px;color:var(--muted);">Loading library...</div>
       </div>
     </div>
   </div>

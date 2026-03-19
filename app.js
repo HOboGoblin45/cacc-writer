@@ -66,7 +66,7 @@ function showTab(name) {
   closeToolsMenu();
   if(name==='workspace' && typeof workspaceOnTabOpen==='function')workspaceOnTabOpen();
   if(name==='facts')loadNeighborhoodTemplates();
-  if(name==='voice')loadVoiceExamples();
+  if(name==='voice'){loadVoiceExamples();setTimeout(refreshVoiceLibrary,200);}
   if(name==='docs')loadDocsTab();
   if(name==='memory')memLoadAll();
   if(name==='qc')qcOnTabOpen();
@@ -1514,6 +1514,224 @@ function exportAll(){
 }
 
 // ====== VOICE TRAINING ======
+
+// ── Drag-and-drop multi-PDF upload ────────────────────────────────────────────
+
+function handleVoiceDrop(e) {
+  e.preventDefault();
+  document.getElementById('voice-drop-zone').style.borderColor = 'var(--border)';
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (files.length) processVoiceFiles(files);
+  else setStatus('voiceImportStatus', 'Please drop PDF files only.', 'err');
+}
+
+function handleVoiceFileSelect(fileList) {
+  processVoiceFiles(Array.from(fileList));
+}
+
+async function processVoiceFiles(files) {
+  const formType = $('voiceFormType')?.value || STATE.formType || '1004';
+  const queueEl = $('voice-upload-queue');
+  if (queueEl) queueEl.innerHTML = '';
+  setStatus('voiceImportStatus', `Uploading ${files.length} file${files.length !== 1 ? 's' : ''}...`, 'warn');
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const file of files) {
+    const safeId = 'vstatus_' + file.name.replace(/[^a-z0-9]/gi, '_');
+    if (queueEl) {
+      const itemEl = document.createElement('div');
+      itemEl.style.cssText = 'font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;';
+      itemEl.innerHTML = `<span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(file.name)}</span><span id="${safeId}" style="color:var(--warn);white-space:nowrap;">uploading…</span>`;
+      queueEl.appendChild(itemEl);
+    }
+
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('formType', formType);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 180000);
+      const r = await fetch(server() + '/api/voice/import-pdf', {
+        method: 'POST',
+        headers: { 'X-API-Key': CACC_API_KEY },
+        body: fd,
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      const data = await r.json();
+      const statusEl = document.getElementById(safeId);
+      if (data.ok) {
+        if (statusEl) { statusEl.textContent = `✓ ${(data.extracted || data.extractedCount || 0)} examples`; statusEl.style.color = 'var(--ok)'; }
+        successCount++;
+      } else {
+        if (statusEl) { statusEl.textContent = `✗ ${data.error || 'failed'}`; statusEl.style.color = 'var(--danger)'; }
+        errorCount++;
+      }
+    } catch (err) {
+      const statusEl = document.getElementById(safeId);
+      if (statusEl) { statusEl.textContent = err.name === 'AbortError' ? '✗ timeout' : '✗ error'; statusEl.style.color = 'var(--danger)'; }
+      errorCount++;
+    }
+  }
+
+  if (errorCount === 0) {
+    setStatus('voiceImportStatus', `✓ ${successCount} file${successCount !== 1 ? 's' : ''} imported successfully.`, 'ok');
+  } else if (successCount > 0) {
+    setStatus('voiceImportStatus', `${successCount} imported, ${errorCount} failed.`, 'warn');
+  } else {
+    setStatus('voiceImportStatus', `All ${errorCount} file${errorCount !== 1 ? 's' : ''} failed to import.`, 'err');
+  }
+
+  setTimeout(() => loadVoiceExamples(), 500);
+}
+
+// ── ACI XML upload for voice training ────────────────────────────────────────
+
+function handleVoiceXmlDrop(e) {
+  e.preventDefault();
+  document.getElementById('voice-xml-drop-zone').style.borderColor = 'var(--border)';
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.toLowerCase().endsWith('.xml'));
+  if (files.length) processVoiceXmlFiles(files);
+  else setStatus('voiceXmlImportStatus', 'Please drop .xml files only.', 'err');
+}
+
+function handleVoiceXmlSelect(fileList) {
+  processVoiceXmlFiles(Array.from(fileList));
+}
+
+async function processVoiceXmlFiles(files) {
+  const queueEl = $('voice-xml-queue');
+  if (queueEl) queueEl.innerHTML = '';
+  setStatus('voiceXmlImportStatus', `Processing ${files.length} XML file${files.length !== 1 ? 's' : ''}...`, 'warn');
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const file of files) {
+    const safeId = 'vxmlstatus_' + file.name.replace(/[^a-z0-9]/gi, '_');
+    if (queueEl) {
+      const itemEl = document.createElement('div');
+      itemEl.style.cssText = 'font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;';
+      itemEl.innerHTML = `<span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📋 ${esc(file.name)}</span><span id="${safeId}" style="color:var(--warn);white-space:nowrap;">parsing…</span>`;
+      queueEl.appendChild(itemEl);
+    }
+
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 300000);
+      const r = await fetch(server() + '/api/intake/xml', {
+        method: 'POST',
+        headers: { 'X-API-Key': CACC_API_KEY },
+        body: fd,
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      const data = await r.json();
+      const statusEl = document.getElementById(safeId);
+      if (data.ok) {
+        const parts = [];
+        if (data.comps && data.comps.length) parts.push(`${data.comps.length} comps`);
+        if (data.narrativeKeys && data.narrativeKeys.length) parts.push(`${data.narrativeKeys.length} sections`);
+        if (data.hasPdf) parts.push('PDF saved');
+        if (statusEl) {
+          statusEl.textContent = `✓ Case ${data.caseId}${parts.length ? ' · ' + parts.join(', ') : ''}`;
+          statusEl.style.color = 'var(--ok)';
+        }
+        successCount++;
+      } else {
+        if (statusEl) { statusEl.textContent = `✗ ${data.error || 'failed'}`; statusEl.style.color = 'var(--danger)'; }
+        errorCount++;
+      }
+    } catch (err) {
+      const statusEl = document.getElementById(safeId);
+      if (statusEl) { statusEl.textContent = err.name === 'AbortError' ? '✗ timeout' : '✗ error'; statusEl.style.color = 'var(--danger)'; }
+      errorCount++;
+    }
+  }
+
+  if (errorCount === 0) {
+    setStatus('voiceXmlImportStatus', `✓ ${successCount} XML${successCount !== 1 ? 's' : ''} imported. Cases created with full facts + comps.`, 'ok');
+  } else if (successCount > 0) {
+    setStatus('voiceXmlImportStatus', `${successCount} imported, ${errorCount} failed.`, 'warn');
+  } else {
+    setStatus('voiceXmlImportStatus', `All ${errorCount} XML${errorCount !== 1 ? 's' : ''} failed.`, 'err');
+  }
+
+  // Reload examples in case PDFs were extracted and voice-imported
+  setTimeout(() => loadVoiceExamples(), 1000);
+}
+
+// ── Voice Training Library (folder status for all form types) ─────────────────
+
+const VOICE_FORM_TYPES = [
+  { id: '1004', label: '1004 Single Family' },
+  { id: '1025', label: '1025 Small Income' },
+  { id: '1073', label: '1073 Condo' },
+  { id: 'commercial', label: 'Commercial' },
+  { id: '1004c', label: '1004C Manufactured' },
+];
+
+async function refreshVoiceLibrary() {
+  const el = $('voiceLibraryStatus');
+  if (el) el.innerHTML = '<span style="color:var(--muted)">Checking folders…</span>';
+
+  const results = await Promise.allSettled(
+    VOICE_FORM_TYPES.map(ft =>
+      apiFetch('/api/voice/folder-status?formType=' + encodeURIComponent(ft.id))
+        .then(d => ({ ft, d }))
+    )
+  );
+
+  if (!el) return;
+  el.innerHTML = '';
+
+  for (const result of results) {
+    if (result.status !== 'fulfilled') continue;
+    const { ft, d } = result.value;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);gap:8px;';
+
+    if (!d.ok || !d.folderExists || !d.total) {
+      row.innerHTML = `<span style="font-size:12px;color:var(--muted);">${esc(ft.label)}</span><span style="font-size:11px;color:var(--muted);">no folder</span>`;
+    } else {
+      const newCount = d.newCount || 0;
+      const importBtn = newCount > 0
+        ? `<button class="sm" onclick="bulkImportVoiceFolder('${ft.id}',this)" style="white-space:nowrap;">Import ${newCount} New</button>`
+        : `<span style="font-size:10px;color:var(--ok);">✓ all imported</span>`;
+      row.innerHTML = `<div style="flex:1;min-width:0;"><div style="font-size:12px;color:var(--text);">${esc(ft.label)}</div><div style="font-size:10px;color:var(--muted);">${d.total} PDF${d.total !== 1 ? 's' : ''} in folder${newCount > 0 ? ` · ${newCount} new` : ''}</div></div>${importBtn}`;
+    }
+    el.appendChild(row);
+  }
+
+  if (!el.children.length) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:12px;">No voice_pdfs/ subfolders found. Drop PDFs into voice_pdfs/1004/, voice_pdfs/1025/, etc.</span>';
+  }
+}
+
+async function bulkImportVoiceFolder(formType, btn) {
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+  const d = await apiFetch('/api/voice/import-folder', { method: 'POST', body: { formType }, timeout: 300000 });
+  if (d.ok) {
+    const imported = d.imported || [];
+    btn.textContent = imported.length ? `✓ ${imported.length} done` : '✓ none new';
+    btn.style.color = 'var(--ok)';
+    if (imported.length) await loadVoiceExamples();
+  } else {
+    btn.textContent = '✗ error';
+    btn.style.color = 'var(--danger)';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = origText; btn.style.color = ''; }, 3000);
+  }
+  // Refresh library counts
+  setTimeout(() => refreshVoiceLibrary(), 500);
+}
+
 async function uploadVoicePdf(){
   const fileInput=$('voicePdfFile');
   if(!fileInput.files||!fileInput.files[0]){alert('Select a PDF file first.');return;}
@@ -7639,6 +7857,91 @@ function handleIntakeDrop(e) {
     handleIntakeFile(file);
   } else {
     showIntakeStatus('Please drop a PDF file.', 'err');
+  }
+}
+
+// ── ACI XML Intake ────────────────────────────────────────────────────────────
+
+function handleIntakeXmlDrop(e) {
+  e.preventDefault();
+  document.getElementById('intake-xml-drop-zone').style.borderColor = 'rgba(85,209,143,.25)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.toLowerCase().endsWith('.xml')) {
+    handleIntakeXmlFile(file);
+  } else {
+    showIntakeXmlStatus('Please drop an .xml file.', 'err');
+  }
+}
+
+function showIntakeXmlStatus(msg, type) {
+  const el = $('intake-xml-status');
+  if (!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.className = 'status' + (type ? ' ' + type : '');
+  el.textContent = msg;
+}
+
+async function handleIntakeXmlFile(file) {
+  if (!file) return;
+  showIntakeXmlStatus(`Parsing ${file.name}… this may take a moment.`, 'warn');
+  document.getElementById('intake-result').style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 300000);
+    const r = await fetch(server() + '/api/intake/xml', {
+      method: 'POST',
+      headers: { 'X-API-Key': CACC_API_KEY },
+      body: formData,
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    const data = await r.json();
+
+    if (data.ok && data.caseId) {
+      intakeCaseId = data.caseId;
+      intakeExtracted = data.extracted;
+
+      const parts = [];
+      if (data.comps && data.comps.length) parts.push(`${data.comps.length} comps extracted`);
+      if (data.narrativeKeys && data.narrativeKeys.length) parts.push(`${data.narrativeKeys.length} narrative sections`);
+      if (data.hasPdf) parts.push('PDF saved for voice training');
+
+      showIntakeXmlStatus(
+        `✓ Case ${data.caseId} created from XML${parts.length ? ' · ' + parts.join(', ') : ''}`,
+        'ok'
+      );
+
+      // Load the case and show result card using same mechanism as PDF intake
+      activeCaseId = data.caseId;
+      await loadCase(data.caseId);
+
+      // Show result using existing intake result card
+      showIntakeResult({
+        ...data,
+        extracted: {
+          ...data.extracted,
+          address: data.extracted.address || data.extracted.streetAddress || '',
+          borrowerName: data.extracted.borrowerName || '',
+          lenderName: data.extracted.lenderName || '',
+          formTypeCode: data.extracted.formTypeCode || '',
+          _xmlInfo: parts.join(' | '),
+        },
+        missingFields: [],
+      });
+      showIntakeStatus(`✓ XML imported: ${file.name}`, 'ok');
+    } else {
+      showIntakeXmlStatus(data.error || 'Failed to parse XML.', 'err');
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      showIntakeXmlStatus('Timed out. Large XML files (with embedded PDF) can take a while — try again.', 'err');
+    } else {
+      showIntakeXmlStatus(`Error: ${err.message}`, 'err');
+    }
   }
 }
 
