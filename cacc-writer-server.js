@@ -49,6 +49,7 @@ import contradictionLifecycleRouter from './server/api/contradictionLifecycleRou
 import sectionGovernanceRouter from './server/api/sectionGovernanceRoutes.js';
 import dataPipelineRouter from './server/api/dataPipelineRoutes.js';
 import intakeRouter from './server/api/intakeRoutes.js';
+import compsRouter from './server/api/compsRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -134,6 +135,7 @@ app.use('/api', contradictionLifecycleRouter);
 app.use('/api', sectionGovernanceRouter);
 app.use('/api', dataPipelineRouter);
 app.use('/api', intakeRouter);
+app.use('/api', compsRouter);
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);
