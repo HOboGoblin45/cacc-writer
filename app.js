@@ -34,11 +34,35 @@ async function apiFetch(path, opts={}) {
 }
 
 // ====== TABS ======
+// Tools dropdown: primary tabs shown in main nav; all others accessible via dropdown
+const PRIMARY_TABS = ['intake','case','workspace','voice'];
+const TOOLS_TAB_LABELS = {
+  generate:'⚡ Generate', facts:'📋 Facts', qc:'✅ QC Grade', docs:'📁 Docs',
+  intel:'🔍 Intel', valuation:'💰 Valuation', memory:'🧠 Memory', pipeline:'🔄 Pipeline',
+  inspect:'🔬 Inspect', governance:'📜 Governance', learning:'📖 Learning', system:'⚙️ System'
+};
+
 function showTab(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  $('tab-'+name).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"))t.classList.add('active');});
+  const tabPage = $('tab-'+name);
+  if(tabPage) tabPage.classList.add('active');
+  // Update primary nav tabs
+  document.querySelectorAll('.primary-nav .tab[data-tab]').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===name);
+  });
+  // Mark Tools button active if a tools-tab is selected
+  const isToolsTab = !PRIMARY_TABS.includes(name);
+  const toolsBtn = $('toolsMenuBtn');
+  if(toolsBtn) {
+    toolsBtn.classList.toggle('active', isToolsTab);
+    const lbl = $('toolsMenuLabel');
+    if(lbl) lbl.textContent = isToolsTab && TOOLS_TAB_LABELS[name] ? TOOLS_TAB_LABELS[name]+' ' : '';
+  }
+  // Highlight active item in dropdown
+  document.querySelectorAll('.tools-dropdown-item').forEach(item=>{
+    item.classList.toggle('active-tool', item.getAttribute('onclick')?.includes("'"+name+"'"));
+  });
+  closeToolsMenu();
   if(name==='workspace' && typeof workspaceOnTabOpen==='function')workspaceOnTabOpen();
   if(name==='facts')loadNeighborhoodTemplates();
   if(name==='voice')loadVoiceExamples();
@@ -51,6 +75,55 @@ function showTab(name) {
   if(name==='pipeline' && typeof dpOnTabOpen==='function')dpOnTabOpen();
   if(name==='inspect' && typeof inspOnTabOpen==='function')inspOnTabOpen();
   if(name==='system' && typeof sysOnTabOpen==='function')sysOnTabOpen();
+}
+
+// Tools dropdown controls
+function toggleToolsMenu(e) {
+  if(e) e.stopPropagation();
+  const dd = $('toolsDropdown');
+  if(dd) dd.classList.toggle('open');
+}
+function closeToolsMenu(e) {
+  const dd = $('toolsDropdown');
+  if(!dd) return;
+  if(!e || !e.target?.closest('.tools-menu-wrap')) dd.classList.remove('open');
+}
+
+// Active case bar
+function updateActiveCaseBar(caseRecord, meta) {
+  const bar = $('activeCaseBar');
+  if(!bar) return;
+  if(!STATE.caseId) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  const acbName = $('acbName');
+  const acbForm = $('acbForm');
+  if(acbName) {
+    const addr = meta?.address || STATE.caseId;
+    const borrower = meta?.borrower ? ' · ' + meta.borrower : '';
+    acbName.textContent = addr + borrower;
+  }
+  if(acbForm) {
+    const ft = meta?.formType || STATE.formType || '1004';
+    acbForm.textContent = ft.toUpperCase();
+    acbForm.style.display = 'inline-flex';
+  }
+}
+
+// Pipeline stage helper
+function getPipelineStage(cs) {
+  const wf = cs.workflowStatus || '';
+  const outputs = cs.outputCount || 0;
+  if(wf === 'complete' || wf === 'submitted') return 'complete';
+  if(wf === 'inserting') return 'inserting';
+  if(wf === 'review') return 'review';
+  if(outputs > 0) return 'generating';
+  const facts = cs.factCount || 0;
+  if(facts > 3) return 'facts';
+  return 'intake';
+}
+function stagePill(stage) {
+  const labels = { intake:'Intake', facts:'Facts', generating:'Generating', review:'Review', inserting:'Inserting', complete:'Complete' };
+  return `<span class="stage-pill stage-${stage}">${labels[stage]||stage}</span>`;
 }
 
 // ====== FORM REGISTRY ======
@@ -80,6 +153,9 @@ async function setActiveFormConfig(formType) {
     fb.style.display='inline-flex';
     fb.className='form-badge'+(isDeferredFormId(cfg.id)?' deferred':'');
   }
+  // Update active case bar form badge
+  const acbForm=$('acbForm');
+  if(acbForm){ acbForm.textContent=cfg.id.toUpperCase(); acbForm.style.display='inline-flex'; }
   // Re-render field list and doc slots
   renderFieldList();
   if(STATE.caseId)renderDocSlots(STATE._lastDocSummary||{});
@@ -303,33 +379,42 @@ function renderCaseStripMeta(detail={}) {
 }
 function renderCaseList(cases) {
   window._allCases=cases;
-  const filtered=_caseFilter==='all'?cases:cases.filter(cs=>(cs.status||'active')===_caseFilter);
+  // Sort most recent first
+  const sorted=[...cases].sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+  const filtered=_caseFilter==='all'?sorted:sorted.filter(cs=>(cs.status||'active')===_caseFilter);
   const list=$('caseList');
-  if(!filtered.length){list.innerHTML='<div class="hint">No '+(_caseFilter==='all'?'':''+_caseFilter+' ')+'cases.</div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="hint" style="padding:14px 16px;">No '+(_caseFilter==='all'?'':''+_caseFilter+' ')+'cases.</div>';return;}
   list.innerHTML=filtered.map(cs=>{
-    const st=cs.status||'active', active=STATE.caseId===cs.caseId?' active':'';
+    const st=cs.status||'active', isActive=STATE.caseId===cs.caseId;
     const cid=JSON.stringify(cs.caseId||''), sid=JSON.stringify(st);
-    // Deferred form types get a distinct badge style
     const isDeferred = isDeferredFormId(cs.formType||'');
-    const formLabel=cs.formType?` <span class="form-badge${isDeferred?' deferred':''}">${esc(cs.formType.toUpperCase())}${isDeferred?' ⚠':''}</span>`:'';
-    // ── Assignment metadata chips in case list ────────────────────────────
-    const purposeChip=cs.assignmentPurpose?`<span class="meta-chip purpose">${esc(cs.assignmentPurpose)}</span>`:'';
-    const loanChip=cs.loanProgram?`<span class="meta-chip loan">${esc(cs.loanProgram)}</span>`:'';
+    const formLabel=cs.formType?`<span class="form-badge${isDeferred?' deferred':''}">${esc(cs.formType.toUpperCase())}</span>`:'';
+    // Pipeline stage
+    const stage = getPipelineStage(cs);
+    // Fee chip
+    const feeChip = cs.fee ? `<span class="meta-chip purpose">$${esc(String(cs.fee))}</span>` : '';
     const condChip=cs.subjectCondition?`<span class="meta-chip cond-rating">${esc(cs.subjectCondition)}</span>`:'';
-    const geoChip=(cs.city||cs.county)?`<span class="meta-chip geo">${esc([cs.city,cs.county].filter(Boolean).join(', '))}</span>`:'';
-    const issuesChip=Array.isArray(cs.unresolvedIssues)&&cs.unresolvedIssues.length
-      ?`<span class="meta-chip status">Issues: ${cs.unresolvedIssues.length}</span>`:'';
-    const chips=[purposeChip,loanChip,condChip,geoChip,issuesChip].filter(Boolean).join('');
-    return '<div class="case-item'+active+'" onclick="loadCase('+cid+')">'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
-      +'<span style="flex:1;font-size:12px;font-weight:600;">'+esc(cs.address||cs.caseId)+'</span>'
-      +formLabel
-      +'<span class="case-status cs-'+st+'" onclick="event.stopPropagation();cycleStatus('+cid+','+sid+',this)">'+st.charAt(0).toUpperCase()+st.slice(1)+'</span>'
-      +'<button class="ghost sm" style="font-size:10px;padding:2px 6px;color:var(--danger);border-color:rgba(255,92,92,.2);" onclick="event.stopPropagation();deleteCase('+cid+',this)">&times;</button></div>'
-    +(cs.borrower?'<div style="font-size:11px;color:var(--muted);">'+esc(cs.borrower)+'</div>':'')
-    +(chips?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">'+chips+'</div>':'')
-    +'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+cs.caseId+' &bull; '+new Date(cs.updatedAt).toLocaleDateString()+'</div>'
-      +'</div>';
+    const geoChip=cs.city?`<span class="meta-chip geo">${esc(cs.city)}</span>`:'';
+    return `<div class="case-card${isActive?' active':''}" onclick="loadCase(${cid})">
+      <div class="case-card-header">
+        <div class="case-card-addr">${esc(cs.address||cs.caseId)}</div>
+        ${formLabel}
+        <button class="ghost sm" style="font-size:10px;padding:2px 6px;color:var(--danger);border-color:rgba(255,92,92,.2);flex-shrink:0;" onclick="event.stopPropagation();deleteCase(${cid},this)">&times;</button>
+      </div>
+      ${cs.borrower?`<div class="case-card-borrower">${esc(cs.borrower)}</div>`:''}
+      <div class="case-card-meta">
+        ${stagePill(stage)}
+        ${feeChip}${condChip}${geoChip}
+        <span class="case-status cs-${st}" style="cursor:pointer" onclick="event.stopPropagation();cycleStatus(${cid},${sid},this)">${st.charAt(0).toUpperCase()+st.slice(1)}</span>
+      </div>
+      <div class="case-card-actions">
+        <button class="case-card-action primary" onclick="event.stopPropagation();loadCase(${cid}).then(()=>showTab('workspace'))">✏️ Open</button>
+        <button class="case-card-action" onclick="event.stopPropagation();loadCase(${cid}).then(()=>showTab('generate'))">⚡ Generate</button>
+        <button class="case-card-action" onclick="event.stopPropagation();loadCase(${cid}).then(()=>{generateAll();})" title="Generate all then insert into ACI">⤵ Insert</button>
+        <span style="flex:1;"></span>
+        <span style="font-size:10px;color:var(--muted);">${new Date(cs.updatedAt||Date.now()).toLocaleDateString()}</span>
+      </div>
+    </div>`;
   }).join('');
 }
 async function loadCases() {
@@ -389,6 +474,8 @@ async function loadCase(caseId) {
   $('newBorrower').value=d.meta.borrower||'';
   const notesEl=$('caseNotes');
   if(notesEl)notesEl.value=d.meta.notes||'';
+  // ── Update active case bar ────────────────────────────────────────────────
+  updateActiveCaseBar(d.caseRecord, d.meta);
   // ── Populate all 4 assignment cards ──────────────────────────────────────
   populateAssignmentFields(d.meta);
   // ── Render metadata chips + workflow badge ────────────────────────────────
@@ -7574,10 +7661,10 @@ async function handleIntakeFile(file) {
       intakeExtracted = data.extracted;
       showIntakeResult(data);
       showIntakeStatus(`✓ Case created: ${data.caseId}`, 'ok');
-      // Auto-switch to Facts tab for this case so Charles can review pre-filled facts
+      // Load case in background so active case bar updates; stay on intake for review
       activeCaseId = data.caseId;
       await loadCase(data.caseId);
-      showTab('facts');
+      // Don't auto-navigate — let Charles click the CTA button
     } else {
       // Show specific, actionable error messages based on the error code
       let friendlyMsg = data.error || 'Failed to parse order sheet.';
@@ -7658,9 +7745,24 @@ function showIntakeResult(data) {
 
   el.innerHTML = html;
   document.getElementById('intake-result').style.display = 'block';
-  document.getElementById('intake-goto-case-btn').style.display = 'inline-block';
-  document.getElementById('intake-ready-generate-btn').style.display = 'inline-block';
-  document.getElementById('intake-create-folder-btn').style.display = 'inline-block';
+  // Show new CTA buttons
+  const wsbtn = document.getElementById('intake-goto-workspace-btn');
+  if(wsbtn) wsbtn.style.display = 'inline-flex';
+  const cbtn = document.getElementById('intake-goto-case-btn');
+  if(cbtn) cbtn.style.display = 'inline-flex';
+  const fbtn = document.getElementById('intake-create-folder-btn');
+  if(fbtn) fbtn.style.display = 'inline-flex';
+  // Legacy compat
+  const rb = document.getElementById('intake-ready-generate-btn');
+  if(rb) rb.style.display = 'none';
+  // Update wizard steps
+  const iw2 = document.getElementById('iwStep1');
+  if(iw2) { iw2.classList.remove('active-step'); iw2.classList.add('done-step'); }
+  const iw3 = document.getElementById('iwStep2');
+  if(iw3) iw3.classList.add('active-step');
+  // Update sub text
+  const sub = document.getElementById('intakeSuccessSub');
+  if(sub) sub.textContent = (extracted.address||'') + (extracted.borrowerName ? ' · ' + extracted.borrowerName : '');
 
   // Add to recent list
   const recentEl = document.getElementById('intake-recent-list');
@@ -7668,16 +7770,27 @@ function showIntakeResult(data) {
   entry.style.cssText = 'padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer';
   entry.innerHTML = `<div style="color:var(--gold);font-weight:700">${extracted.address || 'Unknown address'}</div>
     <div style="color:var(--muted)">${extracted.borrowerName || ''} · ${extracted.formType || ''}</div>`;
-  entry.onclick = () => gotoIntakeCase();
+  entry.onclick = () => intakeGotoWorkspace();
   if (recentEl.textContent === 'No recent intakes.') recentEl.textContent = '';
   recentEl.prepend(entry);
+}
+
+function intakeGotoWorkspace() {
+  if (!intakeCaseId) return;
+  activeCaseId = intakeCaseId;
+  loadCase(intakeCaseId).then(() => showTab('workspace'));
+  // Update wizard step 3
+  const iw3 = document.getElementById('iwStep2');
+  if(iw3) { iw3.classList.remove('active-step'); iw3.classList.add('done-step'); }
+  const iw4 = document.getElementById('iwStep3');
+  if(iw4) iw4.classList.add('active-step');
 }
 
 function gotoIntakeCase() {
   if (!intakeCaseId) return;
   activeCaseId = intakeCaseId;
   showTab('case');
-  loadCaseList();
+  loadCaseList && loadCaseList();
   loadCase(intakeCaseId);
 }
 
