@@ -200,8 +200,8 @@ VARIANT B — Extended search (use when facts indicate lack of comparable sales 
 "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find [property type] of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of [X.X]% based on the sales statistics chart included in this report."
 
 RULES (strict):
-1. Use Variant B ONLY if facts explicitly indicate extended search / lack of neighborhood comps.
-2. Use Variant A by default if no extended search is indicated.
+1. Use Variant B ONLY if the fact market.extended_search is explicitly true OR facts explicitly indicate extended search / lack of neighborhood comps.
+2. Use Variant A by default when market.extended_search is false or not set.
 3. Fill [X.X]% from market_stat if available (e.g. "0.5%", "1.0%"). If missing, use [INSERT market time adjustment %].
 4. Fill [city] from subject city fact. Fill [north/south/east/west]side from neighborhood facts if available.
 5. Do NOT invent comp adjustments. Do NOT add adjustment detail lines.
@@ -210,7 +210,8 @@ RULES (strict):
 
 Subject area: {{area}}
 Subject: {{summary}}
-Market stat: {{market_stat}}`,
+Market stat: {{market_stat}}
+Extended search: {{market.extended_search}}`,
     },
     {
       id: 'reconciliation', title: 'Reconciliation Narrative',

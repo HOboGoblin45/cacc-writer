@@ -132,13 +132,20 @@ router.get('/health/detailed', async (_req, res) => {
       probeRqAgent(RQ_AGENT_URL),
     ]);
 
-    res.json({
-      ok:       true,
+    const openAIDown = openAIProbe.configured && !openAIProbe.ready;
+    const statusCode = openAIDown ? 503 : 200;
+    res.status(statusCode).json({
+      ok:       !openAIDown,
       version:  '2.0.0',
       model:    MODEL,
-      uptimeS:  Math.round(process.uptime()),
+      uptimeS:  Math.round(process.uptime() * 10) / 10,
       aiKeySet: Boolean(process.env.OPENAI_API_KEY),
-      ai: openAIProbe,
+      ai: {
+        configured: openAIProbe.configured,
+        ready: openAIProbe.ready,
+        reason: openAIProbe.reason,
+        // Never expose the actual key
+      },
       kb: {
         totalExamples:      Array.isArray(kbIndex.examples) ? kbIndex.examples.length : 0,
         counts:             kbIndex.counts || {},

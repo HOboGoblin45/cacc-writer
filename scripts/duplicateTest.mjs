@@ -95,6 +95,7 @@ const MINIMAL_INSPECTION_FACTS = {
     market_appeal:         { value: 'good', confidence: 'high' },
     concessions_typical:   { value: 'true', confidence: 'high' },
     supply_demand:         { value: 'in balance', confidence: 'high' },
+    extended_search:       { value: 'false', confidence: 'high' },
   },
 };
 
@@ -110,6 +111,7 @@ function logSection(title) {
   console.log('═'.repeat(60));
 }
 
+const CACC_API_KEY = 'cacc-local-key-2026';
 async function apiFetch(urlPath, { method = 'GET', body = null, timeoutMs = TIMEOUT_MS } = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -117,9 +119,10 @@ async function apiFetch(urlPath, { method = 'GET', body = null, timeoutMs = TIME
     const opts = {
       method,
       signal: ctrl.signal,
+      headers: { 'X-API-Key': CACC_API_KEY },
     };
     if (body !== null) {
-      opts.headers = { 'Content-Type': 'application/json' };
+      opts.headers = { 'Content-Type': 'application/json', 'X-API-Key': CACC_API_KEY };
       opts.body = JSON.stringify(body);
     }
     const res = await fetch(`${SERVER_BASE}${urlPath}`, opts);
@@ -613,7 +616,7 @@ async function main() {
 
   const { status: delStatus } = await fetch(`${SERVER_BASE}/api/cases/${caseId}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': CACC_API_KEY },
   }).then(r => ({ status: r.status })).catch(() => ({ status: 0 }));
 
   if (delStatus === 200) {

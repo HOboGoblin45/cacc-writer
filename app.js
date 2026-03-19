@@ -21,10 +21,11 @@ const esc = s => (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceA
 const server = () => DEFAULT_SERVER;
 function setStatus(id, msg, kind='') { const el=$(id); if(!el)return; el.className='status '+kind; el.textContent=msg; }
 function showErr(id, text) { const el=$(id); if(!el)return; el.style.display=text?'block':'none'; el.textContent=text||''; }
+const CACC_API_KEY = 'cacc-local-key-2026';
 async function apiFetch(path, opts={}) {
   const timeout=opts.timeout??120000, ctrl=new AbortController(), timer=setTimeout(()=>ctrl.abort(),timeout);
   try {
-    const r=await fetch(server()+path,{headers:{'Content-Type':'application/json'},...opts,signal:ctrl.signal,body:opts.body?(typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)):undefined});
+    const r=await fetch(server()+path,{headers:{'Content-Type':'application/json','X-API-Key':CACC_API_KEY},...opts,signal:ctrl.signal,body:opts.body?(typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)):undefined});
     const text=await r.text();
     try{return JSON.parse(text);}catch{return{ok:false,error:'Non-JSON: '+text.slice(0,300)};}
   } catch(e) {
@@ -7653,6 +7654,7 @@ async function handleIntakeFile(file) {
     const res = await fetch(`${API}/intake/order`, {
       method: 'POST',
       body: formData,
+      headers: { 'X-API-Key': CACC_API_KEY },
     });
     const data = await res.json();
 
@@ -7750,8 +7752,11 @@ function showIntakeResult(data) {
   if(wsbtn) wsbtn.style.display = 'inline-flex';
   const cbtn = document.getElementById('intake-goto-case-btn');
   if(cbtn) cbtn.style.display = 'inline-flex';
+  // Hide the manual folder button — folder creation is now automatic
   const fbtn = document.getElementById('intake-create-folder-btn');
-  if(fbtn) fbtn.style.display = 'inline-flex';
+  if(fbtn) fbtn.style.display = 'none';
+  // Auto-create the job folder immediately after intake
+  setTimeout(() => createIntakeFolder(), 200);
   // Legacy compat
   const rb = document.getElementById('intake-ready-generate-btn');
   if(rb) rb.style.display = 'none';

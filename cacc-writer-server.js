@@ -9,6 +9,8 @@ import dotenv from 'dotenv';
 dotenv.config({ override: true });
 
 import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -61,6 +63,22 @@ runStartupChecks({
 });
 
 const app = express();
+app.use(cors({
+  origin: ['http://localhost:5178', 'http://127.0.0.1:5178'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
+}));
+
+// Rate limit only the AI generation endpoints to prevent runaway API costs.
+// Cases/CRUD endpoints are not limited — this is a single-user local tool.
+const genLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  message: { ok: false, error: 'Rate limit exceeded' },
+  skip: (req) => req.method === 'GET', // Only limit write/generate operations
+});
+app.use('/api/generate', genLimiter);
+
 app.use(express.json({ limit: '10mb' }));
 
 log.info('server:start', { model: MODEL, port: PORT });
