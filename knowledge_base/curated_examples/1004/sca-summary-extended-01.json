@@ -1,0 +1,16 @@
+{
+  "id": "sca-summary-extended-01",
+  "formType": "1004",
+  "fieldId": "sca_summary",
+  "sourceType": "curated",
+  "qualityScore": 95,
+  "tags": [
+    "bloomington_normal",
+    "illinois",
+    "residential",
+    "extended_search",
+    "lack_of_comps",
+    "market_time_adjustment"
+  ],
+  "text": "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find single family residences of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of 0.5% based on the sales statistics chart included in this report. After adjustments are made the comparables provide a good basis for an estimate of market value."
+}

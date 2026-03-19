@@ -700,6 +700,11 @@ button.sm{padding:5px 9px;font-size:11px;}
       <span id="rqLabel" style="font-size:11px;">RQ</span>
       <button id="rqBtn" onclick="toggleAgent('rq')" style="padding:2px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-weight:700;margin-left:2px;">Start</button>
     </div>
+    <!-- OpenAI status badge -->
+    <div class="badge" id="openaiStatusBadge" title="OpenAI API connectivity">
+      <span class="dot checking" id="openaiDot"></span>
+      <span id="openaiLabel" style="font-size:11px;">OpenAI</span>
+    </div>
     <div id="caseBadge" class="badge" style="display:none;">
       <span style="color:var(--gold);">Case:</span>
       <span id="caseAddrBadge"></span>
@@ -764,6 +769,7 @@ button.sm{padding:5px 9px;font-size:11px;}
           </div>
           <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
             <button class="btn" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">→ Open Case</button>
+            <button class="btn" id="intake-ready-generate-btn" style="display:none;background:rgba(215,179,90,.2);border:1px solid rgba(215,179,90,.5);color:var(--gold);font-weight:700;" onclick="intakeReadyToGenerate()">⚡ Ready to Generate</button>
             <button class="btn" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">📁 Create Job Folder</button>
           </div>
           <div id="intake-folder-status" style="margin-top:8px;font-size:12px;color:var(--ok)"></div>
@@ -1297,6 +1303,9 @@ button.sm{padding:5px 9px;font-size:11px;}
             <button class="gen-btn-primary" onclick="generateFullDraft()" title="Context-driven full-draft generation via orchestrator">&#x26A1; Generate Full Draft</button>
             <button onclick="generateSelected()">Generate Selected</button>
             <button class="sec" onclick="generateAll()">Generate All</button>
+          </div>
+          <div class="gen-panel-action-row" style="margin-top:6px;">
+            <button id="genInsertAllBtn" class="btn" onclick="generateAllAndInsertAll()" title="Generate all fields then automatically insert all into ACI in sequence" style="background:rgba(215,179,90,.15);border:1px solid rgba(215,179,90,.4);color:var(--gold);font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;">⚡ Generate All + Insert All</button>
           </div>
           <div id="genStatus" class="status">Ready.</div>
           <div id="genErrBox" class="errbox"></div>

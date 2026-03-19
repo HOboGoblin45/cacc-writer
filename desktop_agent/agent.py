@@ -122,7 +122,7 @@ def insert():
         core.capture_screenshot(f'no_aci_{field_id}')
         return jsonify({
             'ok': False,
-            'error': 'Could not connect to ACI. Make sure ACI is open with a report loaded.',
+            'error': 'ACI is not open. Please open ACI with a report loaded and try again.',
         }), 503
 
     try:
@@ -231,7 +231,7 @@ def insert_batch():
     aci = core.connect_uia()
     if not aci:
         core.capture_screenshot('batch_no_aci')
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI.'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     try:
         main = core.ensure_main_report_surface(app=aci)
@@ -342,7 +342,7 @@ def test_field():
 
     aci = core.connect_uia()
     if not aci:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI.'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     main_win   = core.ensure_main_report_surface(app=aci)
     strategies = {}
@@ -476,7 +476,7 @@ def probe():
 
     app32 = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win     = core.ensure_main_report_surface(app32=app32)
     tab_navigated = False
@@ -544,7 +544,7 @@ def dump_controls():
     tab_name = request.args.get('tab', '').strip()
     app32    = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = app32.top_window()
     win_title = core.window_signature(win32_win)
@@ -605,7 +605,7 @@ def read_field():
 
     app32 = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = core.ensure_main_report_surface(app32=app32)
     if tab_name:
@@ -648,7 +648,7 @@ def get_current_section():
 
     app32 = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = core.ensure_main_report_surface(app32=app32)
     tab       = core.get_current_tab(win32_win)
@@ -683,7 +683,7 @@ def calibrate():
     tab_name = request.args.get('tab', '').strip()
     app32    = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
@@ -820,7 +820,7 @@ def dump_all_controls():
 
     app32 = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
@@ -878,7 +878,7 @@ def dump_section_tabs():
 
     app32 = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win = core.ensure_main_report_surface(app32=app32)
     win_title = core.window_signature(win32_win)
@@ -999,7 +999,7 @@ def dump_tx32_visibility():
     tab_name = request.args.get('tab', '').strip()
     app32    = core.connect_win32()
     if not app32:
-        return jsonify({'ok': False, 'error': 'Could not connect to ACI (win32).'}), 503
+        return jsonify({'ok': False, 'error': 'ACI is not open. Please open ACI with a report loaded and try again.'}), 503
 
     win32_win     = core.ensure_main_report_surface(app32=app32)
     win_title     = core.window_signature(win32_win)
