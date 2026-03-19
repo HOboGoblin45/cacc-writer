@@ -20,6 +20,9 @@ const BYPASS_PATHS = new Set([
   '/api/health',
   '/api/workflow/health',
   '/api/health/ready',
+  '/api/gmail/connect',
+  '/api/gmail/callback',
+  '/api/mred/callback',
 ]);
 
 function extractToken(req) {
