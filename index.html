@@ -676,14 +676,97 @@ button.sm{padding:5px 9px;font-size:11px;}
 .lrn-influence-factor{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
 .lrn-diff-section{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
 .lrn-diff-ratio{font-size:13px;font-weight:900;font-family:var(--mono);min-width:40px;text-align:center;}
+/* ── New UI Overhaul Styles ──────────────────────────────────────────────── */
+
+/* Active case bar in header */
+.active-case-bar{display:none;align-items:center;gap:10px;padding:6px 18px;background:rgba(215,179,90,.06);border-bottom:1px solid rgba(215,179,90,.2);flex-wrap:wrap;}
+.active-case-bar.visible{display:flex;}
+.acb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gold);white-space:nowrap;}
+.acb-name{font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.acb-form{font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid rgba(215,179,90,.35);color:var(--gold);background:rgba(215,179,90,.08);font-weight:700;white-space:nowrap;}
+.acb-actions{display:flex;gap:6px;align-items:center;}
+.acb-btn{padding:5px 12px;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;border:1px solid rgba(215,179,90,.4);background:rgba(215,179,90,.15);color:var(--gold);transition:background .15s;}
+.acb-btn:hover{background:rgba(215,179,90,.28);}
+.acb-btn.sec{border-color:var(--border);background:rgba(255,255,255,.06);color:var(--text);}
+.acb-btn.sec:hover{background:rgba(255,255,255,.12);}
+
+/* Primary nav */
+.primary-nav{display:flex;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);padding:0 14px;align-items:stretch;position:relative;}
+.primary-nav .tab{padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.4px;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;border-radius:0;white-space:nowrap;}
+.primary-nav .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.primary-nav .tab:hover:not(.active){color:var(--text);}
+.primary-nav .tab.tools-tab{color:var(--muted);margin-left:auto;}
+.primary-nav .tab.tools-tab.active{color:var(--gold);border-bottom-color:rgba(215,179,90,.4);}
+
+/* Tools dropdown */
+.tools-menu-wrap{position:relative;display:flex;align-items:stretch;}
+.tools-dropdown{position:absolute;top:calc(100% + 2px);right:0;min-width:200px;background:#131929;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:200;display:none;padding:6px 0;overflow:hidden;}
+.tools-dropdown.open{display:block;}
+.tools-dropdown-item{padding:9px 16px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:background .12s,color .12s;display:flex;align-items:center;gap:8px;}
+.tools-dropdown-item:hover{background:rgba(215,179,90,.1);color:var(--gold);}
+.tools-dropdown-item.active-tool{color:var(--gold);background:rgba(215,179,90,.08);}
+.tools-dropdown-divider{height:1px;background:var(--border);margin:4px 0;}
+.tools-dropdown-section{padding:4px 14px 2px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+
+/* Intake wizard */
+.intake-wizard{display:flex;align-items:center;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.02);}
+.intake-step{flex:1;padding:14px 16px;display:flex;align-items:center;gap:10px;transition:background .2s;}
+.intake-step+.intake-step{border-left:1px solid var(--border);}
+.intake-step-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--muted);flex-shrink:0;transition:all .2s;}
+.intake-step-text{font-size:12px;font-weight:700;color:var(--muted);transition:color .2s;}
+.intake-step-sub{font-size:10px;color:var(--muted);margin-top:1px;opacity:.7;}
+.intake-step.active-step{background:rgba(215,179,90,.06);}
+.intake-step.active-step .intake-step-num{border-color:var(--gold);color:var(--gold);background:rgba(215,179,90,.15);}
+.intake-step.active-step .intake-step-text{color:var(--gold);}
+.intake-step.done-step .intake-step-num{border-color:var(--ok);color:var(--ok);background:rgba(85,209,143,.1);}
+.intake-step.done-step .intake-step-text{color:var(--ok);}
+.intake-step-arrow{color:var(--border);font-size:14px;padding:0 4px;flex-shrink:0;}
+
+/* Enhanced case cards in queue */
+.case-card{padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid var(--border);margin-bottom:8px;background:rgba(255,255,255,.02);transition:background .15s,border-color .15s;}
+.case-card:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2);}
+.case-card.active{background:rgba(215,179,90,.07);border-color:rgba(215,179,90,.35);}
+.case-card-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.case-card-addr{font-size:13px;font-weight:700;color:var(--text);flex:1;line-height:1.3;}
+.case-card-borrower{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.case-card-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.case-card-actions{display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);}
+.case-card-action{padding:4px 10px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .12s;}
+.case-card-action:hover{border-color:rgba(215,179,90,.4);color:var(--gold);background:rgba(215,179,90,.08);}
+.case-card-action.primary{border-color:rgba(215,179,90,.35);color:var(--gold);background:rgba(215,179,90,.1);}
+
+/* Pipeline stage pills */
+.stage-pill{font-size:9px;padding:2px 8px;border-radius:999px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;border:1px solid;white-space:nowrap;}
+.stage-intake{color:#8ac4ff;border-color:rgba(100,180,255,.35);background:rgba(100,180,255,.08);}
+.stage-facts{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.07);}
+.stage-generating{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.07);}
+.stage-review{color:#c8a0ff;border-color:rgba(180,100,255,.35);background:rgba(180,100,255,.07);}
+.stage-inserting{color:#ff9f5a;border-color:rgba(255,130,50,.35);background:rgba(255,130,50,.07);}
+.stage-complete{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
+
+/* Intake success card */
+.intake-success-card{background:rgba(85,209,143,.06);border:1px solid rgba(85,209,143,.25);border-radius:12px;padding:16px;margin-top:16px;}
+.intake-success-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.intake-success-icon{font-size:24px;}
+.intake-success-title{font-size:15px;font-weight:800;color:var(--ok);}
+.intake-success-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.intake-success-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.intake-cta-btn{padding:10px 20px;font-size:13px;font-weight:700;border-radius:9px;cursor:pointer;border:1px solid rgba(215,179,90,.5);background:rgba(215,179,90,.2);color:var(--gold);transition:background .15s;display:inline-flex;align-items:center;gap:6px;}
+.intake-cta-btn:hover{background:rgba(215,179,90,.35);}
+.intake-cta-btn.sec{border-color:var(--border);background:rgba(255,255,255,.07);color:var(--text);}
+
+/* Case card overrides inside the queue panel */
+#tab-case .case-list{padding:10px 10px;display:flex;flex-direction:column;gap:2px;}
+#tab-case .case-card{margin-bottom:0;}
+
 </style>
 </head>
-<body>
+<body onclick="closeToolsMenu(event)">
 
 <header>
-  <div>
-    <h1>Cresci Appraisal Writer</h1>
-    <div class="sub" id="headerSub">Case-based, fact-grounded, Cresci voice</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <h1 style="font-size:16px;font-weight:800;">CACC Writer</h1>
+    <div class="sub" id="headerSub" style="color:var(--muted);font-size:11px;margin-top:0;">Cresci Appraisal &amp; Consulting</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
     <span class="version-badge" id="versionBadge">v2.0.0</span>
@@ -714,6 +797,19 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </header>
 
+<!-- ── Active Case Bar ──────────────────────────────────────────────────────── -->
+<div class="active-case-bar" id="activeCaseBar">
+  <span class="acb-label">Active</span>
+  <span class="acb-name" id="acbName">—</span>
+  <span class="acb-form" id="acbForm" style="display:none;"></span>
+  <div class="acb-actions">
+    <button class="acb-btn" onclick="showTab('workspace')" title="Open workspace for this case">✏️ Workspace</button>
+    <button class="acb-btn" onclick="generateAll()" title="Generate all narrative sections">⚡ Generate All</button>
+    <button class="acb-btn" onclick="generateAllAndInsertAll()" title="Generate + insert all into ACI">⤵ Insert All</button>
+    <button class="acb-btn sec" onclick="showTab('case')" title="Go to case list">Cases</button>
+  </div>
+</div>
+
 <!-- ── Service Health Strip ─────────────────────────────────────────────────── -->
 <div class="health-strip" id="healthStrip">
   <span class="health-strip-label">Services</span>
@@ -727,52 +823,101 @@ button.sm{padding:5px 9px;font-size:11px;}
   <button class="hs-export-btn" id="exportBundleBtn" onclick="createSupportBundle()" title="Create support bundle (cases + narratives + logs as ZIP)">⬇ Export Bundle</button>
 </div>
 
-<div class="tabs">
-  <div class="tab" onclick="showTab('intake')">📥 Intake</div>
-  <div class="tab active" onclick="showTab('case')">Case</div>
-  <div class="tab" onclick="showTab('workspace')">Workspace</div>
-  <div class="tab" onclick="showTab('facts')">Facts</div>
-  <div class="tab" onclick="showTab('generate')">Generate</div>
-  <div class="tab" onclick="showTab('qc')">QC Grade</div>
-  <div class="tab" onclick="showTab('voice')">Voice</div>
-  <div class="tab" onclick="showTab('intel')">Intel</div>
-  <div class="tab" onclick="showTab('valuation')">Valuation</div>
-  <div class="tab" onclick="showTab('docs')">Docs</div>
-  <div class="tab" onclick="showTab('memory')">Memory</div>
-  <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
-  <div class="tab" onclick="showTab('inspect')">Inspect</div>
-  <div class="tab" onclick="showTab('governance')">Governance</div>
-  <div class="tab" onclick="showTab('learning')">Learning</div>
-  <div class="tab" onclick="showTab('system')">System</div>
-</div>
+<!-- ── Primary Navigation ─────────────────────────────────────────────────── -->
+<nav class="primary-nav">
+  <div class="tab" onclick="showTab('intake')" data-tab="intake">📥 New Order</div>
+  <div class="tab active" onclick="showTab('case')" data-tab="case">📋 Cases</div>
+  <div class="tab" onclick="showTab('workspace')" data-tab="workspace">✏️ Workspace</div>
+  <div class="tab" onclick="showTab('voice')" data-tab="voice">📚 Voice</div>
+  <div class="tools-menu-wrap">
+    <button class="tab tools-tab" id="toolsMenuBtn" onclick="toggleToolsMenu(event)" title="Developer & advanced tools">⚙️ Tools <span id="toolsMenuLabel" style="font-size:10px;"></span>▾</button>
+    <div class="tools-dropdown" id="toolsDropdown">
+      <div class="tools-dropdown-section">Daily Tools</div>
+      <div class="tools-dropdown-item" onclick="showTab('generate')">⚡ Generate</div>
+      <div class="tools-dropdown-item" onclick="showTab('facts')">📋 Facts</div>
+      <div class="tools-dropdown-item" onclick="showTab('qc')">✅ QC Grade</div>
+      <div class="tools-dropdown-item" onclick="showTab('docs')">📁 Docs</div>
+      <div class="tools-dropdown-divider"></div>
+      <div class="tools-dropdown-section">Advanced</div>
+      <div class="tools-dropdown-item" onclick="showTab('intel')">🔍 Intel</div>
+      <div class="tools-dropdown-item" onclick="showTab('valuation')">💰 Valuation</div>
+      <div class="tools-dropdown-item" onclick="showTab('memory')">🧠 Memory</div>
+      <div class="tools-dropdown-item" onclick="showTab('pipeline')">🔄 Pipeline</div>
+      <div class="tools-dropdown-item" onclick="showTab('inspect')">🔬 Inspect</div>
+      <div class="tools-dropdown-item" onclick="showTab('governance')">📜 Governance</div>
+      <div class="tools-dropdown-item" onclick="showTab('learning')">📖 Learning</div>
+      <div class="tools-dropdown-item" onclick="showTab('system')">⚙️ System</div>
+    </div>
+  </div>
+</nav>
 
 <!-- ===== TAB: INTAKE ===== -->
 <div class="page" id="tab-intake">
   <div class="col wide">
+    <!-- Workflow steps indicator -->
+    <div class="intake-wizard" id="intakeWizard">
+      <div class="intake-step active-step" id="iwStep1">
+        <div class="intake-step-num">1</div>
+        <div>
+          <div class="intake-step-text">Drop Order PDF</div>
+          <div class="intake-step-sub">Upload assignment sheet</div>
+        </div>
+      </div>
+      <span class="intake-step-arrow">›</span>
+      <div class="intake-step" id="iwStep2">
+        <div class="intake-step-num">2</div>
+        <div>
+          <div class="intake-step-text">Review Facts</div>
+          <div class="intake-step-sub">Check extracted data</div>
+        </div>
+      </div>
+      <span class="intake-step-arrow">›</span>
+      <div class="intake-step" id="iwStep3">
+        <div class="intake-step-num">3</div>
+        <div>
+          <div class="intake-step-text">Generate</div>
+          <div class="intake-step-sub">Create narratives</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="card-head"><h3>📥 New Order Intake</h3><span style="color:var(--muted);font-size:11px">Drop assignment sheet → case auto-created</span></div>
+      <div class="card-head"><h3>📥 New Order — Drop Assignment PDF</h3></div>
       <div class="card-body">
-        <label>Upload Assignment Sheet PDF (First State Mortgage, First State Bank, etc.)</label>
-        <div id="intake-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:12px;" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleIntakeDrop(event)">
-          <div style="font-size:28px;margin-bottom:8px">📄</div>
-          <div style="color:var(--muted);font-size:13px">Drag &amp; drop your order PDF here, or</div>
-          <label style="display:inline-block;margin-top:10px;cursor:pointer;color:var(--gold);font-weight:700;font-size:13px;border:1px solid var(--gold);padding:6px 16px;border-radius:6px;">
-            Browse Files
+        <div id="intake-drop-zone" style="border:2px dashed rgba(215,179,90,.35);border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;background:rgba(215,179,90,.03);" ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(215,179,90,.08)'" ondragleave="this.style.borderColor='rgba(215,179,90,.35)';this.style.background='rgba(215,179,90,.03)'" ondrop="handleIntakeDrop(event)">
+          <div style="font-size:40px;margin-bottom:12px">📄</div>
+          <div style="color:var(--text);font-size:15px;font-weight:700;margin-bottom:6px">Drag &amp; drop order PDF here</div>
+          <div style="color:var(--muted);font-size:12px;margin-bottom:16px">First State Mortgage, First State Bank, or any appraisal assignment sheet</div>
+          <label style="display:inline-block;cursor:pointer;color:#000;font-weight:800;font-size:13px;background:var(--gold);padding:10px 24px;border-radius:8px;border:none;">
+            📁 Browse Files
             <input type="file" id="intake-file-input" accept=".pdf" style="display:none" onchange="handleIntakeFile(this.files[0])">
           </label>
         </div>
-        <div id="intake-status" style="display:none"></div>
+        <div id="intake-status" style="display:none;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,.2);font-size:13px;margin-bottom:10px;"></div>
+
+        <!-- Success card (shown after upload) -->
         <div id="intake-result" style="display:none">
-          <div class="card" style="margin-top:12px">
-            <div class="card-head"><h3>Extracted Fields</h3></div>
-            <div class="card-body" id="intake-extracted"></div>
+          <div class="intake-success-card" id="intakeSuccessCard">
+            <div class="intake-success-header">
+              <span class="intake-success-icon">✅</span>
+              <div>
+                <div class="intake-success-title">Case Created</div>
+                <div class="intake-success-sub" id="intakeSuccessSub">Order processed and case ready.</div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:0;">
+              <div class="card-head" style="padding:8px 14px;"><h3>Extracted Fields</h3></div>
+              <div class="card-body" id="intake-extracted"></div>
+            </div>
+            <div class="intake-success-actions">
+              <button class="intake-cta-btn" id="intake-goto-workspace-btn" style="display:none" onclick="intakeGotoWorkspace()">✏️ Review Facts &amp; Generate →</button>
+              <button class="intake-cta-btn sec" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">📋 Open in Cases</button>
+              <button class="intake-cta-btn sec" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">📁 Create Job Folder</button>
+            </div>
+            <div id="intake-folder-status" style="margin-top:8px;font-size:12px;color:var(--ok)"></div>
+            <!-- Keep legacy button IDs for backward compat -->
+            <button id="intake-ready-generate-btn" style="display:none" onclick="intakeReadyToGenerate()"></button>
           </div>
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-            <button class="btn" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">→ Open Case</button>
-            <button class="btn" id="intake-ready-generate-btn" style="display:none;background:rgba(215,179,90,.2);border:1px solid rgba(215,179,90,.5);color:var(--gold);font-weight:700;" onclick="intakeReadyToGenerate()">⚡ Ready to Generate</button>
-            <button class="btn" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">📁 Create Job Folder</button>
-          </div>
-          <div id="intake-folder-status" style="margin-top:8px;font-size:12px;color:var(--ok)"></div>
         </div>
       </div>
     </div>
@@ -780,13 +925,12 @@ button.sm{padding:5px 9px;font-size:11px;}
   <div class="col narrow">
     <div class="card">
       <div class="card-head"><h3>How It Works</h3></div>
-      <div class="card-body" style="font-size:12px;color:var(--muted);line-height:1.7">
-        <p>1. Upload the assignment sheet PDF from your email</p>
-        <p>2. Order details are extracted automatically</p>
-        <p>3. A case is created with facts pre-filled</p>
-        <p>4. Click "Open Case" to review &amp; generate</p>
-        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
-        <p><strong style="color:var(--text)">Supported formats:</strong></p>
+      <div class="card-body" style="font-size:12px;color:var(--muted);line-height:1.8">
+        <p><strong style="color:var(--gold);">Step 1 —</strong> Drop the PDF from your email</p>
+        <p><strong style="color:var(--gold);">Step 2 —</strong> AI extracts address, borrower, lender, form type &amp; fee automatically</p>
+        <p><strong style="color:var(--gold);">Step 3 —</strong> Click <em>Review Facts &amp; Generate</em> to open the Workspace</p>
+        <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+        <p><strong style="color:var(--text)">Supported:</strong></p>
         <p>• First State Mortgage Assignment Sheet</p>
         <p>• First State Bank Request Form</p>
         <p>• Any structured appraisal order PDF</p>
