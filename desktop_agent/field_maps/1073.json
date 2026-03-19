@@ -1,76 +1,88 @@
 {
-  "_comment": "Field map for FNMA Form 1073 — Individual Condominium Unit Appraisal.",
-  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1073 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py — copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1073 to verify.",
+  "_comment": "Field map for FNMA Form 1073 \u00e2\u20ac\u201d Individual Condominium Unit Appraisal.",
+  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1073 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py \u00e2\u20ac\u201d copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1073 to verify.",
   "_schema": {
-    "label":          "Human-readable field label (used for label-match fallback)",
-    "automation_id":  "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
-    "class_name":     "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
-    "class_index":    "0-based index among controls of this class_name. Fill in from /calibrate output.",
-    "control_index":  "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
-    "notes":          "Human notes about this field"
+    "label": "Human-readable field label (used for label-match fallback)",
+    "automation_id": "UIA AutomationId \u00e2\u20ac\u201d MOST RELIABLE. Fill in from /calibrate output.",
+    "class_name": "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
+    "class_index": "0-based index among controls of this class_name. Fill in from /calibrate output.",
+    "control_index": "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
+    "notes": "Human notes about this field"
   },
-
   "neighborhood_description": {
-    "label":          "Neighborhood Description",
-    "tab_name":       "Neig",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Neighborhood section — TX32 addendum editor. Tab: Neig..."
+    "label": "Neighborhood Description",
+    "tab_name": "Neig",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Neighborhood section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Neig...",
+    "live_calibration_status": "live_confirmed",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   },
   "site_comments": {
-    "label":          "Site Description",
-    "tab_name":       "Site",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Site section — TX32 addendum editor. Tab: Site"
+    "label": "Site Description",
+    "tab_name": "Site",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Site section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Site",
+    "live_calibration_status": "live_confirmed",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   },
   "improvements_condition": {
-    "label":          "Improvements",
-    "tab_name":       "Impro",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Improvements section — TX32 addendum editor. Tab: Impro..."
+    "label": "Improvements",
+    "tab_name": "Impro",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Improvements section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Impro...",
+    "live_calibration_status": "live_confirmed",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   },
   "condo_project_analysis": {
-    "label":          "Project Information",
-    "tab_name":       "Subj",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Condo project analysis — in Subject section. Tab: Subj..."
+    "label": "Project Information",
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Condo project analysis \u00e2\u20ac\u201d in Subject section. Tab: Subj...",
+    "live_calibration_status": "corpus_backed_pending_navigation_fix"
   },
   "sales_comparison_commentary": {
-    "label":          "Sales Comparison Analysis",
-    "tab_name":       "Sales",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Sales comparison section — TX32 addendum editor. Tab: Sales..."
+    "label": "Sales Comparison Analysis",
+    "tab_name": "Sales",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Sales comparison section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Sales...",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   },
   "reconciliation": {
-    "label":          "Reconciliation",
-    "tab_name":       "Reco",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Reconciliation section — TX32 addendum editor. Tab: Reco... HIGH PRIORITY."
+    "label": "Reconciliation",
+    "tab_name": "Reco",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Reconciliation section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Reco... HIGH PRIORITY.",
+    "live_calibration_status": "insertion_ok_readback_unreliable",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   },
   "market_conditions": {
-    "label":          "Market Conditions",
-    "tab_name":       "Neig",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Market conditions — in Neighborhood section. Tab: Neig..."
+    "label": "Market Conditions",
+    "tab_name": "Neig",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "notes": "Market conditions \u00e2\u20ac\u201d in Neighborhood section. Tab: Neig...",
+    "live_calibration_status": "live_confirmed",
+    "calibration_note": "Inherits calibration from 1004 - same ACI field"
   }
 }
