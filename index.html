@@ -3134,6 +3134,25 @@ button.sm{padding:5px 9px;font-size:11px;}
 <div class="page" id="tab-system">
   <div class="col narrow">
 
+    <!-- Gmail Integration Card -->
+    <div class="card">
+      <div class="card-head"><h3>&#x2709;&#xFE0F; Gmail Integration</h3><button class="ghost sm" onclick="gmailLoadStatus()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="gmailStatusBody">
+          <div class="hint">Checking connection...</div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;" id="gmailActions">
+          <button class="sm" onclick="gmailConnect()">&#x1F534; Connect Gmail</button>
+          <button class="ghost sm" onclick="gmailDisconnect()">Disconnect</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+          Sends emails as crescicharles@gmail.com &mdash;
+          <a href="#" onclick="showTab('docs')" style="color:var(--gold)">See GMAIL_SETUP.md</a>
+        </div>
+        <div id="gmailSendStatus" class="status" style="margin-top:6px;"></div>
+      </div>
+    </div>
+
     <!-- MRED Integration Card -->
     <div class="card">
       <div class="card-head"><h3>&#x1F4CB; MRED Integration</h3><button class="ghost sm" onclick="mredLoadStatus()">&#x21BB;</button></div>
