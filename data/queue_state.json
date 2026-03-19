@@ -1,5 +1,198 @@
 {
-  "queue": [],
+  "queue": [
+    {
+      "jobId": "8e6e06e6-a96b-4031-a5de-fc446a845d24",
+      "batchId": "4f070aa4-eb4c-46c1-bc56-e91875dca28e",
+      "caseId": "2344f5b0",
+      "formType": "1004",
+      "status": "failed",
+      "runId": null,
+      "error": "Pre-draft integrity gate blocked queued generation",
+      "errorCode": "PRE_DRAFT_GATE_BLOCKED",
+      "durationMs": 11,
+      "queuedAt": "2026-03-19T00:22:35.653Z",
+      "startedAt": "2026-03-19T00:22:35.659Z",
+      "completedAt": "2026-03-19T00:22:35.670Z",
+      "retryAttempt": 0,
+      "forceGateBypass": false,
+      "preDraftGate": {
+        "ok": false,
+        "summary": {
+          "sectionsChecked": 10,
+          "missingRequiredFacts": 14,
+          "blockerConflicts": 0,
+          "complianceBlockers": 0,
+          "missingRequiredProvenance": 0,
+          "pendingFactReviews": 0,
+          "blockerPendingFactPathCount": 0,
+          "pendingSectionReviews": 0,
+          "totalConflicts": 0,
+          "unresolvedIssues": 0,
+          "provenanceCoveragePct": 100
+        },
+        "blockerCount": 1,
+        "warningCount": 1,
+        "factReviewQueuePath": "/api/cases/2344f5b0/fact-review-queue",
+        "factReviewQueueSummary": {
+          "conflictCount": 0,
+          "blockerConflictCount": 0,
+          "pendingFactCount": 0,
+          "pendingPathsCount": 0,
+          "preDraftBlocked": true,
+          "preDraftBlockerTypes": [
+            "missing_required_facts"
+          ]
+        }
+      },
+      "sectionsTotal": null,
+      "sectionsCompleted": null,
+      "sectionsFailed": null
+    },
+    {
+      "jobId": "d2ca5eeb-9c0f-4645-aa68-0018fbd57195",
+      "batchId": "e15f6356-1050-4107-a0b4-950e2d5483b8",
+      "caseId": "4ccf4a40",
+      "formType": "1004",
+      "status": "failed",
+      "runId": null,
+      "error": "Pre-draft integrity gate blocked queued generation",
+      "errorCode": "PRE_DRAFT_GATE_BLOCKED",
+      "durationMs": 11,
+      "queuedAt": "2026-03-19T00:22:41.317Z",
+      "startedAt": "2026-03-19T00:22:41.322Z",
+      "completedAt": "2026-03-19T00:22:41.333Z",
+      "retryAttempt": 0,
+      "forceGateBypass": false,
+      "preDraftGate": {
+        "ok": false,
+        "summary": {
+          "sectionsChecked": 10,
+          "missingRequiredFacts": 14,
+          "blockerConflicts": 0,
+          "complianceBlockers": 0,
+          "missingRequiredProvenance": 0,
+          "pendingFactReviews": 0,
+          "blockerPendingFactPathCount": 0,
+          "pendingSectionReviews": 0,
+          "totalConflicts": 0,
+          "unresolvedIssues": 0,
+          "provenanceCoveragePct": 100
+        },
+        "blockerCount": 1,
+        "warningCount": 1,
+        "factReviewQueuePath": "/api/cases/4ccf4a40/fact-review-queue",
+        "factReviewQueueSummary": {
+          "conflictCount": 0,
+          "blockerConflictCount": 0,
+          "pendingFactCount": 0,
+          "pendingPathsCount": 0,
+          "preDraftBlocked": true,
+          "preDraftBlockerTypes": [
+            "missing_required_facts"
+          ]
+        }
+      },
+      "sectionsTotal": null,
+      "sectionsCompleted": null,
+      "sectionsFailed": null
+    },
+    {
+      "jobId": "ef0289fb-b879-43a8-a617-7bd4f7a2960d",
+      "batchId": "78ec2015-b252-4535-88a7-d6937cdcb352",
+      "caseId": "c4495275",
+      "formType": "1004",
+      "status": "failed",
+      "runId": null,
+      "error": "Pre-draft integrity gate blocked queued generation",
+      "errorCode": "PRE_DRAFT_GATE_BLOCKED",
+      "durationMs": 9,
+      "queuedAt": "2026-03-19T00:22:45.724Z",
+      "startedAt": "2026-03-19T00:22:45.730Z",
+      "completedAt": "2026-03-19T00:22:45.739Z",
+      "retryAttempt": 0,
+      "forceGateBypass": false,
+      "preDraftGate": {
+        "ok": false,
+        "summary": {
+          "sectionsChecked": 10,
+          "missingRequiredFacts": 14,
+          "blockerConflicts": 0,
+          "complianceBlockers": 0,
+          "missingRequiredProvenance": 0,
+          "pendingFactReviews": 0,
+          "blockerPendingFactPathCount": 0,
+          "pendingSectionReviews": 0,
+          "totalConflicts": 0,
+          "unresolvedIssues": 0,
+          "provenanceCoveragePct": 100
+        },
+        "blockerCount": 1,
+        "warningCount": 1,
+        "factReviewQueuePath": "/api/cases/c4495275/fact-review-queue",
+        "factReviewQueueSummary": {
+          "conflictCount": 0,
+          "blockerConflictCount": 0,
+          "pendingFactCount": 0,
+          "pendingPathsCount": 0,
+          "preDraftBlocked": true,
+          "preDraftBlockerTypes": [
+            "missing_required_facts"
+          ]
+        }
+      },
+      "sectionsTotal": null,
+      "sectionsCompleted": null,
+      "sectionsFailed": null
+    },
+    {
+      "jobId": "53a0b313-3a90-44cf-b66a-04a10dfdca82",
+      "batchId": "c425c1b0-eefa-4844-9298-cb4a1090ad24",
+      "caseId": "fbfaf8ca",
+      "formType": "1004",
+      "status": "failed",
+      "runId": null,
+      "error": "Pre-draft integrity gate blocked queued generation",
+      "errorCode": "PRE_DRAFT_GATE_BLOCKED",
+      "durationMs": 9,
+      "queuedAt": "2026-03-19T00:22:50.506Z",
+      "startedAt": "2026-03-19T00:22:50.510Z",
+      "completedAt": "2026-03-19T00:22:50.519Z",
+      "retryAttempt": 0,
+      "forceGateBypass": false,
+      "preDraftGate": {
+        "ok": false,
+        "summary": {
+          "sectionsChecked": 10,
+          "missingRequiredFacts": 14,
+          "blockerConflicts": 0,
+          "complianceBlockers": 0,
+          "missingRequiredProvenance": 0,
+          "pendingFactReviews": 0,
+          "blockerPendingFactPathCount": 0,
+          "pendingSectionReviews": 0,
+          "totalConflicts": 0,
+          "unresolvedIssues": 0,
+          "provenanceCoveragePct": 100
+        },
+        "blockerCount": 1,
+        "warningCount": 1,
+        "factReviewQueuePath": "/api/cases/fbfaf8ca/fact-review-queue",
+        "factReviewQueueSummary": {
+          "conflictCount": 0,
+          "blockerConflictCount": 0,
+          "pendingFactCount": 0,
+          "pendingPathsCount": 0,
+          "preDraftBlocked": true,
+          "preDraftBlockerTypes": [
+            "missing_required_facts"
+          ]
+        }
+      },
+      "sectionsTotal": null,
+      "sectionsCompleted": null,
+      "sectionsFailed": null
+    }
+  ],
   "batches": {
     "723f37a2-80ea-4b47-b961-507a7012106e": "[\"ee1d0869-b952-4fc3-9fd6-c571e7c67d0f\",\"586917cd-2162-4cf1-b103-6f24597357ec\"]",
     "9c1a9033-7409-40d1-8030-63bd5d0b7a3b": "[\"e6c23cab-3d68-4c34-a3c4-c6dad030f3e7\"]",
@@ -24,6 +217,10 @@
     "13992eef-a81e-4e92-a115-58166d2c168f": "[\"b8a182c9-457b-491a-bdc8-56adce5b229d\"]",
     "548c66b6-4306-4eca-a46b-6266c7213de6": "[\"79d18b0c-c5b7-4bf7-9c41-01b430df8285\"]",
     "363664c3-3f7d-42e0-8ff6-ccc2f34ae218": "[\"8d22aff9-5416-406c-a94e-aa8cb9e4da7e\"]",
-    "0ff9cf67-aae6-49b8-ae58-201bb33b38b4": "[\"430dea0e-6c6c-4e88-8f0a-884b083984a7\",\"b2fa044f-bc61-44d1-af7b-09920c68ebd4\"]"
+    "0ff9cf67-aae6-49b8-ae58-201bb33b38b4": "[\"430dea0e-6c6c-4e88-8f0a-884b083984a7\",\"b2fa044f-bc61-44d1-af7b-09920c68ebd4\"]",
+    "4f070aa4-eb4c-46c1-bc56-e91875dca28e": "[\"8e6e06e6-a96b-4031-a5de-fc446a845d24\"]",
+    "e15f6356-1050-4107-a0b4-950e2d5483b8": "[\"d2ca5eeb-9c0f-4645-aa68-0018fbd57195\"]",
+    "78ec2015-b252-4535-88a7-d6937cdcb352": "[\"ef0289fb-b879-43a8-a617-7bd4f7a2960d\"]",
+    "c425c1b0-eefa-4844-9298-cb4a1090ad24": "[\"53a0b313-3a90-44cf-b66a-04a10dfdca82\"]"
   }
 }

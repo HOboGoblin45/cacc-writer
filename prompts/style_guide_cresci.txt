@@ -68,6 +68,9 @@ NOTES:
 - Timeframes used: "less than one year ago", "one to five years ago", "six to ten years ago"
 - The last three sentences are ALWAYS identical — never change them
 - Sometimes the condition prefix line is omitted (refinance reports where condition is straightforward)
+- CRITICAL: Use the EXACT values from SUBJECT PROPERTY FACTS for condition_rating, kitchen_update, and bathroom_update.
+  Do NOT substitute values from the examples below — those are different properties.
+  Example: if facts say kitchen_update = "remodeled-less than one year ago", use that EXACTLY in the prefix.
 
 ALTERNATE (shorter, no UAD prefix):
 "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."

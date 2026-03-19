@@ -26,6 +26,7 @@ import { trimText } from '../utils/textUtils.js';
 import { saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { client, MODEL } from '../openaiClient.js';
 import log from '../logger.js';
+import { logNewJob } from '../integrations/googleSheets.js';
 
 const router = Router();
 
@@ -205,6 +206,11 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
       orderID: extracted.orderID,
       address: extracted.address,
       extractionMethod,
+    });
+
+    // Log the new job to CSV (and Google Sheets when configured)
+    logNewJob(extracted).catch(err => {
+      log.warn('intake:order:log-job-failed', { error: err.message });
     });
 
     res.json({
