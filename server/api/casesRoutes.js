@@ -1819,6 +1819,171 @@ router.get('/:caseId/location-context', async (req, res) => {
   }
 });
 
+// ── POST /:caseId/insert-basic-info — ACI basic info auto-population ──────────
+/**
+ * Automatically populate ACI's basic info fields (Subject tab) from case facts.
+ * Calls the ACI desktop agent to insert: address, borrower, lender, file number, effective date.
+ *
+ * Body: { targetSoftware?: 'aci' }
+ * Returns: { ok, results: [{ fieldId, status, error? }] }
+ */
+router.post('/:caseId/insert-basic-info', async (req, res) => {
+  const ACI_AGENT_URL = process.env.ACI_AGENT_URL || 'http://localhost:5180';
+  const FIELD_TIMEOUT_MS = 15_000;
+
+  try {
+    const caseId = req.params.caseId;
+    const projection = getCaseProjection(caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const meta  = projection.meta  || {};
+    const facts = projection.facts || {};
+
+    // Gather basic info values from case facts + meta
+    const orderDate = meta.createdAt ? meta.createdAt.slice(0, 10) : new Date().toISOString().slice(0, 10);
+
+    const fields = [
+      { fieldId: 'subject_address', value: meta.address || facts?.subject?.address?.value || '' },
+      { fieldId: 'borrower_name',   value: meta.borrower || facts?.subject?.borrower?.value || '' },
+      { fieldId: 'lender_name',     value: meta.lenderName || facts?.subject?.lender?.value || '' },
+      { fieldId: 'file_number',     value: meta.notes?.replace(/^Order ID:\s*/i, '') || meta.caseId || caseId },
+      { fieldId: 'effective_date',  value: orderDate },
+    ].filter(f => f.value && String(f.value).trim());
+
+    if (!fields.length) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No basic info fields available. Add address, borrower, and lender to the case first.',
+      });
+    }
+
+    const results = [];
+    for (const { fieldId, value } of fields) {
+      try {
+        const agentRes = await fetch(`${ACI_AGENT_URL}/insert`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ fieldId, text: String(value).trim(), formType: meta.formType || '1004' }),
+          signal:  AbortSignal.timeout(FIELD_TIMEOUT_MS),
+        });
+
+        if (agentRes.ok) {
+          const data = await agentRes.json().catch(() => ({}));
+          results.push({ fieldId, value: String(value).trim(), status: 'ok', agent: data });
+        } else {
+          const errText = await agentRes.text().catch(() => '');
+          results.push({ fieldId, value: String(value).trim(), status: 'error', error: `Agent ${agentRes.status}: ${errText}` });
+        }
+      } catch (err) {
+        const connRefused = err.code === 'ECONNREFUSED' || err.cause?.code === 'ECONNREFUSED';
+        if (connRefused) {
+          return res.status(503).json({
+            ok: false,
+            error: 'ACI automation agent is not running. Start desktop_agent/agent.py first.',
+            partialResults: results,
+          });
+        }
+        results.push({ fieldId, status: 'error', error: err.message });
+      }
+    }
+
+    const succeeded = results.filter(r => r.status === 'ok').length;
+    log.info('cases:insert-basic-info', { caseId, total: fields.length, succeeded });
+
+    res.json({
+      ok: succeeded > 0,
+      caseId,
+      total: fields.length,
+      succeeded,
+      failed: results.filter(r => r.status !== 'ok').length,
+      results,
+    });
+  } catch (err) {
+    log.error('cases:insert-basic-info', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /:caseId/health — Case health check ───────────────────────────────────
+/**
+ * Returns a health summary for a case: completeness, pipeline stage, missing facts.
+ *
+ * Returns:
+ *   { ok, caseId, formType, pipelineStage, factsComplete, missingCriticalFacts,
+ *     generatedFields, totalFields, lastActivity }
+ */
+router.get('/:caseId/health', (req, res) => {
+  try {
+    const caseId = req.params.caseId;
+    const projection = getCaseProjection(caseId);
+    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const meta    = projection.meta    || {};
+    const facts   = projection.facts   || {};
+    const outputs = projection.outputs || {};
+
+    // Determine critical facts needed for a 1004 appraisal
+    const CRITICAL_FACTS = [
+      ['subject',       'address'],
+      ['subject',       'borrower'],
+      ['neighborhood',  'boundary_north'],
+      ['neighborhood',  'boundary_south'],
+      ['neighborhood',  'boundary_east'],
+      ['neighborhood',  'boundary_west'],
+      ['improvements',  'condition_rating'],
+      ['improvements',  'kitchen_update'],
+      ['improvements',  'bathroom_update'],
+      ['subject',       'bedrooms_above_grade'],
+      ['subject',       'bathrooms_above_grade'],
+    ];
+
+    const missingCriticalFacts = [];
+    for (const [group, key] of CRITICAL_FACTS) {
+      const val = facts?.[group]?.[key]?.value;
+      if (!val || String(val).trim() === '') {
+        missingCriticalFacts.push(`${group}.${key}`);
+      }
+    }
+
+    // Count total fact leaves present
+    function countLeaves(node, depth = 0) {
+      if (!node || typeof node !== 'object' || depth > 5) return 0;
+      if (Object.prototype.hasOwnProperty.call(node, 'value')) return node.value != null && node.value !== '' ? 1 : 0;
+      return Object.values(node).reduce((acc, v) => acc + countLeaves(v, depth + 1), 0);
+    }
+
+    const factsPresent = countLeaves(facts);
+    const totalCritical = CRITICAL_FACTS.length;
+    const factsComplete = Number(((totalCritical - missingCriticalFacts.length) / totalCritical).toFixed(2));
+
+    // Count generated output fields
+    const generatedFields = Object.keys(outputs).filter(k => {
+      const v = outputs[k];
+      return v && (typeof v === 'string' ? v.trim() : v.text?.trim());
+    }).length;
+
+    const totalFields = Object.keys(outputs).length;
+    const lastActivity = meta.updatedAt || meta.createdAt || null;
+
+    res.json({
+      ok: true,
+      caseId,
+      formType:             meta.formType || '1004',
+      pipelineStage:        meta.pipelineStage || 'intake',
+      workflowStatus:       meta.workflowStatus || 'facts_incomplete',
+      factsPresent,
+      factsComplete,
+      missingCriticalFacts,
+      generatedFields,
+      totalFields,
+      lastActivity,
+    });
+  } catch (err) {
+    log.error('cases:health', { error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── GET /:caseId/missing-facts/:fieldId — Single-field missing facts ───────────
 router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
   try {
