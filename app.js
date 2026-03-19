@@ -8141,7 +8141,7 @@ async function mredLoadStatus() {
   if (!body) return;
   body.innerHTML = '<div class="hint">Checking...</div>';
   try {
-    const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+    const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || CACC_API_KEY } });
     const data = await res.json();
     if (data.connected) {
       body.innerHTML = '<span style="color:var(--ok);font-weight:700;">?? Connected to MRED</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Live comp searches enabled. Token saved locally.</div>';
@@ -8164,7 +8164,7 @@ function mredConnect() {
 
 async function mredDisconnect() {
   if (!confirm('Disconnect from MRED? You can reconnect anytime.')) return;
-  await fetch('/api/mred/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+  await fetch('/api/mred/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || CACC_API_KEY } });
   mredLoadStatus();
 }
 
@@ -8205,7 +8205,7 @@ async function gmailLoadStatus() {
   if (!body) return;
   body.innerHTML = '<div class="hint">Checking...</div>';
   try {
-    const res = await fetch('/api/gmail/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+    const res = await fetch('/api/gmail/status', { headers: { 'X-Api-Key': window._apiKey || CACC_API_KEY } });
     const data = await res.json();
     if (data.connected) {
       body.innerHTML = '<span style="color:var(--ok);font-weight:700;">&#x1F7E2; Gmail connected</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">&#x2713; crescicharles@gmail.com &mdash; ready to send emails.</div>';
@@ -8225,7 +8225,7 @@ function gmailConnect() {
 
 async function gmailDisconnect() {
   if (!confirm('Disconnect Gmail? You can reconnect anytime.')) return;
-  await fetch('/api/gmail/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+  await fetch('/api/gmail/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || CACC_API_KEY } });
   gmailLoadStatus();
 }
 
@@ -8242,7 +8242,7 @@ async function gmailSend(to, subject, body, cc = '') {
   try {
     const res = await fetch('/api/gmail/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' },
+      headers: { 'Content-Type': 'application/json', 'X-Api-Key': window._apiKey || CACC_API_KEY },
       body: JSON.stringify({ to, subject, body, cc }),
     });
     const data = await res.json();
@@ -8397,7 +8397,7 @@ async function wsMredSearchToggle() {
     // Show MRED connection status inline
     const st = document.getElementById('wsMredConnStatus');
     try {
-      const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+      const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || CACC_API_KEY } });
       const data = await res.json();
       if (st) st.innerHTML = data.connected
         ? '<span style="color:var(--ok);">?? MRED connected � live search available</span>'
@@ -8458,7 +8458,7 @@ async function wsCompCsvUpload(file) {
   formData.append('file', file);
 
   try {
-    const apiKey = window._apiKey || 'cacc-local-key-2026';
+    const apiKey = window._apiKey || CACC_API_KEY;
     const res = await fetch('/api/cases/' + caseId + '/import-comps', {
       method: 'POST',
       headers: { 'X-Api-Key': apiKey },

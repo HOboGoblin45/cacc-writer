@@ -16,7 +16,7 @@
     "verification_mode": "How to verify insertion: tx32_readback | uia_get_value | skip",
     "report_click_ratio": "Optional [x,y] ratio inside ACIFormView used to activate the visible report box before TX32 targeting",
     "report_click_delay_ms": "Optional delay after a report-surface click before re-discovering TX32 controls",
-    "live_calibration_status": "Current truth state: live_confirmed | corpus_backed_pending_navigation_fix",
+    "live_calibration_status": "Current truth state: live_confirmed | insertion_ok_readback_unreliable | corpus_backed_pending_navigation_fix",
     "notes": "Human notes about this field"
   },
   "neighborhood_description": {

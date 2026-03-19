@@ -25,3 +25,12 @@ credentials/*.json
 
 # MRED OAuth token
 data/mred-token.json
+
+# Logs
+server_restart.log
+server_restart_err.log
+server_test_output.log
+server_test_error.log
+
+# Backups
+*.bak.json

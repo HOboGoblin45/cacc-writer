@@ -36,7 +36,7 @@ test('1004 surface profile captures the full sample corpus', () => {
   assert.equal(surfaceMap._source_files.length, 15);
 });
 
-test('sales and reconciliation fields are marked pending navigation fix', () => {
+test('sales and reconciliation fields are marked insertion-ok but readback-unreliable', () => {
   for (const fieldId of [
     'offering_history',
     'contract_analysis',
@@ -45,7 +45,7 @@ test('sales and reconciliation fields are marked pending navigation fix', () => 
   ]) {
     assert.equal(
       fieldMap[fieldId].live_calibration_status,
-      'corpus_backed_pending_navigation_fix',
+      'insertion_ok_readback_unreliable',
       `${fieldId} should not claim live confirmation`,
     );
     assert.equal(fieldMap[fieldId].calibrated, false, `${fieldId} should fail closed`);
