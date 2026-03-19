@@ -8132,7 +8132,7 @@ async function createIntakeFolder() {
 }
 
 // --------------------------------------------------------------------
-// MRED Integration � System tab
+// MRED Integration � System tab
 // --------------------------------------------------------------------
 
 async function mredLoadStatus() {
@@ -8147,10 +8147,10 @@ async function mredLoadStatus() {
       body.innerHTML = '<span style="color:var(--ok);font-weight:700;">?? Connected to MRED</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Live comp searches enabled. Token saved locally.</div>';
       if (actions) actions.innerHTML = '<button class="ghost sm" onclick="mredDisconnect()">Disconnect</button>';
     } else if (data.configured) {
-      body.innerHTML = '<span style="color:var(--warn);font-weight:700;">?? Credentials set � not authorized yet</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Click Connect to authorize with MRED.</div>';
+      body.innerHTML = '<span style="color:var(--warn);font-weight:700;">?? Credentials set � not authorized yet</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Click Connect to authorize with MRED.</div>';
       if (actions) actions.innerHTML = '<button class="sm" onclick="mredConnect()">?? Connect MRED</button><button class="ghost sm" onclick="mredDisconnect()">Disconnect</button>';
     } else {
-      body.innerHTML = '<span style="color:var(--danger);font-weight:700;">?? Not configured</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Add MRED_CLIENT_ID and MRED_CLIENT_SECRET to .env � see docs/MRED_API_SETUP.md</div>';
+      body.innerHTML = '<span style="color:var(--danger);font-weight:700;">?? Not configured</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Add MRED_CLIENT_ID and MRED_CLIENT_SECRET to .env � see docs/MRED_API_SETUP.md</div>';
       if (actions) actions.innerHTML = '<button class="ghost sm" disabled style="opacity:.5;">Connect MRED</button>';
     }
   } catch (e) {
@@ -8193,9 +8193,74 @@ const _origShowTab = window.showTab;
 if (typeof _origShowTab === 'function') {
   window.showTab = function(name) {
     _origShowTab(name);
-    if (name === 'system') mredLoadStatus();
+    if (name === 'system') { mredLoadStatus(); gmailLoadStatus(); }
   };
 }
+
+// ── Gmail Integration ──────────────────────────────────────────────────────
+
+async function gmailLoadStatus() {
+  const body = document.getElementById('gmailStatusBody');
+  const actions = document.getElementById('gmailActions');
+  if (!body) return;
+  body.innerHTML = '<div class="hint">Checking...</div>';
+  try {
+    const res = await fetch('/api/gmail/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+    const data = await res.json();
+    if (data.connected) {
+      body.innerHTML = '<span style="color:var(--ok);font-weight:700;">&#x1F7E2; Gmail connected</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">&#x2713; crescicharles@gmail.com &mdash; ready to send emails.</div>';
+      if (actions) actions.innerHTML = '<button class="ghost sm" onclick="gmailDisconnect()">Disconnect</button>';
+    } else {
+      body.innerHTML = '<span style="color:var(--danger);font-weight:700;">&#x1F534; Gmail not connected</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Click Connect to authorize with Google. See docs/GMAIL_SETUP.md for setup.</div>';
+      if (actions) actions.innerHTML = '<button class="sm" onclick="gmailConnect()">&#x1F534; Connect Gmail</button>';
+    }
+  } catch (e) {
+    if (body) body.innerHTML = '<div class="hint" style="color:var(--danger);">Error: ' + e.message + '</div>';
+  }
+}
+
+function gmailConnect() {
+  window.open('/api/gmail/connect', '_blank', 'width=600,height=700,noopener');
+}
+
+async function gmailDisconnect() {
+  if (!confirm('Disconnect Gmail? You can reconnect anytime.')) return;
+  await fetch('/api/gmail/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+  gmailLoadStatus();
+}
+
+/**
+ * Send an email via Gmail API (callable from console or Telegram handler).
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} body
+ * @param {string} [cc]
+ */
+async function gmailSend(to, subject, body, cc = '') {
+  const statusEl = document.getElementById('gmailSendStatus');
+  if (statusEl) statusEl.textContent = 'Sending...';
+  try {
+    const res = await fetch('/api/gmail/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' },
+      body: JSON.stringify({ to, subject, body, cc }),
+    });
+    const data = await res.json();
+    if (statusEl) {
+      statusEl.textContent = data.ok ? '✅ Email sent!' : '❌ ' + data.error;
+      statusEl.style.color = data.ok ? 'var(--ok)' : 'var(--danger)';
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 5000);
+    }
+    return data;
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+    return { ok: false, error: e.message };
+  }
+}
+
+// Expose globally for console/agent use
+window.gmailSend = gmailSend;
+window.gmailLoadStatus = gmailLoadStatus;
 
 // --------------------------------------------------------------------
 // Workspace: Photos + Comps panels
@@ -8253,7 +8318,7 @@ async function wsFindPhotos() {
 
     if (statusEl) statusEl.textContent = res.photos.length + ' photo(s) found in ' + res.folderCount + ' folder(s).';
 
-    // Build photo grid (filename cards � can't show actual images without serving the files)
+    // Build photo grid (filename cards � can't show actual images without serving the files)
     if (gridEl) {
       gridEl.innerHTML = res.photos.map((p, i) => `
         <div style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px;">
@@ -8283,7 +8348,7 @@ function wsCopyPhotoList() {
   const lines = photos.map((p, i) => {
     const lbl = document.getElementById('photoLabel_' + i);
     const label = lbl ? lbl.value.trim() : p.suggestedLabel;
-    return `${i + 1}. ${label} � ${p.filename}`;
+    return `${i + 1}. ${label} � ${p.filename}`;
   });
   const text = lines.join('\n');
   navigator.clipboard.writeText(text).catch(() => {});
@@ -8312,8 +8377,8 @@ async function wsLoadCompGuidance() {
     if (badge) { badge.textContent = conf + ' ' + g.confidence + ' confidence'; badge.style.display = 'inline'; }
     if (guidEl) {
       guidEl.style.display = 'block';
-      guidEl.innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;">Comp Guidance � Based on ${g.basedOnReports} report(s)</div>` +
-        (g.glaRange ? `<div>?? <strong>GLA range:</strong> ${g.glaRange.min.toLocaleString()}�${g.glaRange.max.toLocaleString()} sf (�15% of subject)</div>` : '') +
+      guidEl.innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;">Comp Guidance � Based on ${g.basedOnReports} report(s)</div>` +
+        (g.glaRange ? `<div>?? <strong>GLA range:</strong> ${g.glaRange.min.toLocaleString()}�${g.glaRange.max.toLocaleString()} sf (�15% of subject)</div>` : '') +
         (g.maxDistanceMiles ? `<div>?? <strong>Distance:</strong> within ${g.maxDistanceMiles} miles</div>` : '') +
         (g.maxSaleAgeDays ? `<div>?? <strong>Sale date:</strong> within ${g.maxSaleAgeDays} days</div>` : '') +
         `<div>?? <strong>Confidence:</strong> ${g.confidence} (${g.basedOnReports}+ reports)</div>`;
@@ -8335,8 +8400,8 @@ async function wsMredSearchToggle() {
       const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
       const data = await res.json();
       if (st) st.innerHTML = data.connected
-        ? '<span style="color:var(--ok);">?? MRED connected � live search available</span>'
-        : '<span style="color:var(--warn);">?? MRED not connected � <a href="#" onclick="showTab(\'system\')">go to System tab to connect</a></span>';
+        ? '<span style="color:var(--ok);">?? MRED connected � live search available</span>'
+        : '<span style="color:var(--warn);">?? MRED not connected � <a href="#" onclick="showTab(\'system\')">go to System tab to connect</a></span>';
     } catch (e) {
       if (st) st.textContent = 'Could not check MRED status.';
     }
@@ -8406,8 +8471,8 @@ async function wsCompCsvUpload(file) {
       return;
     }
 
-    const geoNote = data.geocoded > 0 ? ` � ${data.geocoded} geocoded` : '';
-    if (statusEl) { statusEl.style.color = 'var(--ok)'; statusEl.textContent = `? ${data.count} comp(s) imported${geoNote} � saved to case`; }
+    const geoNote = data.geocoded > 0 ? ` � ${data.geocoded} geocoded` : '';
+    if (statusEl) { statusEl.style.color = 'var(--ok)'; statusEl.textContent = `? ${data.count} comp(s) imported${geoNote} � saved to case`; }
     _wsRenderCompsTable(data.comps, 'MRED CSV Import (' + data.count + ' comps)');
   } catch (e) {
     if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
@@ -8426,18 +8491,18 @@ function _wsRenderCompsTable(comps, label) {
   if (lblEl) lblEl.textContent = label || '';
 
   tbody.innerHTML = comps.map((c, i) => {
-    const glaColor = c.glaDiff && c.glaDiff !== '�'
+    const glaColor = c.glaDiff && c.glaDiff !== '�'
       ? (parseFloat(c.glaDiff) > 15 ? 'color:var(--warn)' : 'color:var(--ok)')
       : '';
     return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
-      <td style="padding:5px 8px;">${esc(c.address || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;color:var(--gold);">${esc(c.priceDisplay || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;">${esc(c.glaDisplay || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;${glaColor}">${esc(c.glaDiff || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.pricePerSf || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;">${c.beds || '�'}/${c.baths || '�'}</td>
-      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.saleDate || '�')}</td>
-      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.distDisplay || '�')}</td>
+      <td style="padding:5px 8px;">${esc(c.address || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--gold);">${esc(c.priceDisplay || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;">${esc(c.glaDisplay || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;${glaColor}">${esc(c.glaDiff || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.pricePerSf || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;">${c.beds || '�'}/${c.baths || '�'}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.saleDate || '�')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.distDisplay || '�')}</td>
     </tr>`;
   }).join('');
 
@@ -8450,5 +8515,9 @@ setTimeout(() => {
   if (typeof mredLoadStatus === 'function') {
     const sysBody = document.getElementById('mredStatusBody');
     if (sysBody) mredLoadStatus();
+  }
+  if (typeof gmailLoadStatus === 'function') {
+    const gmailBody = document.getElementById('gmailStatusBody');
+    if (gmailBody) gmailLoadStatus();
   }
 }, 500);
