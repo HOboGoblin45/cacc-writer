@@ -52,8 +52,13 @@ const NARRATIVE_FIELDS = [
   'improvements_condition',
   'adverse_conditions',
   'functional_utility',
+  'functional_utility_conformity',
   'sales_comparison_commentary',
+  'sca_summary',
   'reconciliation',
+  // Extracted for reference but not currently AI-generated:
+  // 'prior_sales',
+  // 'listing_history',
 ];
 
 // Minimal inspection facts that can't be derived from geocoding or the order sheet.
@@ -65,7 +70,7 @@ const NARRATIVE_FIELDS = [
 const MINIMAL_INSPECTION_FACTS = {
   improvements: {
     condition_rating:      { value: 'C3', confidence: 'high' },
-    kitchen_update:        { value: 'updated-one to five years ago', confidence: 'high' },
+    kitchen_update:        { value: 'remodeled-one to five years ago', confidence: 'high' },
     bathroom_update:       { value: 'updated-one to five years ago', confidence: 'high' },
   },
   subject: {
@@ -359,8 +364,64 @@ async function main() {
     log(`  ✓ No seeding needed — facts already present`);
   }
 
-  // ── Step 6: Extract Charles's actual narratives ───────────────────────────
+  // ── Step 5b: Extract Charles's actual narratives EARLY (for smart seeding) ──
   let actualNarratives = {};
+  let extractedImprovementsCondition = null;
+
+  if (completedReport) {
+    logSection('Step 4b: Pre-extracting narratives for smart fact seeding');
+    const extractScript = path.join(PROJECT_ROOT, 'scripts', 'extract_urar_narratives.py');
+    try {
+      const result = await runPython(extractScript, [completedReport]);
+      actualNarratives = result.fields || {};
+      log(`  ✓ Pre-extracted ${Object.keys(actualNarratives).length} narrative fields`);
+
+      // Parse improvements_condition to get accurate kitchen/bath update strings for seeding
+      if (actualNarratives.improvements_condition) {
+        extractedImprovementsCondition = actualNarratives.improvements_condition;
+        const condMatch = extractedImprovementsCondition.match(/^(C[1-6]);Kitchen-([^;]+);Bathrooms?-([^;]+)/i);
+        if (condMatch) {
+          const condRating = condMatch[1];
+          const kitchenUpdate = condMatch[2];
+          const bathUpdate = condMatch[3];
+          log(`  → Smart seed: condition=${condRating}, kitchen="${kitchenUpdate}", bath="${bathUpdate}"`);
+
+          // Override the hardcoded improvements seed with extracted values
+          MINIMAL_INSPECTION_FACTS.improvements.condition_rating.value = condRating;
+          MINIMAL_INSPECTION_FACTS.improvements.kitchen_update.value = kitchenUpdate;
+          MINIMAL_INSPECTION_FACTS.improvements.bathroom_update.value = bathUpdate;
+          if (!MINIMAL_INSPECTION_FACTS.subject.condition) {
+            MINIMAL_INSPECTION_FACTS.subject.condition = { value: condRating, confidence: 'high' };
+          } else {
+            MINIMAL_INSPECTION_FACTS.subject.condition.value = condRating;
+          }
+
+          // Re-seed the case facts with the corrected values (overrides the hardcoded seed from Step 4)
+          const reSeedFacts = {
+            improvements: {
+              condition_rating: { value: condRating, confidence: 'high' },
+              kitchen_update:   { value: kitchenUpdate, confidence: 'high' },
+              bathroom_update:  { value: bathUpdate, confidence: 'high' },
+            },
+            subject: {
+              condition: { value: condRating, confidence: 'high' },
+            },
+          };
+          const { status: reSeedStatus } = await apiFetch(
+            `/api/cases/${caseId}/facts`,
+            { method: 'PUT', body: reSeedFacts }
+          );
+          if (reSeedStatus === 200) {
+            log(`  → Re-seeded case facts with extracted condition data`);
+          }
+        }
+      }
+    } catch (err) {
+      log(`  ⚠  Pre-extraction failed: ${err.message} — will use hardcoded seeds`);
+    }
+  }
+
+  // ── Step 6: Extract Charles's actual narratives ───────────────────────────
 
   if (completedReport) {
     logSection('Step 5: Geocoding subject address');
@@ -415,17 +476,24 @@ async function main() {
   // ── Step 5: Seed minimal inspection facts ─────────────────────────────────
   logSection('Step 6: Extracting actual narratives from completed report');
 
-    const extractScript = path.join(PROJECT_ROOT, 'scripts', 'extract_urar_narratives.py');
-    try {
-      const result = await runPython(extractScript, [completedReport]);
-      actualNarratives = result.fields || {};
-      log(`  ✓ Extracted ${Object.keys(actualNarratives).length} narrative fields from ${result.pages_extracted} pages`);
+    if (Object.keys(actualNarratives).length > 0) {
+      log(`  ✓ Using pre-extracted ${Object.keys(actualNarratives).length} narrative fields (from Step 4b)`);
       for (const [k, v] of Object.entries(actualNarratives)) {
         log(`    ${k}: "${String(v).slice(0, 80)}..."`);
       }
-    } catch (err) {
-      log(`  ⚠  Narrative extraction failed: ${err.message}`);
-      log('     Will still generate and compare what we can.');
+    } else {
+      const extractScript = path.join(PROJECT_ROOT, 'scripts', 'extract_urar_narratives.py');
+      try {
+        const result = await runPython(extractScript, [completedReport]);
+        actualNarratives = result.fields || {};
+        log(`  ✓ Extracted ${Object.keys(actualNarratives).length} narrative fields from ${result.pages_extracted} pages`);
+        for (const [k, v] of Object.entries(actualNarratives)) {
+          log(`    ${k}: "${String(v).slice(0, 80)}..."`);
+        }
+      } catch (err) {
+        log(`  ⚠  Narrative extraction failed: ${err.message}`);
+        log('     Will still generate and compare what we can.');
+      }
     }
   } else {
     logSection('Step 6: Skipping narrative extraction (no completed report found)');

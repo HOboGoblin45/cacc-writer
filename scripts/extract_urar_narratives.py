@@ -99,13 +99,14 @@ def extract_narratives_from_page(text, page_num):
         if adverse_match:
             fields['adverse_conditions'] = clean_narrative(adverse_match.group(1))
 
-        # Improvements condition - look for C3; or similar rating + narrative
+        # Improvements condition - look for C[1-6]; UAD condition rating + narrative
+        # ACI PDFs sometimes split C3; across lines, so also try matching just after the rating
         condition_match = re.search(
-            r'(C[1-6];[^\n]{50,}(?:\n[^\n]{30,}){0,4})',
+            r'(C[1-6];[^\n]{20,}(?:\n[^\n]{20,}){0,5})',
             text, re.IGNORECASE
         )
         if condition_match:
-            fields['improvements_condition'] = clean_narrative(condition_match.group(1))
+            fields['improvements_condition'] = clean_narrative(condition_match.group(1), max_chars=800)
 
         # Functional utility / additional features
         features_match = re.search(
@@ -123,7 +124,52 @@ def extract_narratives_from_page(text, page_num):
         if conform_match:
             fields['functional_utility_conformity'] = clean_narrative(conform_match.group(1))
 
+        # Listing history — "It appears that the subject has not been offered for sale..."
+        # Appears near the top of page 4, in the contract section
+        listing_match = re.search(
+            r'(It appears that the subject has not been offered for sale[^\n]{30,}(?:\n[^\n]{20,}){0,3})',
+            text, re.IGNORECASE
+        )
+        if listing_match:
+            fields['listing_history'] = clean_narrative(listing_match.group(1), max_chars=400)
+
     elif page_num == 5:
+        # Prior sales history — "The subject property has not sold in the past 36 months..."
+        # Appears after the "Analysis of prior sale or transfer history" label
+        prior_sales_patterns = [
+            r'(The subject property has not sold[^\n]{30,}(?:\n[^\n]{20,}){0,4})',
+            r'(The subject property (?:has|sold|transferred)[^\n]{30,}(?:\n[^\n]{20,}){0,3})',
+        ]
+        for pat in prior_sales_patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                candidate = clean_narrative(m.group(1), max_chars=500)
+                if len(candidate) > 30:
+                    fields['prior_sales'] = candidate
+                    break
+
+        # Summary of Sales Comparison Approach
+        # "All comparables have been found..." OR "Due to a lack of recent comparable sales..."
+        sca_summary_patterns = [
+            r'(All comparables have been found[^\n]{30,}(?:\n[^\n]{20,}){0,8})',
+            r'(Due to a lack of recent comparable sales[^\n]{30,}(?:\n[^\n]{20,}){0,8})',
+            r'(Summary of Sales Comparison Approach[.\n]*?)(All comparables|Due to a lack)',
+        ]
+        for pat in sca_summary_patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                # For the third pattern, grab from the keyword
+                if 'Summary of Sales' in pat:
+                    # Find the actual text after the label
+                    label_end = text.find(m.group(0)) + len(m.group(0))
+                    chunk = text[label_end:label_end+600]
+                    candidate = clean_narrative(chunk, max_chars=600)
+                else:
+                    candidate = clean_narrative(m.group(1), max_chars=700)
+                if len(candidate) > 40:
+                    fields['sca_summary'] = candidate
+                    break
+
         # Sales comparison - look for comp analysis text
         # Pattern: text that discusses adjustments or the comparable sales
         sca_patterns = [
