@@ -297,5 +297,112 @@
     "live_calibration_status": "live_confirmed",
     "calibration_method": "label_proximity",
     "notes": "Adverse conditions or external factors narrative. PDF corpus anchors this section to the page 3/4 site-improvements block."
+  },
+  "subject_address": {
+    "label": "Property Address",
+    "aliases": [
+      "Subject Address",
+      "Address",
+      "Property Addr"
+    ],
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "tx32_readback",
+    "calibrated": false,
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "calibration_method": "label_proximity:Property Address",
+    "notes": "Subject property address field on the Subject tab. Basic info auto-population target. Needs live calibration on Subject tab."
+  },
+  "borrower_name": {
+    "label": "Borrower",
+    "aliases": [
+      "Borrower Name",
+      "Borrower(s)",
+      "Mortgagor"
+    ],
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "tx32_readback",
+    "calibrated": false,
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "calibration_method": "label_proximity:Borrower",
+    "notes": "Borrower name field on the Subject tab. Basic info auto-population target."
+  },
+  "lender_name": {
+    "label": "Lender/Client",
+    "aliases": [
+      "Lender",
+      "Client",
+      "Lending Institution",
+      "Lender Name"
+    ],
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "tx32_readback",
+    "calibrated": false,
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "calibration_method": "label_proximity:Lender/Client",
+    "notes": "Lender/client name field on the Subject tab. Basic info auto-population target."
+  },
+  "file_number": {
+    "label": "File No.",
+    "aliases": [
+      "File Number",
+      "Order ID",
+      "File #",
+      "Loan Number"
+    ],
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "tx32_readback",
+    "calibrated": false,
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "calibration_method": "label_proximity:File No.",
+    "notes": "File number / order ID field on the Subject tab. Basic info auto-population target."
+  },
+  "effective_date": {
+    "label": "Effective Date of Appraisal",
+    "aliases": [
+      "Effective Date",
+      "Date of Appraisal",
+      "Appraisal Date"
+    ],
+    "tab_name": "Subj",
+    "automation_id": "",
+    "class_name": "",
+    "class_index": null,
+    "control_index": null,
+    "expected_classes": [
+      "TX32"
+    ],
+    "verification_mode": "tx32_readback",
+    "calibrated": false,
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "calibration_method": "label_proximity:Effective Date of Appraisal",
+    "notes": "Effective date of appraisal on the Subject tab. Basic info auto-population target."
   }
 }

@@ -7579,7 +7579,28 @@ async function handleIntakeFile(file) {
       await loadCase(data.caseId);
       showTab('facts');
     } else {
-      showIntakeStatus(data.error || 'Failed to parse order sheet.', 'err');
+      // Show specific, actionable error messages based on the error code
+      let friendlyMsg = data.error || 'Failed to parse order sheet.';
+      const code = data.code || '';
+      if (code === 'PDF_EXTRACTION_FAILED' || (data.extractionMethod === 'failed')) {
+        // Check if it looks like encryption vs OCR failure
+        const errLower = (data.error || '').toLowerCase();
+        if (errLower.includes('encrypt') || errLower.includes('password') || errLower.includes('decrypt')) {
+          friendlyMsg = 'This PDF appears to be encrypted or password-protected. Please unlock it before uploading.';
+        } else if (errLower.includes('ocr') || errLower.includes('scanned') || errLower.includes('image') || data.extractionMethod === 'ocr-vision') {
+          friendlyMsg = 'Could not extract text from this PDF — it may be a scanned image only. Try a digitally-created PDF or contact the lender for a text-based version.';
+        } else {
+          friendlyMsg = 'Could not extract text from this PDF — it may be scanned, image-only, or encrypted. Try a different file.';
+        }
+      } else if (code === 'MISSING_REQUIRED_FIELDS' || (data.missingFields && data.missingFields.length > 3)) {
+        const missing = data.missingFields ? data.missingFields.slice(0, 3).join(', ') : '';
+        friendlyMsg = `Unrecognized order format — missing required fields${missing ? ': ' + missing : ''}. Is this a standard appraisal assignment sheet?`;
+      } else if (code === 'MISSING_FILE') {
+        friendlyMsg = 'No PDF file received. Please drop a valid PDF assignment sheet.';
+      } else if (code === 'UNSUPPORTED_FILE_TYPE') {
+        friendlyMsg = 'Only PDF files are accepted. Please upload a PDF assignment sheet.';
+      }
+      showIntakeStatus(friendlyMsg, 'err');
     }
   } catch (e) {
     showIntakeStatus('Server error: ' + e.message, 'err');
