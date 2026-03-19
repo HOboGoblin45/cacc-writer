@@ -72,6 +72,7 @@ function warn(check, detail = '') {
   console.warn(`  ⚠ WARN  ${check}${detail ? ' — ' + detail : ''}`);
 }
 
+const CACC_API_KEY = 'cacc-local-key-2026';
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
 async function api(path, opts = {}) {
   const url = BASE_URL + path;
@@ -79,7 +80,12 @@ async function api(path, opts = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   try {
-    const res = await fetch(url, { signal: controller.signal, ...opts });
+    const mergedOpts = {
+      ...opts,
+      signal: controller.signal,
+      headers: { 'X-API-Key': CACC_API_KEY, ...(opts.headers || {}) },
+    };
+    const res = await fetch(url, mergedOpts);
     clearTimeout(timer);
     return res;
   } catch (e) {
@@ -239,7 +245,7 @@ async function run() {
 
       // Check boundary roads
       const lat = data.subject?.lat || data.geocode?.subject?.result?.lat;
-      const lng = data.geocode?.subject?.result?.lng;
+      const lng = data.subject?.lng || data.geocode?.subject?.result?.lng;
       if (lat && lng) {
         try {
           const { data: bdData } = await apiJson(

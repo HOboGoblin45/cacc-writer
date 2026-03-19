@@ -27,6 +27,9 @@ import { saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { client, MODEL } from '../openaiClient.js';
 import log from '../logger.js';
 import { logNewJob } from '../integrations/googleSheets.js';
+import { readJSON, writeJSON } from '../utils/fileUtils.js';
+import { geocodeAddress } from '../geocoder.js';
+import { getNeighborhoodBoundaryFeatures } from '../neighborhoodContext.js';
 
 const router = Router();
 
@@ -132,6 +135,16 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
       });
     }
 
+    // Check file size < 50MB
+    const MAX_PDF_BYTES = 50 * 1024 * 1024;
+    if (req.file.size > MAX_PDF_BYTES) {
+      return res.status(413).json({
+        ok: false,
+        code: 'FILE_TOO_LARGE',
+        error: `PDF file too large (${Math.round(req.file.size / 1024 / 1024)}MB). Maximum size is 50MB.`,
+      });
+    }
+
     // Extract text from PDF
     const { text, method: extractionMethod, error: extractionError } = await extractPdfText(
       req.file.buffer,
@@ -140,10 +153,15 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
     );
 
     if (!text || text.length < 50) {
+      const isScanned = extractionMethod === 'ocr-vision' ||
+        (extractionError || '').toLowerCase().includes('image') ||
+        (extractionError || '').toLowerCase().includes('scan');
       return res.status(422).json({
         ok: false,
         code: 'PDF_EXTRACTION_FAILED',
-        error: extractionError || 'Could not extract text from PDF',
+        error: isScanned
+          ? 'PDF appears to be a scanned image - text extraction failed. Please use a text-based PDF.'
+          : (extractionError || 'Could not extract text from PDF'),
         extractionMethod,
       });
     }
@@ -212,6 +230,47 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
     logNewJob(extracted).catch(err => {
       log.warn('intake:order:log-job-failed', { error: err.message });
     });
+
+    // Auto-geocode if address available (non-fatal, runs in background)
+    if (extracted.address) {
+      (async () => {
+        try {
+          const geoResult = await geocodeAddress(extracted.address);
+          if (geoResult) {
+            const cd = casePath(caseId);
+            const geocodeData = {
+              subject: { address: extracted.address, result: geoResult },
+              comps: [],
+              geocodedAt: new Date().toISOString(),
+              autoGeocoded: true,
+            };
+            writeJSON(path.join(cd, 'geocode.json'), geocodeData);
+            // Fetch and save boundary roads into facts
+            try {
+              const boundaryFeatures = await getNeighborhoodBoundaryFeatures(geoResult.lat, geoResult.lng, 1.5);
+              if (boundaryFeatures?.boundaryRoads) {
+                const { north, south, east, west } = boundaryFeatures.boundaryRoads;
+                const existingFacts = readJSON(path.join(cd, 'facts.json'), {});
+                const updatedFacts = {
+                  ...existingFacts,
+                  neighborhood_boundary_north: north || existingFacts.neighborhood_boundary_north || null,
+                  neighborhood_boundary_south: south || existingFacts.neighborhood_boundary_south || null,
+                  neighborhood_boundary_east: east || existingFacts.neighborhood_boundary_east || null,
+                  neighborhood_boundary_west: west || existingFacts.neighborhood_boundary_west || null,
+                };
+                writeJSON(path.join(cd, 'facts.json'), updatedFacts);
+                log.info('intake:auto-geocode:boundary-saved', { caseId, north, south, east, west });
+              }
+            } catch (boundaryErr) {
+              log.warn('intake:auto-geocode:boundary-failed', { caseId, error: boundaryErr.message });
+            }
+            log.info('intake:auto-geocode:complete', { caseId, lat: geoResult.lat, lng: geoResult.lng });
+          }
+        } catch (geoErr) {
+          log.warn('intake:auto-geocode:failed', { caseId, error: geoErr.message });
+        }
+      })();
+    }
 
     res.json({
       ok: true,

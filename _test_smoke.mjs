@@ -108,13 +108,14 @@ function assertOk(body, label) {
   assert(body.ok === true, `${label}: ok !== true (got: ${JSON.stringify(body).slice(0, 200)})`);
 }
 
+const CACC_API_KEY = 'cacc-local-key-2026';
 async function api(method, path, body) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const opts = {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': CACC_API_KEY },
       signal: ctrl.signal,
     };
     if (body) opts.body = JSON.stringify(body);
@@ -133,6 +134,7 @@ async function apiForm(path, formData) {
     const res = await fetch(`${BASE}${path}`, {
       method: 'POST',
       body: formData,
+      headers: { 'X-API-Key': CACC_API_KEY },
       signal: ctrl.signal,
     });
     const json = await res.json().catch(() => null);

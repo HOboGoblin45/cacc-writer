@@ -295,13 +295,15 @@ export function buildPromptMessages({
   // The AI pattern-matches [INSERT X] and outputs it even when told not to.
   // Replace placeholders with real values before the AI sees the location context.
   let resolvedLocationContext = locationContext;
-  if (resolvedLocationContext && facts && facts.neighborhood) {
-    const nb = facts.neighborhood;
+  if (resolvedLocationContext && facts) {
+    // Check both nested (facts.neighborhood.*) and flat top-level (facts.neighborhood_boundary_*) formats
+    const nb = facts.neighborhood || {};
     const getV = (key) => { const e = nb[key]; if (!e) return null; return typeof e === 'object' ? (e.value || null) : String(e); };
-    const north = getV('NORTH_BOUNDARY') || getV('boundary_north');
-    const south = getV('SOUTH_BOUNDARY') || getV('boundary_south');
-    const east  = getV('EAST_BOUNDARY')  || getV('boundary_east');
-    const west  = getV('WEST_BOUNDARY')  || getV('boundary_west');
+    const getFlat = (key) => { const e = facts[key]; if (!e) return null; return typeof e === 'object' ? (e.value || null) : String(e); };
+    const north = getV('NORTH_BOUNDARY') || getV('boundary_north') || getFlat('neighborhood_boundary_north');
+    const south = getV('SOUTH_BOUNDARY') || getV('boundary_south') || getFlat('neighborhood_boundary_south');
+    const east  = getV('EAST_BOUNDARY')  || getV('boundary_east')  || getFlat('neighborhood_boundary_east');
+    const west  = getV('WEST_BOUNDARY')  || getV('boundary_west')  || getFlat('neighborhood_boundary_west');
     if (north) resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT north road\]/gi, north);
     if (south) resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT south road\]/gi, south);
     if (east)  resolvedLocationContext = resolvedLocationContext.replace(/\[INSERT east road\]/gi,  east);
