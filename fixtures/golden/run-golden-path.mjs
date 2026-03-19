@@ -300,16 +300,23 @@ class GoldenPathRunner {
     if (!this.caseId) { this.record('Generation', false, 'No caseId — skipped'); return; }
 
     if (SKIP_GENERATION) {
-      // Seed reviewed sections from manifest so insertion has content
+      // Seed reviewed sections from manifest into generated_sections table
+      // so the insertion engine can find them
       if (this.manifest?.reviewedSections) {
-        const sections = this.manifest.reviewedSections;
-        const outputs = {};
-        for (const [fieldId, section] of Object.entries(sections)) {
-          outputs[fieldId] = { text: section.text, status: section.sectionStatus || 'reviewed' };
+        const sections = {};
+        for (const [fieldId, section] of Object.entries(this.manifest.reviewedSections)) {
+          if (section.text) sections[fieldId] = section.text;
         }
-        await api('PUT', `/api/cases/${this.caseId}/facts`, { _outputs: outputs });
+        const seedRes = await api('POST', '/api/generation/seed-sections', {
+          caseId: this.caseId,
+          formType: this.lane,
+          sections,
+        });
+        const seeded = seedRes.data?.seeded || 0;
+        this.record('Generation', true, `SKIPPED — ${seeded} sections seeded from manifest`);
+      } else {
+        this.record('Generation', true, 'SKIPPED (--skip-generation)');
       }
-      this.record('Generation', true, 'SKIPPED (--skip-generation)');
       return;
     }
 
@@ -349,33 +356,117 @@ class GoldenPathRunner {
   async runInsertionExport() {
     if (!this.caseId) { this.record('Insertion/Export', false, 'No caseId — skipped'); return; }
 
-    let insertionOk = true;
-    let exportOk = true;
-    let detail = [];
-
-    // Check insertion infrastructure
-    const runs = await api('GET', `/api/cases/${this.caseId}/insertion-runs`);
-    if (runs.status < 500) {
-      detail.push('insertion routes ok');
-    } else {
-      insertionOk = false;
-      detail.push(`insertion routes: HTTP ${runs.status}`);
-    }
+    const detail = [];
 
     if (SKIP_INSERTION) {
+      // Legacy check-only mode
+      const runs = await api('GET', `/api/cases/${this.caseId}/insertion-runs`);
+      if (runs.status < 500) detail.push('insertion routes ok');
+      else detail.push(`insertion routes: HTTP ${runs.status}`);
       detail.push('insertion skipped (--skip-insertion)');
+    } else {
+      // ── Live insertion run ──────────────────────────────────────────────
+      const targetSoftware = this.manifest?.insertion?.targetSoftware
+        || (this.lane === 'commercial' ? 'real_quantum' : 'aci');
+
+      // Probe agent health first
+      const agentPort = targetSoftware === 'real_quantum' ? 5181 : 5180;
+      const agentHealth = await api('GET', '').catch(() => null);
+      try {
+        const ah = await fetch(`http://localhost:${agentPort}/health`, {
+          signal: AbortSignal.timeout(3000),
+        });
+        const ahData = await ah.json();
+        detail.push(`agent(${agentPort}): ok`);
+      } catch {
+        detail.push(`agent(${agentPort}): unreachable`);
+      }
+
+      // Trigger insertion run
+      const runRes = await api('POST', '/api/insertion/run', {
+        caseId: this.caseId,
+        formType: this.lane,
+        targetSoftware,
+        config: {
+          skipQcBlockers: true,
+          verifyAfter: true,
+          maxRetries: 2,
+          defaultFallback: 'retry_then_clipboard',
+        },
+      });
+
+      if (runRes.status >= 500) {
+        detail.push(`insertion run: HTTP ${runRes.status}`);
+        this.record('Insertion/Export', false, detail.join(', '));
+        return;
+      }
+
+      if (runRes.data?.blocked) {
+        detail.push(`insertion blocked: ${runRes.data.message || 'QC gate'}`);
+        this.record('Insertion/Export', false, detail.join(', '));
+        return;
+      }
+
+      const runId = runRes.data?.runId;
+      if (!runId) {
+        detail.push('no runId returned');
+        this.record('Insertion/Export', false, detail.join(', '));
+        return;
+      }
+
+      detail.push(`runId=${runId}, fields=${runRes.data.totalFields || '?'}`);
+
+      // Poll for completion (max 120s)
+      const insertionTimeout = this.manifest?.insertion?.timeoutMs || 120000;
+      const pollStart = Date.now();
+      let finalStatus = 'unknown';
+      let summary = null;
+
+      while (Date.now() - pollStart < insertionTimeout) {
+        await new Promise(r => setTimeout(r, 2000));
+        const poll = await api('GET', `/api/insertion/run/${runId}`);
+        const run = poll.data?.run || poll.data;
+        const status = run?.status;
+
+        if (['completed', 'partial', 'failed'].includes(status)) {
+          finalStatus = status;
+          summary = run?.summary_json || run?.summaryJson || run;
+          break;
+        }
+        if (status === 'cancelled') {
+          finalStatus = 'cancelled';
+          break;
+        }
+      }
+
+      if (finalStatus === 'unknown') {
+        detail.push('insertion timed out');
+      } else {
+        const inserted = summary?.inserted || summary?.completed_fields || 0;
+        const verified = summary?.verified || summary?.verified_fields || 0;
+        const failed = summary?.failed || summary?.failed_fields || 0;
+        detail.push(`status=${finalStatus}, inserted=${inserted}, verified=${verified}, failed=${failed}`);
+      }
+
+      // Get item-level details
+      const items = await api('GET', `/api/insertion/run/${runId}/items`);
+      if (VERBOSE && items.data?.items) {
+        for (const item of items.data.items) {
+          console.log(`      ${item.field_id}: ${item.status} (${item.verification_status || 'n/a'})`);
+        }
+      }
     }
 
-    // Try export bundle
+    // Try export bundle regardless
     const bundle = await api('POST', `/api/cases/${this.caseId}/export/bundle`);
     if (bundle.status < 500) {
-      detail.push('export bundle ok');
+      detail.push('export ok');
     } else {
-      // Export may not be fully wired — treat as non-fatal
       detail.push(`export: HTTP ${bundle.status} (non-fatal)`);
     }
 
-    this.record('Insertion/Export', insertionOk, detail.join(', '));
+    const passed = !detail.some(d => d.includes('HTTP 5') || d.includes('timed out'));
+    this.record('Insertion/Export', passed, detail.join(', '));
   }
 
   // Stage 9: Archive

@@ -1401,4 +1401,57 @@ router.get('/db/status', (_req, res) => {
   }
 });
 
+// ── POST /generation/seed-sections ──────────────────────────────────────────
+/**
+ * Seed pre-written sections into the generated_sections table.
+ * Used by the golden-path harness to populate reviewed text for insertion
+ * testing without running AI generation.
+ *
+ * Body: { caseId, formType, sections: { [fieldId]: text } }
+ */
+router.post('/generation/seed-sections', (req, res) => {
+  try {
+    const { caseId, formType, sections } = req.body || {};
+    if (!caseId || !formType || !sections || typeof sections !== 'object') {
+      return res.status(400).json({ ok: false, error: 'caseId, formType, and sections are required' });
+    }
+
+    const db = getDb();
+    const seedRunId = `seed_${caseId}_${Date.now()}`;
+
+    // Create parent generation_runs row (required by FK on section_jobs)
+    db.prepare(`
+      INSERT OR IGNORE INTO generation_runs (id, case_id, form_type, status, started_at, completed_at)
+      VALUES (?, ?, ?, 'completed', datetime('now'), datetime('now'))
+    `).run(seedRunId, caseId, formType);
+
+    let seeded = 0;
+    for (const [sectionId, text] of Object.entries(sections)) {
+      if (!text || typeof text !== 'string') continue;
+
+      // Create parent section_jobs row (required by FK on generated_sections)
+      const seedJobId = `seedjob_${caseId}_${sectionId}`;
+      db.prepare(`
+        INSERT OR IGNORE INTO section_jobs (id, run_id, section_id, status, completed_at)
+        VALUES (?, ?, ?, 'completed', datetime('now'))
+      `).run(seedJobId, seedRunId, sectionId);
+
+      saveGeneratedSection({
+        jobId: seedJobId,
+        runId: seedRunId,
+        caseId,
+        sectionId,
+        formType,
+        text,
+        examplesUsed: 0,
+      });
+      seeded++;
+    }
+
+    res.json({ ok: true, seeded, runId: seedRunId });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 export default router;
