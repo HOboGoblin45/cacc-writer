@@ -161,6 +161,11 @@ async function loadDocumentTextForExtraction({ doc, caseDir, runtimeDocText = {}
   const buffer = fs.readFileSync(filePath);
   const ext = path.extname(doc.stored_filename || '').toLowerCase();
 
+  // Plain text files can be read directly (e.g., from text-upload endpoint)
+  if (ext === '.txt' || doc.file_type === 'txt') {
+    return buffer.toString('utf8').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
+  }
+
   if (ext === '.pdf' || doc.file_type === 'pdf') {
     const { text: extracted } = await extractPdfText(buffer, client, MODEL);
     text = (extracted || '').replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
@@ -476,6 +481,103 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     }
     log.error('[documents] Upload error:', err.message);
     res.status(500).json({ error: err.message, ingestJobId });
+  }
+});
+
+// ── POST /cases/:caseId/documents/upload-text ────────────────────────────────
+/**
+ * Upload pre-extracted text content as a document (no file/OCR needed).
+ * Used by the golden-path harness and automation tooling.
+ *
+ * Body (JSON): { filename, content, contentType?, docType? }
+ */
+const textUploadSchema = z.object({
+  filename: z.string().min(1).max(240),
+  content: z.string().min(1),
+  contentType: z.string().max(60).optional(),
+  docType: z.string().max(60).optional(),
+}).passthrough();
+
+router.post('/cases/:caseId/documents/upload-text', async (req, res) => {
+  const body = parsePayload(textUploadSchema, req.body || {}, res);
+  if (!body) return;
+
+  try {
+    const caseId = req.params.caseId;
+    const cd = req.caseDir;
+    if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
+
+    const extractedText = body.content.replace(/\n{4,}/g, '\n\n').replace(/[ \t]{3,}/g, '  ').trim();
+    const originalFilename = body.filename;
+    const legacyDocType = body.docType || null;
+    const fileHash = crypto.createHash('sha256').update(extractedText).digest('hex');
+
+    const nameHint = classifyDocument(originalFilename, extractedText, legacyDocType).docType;
+    const storedFilename = buildStoredFilename({
+      caseId,
+      docTypeHint: nameHint,
+      originalFilename,
+      fileHash,
+    });
+
+    // Persist text content to documents directory
+    const docsDir = path.join(cd, 'documents');
+    fs.mkdirSync(docsDir, { recursive: true });
+    fs.writeFileSync(path.join(docsDir, storedFilename), extractedText, 'utf8');
+
+    // Register document
+    const registered = registerDocument({
+      caseId,
+      originalFilename,
+      storedFilename,
+      legacyDocType,
+      fileSizeBytes: Buffer.byteLength(extractedText, 'utf8'),
+      pageCount: 0,
+      extractedText,
+      fileHash,
+      extractionStatus: 'extracted',
+    });
+
+    // Update case runtime with document text
+    const runtime = getCaseRuntime(caseId);
+    if (runtime) {
+      const docText = { ...(runtime.docText || {}) };
+      const docTextKey = legacyDocType || registered.docType;
+      docText[docTextKey] = extractedText;
+
+      const meta = { ...(runtime.meta || {}) };
+      meta.updatedAt = new Date().toISOString();
+      if (!meta.docs) meta.docs = {};
+      meta.docs[docTextKey] = {
+        uploadedAt: new Date().toISOString(),
+        pages: 0,
+        bytes: Buffer.byteLength(extractedText, 'utf8'),
+        documentId: registered.documentId,
+        docType: registered.docType,
+        method: 'text_upload',
+      };
+      saveCaseRuntime(caseId, runtime, { meta, docText });
+    }
+
+    log.info('[documents] Text upload complete', {
+      caseId,
+      documentId: registered.documentId,
+      docType: registered.docType,
+      textLength: extractedText.length,
+    });
+
+    res.json({
+      ok: true,
+      documentId: registered.documentId,
+      docType: registered.docType,
+      classification: registered.classification,
+      textLength: extractedText.length,
+      wordCount: extractedText.split(/\s+/).filter(Boolean).length,
+      preview: extractedText.slice(0, 400),
+    });
+  } catch (err) {
+    log.error('[documents] Text upload error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
