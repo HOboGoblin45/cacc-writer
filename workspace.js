@@ -58,16 +58,16 @@ function workspaceSetBanner(message, tone = 'info') {
   el.style.display = 'block';
   el.textContent = message;
   if (tone === 'error') {
-    el.style.borderColor = 'rgba(255,92,92,.35)';
-    el.style.background = 'rgba(255,92,92,.08)';
+    el.style.borderColor = 'rgba(220,38,38,.35)';
+    el.style.background = 'rgba(220,38,38,.08)';
     el.style.color = '#ffd3d3';
   } else if (tone === 'warn') {
-    el.style.borderColor = 'rgba(245,200,66,.35)';
-    el.style.background = 'rgba(245,200,66,.08)';
+    el.style.borderColor = 'rgba(217,119,6,.35)';
+    el.style.background = 'rgba(217,119,6,.08)';
     el.style.color = 'var(--warn)';
   } else {
     el.style.borderColor = 'var(--border)';
-    el.style.background = 'rgba(255,255,255,.03)';
+    el.style.background = 'var(--bg-secondary)';
     el.style.color = 'var(--text)';
   }
 }
@@ -160,7 +160,7 @@ function workspaceQualityBar(score) {
   const color = pct >= 70 ? 'var(--ok)' : pct >= 40 ? 'var(--warn)' : 'var(--err,#e74c3c)';
   return (
     `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">` +
-      `<div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">` +
+      `<div style="flex:1;height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;">` +
         `<div style="width:${pct}%;height:100%;background:${color};border-radius:3px;"></div>` +
       `</div>` +
       `<span style="font-size:0.8em;font-weight:bold;color:${color};">${pct}/100</span>` +
@@ -384,11 +384,11 @@ function workspaceRenderComparableScoreBreakdown(candidate) {
     .map(([factor, score]) => {
       const pct = Math.round((score || 0) * 100);
       const barWidth = Math.min(pct, 100);
-      const tone = pct >= 75 ? 'var(--ok)' : pct >= 50 ? 'var(--warn)' : 'rgba(255,92,92,.6)';
+      const tone = pct >= 75 ? 'var(--ok)' : pct >= 50 ? 'var(--warn)' : 'rgba(220,38,38,.6)';
       return (
         `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">` +
           `<span style="width:100px;font-size:0.75em;opacity:0.8;flex-shrink:0;">${esc(labelMap[factor] || factor)}</span>` +
-          `<div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">` +
+          `<div style="flex:1;height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;">` +
             `<div style="width:${barWidth}%;height:100%;background:${tone};border-radius:3px;"></div>` +
           `</div>` +
           `<span style="width:32px;font-size:0.7em;opacity:0.6;text-align:right;">${pct}%</span>` +
@@ -508,7 +508,7 @@ function workspaceRenderInsertionReliabilityPanel(sectionId, options = {}) {
           `<div class="workspace-history-item">` +
             `<div class="workspace-field-hint">Recent runs</div>` +
             recentRuns.slice(1, 5).map((run) => (
-              `<div class="workspace-meta-list" style="padding:6px 0;border-top:1px solid rgba(255,255,255,.06);">` +
+              `<div class="workspace-meta-list" style="padding:6px 0;border-top:1px solid var(--border);">` +
                 `<div><strong>${esc(run.id)}</strong></div>` +
                 `<div>${esc(run.targetSoftware || run.formType || 'Unknown')}</div>` +
                 `<div><span class="chip ${workspaceInsertionStatusTone(run.status)}">${esc(workspaceReviewLabel(run.status))}</span></div>` +
@@ -637,7 +637,7 @@ function workspaceRenderAcceptedComparableSlots(intelligence) {
               `</div>`
             : '') +
           (slot.adjustmentSupport || []).map((record) => (
-            `<div class="workspace-qc-item" style="border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02);">` +
+            `<div class="workspace-qc-item" style="border:1px solid var(--bg-tertiary);border-radius:8px;padding:8px 10px;background:var(--bg-secondary);">` +
               `<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">` +
                 `<div>` +
                   `<strong>${esc(record.label || record.adjustmentCategory)}</strong>` +
@@ -1483,7 +1483,7 @@ function workspaceRenderMissingFactsDashboard() {
       `<div class="workspace-card-body">` +
         rows.map(row => {
           const sev = row.hasBlockers ? 'blocker' : row.required > 0 ? 'high' : 'low';
-          const sevColor = sev === 'blocker' ? 'var(--danger, #ff5c5c)' : sev === 'high' ? 'var(--warn)' : 'var(--muted)';
+          const sevColor = sev === 'blocker' ? 'var(--danger, #dc2626)' : sev === 'high' ? 'var(--warn)' : 'var(--muted)';
           return (
             `<div class="workspace-missing-row" style="border-left:3px solid ${sevColor};">` +
               `<div class="workspace-missing-section">${esc(row.sectionId)}</div>` +
@@ -1518,7 +1518,7 @@ function workspaceRenderInsertionSummaryCard() {
   const failed = latestRun.failedFields || 0;
   const rollback = latestRun.rollbackFields || 0;
   const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
-  const pctColor = pct >= 95 ? 'var(--ok)' : pct >= 80 ? 'var(--warn)' : 'var(--danger, #ff5c5c)';
+  const pctColor = pct >= 95 ? 'var(--ok)' : pct >= 80 ? 'var(--warn)' : 'var(--danger, #dc2626)';
   const statusTone = workspaceInsertionStatusTone(latestRun.status);
 
   return (
@@ -1532,7 +1532,7 @@ function workspaceRenderInsertionSummaryCard() {
       `</div>` +
       `<div class="workspace-card-body">` +
         `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">` +
-          `<div style="flex:1;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;">` +
+          `<div style="flex:1;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;">` +
             `<div style="width:${pct}%;height:100%;background:${pctColor};border-radius:4px;"></div>` +
           `</div>` +
           `<span style="font-size:0.8em;color:${pctColor};font-weight:bold;">${verified}/${total} verified</span>` +
@@ -1548,7 +1548,7 @@ function workspaceRenderInsertionSummaryCard() {
           `</div>` +
           `<div class="workspace-gov-cell">` +
             `<div class="workspace-gov-label">Failed</div>` +
-            `<div class="workspace-gov-value" style="${failed > 0 ? 'color:var(--danger, #ff5c5c)' : ''}">${failed}</div>` +
+            `<div class="workspace-gov-value" style="${failed > 0 ? 'color:var(--danger, #dc2626)' : ''}">${failed}</div>` +
           `</div>` +
           `<div class="workspace-gov-cell">` +
             `<div class="workspace-gov-label">Rollbacks</div>` +

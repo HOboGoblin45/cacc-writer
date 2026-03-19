@@ -400,7 +400,7 @@ function renderCaseList(cases) {
       <div class="case-card-header">
         <div class="case-card-addr">${esc(cs.address||cs.caseId)}</div>
         ${formLabel}
-        <button class="ghost sm" style="font-size:10px;padding:2px 6px;color:var(--danger);border-color:rgba(255,92,92,.2);flex-shrink:0;" onclick="event.stopPropagation();deleteCase(${cid},this)">&times;</button>
+        <button class="ghost sm" style="font-size:10px;padding:2px 6px;color:var(--danger);border-color:rgba(220,38,38,.2);flex-shrink:0;" onclick="event.stopPropagation();deleteCase(${cid},this)">&times;</button>
       </div>
       ${cs.borrower?`<div class="case-card-borrower">${esc(cs.borrower)}</div>`:''}
       <div class="case-card-meta">
@@ -718,7 +718,7 @@ function renderFactsCompleteness(facts) {
   const pct=total?Math.round((filled/total)*100):0;
   const color=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--danger)';
   bar.style.display='flex';bar.style.alignItems='center';bar.style.gap='8px';bar.style.marginBottom='10px';
-  bar.innerHTML='<div style="flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+color+';transition:width .3s;"></div></div><span style="font-size:10px;color:'+color+';white-space:nowrap;">'+filled+'/'+total+' facts ('+pct+'%)</span>';
+  bar.innerHTML='<div style="flex:1;height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+color+';transition:width .3s;"></div></div><span style="font-size:10px;color:'+color+';white-space:nowrap;">'+filled+'/'+total+' facts ('+pct+'%)</span>';
 }
 function autoFillGenerateInputs(facts, meta) {
   const s=(facts&&facts.subject)||{},m=(facts&&facts.market)||{},imp=(facts&&facts.improvements)||{};
@@ -1804,7 +1804,7 @@ async function checkFolderStatus() {
   const scanEl=$('folderScanStatus');
   if(scanEl&&d.files&&d.files.length){
     scanEl.className='status';
-    scanEl.innerHTML=d.files.map(f=>'<span style="display:inline-block;margin:2px 4px 2px 0;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid '+(f.imported?'rgba(85,209,143,.3)':'rgba(245,200,66,.3)')+';color:'+(f.imported?'var(--ok)':'var(--warn)')+';">'+esc(f.filename)+(f.imported?' ✓':' NEW')+'</span>').join('');
+    scanEl.innerHTML=d.files.map(f=>'<span style="display:inline-block;margin:2px 4px 2px 0;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid '+(f.imported?'rgba(22,163,74,.3)':'rgba(217,119,6,.3)')+';color:'+(f.imported?'var(--ok)':'var(--warn)')+';">'+esc(f.filename)+(f.imported?' ✓':' NEW')+'</span>').join('');
   }
 }
 
@@ -2128,7 +2128,7 @@ function updateAgentBadge(type, online) {
   if (btn) {
     btn.textContent = online ? 'Stop' : 'Start';
     btn.style.color = online ? 'var(--danger)' : 'var(--text)';
-    btn.style.borderColor = online ? 'rgba(255,92,92,.35)' : 'var(--border)';
+    btn.style.borderColor = online ? 'rgba(220,38,38,.35)' : 'var(--border)';
     btn.disabled = false;
   }
 }
@@ -3287,13 +3287,13 @@ function renderIntelligence(b) {
   const sections = sp.sections || [];
   const excluded = sp.excludedSections || [];
   let spHtml = '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-  spHtml += '<tr style="border-bottom:1px solid var(--ds-border,rgba(255,255,255,.07));"><th style="text-align:left;padding:4px;">Section</th><th>Type</th><th>Required</th><th>Profile</th><th>Depends On</th></tr>';
+  spHtml += '<tr style="border-bottom:1px solid var(--ds-border,var(--border));"><th style="text-align:left;padding:4px;">Section</th><th>Type</th><th>Required</th><th>Profile</th><th>Depends On</th></tr>';
   for (const s of sections) {
     const reqBadge = s.required
       ? '<span style="color:var(--ds-ok,#4ade80);">Yes</span>'
       : '<span style="color:var(--ds-muted,#888);">No</span>';
     const depStr = s.dependsOn?.length > 0 ? s.dependsOn.join(', ') : '-';
-    spHtml += `<tr style="border-bottom:1px solid var(--ds-border,rgba(255,255,255,.04));">
+    spHtml += `<tr style="border-bottom:1px solid var(--ds-border,var(--border));">
       <td style="padding:3px 4px;">${esc(s.label || s.id)}</td>
       <td style="padding:3px 4px;text-align:center;"><span style="background:var(--ds-surface-3,#222);padding:1px 5px;border-radius:3px;font-size:10px;">${esc(s.contentType)}</span></td>
       <td style="padding:3px 4px;text-align:center;">${reqBadge}</td>
@@ -3651,7 +3651,7 @@ function _memApprovedCard(item) {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
       <div style="flex:1;">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(215,179,90,.15);color:var(--gold);">${bucket}</span>
+          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(166,124,0,.15);color:var(--gold);">${bucket}</span>
           ${field ? '<span style="font-size:10px;color:var(--muted);">field: ' + field + '</span>' : ''}
           ${family ? '<span style="font-size:10px;color:var(--muted);">family: ' + family + '</span>' : ''}
           <span style="font-size:10px;color:var(--muted);">q: ${quality}</span>
@@ -3743,8 +3743,8 @@ function _memStagedCard(item) {
         <div style="font-size:11px;margin-top:4px;color:var(--text);line-height:1.4;font-family:var(--mono);opacity:.85;">${preview}${(item.text || '').length > 200 ? '…' : ''}</div>
       </div>
       ${isPending ? `<div style="display:flex;gap:4px;flex-shrink:0;">
-        <button class="sm" style="font-size:10px;padding:2px 8px;color:var(--ok);border-color:rgba(85,209,143,.3);" onclick="memApproveCandidate('${id}')">Approve</button>
-        <button class="ghost sm" style="font-size:10px;padding:2px 8px;color:var(--danger);border-color:rgba(255,92,92,.2);" onclick="memRejectCandidate('${id}')">Reject</button>
+        <button class="sm" style="font-size:10px;padding:2px 8px;color:var(--ok);border-color:rgba(22,163,74,.3);" onclick="memApproveCandidate('${id}')">Approve</button>
+        <button class="ghost sm" style="font-size:10px;padding:2px 8px;color:var(--danger);border-color:rgba(220,38,38,.2);" onclick="memRejectCandidate('${id}')">Reject</button>
         <button class="ghost sm" style="font-size:10px;padding:2px 8px;" onclick="memEditBeforeApprove('${id}')" title="Edit then approve">✎</button>
       </div>` : ''}
     </div>
@@ -3821,7 +3821,7 @@ async function memLoadCompCommentary() {
       const tags = (item.issueTags || []).map(t => '<span class="chip" style="font-size:9px;padding:1px 5px;">' + esc(t) + '</span>').join(' ');
       return `<div style="padding:8px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(85,209,143,.12);color:var(--ok);">${compType || 'comp'}</span>
+          <span class="chip" style="font-size:9px;padding:1px 6px;background:rgba(22,163,74,.12);color:var(--ok);">${compType || 'comp'}</span>
           ${propType ? '<span style="font-size:10px;color:var(--muted);">' + propType + '</span>' : ''}
           <span style="font-size:10px;color:var(--muted);">q: ${quality}</span>
           ${!active ? '<span style="font-size:10px;color:var(--danger);">INACTIVE</span>' : ''}
@@ -3886,7 +3886,7 @@ function _memVoiceProfileCard(p) {
       </div>
       <button class="ghost sm" onclick="memDeleteVoiceProfile('${id}')" style="color:var(--danger);font-size:10px;">Delete</button>
     </div>
-    ${dimEntries.length ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">' + dimEntries.map(([k, v]) => '<span style="font-size:10px;background:rgba(215,179,90,.1);padding:1px 6px;border-radius:3px;border:1px solid rgba(215,179,90,.15);">' + esc(k) + ': ' + esc(String(v)) + '</span>').join('') + '</div>' : ''}
+    ${dimEntries.length ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">' + dimEntries.map(([k, v]) => '<span style="font-size:10px;background:rgba(166,124,0,.1);padding:1px 6px;border-radius:3px;border:1px solid rgba(166,124,0,.15);">' + esc(k) + ': ' + esc(String(v)) + '</span>').join('') + '</div>' : ''}
     ${preferred.length ? '<div style="margin-top:4px;font-size:10px;color:var(--ok);">Preferred: ' + preferred.slice(0, 5).map(ph => '"' + esc(ph) + '"').join(', ') + (preferred.length > 5 ? ' (+' + (preferred.length - 5) + ')' : '') + '</div>' : ''}
     ${disallowed.length ? '<div style="margin-top:4px;font-size:10px;color:var(--danger);">Disallowed: ' + disallowed.slice(0, 5).map(ph => '"' + esc(ph) + '"').join(', ') + (disallowed.length > 5 ? ' (+' + (disallowed.length - 5) + ')' : '') + '</div>' : ''}
   </div>`;
@@ -4024,7 +4024,7 @@ async function memPreviewRetrieval() {
     if (phrases.length) {
       html += '<div style="font-size:11px;margin:8px 0;"><b>' + phrases.length + '</b> phrase bank item(s)</div>';
       for (const ph of phrases) {
-        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);opacity:.8;">' + esc((ph.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (ph.score || 0) + ')</span></div>';
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--mono);opacity:.8;">' + esc((ph.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (ph.score || 0) + ')</span></div>';
       }
     }
 
@@ -4033,7 +4033,7 @@ async function memPreviewRetrieval() {
     if (exemplars.length) {
       html += '<div style="font-size:11px;margin:8px 0;"><b>' + exemplars.length + '</b> voice exemplar(s)</div>';
       for (const ve of exemplars) {
-        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);opacity:.8;">' + esc((ve.text || '').slice(0, 120)) + ' <span style="color:var(--gold);">(score: ' + (ve.score || 0) + ')</span></div>';
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--mono);opacity:.8;">' + esc((ve.text || '').slice(0, 120)) + ' <span style="color:var(--gold);">(score: ' + (ve.score || 0) + ')</span></div>';
       }
     }
 
@@ -4042,7 +4042,7 @@ async function memPreviewRetrieval() {
     if (comps.length) {
       html += '<div style="font-size:11px;margin:8px 0;"><b>' + comps.length + '</b> comp commentary example(s)</div>';
       for (const cc of comps) {
-        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span class="chip" style="font-size:9px;padding:1px 5px;background:rgba(85,209,143,.12);color:var(--ok);">' + esc(cc.commentaryType || 'general') + '</span> ' + esc((cc.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (cc.score || 0) + ')</span></div>';
+        html += '<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);"><span class="chip" style="font-size:9px;padding:1px 5px;background:rgba(22,163,74,.12);color:var(--ok);">' + esc(cc.commentaryType || 'general') + '</span> ' + esc((cc.text || '').slice(0, 120)) + ' <span style="color:var(--muted);">(score: ' + (cc.score || 0) + ')</span></div>';
       }
     }
 
@@ -4759,7 +4759,7 @@ async function valLoadGridSummary() {
       `</tr></thead><tbody>`;
     for (const s of slots) {
       if (!s || !s.address) continue;
-      html += `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">` +
+      html += `<tr style="border-bottom:1px solid var(--border);">` +
         `<td style="padding:4px 6px;font-weight:700;">${esc(s.gridSlotLabel || s.slot || '')}</td>` +
         `<td style="padding:4px 6px;">${esc(s.address || '')}</td>` +
         `<td style="padding:4px 6px;text-align:right;font-family:var(--mono);">$${Number(s.salePrice || 0).toLocaleString()}</td>` +
@@ -4772,7 +4772,7 @@ async function valLoadGridSummary() {
   }
 
   if (indication) {
-    html += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(85,209,143,.3);border-radius:8px;background:rgba(85,209,143,.04);">` +
+    html += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(22,163,74,.3);border-radius:8px;background:rgba(22,163,74,.04);">` +
       `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Indicated Value</div>` +
       `<div style="font-size:20px;font-weight:900;color:var(--ok);font-family:var(--mono);">$${Number(indication).toLocaleString()}</div>` +
       (range.low && range.high ? `<div style="font-size:10px;color:var(--muted);">Range: $${Number(range.low).toLocaleString()} - $${Number(range.high).toLocaleString()}</div>` : '') +
@@ -6839,7 +6839,7 @@ async function valLoadBurden() {
     } else {
       cEl.innerHTML = '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--danger);margin-bottom:4px;">Contradictions</div>' +
         contradictions.map(c =>
-          `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);">` +
+          `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">` +
             `<strong>${esc(c.field || c.category || '—')}</strong>: ${esc(c.message || c.description || '')}` +
           `</div>`
         ).join('');
@@ -7408,7 +7408,7 @@ async function govLoadDependencyGraph() {
       const downstream = nodeData?.downstream || nodeData?.dependents || [];
       const label = String(nodeId).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-      html += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);">`;
+      html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);">`;
       html += `<div style="font-weight:700;margin-bottom:3px;">${esc(label)}</div>`;
 
       if (upstream.length) {
@@ -7736,7 +7736,7 @@ async function lrnLoadInfluence() {
   let html = '<div class="lrn-influence">';
 
   if (res.explanation) {
-    html += `<div style="font-size:12px;line-height:1.5;margin-bottom:8px;padding:8px;background:rgba(215,179,90,.04);border-radius:8px;border:1px solid rgba(215,179,90,.15);">${esc(res.explanation)}</div>`;
+    html += `<div style="font-size:12px;line-height:1.5;margin-bottom:8px;padding:8px;background:rgba(166,124,0,.04);border-radius:8px;border:1px solid rgba(166,124,0,.15);">${esc(res.explanation)}</div>`;
   }
 
   if (res.acceptanceRate != null) {
@@ -7864,7 +7864,7 @@ function handleIntakeDrop(e) {
 
 function handleIntakeXmlDrop(e) {
   e.preventDefault();
-  document.getElementById('intake-xml-drop-zone').style.borderColor = 'rgba(85,209,143,.25)';
+  document.getElementById('intake-xml-drop-zone').style.borderColor = 'rgba(22,163,74,.25)';
   const file = e.dataTransfer.files[0];
   if (file && file.name.toLowerCase().endsWith('.xml')) {
     handleIntakeXmlFile(file);
@@ -8043,7 +8043,7 @@ function showIntakeResult(data) {
   // Show pre-filled vs missing summary
   const prefilled = fields.filter(([, v]) => v).length;
   const total = fields.length;
-  html += `<div style="margin-top:10px;padding:8px;background:rgba(215,179,90,.08);border:1px solid rgba(215,179,90,.25);border-radius:6px;font-size:11px;">
+  html += `<div style="margin-top:10px;padding:8px;background:rgba(166,124,0,.08);border:1px solid rgba(166,124,0,.25);border-radius:6px;font-size:11px;">
     <strong style="color:var(--gold)">✓ ${prefilled}/${total} fields pre-filled</strong>
     ${prefilled >= total - 2 ? ' &mdash; <span style="color:var(--ok)">Ready to generate!</span>' : ' &mdash; <span style="color:var(--warn)">Review facts before generating</span>'}
   </div>`;
@@ -8494,7 +8494,7 @@ function _wsRenderCompsTable(comps, label) {
     const glaColor = c.glaDiff && c.glaDiff !== '�'
       ? (parseFloat(c.glaDiff) > 15 ? 'color:var(--warn)' : 'color:var(--ok)')
       : '';
-    return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+    return `<tr style="border-bottom:1px solid var(--border);">
       <td style="padding:5px 8px;">${esc(c.address || '�')}</td>
       <td style="text-align:right;padding:5px 8px;color:var(--gold);">${esc(c.priceDisplay || '�')}</td>
       <td style="text-align:right;padding:5px 8px;">${esc(c.glaDisplay || '�')}</td>
