@@ -1321,6 +1321,92 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
       </div>
       <div id="workspaceOverviewPanels" class="workspace-overview-panels" style="display:none;"></div>
+
+      <!-- ═══ Photos Panel ═══ -->
+      <div id="wsPhotosPanel" class="card" style="margin-top:14px;display:none;">
+        <div class="card-head">
+          <h3>&#x1F4F8; Photos</h3>
+          <div style="display:flex;gap:6px;">
+            <button class="ghost sm" onclick="wsFindPhotos()">&#x1F50D; Find Photos</button>
+            <button class="ghost sm" id="wsCopyPhotoListBtn" onclick="wsCopyPhotoList()" style="display:none;">&#x1F4CB; Copy List</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="wsPhotosStatus" class="hint">Click "Find Photos" to scan Dropbox for property photos.</div>
+          <div id="wsPhotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px;"></div>
+          <div id="wsPhotoListOutput" style="display:none;margin-top:10px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;">Photo List for ACI</div>
+            <textarea id="wsPhotoListText" style="width:100%;height:120px;font-family:monospace;font-size:11px;background:rgba(0,0,0,.3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Comps Panel ═══ -->
+      <div id="wsCompsPanel" class="card" style="margin-top:14px;display:none;">
+        <div class="card-head">
+          <h3>&#x1F4CA; Comps</h3>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span id="wsCompGuidanceBadge" style="font-size:10px;color:var(--muted);display:none;"></span>
+            <button class="ghost sm" onclick="wsLoadCompGuidance()">&#x1F4A1; Guidance</button>
+            <button class="ghost sm" onclick="wsMredSearchToggle()">&#x1F50D; Search MRED</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Comp guidance block -->
+          <div id="wsCompGuidance" style="display:none;background:rgba(215,179,90,.07);border:1px solid rgba(215,179,90,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;line-height:1.8;">
+          </div>
+
+          <!-- MRED live search (collapsed by default) -->
+          <div id="wsMredSearch" style="display:none;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">MRED Live Search</div>
+            <div id="wsMredConnStatus" style="margin-bottom:8px;font-size:12px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div><label style="font-size:11px;">Min Price</label><input id="mredMinPrice" type="number" placeholder="150000" style="width:100%;"/></div>
+              <div><label style="font-size:11px;">Max Price</label><input id="mredMaxPrice" type="number" placeholder="400000" style="width:100%;"/></div>
+              <div><label style="font-size:11px;">Min GLA (sf)</label><input id="mredMinGla" type="number" placeholder="1200" style="width:100%;"/></div>
+              <div><label style="font-size:11px;">Max GLA (sf)</label><input id="mredMaxGla" type="number" placeholder="2800" style="width:100%;"/></div>
+              <div><label style="font-size:11px;">City</label><input id="mredCity" type="text" placeholder="Bloomington" style="width:100%;"/></div>
+              <div><label style="font-size:11px;">Sale Age (days)</label><input id="mredMaxDays" type="number" value="365" style="width:100%;"/></div>
+            </div>
+            <button class="sm" onclick="wsMredDoSearch()">Search MRED</button>
+            <div id="wsMredSearchStatus" class="status" style="margin-top:6px;"></div>
+          </div>
+
+          <!-- CSV upload zone -->
+          <div id="wsCompCsvZone" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-bottom:12px;transition:border-color .2s;"
+               onclick="document.getElementById('wsCompCsvInput').click()"
+               ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+               ondragleave="this.style.borderColor='var(--border)'"
+               ondrop="wsCompCsvDrop(event)">
+            <div style="font-size:22px;margin-bottom:4px;">&#x1F4C4;</div>
+            <div style="font-size:12px;color:var(--muted);">Drop MRED export CSV here &nbsp;or&nbsp; <span style="color:var(--gold);">click to browse</span></div>
+            <input type="file" id="wsCompCsvInput" accept=".csv" style="display:none" onchange="wsCompCsvUpload(this.files[0])">
+          </div>
+          <div id="wsCompImportStatus" class="status" style="display:none;margin-bottom:10px;"></div>
+
+          <!-- Comp table -->
+          <div id="wsCompsTable" style="display:none;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px;" id="wsCompsTableLabel"></div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;" id="wsCompsTbl">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--border);">
+                    <th style="text-align:left;padding:4px 8px;color:var(--muted);">Address</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">Price</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">GLA</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">GLA Diff</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">$/sf</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">Beds/Ba</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">Sale Date</th>
+                    <th style="text-align:right;padding:4px 8px;color:var(--muted);">Distance</th>
+                  </tr>
+                </thead>
+                <tbody id="wsCompsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <aside class="workspace-assistant">
@@ -3047,6 +3133,24 @@ button.sm{padding:5px 9px;font-size:11px;}
 <!-- ===== TAB: SYSTEM (Phase 6 — System Reliability) ===== -->
 <div class="page" id="tab-system">
   <div class="col narrow">
+
+    <!-- MRED Integration Card -->
+    <div class="card">
+      <div class="card-head"><h3>&#x1F4CB; MRED Integration</h3><button class="ghost sm" onclick="mredLoadStatus()">&#x21BB;</button></div>
+      <div class="card-body">
+        <div id="mredStatusBody">
+          <div class="hint">Checking connection...</div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;" id="mredActions">
+          <button class="sm" onclick="mredConnect()">&#x1F534; Connect MRED</button>
+          <button class="ghost sm" onclick="mredDisconnect()">Disconnect</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+          Need credentials? Email retssupport@mredllc.com &mdash;
+          <a href="#" onclick="showTab('docs')" style="color:var(--gold)">See MRED_API_SETUP.md</a>
+        </div>
+      </div>
+    </div>
 
     <!-- System Health Card -->
     <div class="card">

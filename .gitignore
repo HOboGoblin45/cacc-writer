@@ -18,3 +18,10 @@ data/*.log
 # Runtime-generated KB entries (tracked seed/index files remain explicit)
 knowledge_base/approvedNarratives/*.json
 !knowledge_base/approvedNarratives/index.json
+
+# Google service account credentials - NEVER commit
+credentials/
+credentials/*.json
+
+# MRED OAuth token
+data/mred-token.json

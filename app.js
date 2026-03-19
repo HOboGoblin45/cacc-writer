@@ -8130,3 +8130,325 @@ async function createIntakeFolder() {
     statusEl.textContent = (res && res.error) || 'Folder creation failed.';
   }
 }
+
+// --------------------------------------------------------------------
+// MRED Integration — System tab
+// --------------------------------------------------------------------
+
+async function mredLoadStatus() {
+  const body = document.getElementById('mredStatusBody');
+  const actions = document.getElementById('mredActions');
+  if (!body) return;
+  body.innerHTML = '<div class="hint">Checking...</div>';
+  try {
+    const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+    const data = await res.json();
+    if (data.connected) {
+      body.innerHTML = '<span style="color:var(--ok);font-weight:700;">?? Connected to MRED</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Live comp searches enabled. Token saved locally.</div>';
+      if (actions) actions.innerHTML = '<button class="ghost sm" onclick="mredDisconnect()">Disconnect</button>';
+    } else if (data.configured) {
+      body.innerHTML = '<span style="color:var(--warn);font-weight:700;">?? Credentials set — not authorized yet</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Click Connect to authorize with MRED.</div>';
+      if (actions) actions.innerHTML = '<button class="sm" onclick="mredConnect()">?? Connect MRED</button><button class="ghost sm" onclick="mredDisconnect()">Disconnect</button>';
+    } else {
+      body.innerHTML = '<span style="color:var(--danger);font-weight:700;">?? Not configured</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">Add MRED_CLIENT_ID and MRED_CLIENT_SECRET to .env — see docs/MRED_API_SETUP.md</div>';
+      if (actions) actions.innerHTML = '<button class="ghost sm" disabled style="opacity:.5;">Connect MRED</button>';
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="hint" style="color:var(--danger);">Error: ' + e.message + '</div>';
+  }
+}
+
+function mredConnect() {
+  window.open('/api/mred/connect', '_blank', 'width=600,height=700,noopener');
+}
+
+async function mredDisconnect() {
+  if (!confirm('Disconnect from MRED? You can reconnect anytime.')) return;
+  await fetch('/api/mred/disconnect', { method: 'POST', headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+  mredLoadStatus();
+}
+
+// Handle OAuth callback redirect params
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mred_connected')) {
+    setTimeout(() => {
+      showTab('system');
+      mredLoadStatus();
+      const toast = document.getElementById('exportToast');
+      if (toast) { toast.textContent = '?? MRED connected successfully!'; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 4000); }
+    }, 300);
+    history.replaceState({}, '', window.location.pathname);
+  } else if (params.get('mred_error')) {
+    setTimeout(() => {
+      showTab('system');
+      alert('MRED connection error: ' + decodeURIComponent(params.get('mred_error')));
+    }, 300);
+    history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
+// Load MRED status when System tab opens
+const _origShowTab = window.showTab;
+if (typeof _origShowTab === 'function') {
+  window.showTab = function(name) {
+    _origShowTab(name);
+    if (name === 'system') mredLoadStatus();
+  };
+}
+
+// --------------------------------------------------------------------
+// Workspace: Photos + Comps panels
+// --------------------------------------------------------------------
+
+let _wsCurrentComps = [];
+
+function _wsShowPanels(show) {
+  const photosPanel = document.getElementById('wsPhotosPanel');
+  const compsPanel  = document.getElementById('wsCompsPanel');
+  if (photosPanel) photosPanel.style.display = show ? 'block' : 'none';
+  if (compsPanel)  compsPanel.style.display  = show ? 'block' : 'none';
+}
+
+// Called when workspace case loads
+const _origWorkspaceOnCaseLoaded = typeof workspaceOnCaseLoaded === 'function' ? workspaceOnCaseLoaded : null;
+window.workspaceOnCaseLoaded = function() {
+  if (_origWorkspaceOnCaseLoaded) _origWorkspaceOnCaseLoaded();
+  _wsShowPanels(true);
+  wsLoadCompGuidance();
+  // Reset comp/photo state
+  _wsCurrentComps = [];
+  const tbl = document.getElementById('wsCompsTable');
+  if (tbl) tbl.style.display = 'none';
+  const st = document.getElementById('wsPhotosStatus');
+  if (st) st.textContent = 'Click "Find Photos" to scan Dropbox for property photos.';
+  const pg = document.getElementById('wsPhotosGrid');
+  if (pg) pg.innerHTML = '';
+  const btn = document.getElementById('wsCopyPhotoListBtn');
+  if (btn) btn.style.display = 'none';
+  const plo = document.getElementById('wsPhotoListOutput');
+  if (plo) plo.style.display = 'none';
+};
+
+// -- Photos ----------------------------------------------------------
+
+async function wsFindPhotos() {
+  const caseId = window.STATE && STATE.caseId;
+  if (!caseId) { alert('No case loaded.'); return; }
+  const statusEl = document.getElementById('wsPhotosStatus');
+  const gridEl   = document.getElementById('wsPhotosGrid');
+  const copyBtn  = document.getElementById('wsCopyPhotoListBtn');
+  const listOut  = document.getElementById('wsPhotoListOutput');
+  if (statusEl) statusEl.textContent = 'Scanning Dropbox...';
+  if (gridEl)   gridEl.innerHTML = '';
+
+  try {
+    const res = await apiFetch('/api/cases/' + caseId + '/photos');
+    if (!res.ok) { if (statusEl) statusEl.textContent = 'Error: ' + (res.error || 'scan failed'); return; }
+
+    if (!res.found || !res.photos.length) {
+      if (statusEl) statusEl.textContent = 'No photos found. Make sure photos are in Dropbox folder matching the borrower name. Searched: ' + (res.searchedPath || '');
+      return;
+    }
+
+    if (statusEl) statusEl.textContent = res.photos.length + ' photo(s) found in ' + res.folderCount + ' folder(s).';
+
+    // Build photo grid (filename cards — can't show actual images without serving the files)
+    if (gridEl) {
+      gridEl.innerHTML = res.photos.map((p, i) => `
+        <div style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px;">
+          <div style="font-size:18px;text-align:center;margin-bottom:4px;">??</div>
+          <div style="font-weight:700;word-break:break-all;margin-bottom:4px;">${esc(p.filename)}</div>
+          <input type="text" value="${esc(p.suggestedLabel)}" id="photoLabel_${i}"
+            style="width:100%;font-size:10px;background:rgba(0,0,0,.3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 5px;"
+            placeholder="Label">
+          <div style="font-size:9px;color:var(--muted);margin-top:3px;">${esc(p.folder)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Store for copy
+    window._wsFoundPhotos = res.photos;
+    if (copyBtn) copyBtn.style.display = 'inline-block';
+    if (listOut) listOut.style.display = 'none';
+
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+  }
+}
+
+function wsCopyPhotoList() {
+  const photos = window._wsFoundPhotos || [];
+  if (!photos.length) return;
+  const lines = photos.map((p, i) => {
+    const lbl = document.getElementById('photoLabel_' + i);
+    const label = lbl ? lbl.value.trim() : p.suggestedLabel;
+    return `${i + 1}. ${label} — ${p.filename}`;
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).catch(() => {});
+  const ta = document.getElementById('wsPhotoListText');
+  const lo = document.getElementById('wsPhotoListOutput');
+  if (ta) ta.value = text;
+  if (lo) lo.style.display = 'block';
+}
+
+// -- Comp Guidance ---------------------------------------------------
+
+async function wsLoadCompGuidance() {
+  const caseId = window.STATE && STATE.caseId;
+  if (!caseId) return;
+  try {
+    const res = await apiFetch('/api/cases/' + caseId + '/comp-guidance');
+    const badge  = document.getElementById('wsCompGuidanceBadge');
+    const guidEl = document.getElementById('wsCompGuidance');
+    if (!res.ok || !res.guidance) {
+      if (badge) badge.style.display = 'none';
+      if (guidEl) guidEl.style.display = 'none';
+      return;
+    }
+    const g = res.guidance;
+    const conf = { high: '??', medium: '??', low: '??' }[g.confidence] || '?';
+    if (badge) { badge.textContent = conf + ' ' + g.confidence + ' confidence'; badge.style.display = 'inline'; }
+    if (guidEl) {
+      guidEl.style.display = 'block';
+      guidEl.innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;">Comp Guidance — Based on ${g.basedOnReports} report(s)</div>` +
+        (g.glaRange ? `<div>?? <strong>GLA range:</strong> ${g.glaRange.min.toLocaleString()}–${g.glaRange.max.toLocaleString()} sf (±15% of subject)</div>` : '') +
+        (g.maxDistanceMiles ? `<div>?? <strong>Distance:</strong> within ${g.maxDistanceMiles} miles</div>` : '') +
+        (g.maxSaleAgeDays ? `<div>?? <strong>Sale date:</strong> within ${g.maxSaleAgeDays} days</div>` : '') +
+        `<div>?? <strong>Confidence:</strong> ${g.confidence} (${g.basedOnReports}+ reports)</div>`;
+    }
+  } catch { /* non-fatal */ }
+}
+
+// -- MRED Search toggle ----------------------------------------------
+
+async function wsMredSearchToggle() {
+  const panel = document.getElementById('wsMredSearch');
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    // Show MRED connection status inline
+    const st = document.getElementById('wsMredConnStatus');
+    try {
+      const res = await fetch('/api/mred/status', { headers: { 'X-Api-Key': window._apiKey || 'cacc-local-key-2026' } });
+      const data = await res.json();
+      if (st) st.innerHTML = data.connected
+        ? '<span style="color:var(--ok);">?? MRED connected — live search available</span>'
+        : '<span style="color:var(--warn);">?? MRED not connected — <a href="#" onclick="showTab(\'system\')">go to System tab to connect</a></span>';
+    } catch (e) {
+      if (st) st.textContent = 'Could not check MRED status.';
+    }
+  }
+}
+
+async function wsMredDoSearch() {
+  const caseId = window.STATE && STATE.caseId;
+  if (!caseId) { alert('No case loaded.'); return; }
+  const statusEl = document.getElementById('wsMredSearchStatus');
+  if (statusEl) { statusEl.textContent = 'Searching...'; statusEl.style.color = 'var(--muted)'; }
+
+  const body = {
+    minPrice: parseInt(document.getElementById('mredMinPrice').value) || undefined,
+    maxPrice: parseInt(document.getElementById('mredMaxPrice').value) || undefined,
+    minGla:   parseInt(document.getElementById('mredMinGla').value)   || undefined,
+    maxGla:   parseInt(document.getElementById('mredMaxGla').value)   || undefined,
+    city:     document.getElementById('mredCity').value.trim()        || undefined,
+    maxDaysOld: parseInt(document.getElementById('mredMaxDays').value) || 365,
+  };
+
+  try {
+    const res = await apiFetch('/api/cases/' + caseId + '/mred-search', { method: 'POST', body });
+    if (!res.ok) {
+      if (statusEl) { statusEl.textContent = res.error || 'Search failed'; statusEl.style.color = 'var(--danger)'; }
+      if (res.needsAuth) setTimeout(() => showTab('system'), 1500);
+      return;
+    }
+    if (statusEl) { statusEl.textContent = res.count + ' result(s) from MRED'; statusEl.style.color = 'var(--ok)'; }
+    _wsRenderCompsTable(res.comps, 'MRED Live Results (' + res.comps.length + ')');
+  } catch (e) {
+    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = 'var(--danger)'; }
+  }
+}
+
+// -- CSV Upload ------------------------------------------------------
+
+function wsCompCsvDrop(event) {
+  event.preventDefault();
+  event.currentTarget.style.borderColor = 'var(--border)';
+  const file = event.dataTransfer.files[0];
+  if (file) wsCompCsvUpload(file);
+}
+
+async function wsCompCsvUpload(file) {
+  const caseId = window.STATE && STATE.caseId;
+  if (!caseId) { alert('No case loaded.'); return; }
+  if (!file) return;
+
+  const statusEl = document.getElementById('wsCompImportStatus');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--muted)'; statusEl.textContent = 'Parsing ' + file.name + '...'; }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const apiKey = window._apiKey || 'cacc-local-key-2026';
+    const res = await fetch('/api/cases/' + caseId + '/import-comps', {
+      method: 'POST',
+      headers: { 'X-Api-Key': apiKey },
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = data.error || 'Import failed'; }
+      return;
+    }
+
+    const geoNote = data.geocoded > 0 ? ` · ${data.geocoded} geocoded` : '';
+    if (statusEl) { statusEl.style.color = 'var(--ok)'; statusEl.textContent = `? ${data.count} comp(s) imported${geoNote} — saved to case`; }
+    _wsRenderCompsTable(data.comps, 'MRED CSV Import (' + data.count + ' comps)');
+  } catch (e) {
+    if (statusEl) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Error: ' + e.message; }
+  }
+}
+
+// -- Comp table renderer ---------------------------------------------
+
+function _wsRenderCompsTable(comps, label) {
+  _wsCurrentComps = comps || [];
+  const tblWrap = document.getElementById('wsCompsTable');
+  const tbody   = document.getElementById('wsCompsTbody');
+  const lblEl   = document.getElementById('wsCompsTableLabel');
+  if (!tblWrap || !tbody) return;
+
+  if (lblEl) lblEl.textContent = label || '';
+
+  tbody.innerHTML = comps.map((c, i) => {
+    const glaColor = c.glaDiff && c.glaDiff !== '—'
+      ? (parseFloat(c.glaDiff) > 15 ? 'color:var(--warn)' : 'color:var(--ok)')
+      : '';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+      <td style="padding:5px 8px;">${esc(c.address || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--gold);">${esc(c.priceDisplay || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;">${esc(c.glaDisplay || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;${glaColor}">${esc(c.glaDiff || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.pricePerSf || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;">${c.beds || '—'}/${c.baths || '—'}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.saleDate || '—')}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--muted);">${esc(c.distDisplay || '—')}</td>
+    </tr>`;
+  }).join('');
+
+  tblWrap.style.display = 'block';
+}
+
+// -- Init ------------------------------------------------------------
+// Load MRED status on startup (deferred)
+setTimeout(() => {
+  if (typeof mredLoadStatus === 'function') {
+    const sysBody = document.getElementById('mredStatusBody');
+    if (sysBody) mredLoadStatus();
+  }
+}, 500);
