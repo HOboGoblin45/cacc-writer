@@ -178,21 +178,67 @@ async function run() {
     warn('Form type not extracted, defaulting to 1004');
   }
 
+  // ── SEED: Minimal inspection facts (needed for fields that require physical inspection data)
+  // These are defaults so the generator doesn't output [INSERT] for template fields
+  try {
+    await apiJson(`/api/cases/${caseId}/facts`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        improvements: {
+          condition_rating:  { value: 'C3', confidence: 'high' },
+          kitchen_update:    { value: 'updated-one to five years ago', confidence: 'high' },
+          bathroom_update:   { value: 'updated-one to five years ago', confidence: 'high' },
+        },
+        subject: {
+          bedrooms_above_grade:  { value: '4', confidence: 'high' },
+          bathrooms_above_grade: { value: '2', confidence: 'high' },
+          basement:              { value: 'partial unfinished', confidence: 'high' },
+          garage:                { value: 'attached two-car', confidence: 'high' },
+          style:                 { value: 'two-story', confidence: 'high' },
+          fireplace:             { value: 'living room fireplace', confidence: 'high' },
+        },
+        site: {
+          flood_zone:         { value: 'X', confidence: 'high' },
+          adverse_conditions: { value: 'none', confidence: 'high' },
+        },
+        market: {
+          marketing_time_days: { value: '30', confidence: 'high' },
+          rate_trend:          { value: 'remained stable', confidence: 'high' },
+          market_appeal:       { value: 'good', confidence: 'high' },
+        },
+      }),
+    });
+  } catch (e) { /* non-fatal */ }
+
   // ── CHECK 3: Geocode / boundary roads ─────────────────────────────────────
   console.log('\n3. Geocode and boundary roads');
   try {
     const { status, data } = await apiJson(`/api/cases/${caseId}/geocode`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ subjectAddress: extracted?.address || null }),
       timeout: 30000,
     });
 
     if (data.ok) {
-      pass('Geocode succeeded', `lat=${data.geocode?.subject?.result?.lat || 'n/a'}`);
+      pass('Geocode succeeded', `lat=${data.subject?.lat || data.geocode?.subject?.result?.lat || 'n/a'}`);
+
+      // Seed boundary roads into facts from geocode response
+      if (data.boundaryRoads) {
+        const br = data.boundaryRoads;
+        const brFacts = { neighborhood: {} };
+        if (br.north) { brFacts.neighborhood.NORTH_BOUNDARY = { value: br.north, confidence: 'high' }; brFacts.neighborhood.boundary_north = { value: br.north, confidence: 'high' }; }
+        if (br.south) { brFacts.neighborhood.SOUTH_BOUNDARY = { value: br.south, confidence: 'high' }; brFacts.neighborhood.boundary_south = { value: br.south, confidence: 'high' }; }
+        if (br.east)  { brFacts.neighborhood.EAST_BOUNDARY  = { value: br.east,  confidence: 'high' }; brFacts.neighborhood.boundary_east  = { value: br.east,  confidence: 'high' }; }
+        if (br.west)  { brFacts.neighborhood.WEST_BOUNDARY  = { value: br.west,  confidence: 'high' }; brFacts.neighborhood.boundary_west  = { value: br.west,  confidence: 'high' }; }
+        try {
+          await apiJson(`/api/cases/${caseId}/facts`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(brFacts) });
+        } catch (_) {}
+      }
 
       // Check boundary roads
-      const lat = data.geocode?.subject?.result?.lat;
+      const lat = data.subject?.lat || data.geocode?.subject?.result?.lat;
       const lng = data.geocode?.subject?.result?.lng;
       if (lat && lng) {
         try {
@@ -229,12 +275,10 @@ async function run() {
   let generationErrors = {};
 
   try {
-    const { status, data } = await apiJson('/api/generate-batch', {
+    const { status, data } = await apiJson(`/api/cases/${caseId}/generate-all`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        caseId,
-        fields: null, // null means all fields
         forceGateBypass: true,
       }),
       timeout: 180000,
@@ -254,10 +298,10 @@ async function run() {
     } else if (status === 409) {
       // Gate blocked — retry with bypass
       warn('Pre-draft gate blocked, retrying with forceGateBypass');
-      const { data: data2 } = await apiJson('/api/generate-batch', {
+      const { data: data2 } = await apiJson(`/api/cases/${caseId}/generate-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId, fields: null, forceGateBypass: true }),
+        body: JSON.stringify({ forceGateBypass: true }),
         timeout: 180000,
       });
       if (data2.ok) {
