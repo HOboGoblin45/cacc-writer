@@ -5,6 +5,10 @@ voice_pdfs/**/*.pdf
 voice_pdfs/**/*.PDF
 benchmarks/phase-c/latest-results.json
 
+# Python bytecode
+__pycache__/
+*.pyc
+
 # Runtime artifacts
 data/*.db
 data/*.db-shm
