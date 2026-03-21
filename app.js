@@ -778,7 +778,7 @@ function renderCaseHeader() {
   const sectionCount = getSectionEntries().length;
   const approvedCount = Object.values(S.outputs || {}).filter((item) => item && item.approved).length;
 
-  refs.headerCaseTitle.textContent = address;
+    const eyebrow = document.getElementById('header-eyebrow');\n  if (eyebrow) {\n    const formLabel = { '1004': 'Single Family (1004)', '1025': 'Small Income (1025)', '1073': 'Condo (1073)', 'commercial': 'Commercial Narrative', '1004c': 'Manufactured Home (1004C)' };\n    eyebrow.textContent = formLabel[formType] || `Form \`;\n  }\n  refs.headerCaseTitle.textContent = address;
   refs.headerCaseMeta.textContent = `${borrower} � Form ${formType} � ${workflowStatus}`;
   refs.heroCaseId.textContent = S.caseId;
   refs.heroCaseForm.textContent = `Form ${formType}`;
