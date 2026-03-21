@@ -53,6 +53,8 @@ import intakeRouter from './server/api/intakeRoutes.js';
 import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
 import sseRouter from './server/api/sseRoutes.js';
+import authRouter from './server/auth/authRoutes.js';
+import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -100,6 +102,8 @@ app.use((req, res, next) => {
 
 app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
+app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
+app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
 app.get('/workspace.js', (_q, r) => r.sendFile(path.join(__dirname, 'workspace.js')));
 app.get('/styles.css', (_q, r) => r.sendFile(path.join(__dirname, 'styles.css')));
@@ -114,6 +118,9 @@ app.get('/favicon.ico', (_q, r) => {
 
 app.use(requireAuth);
 
+// Auth schema + routes (before other routes)
+try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
+app.use('/api', authRouter);
 app.use('/api', healthRouter);
 app.use('/api', sseRouter);
 app.use('/api/cases', casesRouter);
