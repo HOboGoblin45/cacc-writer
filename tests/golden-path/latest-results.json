@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-21T06:19:02.439Z",
+  "timestamp": "2026-03-21T06:33:38.479Z",
   "server": "http://localhost:5178",
   "passed": 22,
   "failed": 6,
@@ -9,19 +9,19 @@
       "stepId": "case_create",
       "label": "[1004] Create case from assignment",
       "status": "pass",
-      "ms": 29
+      "ms": 17
     },
     {
       "stepId": "facts_load",
       "label": "[1004] Load 50 facts with provenance",
       "status": "pass",
-      "ms": 322
+      "ms": 414
     },
     {
       "stepId": "facts_verify",
       "label": "[1004] Every fact has source and confidence",
       "status": "fail",
-      "ms": 16,
+      "ms": 15,
       "error": "Should have loaded facts"
     },
     {
@@ -35,149 +35,149 @@
       "stepId": "pre_draft_gate",
       "label": "[1004] Pre-draft gate check runs",
       "status": "fail",
-      "ms": 5,
+      "ms": 8,
       "error": "Gate response should include a readiness indicator"
     },
     {
       "stepId": "generation_run",
       "label": "[1004] Trigger generation run",
       "status": "pass",
-      "ms": 6
+      "ms": 8
     },
     {
       "stepId": "sections_exist",
       "label": "[1004] Generated sections are retrievable",
       "status": "pass",
-      "ms": 8
+      "ms": 6
     },
     {
       "stepId": "qc_run",
       "label": "[1004] QC run executes",
       "status": "pass",
-      "ms": 5
+      "ms": 10
     },
     {
       "stepId": "qc_findings",
       "label": "[1004] QC findings have severity levels",
       "status": "pass",
-      "ms": 7
+      "ms": 5
     },
     {
       "stepId": "insertion_prepare",
       "label": "[1004] Insertion run prepares",
       "status": "pass",
-      "ms": 60
+      "ms": 14
     },
     {
       "stepId": "insertion_items",
       "label": "[1004] Insertion mapping resolves fields",
       "status": "pass",
-      "ms": 24
+      "ms": 13
     },
     {
       "stepId": "audit_events",
       "label": "[1004] Audit trail has events for this case",
       "status": "pass",
-      "ms": 7
+      "ms": 3
     },
     {
       "stepId": "case_archive",
       "label": "[1004] Archive and restore case",
       "status": "pass",
-      "ms": 158
+      "ms": 96
     },
     {
       "stepId": "backup_create",
       "label": "[1004] Create and verify backup",
       "status": "pass",
-      "ms": 71
+      "ms": 37
     },
     {
       "stepId": "case_create",
       "label": "[commercial] Create case from assignment",
       "status": "pass",
-      "ms": 27
+      "ms": 18
     },
     {
       "stepId": "facts_load",
       "label": "[commercial] Load 27 facts with provenance",
       "status": "pass",
-      "ms": 252
+      "ms": 503
     },
     {
       "stepId": "facts_verify",
       "label": "[commercial] Every fact has source and confidence",
       "status": "fail",
-      "ms": 4,
+      "ms": 10,
       "error": "Should have loaded facts"
     },
     {
       "stepId": "workspace_check",
       "label": "[commercial] Workspace matches form type",
       "status": "fail",
-      "ms": 6,
+      "ms": 10,
       "error": "Case must have a form type"
     },
     {
       "stepId": "pre_draft_gate",
       "label": "[commercial] Pre-draft gate check runs",
       "status": "fail",
-      "ms": 4,
+      "ms": 14,
       "error": "Gate response should include a readiness indicator"
     },
     {
       "stepId": "generation_run",
       "label": "[commercial] Trigger generation run",
       "status": "pass",
-      "ms": 9
+      "ms": 8
     },
     {
       "stepId": "sections_exist",
       "label": "[commercial] Generated sections are retrievable",
       "status": "pass",
-      "ms": 12
+      "ms": 7
     },
     {
       "stepId": "qc_run",
       "label": "[commercial] QC run executes",
       "status": "pass",
-      "ms": 6
+      "ms": 8
     },
     {
       "stepId": "qc_findings",
       "label": "[commercial] QC findings have severity levels",
       "status": "pass",
-      "ms": 8
+      "ms": 9
     },
     {
       "stepId": "insertion_prepare",
       "label": "[commercial] Insertion run prepares",
       "status": "pass",
-      "ms": 14
+      "ms": 21
     },
     {
       "stepId": "insertion_items",
       "label": "[commercial] Insertion mapping resolves fields",
       "status": "pass",
-      "ms": 24
+      "ms": 9
     },
     {
       "stepId": "audit_events",
       "label": "[commercial] Audit trail has events for this case",
       "status": "pass",
-      "ms": 14
+      "ms": 6
     },
     {
       "stepId": "case_archive",
       "label": "[commercial] Archive and restore case",
       "status": "pass",
-      "ms": 72
+      "ms": 186
     },
     {
       "stepId": "backup_create",
       "label": "[commercial] Create and verify backup",
       "status": "pass",
-      "ms": 20
+      "ms": 93
     }
   ],
   "dodCoverage": [

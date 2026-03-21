@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-19T00:22:50.262Z",
+  "lastUpdated": "2026-03-21T06:30:13.136Z",
   "counts": {
     "approved_edits": 73,
-    "curated_examples": 42,
+    "curated_examples": 46,
     "imported_examples": 296,
     "phrases": 18
   },
@@ -4170,6 +4170,38 @@
       "text": "The subject features two above grade bedrooms, two-and-a-half above grade bathrooms, den fireplace, partial finished basement with recreation room, attached two-car garage, covered patio, and fence."
     },
     {
+      "id": "improvements-condition-01",
+      "formType": "1004",
+      "fieldId": "improvements_condition",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "condition_c3",
+        "updated_kitchen",
+        "updated_baths"
+      ],
+      "text": "C3;Kitchen-updated three to five years ago;Bathrooms-updated three to five years ago;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+    },
+    {
+      "id": "improvements-condition-02",
+      "formType": "1004",
+      "fieldId": "improvements_condition",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "condition_c4",
+        "original_kitchen",
+        "original_baths"
+      ],
+      "text": "C4;Kitchen-original;Bathrooms-original;The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The structure has been well maintained."
+    },
+    {
       "id": "reconciliation-exact-01",
       "formType": "1004",
       "fieldId": "reconciliation",
@@ -4237,6 +4269,38 @@
       "text": "Based on a complete visual inspection of the interior and exterior areas of the subject property, defined scope of work, statement of assumptions and limiting conditions, and appraiser's certification, my (our) opinion of the market value, as defined, of the real property that is the subject of this report is $[INSERT value] as of [INSERT date], which is the date of inspection and the effective date of this appraisal. The appraisal is made with the subject in \"as is\" condition. There is no personal property included in the final estimate of value. The greatest weight is applied to the Sales Comparison Approach. It provides the best indication to market value. The Cost Approach was not developed at the request of the lender. However, information is held in the appraiser's file to complete the Cost Approach if required. The Income Approach was not developed due to the lack of market data.",
       "createdAt": "2026-03-18T05:38:45.000Z",
       "updatedAt": "2026-03-18T05:38:45.000Z"
+    },
+    {
+      "id": "sca-summary-extended-01",
+      "formType": "1004",
+      "fieldId": "sca_summary",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "extended_search",
+        "lack_of_comps",
+        "market_time_adjustment"
+      ],
+      "text": "Due to a lack of recent comparable sales in the subject's neighborhood, an extensive search was made to find single family residences of a similar location, design, quality, condition, and room count. Due to recent market trends the comparables have received a market time adjustment of 0.5% based on the sales statistics chart included in this report. After adjustments are made the comparables provide a good basis for an estimate of market value."
+    },
+    {
+      "id": "sca-summary-standard-01",
+      "formType": "1004",
+      "fieldId": "sca_summary",
+      "sourceType": "curated",
+      "qualityScore": 95,
+      "tags": [
+        "bloomington_normal",
+        "illinois",
+        "residential",
+        "standard",
+        "neighborhood_comps",
+        "market_time_adjustment"
+      ],
+      "text": "All comparables have been found in the subject's neighborhood on the westside of Bloomington, IL and were selected to demonstrate the marketability of houses of a similar location, design, age, condition, GLA, room count, and basement finish. Due to recent market trends the comparables have received a market time adjustment of 0.5% based on the sales statistics chart included in this report. After adjustments are made the comparables provide a good basis for an estimate of market value."
     },
     {
       "id": "0d97aa26195d",
