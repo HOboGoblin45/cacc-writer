@@ -309,6 +309,22 @@ function resolveAgentFieldKey(fieldId, softwareTarget, agentMap) {
   const simplified = fieldId.replace(/_commentary$/, '').replace(/_comments$/, '');
   if (simplified !== fieldId && agentMap[simplified]) return simplified;
 
+  // Strategy 5: canonical → agent naming aliases
+  const FIELD_ALIASES = {
+    'adverse_conditions':          'adverse_site_conditions',
+    'site_comments':               'adverse_site_conditions',
+    'neighborhood_boundaries':     'neighborhood_description',
+    'functional_utility_conformity': 'functional_utility',
+    'sca_summary':                 'sales_comparison_commentary',
+    'concessions':                 'sale_financing_concessions',
+    'exposure_time':               'marketing_time',
+    'contract_analysis':           'contract_analysis',  // handled by special popup mode
+    'offering_history':            'offering_history',
+  };
+  if (FIELD_ALIASES[fieldId] && agentMap[FIELD_ALIASES[fieldId]]) {
+    return FIELD_ALIASES[fieldId];
+  }
+
   return null;
 }
 
