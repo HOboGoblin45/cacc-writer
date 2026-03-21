@@ -20,13 +20,14 @@
     "workflow:dev": "tsx server/workflow/appraisalWorkflow.ts",
     "validate:registry": "node scripts/validateFieldRegistry.js",
     "test:unit": "node tests/unit/run.mjs",
+    "test:unit:vitest": "vitest run",
     "test:golden": "node scripts/runGoldenPath.mjs",
     "test:golden:preflight": "node scripts/runGoldenPath.mjs --allow-dry-run-insertion --cleanup",
     "test:golden:1004": "node scripts/runGoldenPath.mjs --fixture fixtures/golden/1004-case",
     "test:golden:commercial": "node scripts/runGoldenPath.mjs --fixture fixtures/golden/commercial-case",
     "benchmark:phase-c": "node scripts/runPhaseCBenchmarks.mjs",
     "benchmark:phase-c:check": "node scripts/checkPhaseCBenchmarkThresholds.mjs",
-    "test:all": "node tests/unit/run.mjs && node _test_smoke.mjs",
+    "test:all": "npm run test:unit && node _test_smoke.mjs",
     "ci:check": "npm run typecheck && npm run test:unit && npm run benchmark:phase-c:check && npm run test:smoke",
     "test:ci": "node scripts/ci-local.mjs"
   },
@@ -63,6 +64,7 @@
     "@types/uuid": "^10.0.0",
     "electron": "^41.0.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.0"
   }
 }
