@@ -117,8 +117,8 @@ test('returns 200K for o1/o3/o4 models', () => {
   assert.equal(getContextWindowLimit('o4-mini'), 200_000);
 });
 
-test('returns 128K as default for unknown model', () => {
-  assert.equal(getContextWindowLimit('some-future-model'), 128_000);
+test('returns 32K as default for unknown model (local-model-safe default)', () => {
+  assert.equal(getContextWindowLimit('some-future-model'), 32_000);
 });
 
 test('uses default MODEL when no argument provided', () => {

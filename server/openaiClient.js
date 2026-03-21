@@ -19,9 +19,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 import OpenAI from 'openai';
 import log from './logger.js';
+import { callOllama, probeOllama, OLLAMA_MODEL } from './ollamaClient.js';
 
+const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai' or 'ollama'
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1';
+const MODEL = AI_PROVIDER === 'ollama' ? OLLAMA_MODEL : (process.env.OPENAI_MODEL || 'gpt-4.1');
+
+if (AI_PROVIDER === 'ollama') {
+  log.info('ai:provider', { provider: 'ollama', model: OLLAMA_MODEL });
+} else {
+  log.info('ai:provider', { provider: 'openai', model: MODEL });
+}
 const OPENAI_AUTH_PROBE_TTL_MS = Number(process.env.OPENAI_AUTH_PROBE_TTL_MS) || 30_000;
 
 // Retry configuration
@@ -123,6 +131,26 @@ export async function probeOpenAIAuth({
   timeoutMs = 4000,
   fetchImpl = null,
 } = {}) {
+  // If using Ollama, probe Ollama instead
+  if (AI_PROVIDER === 'ollama') {
+    try {
+      const ollamaStatus = await probeOllama();
+      return buildAuthProbeResult({
+        configured: true,
+        ready: ollamaStatus.ready && ollamaStatus.modelAvailable,
+        reason: ollamaStatus.ready
+          ? (ollamaStatus.modelAvailable ? null : `Model ${OLLAMA_MODEL} not found. Run: ollama pull ${OLLAMA_MODEL}`)
+          : `Ollama not running: ${ollamaStatus.reason}`,
+      });
+    } catch (err) {
+      return buildAuthProbeResult({
+        configured: true,
+        ready: false,
+        reason: `Ollama probe failed: ${err.message}`,
+      });
+    }
+  }
+
   const now = Date.now();
   if (!forceRefresh && !fetchImpl && _openAIAuthProbeCache && (now - _openAIAuthProbeCache.cachedAtMs) < OPENAI_AUTH_PROBE_TTL_MS) {
     return { ..._openAIAuthProbeCache.result };
@@ -176,6 +204,11 @@ export async function probeOpenAIAuth({
  * @returns {Promise<string>} The generated text.
  */
 export async function callAI(inputMessages, options = {}) {
+  // Route to Ollama if configured
+  if (AI_PROVIDER === 'ollama') {
+    return callOllama(inputMessages, options);
+  }
+
   if (!client) throw new Error('OpenAI client is not initialized. Set OPENAI_API_KEY in .env');
 
   const model      = options.model      || MODEL;
@@ -278,7 +311,11 @@ export function getContextWindowLimit(model) {
   if (m.includes('gpt-4'))       return 128_000;
   if (m.includes('gpt-3.5'))     return 16_385;
   if (m.includes('o1') || m.includes('o3') || m.includes('o4')) return 200_000;
-  return 128_000; // safe default
+  // Local models (Ollama)
+  if (m.includes('mistral'))     return 32_000;
+  if (m.includes('llama'))       return 131_072;
+  if (m.includes('qwen'))        return 32_000;
+  return 32_000; // safe default for local models
 }
 
 export { MODEL, client };
