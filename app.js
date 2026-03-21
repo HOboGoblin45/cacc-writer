@@ -804,10 +804,18 @@ async function uploadDocuments() {
       renderDocStatus();
     }
 
+    const failedUploads = S.docUploads.filter((entry) => entry.status === 'error');
     refs.docsInput.value = '';
     refs.docSummary.textContent = `Processed ${files.length} document${files.length === 1 ? '' : 's'} at ${new Date().toLocaleTimeString()}.`;
     await loadCase(S.caseId, { silent: true });
-    showToast(`Uploaded ${files.length} supporting document${files.length === 1 ? '' : 's'}.`, 'success');
+
+    if (failedUploads.length === 0) {
+      showToast(`Uploaded ${files.length} supporting document${files.length === 1 ? '' : 's'}.`, 'success');
+    } else if (failedUploads.length === files.length) {
+      showToast('All document uploads failed. Review the upload status list for details.', 'error');
+    } else {
+      showToast(`${failedUploads.length} document upload${failedUploads.length === 1 ? '' : 's'} failed. Review the upload status list for details.`, 'warning');
+    }
   } finally {
     setButtonBusy(refs.uploadDocs, false);
     renderAll();
@@ -1269,7 +1277,6 @@ async function insertAll() {
       method: 'POST',
       body: { caseId: S.caseId }
     });
-
     refs.insertResults.innerHTML = '<div class="summary-note loading-note"><div class="spinner spinner-small"></div><span>Inserting approved sections into ACI</span></div>';
 
     const result = await api(`/api/cases/${S.caseId}/insert-all`, {
@@ -1279,7 +1286,18 @@ async function insertAll() {
 
     renderInsertResults(result);
     await loadCase(S.caseId, { silent: true });
-    showToast(`Inserted ${result.inserted || (result.insertedSections || []).length} section(s) into ACI.`, 'success');
+
+    const insertedCount = result.inserted || (result.insertedSections || []).length;
+    const errorCount = (result.errors || []).length;
+    const skippedCount = (result.skipped || []).length;
+
+    if (errorCount > 0 && insertedCount === 0) {
+      showToast(`Insertion finished with ${errorCount} error${errorCount === 1 ? '' : 's'}.`, 'error');
+    } else if (errorCount > 0 || skippedCount > 0) {
+      showToast(`Inserted ${insertedCount} section(s) with ${errorCount} error${errorCount === 1 ? '' : 's'} and ${skippedCount} skipped.`, 'warning');
+    } else {
+      showToast(`Inserted ${insertedCount} section(s) into ACI.`, 'success');
+    }
   } catch (error) {
     console.error(error);
     refs.insertResults.innerHTML = `

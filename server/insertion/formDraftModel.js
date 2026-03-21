@@ -90,6 +90,27 @@ function buildSectionSourceIndex({ caseId, formType, generationRunId = null }) {
     });
   }
 
+  const projection = getCaseProjection(caseId) || {};
+  const outputs = projection.outputs || {};
+  for (const [fieldId, output] of Object.entries(outputs)) {
+    const text = trimToText(output?.text);
+    if (!text) continue;
+
+    const approved = !!(
+      output?.approved
+      || output?.sectionStatus === 'approved'
+      || output?.status === 'approved'
+    );
+
+    sources.set(fieldId, {
+      fieldId,
+      text,
+      sourceStatus: approved ? 'approved_output' : 'case_output',
+      approved,
+      createdAt: output?.updatedAt || projection.meta?.updatedAt || null,
+    });
+  }
+
   return sources;
 }
 

@@ -9,6 +9,7 @@
  *
  * Both agents expect { fieldId, text, formType } for inserts and
  * { fieldId, formType, targetRect? } for read-back.
+ * ACI v3 also accepts an optional `section` hint for nested field maps.
  */
 
 function buildError(response, fallbackMessage, body, text) {
@@ -30,6 +31,7 @@ export async function callAgentInsert({
   fieldId,
   text,
   formType,
+  section = null,
   agentBaseUrl,
   timeout = 15000,
 }) {
@@ -40,7 +42,12 @@ export async function callAgentInsert({
     const response = await fetch(`${agentBaseUrl}/insert`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fieldId, text, formType }),
+      body: JSON.stringify({
+        fieldId,
+        text,
+        formType,
+        ...(section ? { section } : {}),
+      }),
       signal: controller.signal,
     });
 
@@ -73,6 +80,7 @@ export async function readFieldFromAgent({
   fieldId,
   formType,
   agentBaseUrl,
+  section = null,
   targetRect = null,
   timeout = 10000,
 }) {
@@ -83,7 +91,12 @@ export async function readFieldFromAgent({
     const response = await fetch(`${agentBaseUrl}/read-field`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fieldId, formType, targetRect }),
+      body: JSON.stringify({
+        fieldId,
+        formType,
+        ...(section ? { section } : {}),
+        targetRect,
+      }),
       signal: controller.signal,
     });
 

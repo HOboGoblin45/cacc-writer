@@ -39,7 +39,13 @@ import {
   getTargetSoftware,
   getFallbackStrategy,
 } from '../destinationRegistry.js';
-import { evaluateInsertionQcGate } from '../insertion/insertionRunEngine.js';
+import {
+  evaluateInsertionQcGate,
+  prepareInsertionRun,
+  executeInsertionRun,
+} from '../insertion/insertionRunEngine.js';
+import { getInsertionRunItems } from '../insertion/insertionRepo.js';
+import { inferTargetSoftware, resolveMapping } from '../insertion/destinationMapper.js';
 import { buildReviewMessages } from '../promptBuilder.js';
 import { onSectionApproved, onSectionRejected } from '../learning/feedbackLoopService.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
@@ -719,7 +725,7 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
   }
 });
 
-router.post('/:caseId/insert-all', (req, res) => {
+router.post('/:caseId/insert-all', async (req, res) => {
   const body = parsePayload(insertAllSchema, req.body || {}, res);
   if (!body) return;
 
@@ -742,12 +748,17 @@ router.post('/:caseId/insert-all', (req, res) => {
 
     const outputs = { ...(runtime.outputs || {}) };
     const coreSections = CORE_SECTIONS[formType] || [];
+    const titleMap = Object.fromEntries(coreSections.map(section => [section.id, section.title]));
+    const targetSoftware = inferTargetSoftware(formType);
 
-    const inserted = [];
     const skipped = [];
     const errors = [];
 
-    const hasApproved = coreSections.some(sec => outputs[sec.id]?.sectionStatus === 'approved');
+    const hasApproved = coreSections.some((section) => {
+      const output = outputs[section.id] || {};
+      const status = output.sectionStatus || output.status || 'not_started';
+      return output.approved || status === 'approved';
+    });
     if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
 
     const generationRunId = trimText(body.generationRunId, 80) || null;
@@ -774,49 +785,143 @@ router.post('/:caseId/insert-all', (req, res) => {
       });
     }
 
+    const requestedFieldIds = [];
     for (const section of coreSections) {
       const sid = section.id;
-      const text = outputs[sid]?.text || '';
+      const output = outputs[sid] || {};
+      const text = trimText(output.text, 16000);
+      const currentStatus = output.sectionStatus || output.status || 'not_started';
+      const approved = output.approved || currentStatus === 'approved';
+
+      if (!approved) continue;
+
       if (!text) {
         skipped.push({ fieldId: sid, reason: 'no output' });
         continue;
       }
 
-      const currentStatus = outputs[sid]?.sectionStatus || outputs[sid]?.status || 'not_started';
       if (['inserted', 'verified'].includes(currentStatus)) {
         skipped.push({ fieldId: sid, reason: 'already inserted' });
         continue;
       }
 
-      try {
-        outputs[sid] = {
-          ...(outputs[sid] || {}),
-          status: 'inserted',
-          sectionStatus: 'inserted',
-          insertedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+      const mapping = resolveMapping(sid, formType, targetSoftware);
+      if (!mapping.supported) {
+        skipped.push({ fieldId: sid, reason: 'unsupported destination' });
+        continue;
+      }
+
+      requestedFieldIds.push(sid);
+    }
+
+    if (!requestedFieldIds.length) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No supported approved sections to insert',
+        skipped,
+        qcGate,
+      });
+    }
+
+    const prepared = prepareInsertionRun({
+      caseId: req.params.caseId,
+      formType,
+      generationRunId,
+      config: {
+        skipQcBlockers,
+        fieldIds: requestedFieldIds,
+      },
+    });
+
+    if (!prepared.items.length) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No eligible insertion items were prepared',
+        skipped,
+        qcGate,
+      });
+    }
+
+    const executedRun = await executeInsertionRun(prepared.run.id);
+    const runItems = getInsertionRunItems(prepared.run.id);
+    const insertedSections = runItems
+      .filter(item => item.status === 'inserted' || item.status === 'verified')
+      .map(item => ({
+        fieldId: item.fieldId,
+        title: titleMap[item.fieldId] || item.fieldId,
+        charCount: item.formattedTextLength || item.canonicalText?.length || 0,
+        verificationStatus: item.verificationStatus || null,
+      }));
+
+    for (const item of runItems) {
+      if (item.status === 'skipped' || item.status === 'fallback_used') {
+        skipped.push({
+          fieldId: item.fieldId,
+          reason: item.errorText || item.errorCode || (item.status === 'fallback_used' ? 'manual fallback required' : 'skipped'),
+        });
+      }
+
+      if (item.status === 'failed') {
+        errors.push({ fieldId: item.fieldId, error: item.errorText || item.errorCode || 'Insertion failed' });
+      }
+    }
+
+    if (!insertedSections.length && !errors.length && executedRun?.summaryJson?.error) {
+      errors.push({ fieldId: 'insertion_run', error: executedRun.summaryJson.error });
+    }
+
+    const now = new Date().toISOString();
+    for (const item of runItems) {
+      if (!outputs[item.fieldId]) continue;
+
+      if (item.status === 'verified' || item.status === 'inserted') {
+        const nextStatus = item.status === 'verified' ? 'verified' : 'inserted';
+        outputs[item.fieldId] = {
+          ...outputs[item.fieldId],
+          status: nextStatus,
+          sectionStatus: nextStatus,
           approved: false,
+          insertedAt: now,
+          updatedAt: now,
+          insertionRunId: prepared.run.id,
+          lastInsertionError: null,
         };
-        inserted.push({ fieldId: sid, title: section.title, charCount: text.length });
-      } catch (e) {
-        errors.push({ fieldId: sid, error: e.message });
+      } else if (item.status === 'failed') {
+        outputs[item.fieldId] = {
+          ...outputs[item.fieldId],
+          status: 'error',
+          sectionStatus: 'error',
+          updatedAt: now,
+          insertionRunId: prepared.run.id,
+          lastInsertionError: item.errorText || item.errorCode || 'Insertion failed',
+        };
+      } else if (item.status === 'fallback_used') {
+        outputs[item.fieldId] = {
+          ...outputs[item.fieldId],
+          updatedAt: now,
+          insertionRunId: prepared.run.id,
+          lastInsertionError: item.errorText || 'Manual fallback required',
+        };
       }
     }
 
     const meta = { ...(runtime.meta || {}) };
-    meta.updatedAt = new Date().toISOString();
-    if (inserted.length === coreSections.length) meta.pipelineStage = 'inserting';
+    meta.updatedAt = now;
+    if (insertedSections.length > 0) meta.pipelineStage = 'inserting';
     saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
-      inserted: inserted.length,
-      insertedSections: inserted,
+      inserted: insertedSections.length,
+      insertedSections,
       skipped,
       errors,
       qcGate,
-      totalInserted: inserted.length,
+      totalInserted: insertedSections.length,
       pipelineStage: meta.pipelineStage || 'inserting',
+      runId: prepared.run.id,
+      runStatus: executedRun?.status || null,
+      summary: executedRun?.summaryJson || null,
     });
   } catch (err) {
     return sendErrorResponse(res, err);

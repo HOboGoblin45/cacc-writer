@@ -225,8 +225,6 @@ router.get('/cases/:caseId/comp-guidance', (req, res) => {
     });
   } catch (err) {
     return sendErrorResponse(res, err);
-  } finally {
-    await cleanupUploadedFile(req.file);
   }
 });
 

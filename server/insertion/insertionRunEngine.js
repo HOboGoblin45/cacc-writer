@@ -375,6 +375,7 @@ async function processItem(item, run, profile, agentBaseUrl) {
         fieldId: mapping.agentFieldKey || item.fieldId,
         text: formatResult.formattedText,
         formType: item.formType,
+        section: mapping.agentSection || null,
         agentBaseUrl,
         timeout: agentTimeout,
       });
@@ -468,6 +469,7 @@ async function processItem(item, run, profile, agentBaseUrl) {
       formType: item.formType,
       targetSoftware: item.targetSoftware,
       agentBaseUrl,
+      section: mapping.agentSection || null,
       verificationMode: mapping.verificationMode,
       targetRect: insertResult?.diagnostics?.tx32_rect || null,
       timeout: agentTimeout,

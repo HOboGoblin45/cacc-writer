@@ -29,6 +29,7 @@ export async function verifyInsertion({
   formType,
   targetSoftware,
   agentBaseUrl,
+  section = null,
   verificationMode = null,
   targetRect = null,
   timeout = 10000,
@@ -53,6 +54,7 @@ export async function verifyInsertion({
       fieldId: agentFieldKey,
       formType,
       agentBaseUrl,
+      section,
       targetRect,
       timeout,
     });
@@ -114,6 +116,7 @@ async function readFieldFromAgent({
   fieldId,
   formType,
   agentBaseUrl,
+  section = null,
   targetRect = null,
   timeout,
 }) {
@@ -128,6 +131,7 @@ async function readFieldFromAgent({
       body: JSON.stringify({
         fieldId,
         formType,
+        ...(section ? { section } : {}),
         targetRect,
       }),
       signal: controller.signal,

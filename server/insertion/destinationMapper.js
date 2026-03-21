@@ -21,6 +21,34 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+const FIELD_CONFIG_KEYS = new Set([
+  'label',
+  'notes',
+  'tab',
+  'tab_name',
+  'tab_click_ratio',
+  'field_click_ratio',
+  'edit_class',
+  'insert_mode',
+  'helper_button_ratio',
+  'verification_mode',
+  'calibrated',
+  'verified',
+  'live_calibration_status',
+  'nav_url_slug',
+  'input_selector',
+  'tinymce_iframe_id',
+  'tinymce_id',
+  'navigation_strategy',
+  'input_type',
+  'clear_method',
+  'payload_mode',
+  'mode_required',
+  'skip_tab_navigation',
+  'report_click_ratio',
+  'uad_button_ratio',
+  'uad_dialog_title',
+]);
 
 // ── Agent Field Map Cache ─────────────────────────────────────────────────────
 
@@ -53,15 +81,9 @@ function loadAgentFieldMap(software, formType) {
   try {
     const raw = fs.readFileSync(filePath, 'utf8');
     const parsed = JSON.parse(raw);
-    // Strip metadata keys (start with _)
-    const cleaned = {};
-    for (const [key, val] of Object.entries(parsed)) {
-      if (!key.startsWith('_') && typeof val === 'object') {
-        cleaned[key] = val;
-      }
-    }
-    _agentFieldMapCache.set(cacheKey, cleaned);
-    return cleaned;
+    const flattened = flattenAgentFieldMap(parsed);
+    _agentFieldMapCache.set(cacheKey, flattened);
+    return flattened;
   } catch {
     _agentFieldMapCache.set(cacheKey, {});
     return {};
@@ -94,6 +116,7 @@ export function resolveMapping(fieldId, formType, targetSoftware) {
   // The agent field key may match fieldId directly, or via softwareTarget.fieldKey
   const agentFieldKey = resolveAgentFieldKey(fieldId, softwareTarget, agentMap);
   const agentEntry = agentFieldKey ? agentMap[agentFieldKey] : null;
+  const agentSection = agentEntry?.section || null;
 
   const destinationKey = `${targetSoftware}::${formType}::${fieldId}`;
 
@@ -115,7 +138,7 @@ export function resolveMapping(fieldId, formType, targetSoftware) {
   let verificationMode = null;
 
   if (targetSoftware === 'aci' && agentEntry) {
-    tabName = agentEntry.tab_name || null;
+    tabName = agentEntry.tab_name || agentEntry.tab || agentEntry._tab || null;
     editorTarget = agentEntry.label || null;
     verificationMode = agentEntry.verification_mode || 'tx32_readback';
   } else if (targetSoftware === 'real_quantum' && agentEntry) {
@@ -127,7 +150,11 @@ export function resolveMapping(fieldId, formType, targetSoftware) {
   // Determine calibration status
   let calibrated = false;
   if (agentEntry) {
-    calibrated = !!(agentEntry.calibrated || agentEntry.verified);
+    calibrated = !!(
+      agentEntry.calibrated
+      || agentEntry.verified
+      || agentEntry.live_calibration_status === 'calibrated'
+    );
   }
 
   return {
@@ -137,6 +164,7 @@ export function resolveMapping(fieldId, formType, targetSoftware) {
     destinationKey,
     humanLabel: getFieldLabel(formType, fieldId) || fieldDef?.title || fieldId,
     agentFieldKey: agentFieldKey || null,
+    agentSection,
     formattingMode,
     tabName,
     editorTarget,
@@ -282,4 +310,47 @@ function resolveAgentFieldKey(fieldId, softwareTarget, agentMap) {
   if (simplified !== fieldId && agentMap[simplified]) return simplified;
 
   return null;
+}
+
+function flattenAgentFieldMap(parsed) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+
+  const flattened = {};
+
+  for (const [sectionName, sectionValue] of Object.entries(parsed)) {
+    if (sectionName.startsWith('_') || !isPlainObject(sectionValue) || looksLikeFieldConfig(sectionValue)) {
+      continue;
+    }
+
+    for (const [fieldId, fieldConfig] of Object.entries(sectionValue)) {
+      if (fieldId.startsWith('_') || !isPlainObject(fieldConfig)) continue;
+      flattened[fieldId] = {
+        ...fieldConfig,
+        section: sectionName,
+        _tab: sectionValue._tab || null,
+        _tab_click_ratio: sectionValue._tab_click_ratio || null,
+      };
+    }
+  }
+
+  for (const [fieldId, fieldConfig] of Object.entries(parsed)) {
+    if (fieldId.startsWith('_') || !isPlainObject(fieldConfig) || !looksLikeFieldConfig(fieldConfig)) {
+      continue;
+    }
+
+    flattened[fieldId] = {
+      ...fieldConfig,
+      section: null,
+    };
+  }
+
+  return flattened;
+}
+
+function looksLikeFieldConfig(entry) {
+  return Object.keys(entry).some((key) => !key.startsWith('_') && FIELD_CONFIG_KEYS.has(key));
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
