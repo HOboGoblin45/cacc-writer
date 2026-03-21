@@ -26,6 +26,7 @@ import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { trimText, asArray, aiText } from '../utils/textUtils.js';
 import { ensureAI } from '../utils/middleware.js';
+import { generationBus } from './sseRoutes.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
 import { DEFAULT_FORM_TYPE, getFormConfig } from '../../forms/index.js';
@@ -752,9 +753,22 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     // 30K TPM limit with ~3-4K tokens per field = max ~8 fields/min safely.
     // 3s gap keeps us under the limit even for longer fields like reconciliation.
     const INTER_FIELD_DELAY_MS = 5000;
+    const caseIdForEvents = req.params.caseId;
 
-    for (const field of allFields) {
+    generationBus.emit('generation', {
+      caseId: caseIdForEvents, type: 'started',
+      totalFields: allFields.length, formType,
+    });
+
+    for (let fi = 0; fi < allFields.length; fi++) {
+      const field = allFields[fi];
       const sid = trimText(field?.id || field, 80);
+
+      generationBus.emit('generation', {
+        caseId: caseIdForEvents, type: 'section-start',
+        fieldId: sid, title: field?.title || sid, index: fi, total: allFields.length,
+      });
+
       try {
         const { voiceExamples, otherExamples } = getRelevantExamplesWithVoice({ formType, fieldId: sid });
         const messages = buildPromptMessages({
@@ -773,13 +787,30 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
           examplesUsed: voiceExamples.length + otherExamples.length,
         };
         statuses[sid] = 'drafted';
+
+        generationBus.emit('generation', {
+          caseId: caseIdForEvents, type: 'section-complete',
+          fieldId: sid, title: field?.title || sid,
+          index: fi, total: allFields.length, charCount: text.length,
+        });
       } catch (e) {
         errors[sid] = e?.message || 'Unknown error';
         statuses[sid] = 'error';
+
+        generationBus.emit('generation', {
+          caseId: caseIdForEvents, type: 'section-error',
+          fieldId: sid, title: field?.title || sid,
+          index: fi, total: allFields.length, error: e?.message || 'Unknown error',
+        });
       }
       // Small delay between fields to stay under token rate limits
       await new Promise(r => setTimeout(r, INTER_FIELD_DELAY_MS));
     }
+
+    generationBus.emit('generation', {
+      caseId: caseIdForEvents, type: 'completed',
+      resultsCount: Object.keys(results).length, errorsCount: Object.keys(errors).length,
+    });
     persistGeneratedOutputs({
       caseId: req.params.caseId,
       projection,

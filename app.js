@@ -132,6 +132,7 @@ function renderCommandPaletteResults(palette, query) {
     { label: 'Insert into ACI', shortcut: 'Ctrl+Enter', action: () => { refs.insertButton?.click(); toggleCommandPalette(false); } },
     { label: 'Refresh cases', action: () => { refreshCases({ restoreSelection: true }); toggleCommandPalette(false); } },
     { label: 'Toggle sidebar', action: () => { toggleSidebar(); toggleCommandPalette(false); } },
+    { label: 'Toggle theme (dark/light)', action: () => { toggleTheme(); toggleCommandPalette(false); } },
   ];
 
   const q = query.toLowerCase().trim();
@@ -278,6 +279,24 @@ function cacheRefs() {
 function restoreUiPrefs() {
   S.ui.sidebarCollapsed = localStorage.getItem('cacc-sidebar-collapsed') === '1';
   document.body.classList.toggle('sidebar-collapsed', S.ui.sidebarCollapsed);
+  
+  // Theme
+  const savedTheme = localStorage.getItem('cacc-theme') || 'dark';
+  S.ui.theme = savedTheme;
+  applyTheme(savedTheme);
+}
+
+function applyTheme(theme) {
+  document.body.classList.toggle('theme-light', theme === 'light');
+  const themeIcon = document.getElementById('theme-icon');
+  if (themeIcon) themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f8f9fb' : '#0d1117');
+}
+
+function toggleTheme() {
+  S.ui.theme = S.ui.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('cacc-theme', S.ui.theme);
+  applyTheme(S.ui.theme);
 }
 
 function bindCaseControls() {
@@ -308,6 +327,9 @@ function bindCaseControls() {
   
   const paletteTrigger = document.getElementById('cmd-palette-trigger');
   if (paletteTrigger) paletteTrigger.addEventListener('click', () => toggleCommandPalette());
+  
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 
   refs.importContinue.addEventListener('click', () => gotoStep(2));
   refs.importExisting.addEventListener('click', () => {
@@ -999,18 +1021,72 @@ function startGenerationMonitor() {
   S.generation.stageIndex = 0;
   S.generation.log = [];
   S.generation.lastTone = 'info';
-  S.generation.lastMessage = S.generation.stages[0];
+  S.generation.lastMessage = 'Starting generation pipeline…';
+  S.generation.totalFields = 0;
+  S.generation.completedFields = 0;
 
-  pushGenerationLog(S.generation.stages[0]);
+  pushGenerationLog('Starting generation pipeline…');
 
-  S.generation.timer = window.setInterval(() => {
-    const nextIndex = Math.min(S.generation.stageIndex + 1, S.generation.stages.length - 1);
-    if (nextIndex !== S.generation.stageIndex) {
-      S.generation.stageIndex = nextIndex;
-      pushGenerationLog(S.generation.stages[nextIndex]);
+  // Connect SSE for real-time progress
+  if (S.caseId) {
+    try {
+      S.generation.eventSource = new EventSource(`${API_BASE}/api/events/${S.caseId}`);
+      S.generation.eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleGenerationEvent(data);
+        } catch (_) { /* ignore parse errors */ }
+      };
+      S.generation.eventSource.onerror = () => {
+        // SSE connection lost — fall back to timer
+        if (!S.generation.timer) {
+          S.generation.timer = window.setInterval(() => {
+            renderGenerationStatus();
+          }, 2500);
+        }
+      };
+    } catch (_) {
+      // SSE not available — use timer fallback
+      S.generation.timer = window.setInterval(() => {
+        renderGenerationStatus();
+      }, 2500);
     }
-    renderGenerationStatus();
-  }, 2500);
+  }
+
+  renderGenerationStatus();
+}
+
+function handleGenerationEvent(data) {
+  switch (data.type) {
+    case 'started':
+      S.generation.totalFields = data.totalFields || 0;
+      S.generation.completedFields = 0;
+      pushGenerationLog(`Generating ${data.totalFields} sections for ${data.formType || 'form'}`);
+      break;
+
+    case 'section-start':
+      S.generation.lastMessage = `Drafting: ${data.title || data.fieldId}`;
+      S.generation.stageIndex = data.index || 0;
+      pushGenerationLog(`Drafting ${data.title || data.fieldId} (${(data.index || 0) + 1}/${data.total || '?'})`);
+      break;
+
+    case 'section-complete':
+      S.generation.completedFields = (data.index || 0) + 1;
+      S.generation.lastMessage = `Completed: ${data.title || data.fieldId} (${data.charCount || 0} chars)`;
+      pushGenerationLog(`✓ ${data.title || data.fieldId} — ${data.charCount || 0} chars`);
+      break;
+
+    case 'section-error':
+      S.generation.completedFields = (data.index || 0) + 1;
+      pushGenerationLog(`✗ ${data.title || data.fieldId} — ${data.error || 'failed'}`);
+      break;
+
+    case 'completed':
+      S.generation.lastMessage = `Generated ${data.resultsCount || 0} sections (${data.errorsCount || 0} errors)`;
+      S.generation.lastTone = data.errorsCount > 0 ? 'warning' : 'success';
+      pushGenerationLog(`Generation complete: ${data.resultsCount} sections`);
+      break;
+  }
 
   renderGenerationStatus();
 }
@@ -1019,6 +1095,11 @@ function stopGenerationMonitor(resetMessage = true) {
   if (S.generation.timer) {
     window.clearInterval(S.generation.timer);
     S.generation.timer = null;
+  }
+
+  if (S.generation.eventSource) {
+    S.generation.eventSource.close();
+    S.generation.eventSource = null;
   }
 
   S.generation.running = false;
@@ -1035,9 +1116,10 @@ function pushGenerationLog(message) {
 
 function renderGenerationStatus() {
   const generatedSections = getSectionEntries().length;
-  const stageTotal = Math.max(1, S.generation.stages.length - 1);
-  const runningProgress = 20 + Math.round((S.generation.stageIndex / stageTotal) * 65);
-  const progress = S.generation.running ? runningProgress : (generatedSections ? 100 : 0);
+  const totalFields = S.generation.totalFields || Math.max(1, S.generation.stages.length - 1);
+  const completed = S.generation.completedFields || S.generation.stageIndex;
+  const runningProgress = totalFields > 0 ? Math.round((completed / totalFields) * 100) : 0;
+  const progress = S.generation.running ? Math.max(5, runningProgress) : (generatedSections ? 100 : 0);
 
   refs.generationProgressFill.style.width = `${progress}%`;
   refs.generateStatus.textContent = S.generation.running

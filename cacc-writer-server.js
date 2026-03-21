@@ -52,6 +52,7 @@ import dataPipelineRouter from './server/api/dataPipelineRoutes.js';
 import intakeRouter from './server/api/intakeRoutes.js';
 import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
+import sseRouter from './server/api/sseRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -114,6 +115,7 @@ app.get('/favicon.ico', (_q, r) => {
 app.use(requireAuth);
 
 app.use('/api', healthRouter);
+app.use('/api', sseRouter);
 app.use('/api/cases', casesRouter);
 app.use('/api/cases', caseCompatRouter);
 app.use('/api', generationRouter);
