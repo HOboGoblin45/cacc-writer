@@ -133,6 +133,7 @@ function renderCommandPaletteResults(palette, query) {
     { label: 'Refresh cases', action: () => { refreshCases({ restoreSelection: true }); toggleCommandPalette(false); } },
     { label: 'Toggle sidebar', action: () => { toggleSidebar(); toggleCommandPalette(false); } },
     { label: 'Toggle theme (dark/light)', action: () => { toggleTheme(); toggleCommandPalette(false); } },
+    { label: 'New case…', action: () => { toggleCommandPalette(false); promptNewCase(); } },
   ];
 
   const q = query.toLowerCase().trim();
@@ -324,12 +325,18 @@ function bindCaseControls() {
 
   refs.refreshCases.addEventListener('click', () => refreshCases({ restoreSelection: true }));
   refs.headerRefresh.addEventListener('click', () => refreshCases({ restoreSelection: true }));
-  
+
+  const newCaseBtn = document.getElementById('new-case-btn');
+  if (newCaseBtn) newCaseBtn.addEventListener('click', promptNewCase);
+
   const paletteTrigger = document.getElementById('cmd-palette-trigger');
   if (paletteTrigger) paletteTrigger.addEventListener('click', () => toggleCommandPalette());
   
   const themeToggle = document.getElementById('theme-toggle');
   if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+  const deleteCaseBtn = document.getElementById('delete-case-btn');
+  if (deleteCaseBtn) deleteCaseBtn.addEventListener('click', confirmDeleteCase);
 
   refs.importContinue.addEventListener('click', () => gotoStep(2));
   refs.importExisting.addEventListener('click', () => {
@@ -450,8 +457,60 @@ function bindDelegatedInputs() {
     const rejectButton = event.target.closest('[data-reject]');
     if (rejectButton) {
       await rejectSection(rejectButton.dataset.reject, rejectButton);
+      return;
+    }
+
+    const regenerateButton = event.target.closest('[data-regenerate]');
+    if (regenerateButton) {
+      await regenerateSection(regenerateButton.dataset.regenerate, regenerateButton);
     }
   });
+}
+
+async function confirmDeleteCase() {
+  if (!S.caseId) return;
+  const address = getCaseAddress(S.caseMeta) || S.caseId;
+  if (!window.confirm(`Delete case "${address}"?\n\nThis cannot be undone.`)) return;
+
+  try {
+    setGlobalLoading(true, 'Deleting case…');
+    await api(`/api/cases/${S.caseId}`, { method: 'DELETE' });
+    clearCase({ silent: true });
+    await refreshCases();
+    showToast('Case deleted.', 'info');
+  } catch (error) {
+    showToast(`Delete failed: ${error.message}`, 'error');
+  } finally {
+    setGlobalLoading(false);
+  }
+}
+
+async function promptNewCase() {
+  const address = window.prompt('Property address for new case:', '');
+  if (!address || !address.trim()) return;
+
+  const formOptions = ['1004', '1025', '1073', 'commercial'];
+  const formPrompt = window.prompt(`Form type:\n  1. 1004 – Single Family\n  2. 1025 – Small Income\n  3. 1073 – Condo\n  4. commercial\n\nEnter number or form type:`, '1');
+  const formMap = { '1': '1004', '2': '1025', '3': '1073', '4': 'commercial' };
+  const formType = formMap[formPrompt] || (formOptions.includes(formPrompt) ? formPrompt : '1004');
+
+  try {
+    setGlobalLoading(true, 'Creating case…');
+    const result = await api('/api/cases/create', {
+      method: 'POST',
+      body: { address: address.trim(), formType }
+    });
+
+    if (result.ok && result.caseId) {
+      await refreshCases();
+      await selectCase(result.caseId);
+      showToast(`New ${formType} case created.`, 'success');
+    }
+  } catch (error) {
+    showToast(`Failed to create case: ${error.message}`, 'error');
+  } finally {
+    setGlobalLoading(false);
+  }
 }
 
 function toggleSidebar() {
@@ -669,6 +728,7 @@ function renderSidebarCases() {
 }
 
 function renderCaseHeader() {
+  const deleteCaseBtn = document.getElementById('delete-case-btn');
   if (!S.caseMeta || !S.caseId) {
     refs.headerCaseTitle.textContent = 'Select a case to begin';
     refs.headerCaseMeta.textContent = 'Import a new XML and order package or open an existing case from the sidebar.';
@@ -677,8 +737,10 @@ function renderCaseHeader() {
     refs.heroDocCount.textContent = '0';
     refs.heroSectionCount.textContent = '0';
     refs.heroApprovedCount.textContent = '0 approved';
+    if (deleteCaseBtn) deleteCaseBtn.classList.add('hidden');
     return;
   }
+  if (deleteCaseBtn) deleteCaseBtn.classList.remove('hidden');
 
   const address = getCaseAddress(S.caseMeta) || 'Untitled case';
   const borrower = getCaseBorrower(S.caseMeta) || 'Unknown borrower';
@@ -1244,7 +1306,10 @@ function renderSections() {
 
   refs.sectionsList.innerHTML = entries.map(([fieldId, payload]) => {
     const status = getSectionStatusMeta(payload);
-    const charCount = String((payload.text || '').length);
+    const text = payload.text || '';
+    const charCount = text.length;
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const charClass = charCount < 100 ? 'tone-error' : charCount < 300 ? 'tone-muted' : 'tone-success';
     const updatedAt = formatDateTime(payload.updatedAt);
     const dirty = payload._dirty ? '<span class="review-chip muted">Unsaved edits</span>' : '';
 
@@ -1263,10 +1328,11 @@ function renderSections() {
         <textarea class="section-editor" data-field="${escapeAttr(fieldId)}">${escapeHtml(payload.text || '')}</textarea>
         <div class="section-card-footer">
           <div class="section-meta">
-            <span class="section-char-count">${escapeHtml(charCount)} chars</span>
+            <span class="section-char-count ${charClass}">${escapeHtml(String(charCount))} chars · ${escapeHtml(String(wordCount))} words</span>
             <span class="section-updated">${escapeHtml(updatedAt || 'Not saved yet')}</span>
           </div>
           <div class="section-actions">
+            <button class="btn btn-ghost" type="button" data-regenerate="${escapeAttr(fieldId)}" title="Re-draft this section with AI">↺ Regenerate</button>
             <button class="btn btn-secondary" type="button" data-save-section="${escapeAttr(fieldId)}">Save</button>
             <button class="btn btn-ghost" type="button" data-reject="${escapeAttr(fieldId)}">Reject</button>
             <button class="btn btn-primary" type="button" data-approve="${escapeAttr(fieldId)}">Approve</button>
@@ -1284,7 +1350,11 @@ function updateSectionCardMeta(card, fieldId) {
   const statusWrap = card.querySelector('.section-card-status');
   const currentStatus = getSectionStatusMeta(payload);
 
-  if (countEl) countEl.textContent = `${(payload.text || '').length} chars`;
+  const t = payload.text || '';
+  const wc = t.trim() ? t.trim().split(/\s+/).length : 0;
+  const cc = t.length;
+  const ccClass = cc < 100 ? 'tone-error' : cc < 300 ? 'tone-muted' : 'tone-success';
+  if (countEl) { countEl.textContent = `${cc} chars · ${wc} words`; countEl.className = `section-char-count ${ccClass}`; }
   if (updatedEl) updatedEl.textContent = payload._dirty ? 'Unsaved changes' : (formatDateTime(payload.updatedAt) || 'Not saved yet');
 
   if (statusWrap) {
@@ -1401,6 +1471,47 @@ async function rejectSection(fieldId, button) {
   } catch (error) {
     console.error(error);
     showToast(`Unable to reject ${prettify(fieldId)}: ${error.message}`, 'error');
+  } finally {
+    setButtonBusy(button, false);
+  }
+}
+
+async function regenerateSection(fieldId, button) {
+  if (!S.caseId) return;
+
+  setButtonBusy(button, true, 'Generating…');
+
+  try {
+    const result = await api(`/api/cases/${S.caseId}/generate-core`, {
+      method: 'POST',
+      body: { fields: [fieldId], forceGateBypass: true }
+    });
+
+    const text = result.results?.[fieldId]?.text || result.text || '';
+    if (text) {
+      if (!S.outputs[fieldId]) S.outputs[fieldId] = {};
+      S.outputs[fieldId].text = text;
+      S.outputs[fieldId]._dirty = true;
+      S.outputs[fieldId].sectionStatus = 'drafted';
+      S.outputs[fieldId].approved = false;
+
+      // Update the textarea directly
+      const card = refs.sectionsList.querySelector(`[data-field-card="${cssEscape(fieldId)}"]`);
+      if (card) {
+        const textarea = card.querySelector(`textarea[data-field="${cssEscape(fieldId)}"]`);
+        if (textarea) textarea.value = text;
+        updateSectionCardMeta(card, fieldId);
+      }
+
+      renderReviewSummary();
+      showToast(`${prettify(fieldId)} regenerated. Review and approve.`, 'success');
+    } else {
+      showToast(`Regeneration returned no text for ${prettify(fieldId)}.`, 'warning');
+    }
+  } catch (error) {
+    console.error(error);
+    const detail = error.data?.gate?.blockers?.map(b => b.message).join('; ') || error.message;
+    showToast(`Regeneration failed: ${detail}`, 'error');
   } finally {
     setButtonBusy(button, false);
   }

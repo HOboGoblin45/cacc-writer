@@ -41,7 +41,10 @@
       <div class="sidebar-block sidebar-block-fill">
         <div class="sidebar-block-head">
           <span>Cases</span>
-          <button class="text-button" id="refresh-cases" type="button">Refresh</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="text-button" id="new-case-btn" type="button" title="Create new case">+ New</button>
+            <button class="text-button" id="refresh-cases" type="button">Refresh</button>
+          </div>
         </div>
         <div class="case-list" id="case-list"></div>
         <div class="empty-note hidden" id="case-empty">No cases match your search.</div>
@@ -75,6 +78,7 @@
             <span>Commands</span>
             <kbd>Ctrl K</kbd>
           </button>
+          <button class="btn btn-ghost hidden" id="delete-case-btn" type="button" title="Delete this case">Delete case</button>
           <button class="btn btn-secondary" id="header-refresh" type="button">Refresh cases</button>
           <div class="connection-pill" id="connection-badge">
             <span class="status-dot" id="status-dot"></span>
