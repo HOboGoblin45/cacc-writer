@@ -938,10 +938,7 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
       await new Promise(r => setTimeout(r, 50));
       const latestRun = db.prepare(`
         SELECT id FROM generation_runs
-         WHERE case_id = ? AND status IN (
-           'queued','preparing','retrieving','analyzing',
-           'drafting','validating','assembling'
-         )
+         WHERE case_id = ?
          ORDER BY created_at DESC LIMIT 1
       `).get(caseId);
       if (latestRun?.id) { runId = latestRun.id; break; }
@@ -1044,10 +1041,7 @@ router.post('/generation/full-draft', async (req, res) => {
       await new Promise(r => setTimeout(r, 50));
       const latestRun = db.prepare(`
         SELECT id FROM generation_runs
-         WHERE case_id = ? AND status IN (
-           'queued','preparing','retrieving','analyzing',
-           'drafting','validating','assembling'
-         )
+         WHERE case_id = ?
          ORDER BY created_at DESC LIMIT 1
       `).get(caseId);
       if (latestRun?.id) { runId = latestRun.id; break; }

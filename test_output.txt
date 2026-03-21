@@ -1,0 +1,81 @@
+﻿├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É
+  Appraisal Agent ├óΓé¼ΓÇ¥ Orchestrator Endpoint Tests
+  Server: http://localhost:5178
+├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 1. Server Health ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ GET /api/health ├óΓÇáΓÇÖ 200 ├óΓé¼ΓÇ¥ status=200
+  ├ó┼ôΓÇ£ health.ok = true
+     model: gpt-4.1, version: 2.0.0
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 2. GET /api/db/status ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ status 200 ├óΓé¼ΓÇ¥ got 200
+  ├ó┼ôΓÇ£ data.ok = true
+  ├ó┼ôΓÇ£ data.dbPath is string
+  ├ó┼ôΓÇ£ data.tables is object
+  ├ó┼ôΓÇ£ assignments table present
+  ├ó┼ôΓÇ£ generation_runs table present
+  ├ó┼ôΓÇ£ memory_items table present
+     dbPath: C:\Users\ccres\OneDrive\Desktop\cacc-writer\data\cacc-writer.db
+     dbSizeKb: 2280kb
+     tables: case_records, case_facts, case_outputs, case_history, assignments, report_plans, generation_runs, section_jobs, generated_sections, memory_items, retrieval_cache, analysis_artifacts, ingest_jobs, staged_memory_reviews, assignment_intelligence, case_documents, document_ingest_jobs, document_extractions, extracted_facts, extracted_sections, comp_candidates, comp_scores, comp_tier_assignments, comp_acceptance_events, comp_rejection_events, adjustment_support_records, adjustment_recommendations, paired_sales_library_records, comp_burden_metrics, qc_runs, qc_findings, insertion_runs, insertion_run_items, destination_profiles, audit_events, case_timeline_events, operational_metrics, assignment_archives, learned_patterns, pattern_applications, fee_quotes, engagement_records, invoices, pipeline_entries, inspections, inspection_photos, inspection_measurements, inspection_conditions, export_jobs, delivery_records, export_templates, users, access_policies, access_log, data_retention_rules, compliance_records
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 3. POST /api/db/migrate-legacy-kb ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ status 200 ├óΓé¼ΓÇ¥ got 200
+  ├ó┼ôΓÇ£ data.ok = true ├óΓé¼ΓÇ¥ {"ok":true,"imported":0,"skipped":460,"upgraded":0,"errors":0,"sources":{"approvedNarratives":45,"approvedEdits":73,"kbIndex":342},"durationMs":83}
+  ├ó┼ôΓÇ£ imported is number
+  ├ó┼ôΓÇ£ skipped is number
+     imported: 0, skipped: 460, errors: 0
+     sources: {"approvedNarratives":45,"approvedEdits":73,"kbIndex":342}
+     durationMs: 83ms
+  ├ó┼ôΓÇ£ idempotent: second run ok
+  ├ó┼ôΓÇ£ idempotent: imported=0 on second run ├óΓé¼ΓÇ¥ imported=0 (expected 0 since all already exist)
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 4. Resolve Test Case ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ GET /api/cases ├óΓÇáΓÇÖ 200
+  ├ó┼ôΓÇ£ cases array returned
+     Using case: 454a31da (commercial) ├óΓé¼ΓÇ¥ 456 Active St
+  ├ó┼ôΓÇ£ caseId resolved
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 5. GET /api/cases/:caseId/generation-runs (pre-run) ├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ status 200 ├óΓé¼ΓÇ¥ got 200
+  ├ó┼ôΓÇ£ data.ok = true
+  ├ó┼ôΓÇ£ runs is array
+     existing runs: 10
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 6. POST /api/cases/:caseId/generate-full-draft ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ status 200 or 409 or 503 ├óΓé¼ΓÇ¥ got 200
+  ├ó┼ôΓÇ£ data.ok = true ├óΓé¼ΓÇ¥ {"ok":true,"runId":null,"status":"preparing","estimatedDurationMs":13000,"message":"Full-draft generation started. Poll /api/generation/runs/:runId/status for progress."}
+  ├ó┼ôΓÇ£ status field present
+  ├ó┼ôΓÇ£ estimatedDurationMs is number
+     runId: null
+     estimatedDurationMs: 13000ms
+     message: Full-draft generation started. Poll /api/generation/runs/:runId/status for progress.
+node :   ├ó┼ôΓÇö runId returned ├óΓé¼ΓÇ¥ runId=null
+At line:1 char:51
++ ... ktop\cacc-writer"; node _test_orchestrator_endpoints.mjs 2>&1 | Out-F ...
++                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  ├ó┼ôΓÇö runId...¼ΓÇ¥ runId=null:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ├ó┼í┬á Skipping ├óΓé¼ΓÇ¥ no runId
+  ├ó┼í┬á Skipping ├óΓé¼ΓÇ¥ no runId
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 9. GET /api/cases/:caseId/generation-runs (post-run) ├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ status 200
+  ├ó┼ôΓÇ£ data.ok = true
+  ├ó┼ôΓÇ£ runs listed (0+ ok if AI unavailable) ├óΓé¼ΓÇ¥ count=11
+     latest run: id=dbdfd3d9-4700-43da-a1fe-aedfb39a64d2 status=failed sections=?
+  ├ó┼í┬á Skipping ├óΓé¼ΓÇ¥ no runId/caseId
+
+├óΓÇ¥Γé¼├óΓÇ¥Γé¼ 11. Error Paths ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+  ├ó┼ôΓÇ£ non-existent case ├óΓÇáΓÇÖ 404 ├óΓé¼ΓÇ¥ got 404
+  ├ó┼ôΓÇ£ non-existent run status ├óΓÇáΓÇÖ 404 ├óΓé¼ΓÇ¥ got 404
+  ├ó┼ôΓÇ£ non-existent run result ├óΓÇáΓÇÖ 404 ├óΓé¼ΓÇ¥ got 404
+  ├ó┼ôΓÇ£ missing params ├óΓÇáΓÇÖ 400 ├óΓé¼ΓÇ¥ got 400
+
+├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É
+  Results: 32 passed, 1 failed, 3 warnings
+  ├ó┼ôΓÇö SOME TESTS FAILED
+├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É├óΓÇó┬É
+
