@@ -1,11 +1,11 @@
-/**
+﻿/**
  * _test_e2e_1004.mjs
  * -------------------
  * End-to-end workflow test for a real 1004 single-family assignment.
  *
  * Validates the complete production pipeline:
- *   Create case → Set facts → Generate core sections → Review sections →
- *   Approve sections → Attempt insert → Check statuses → Export bundle → Cleanup
+ *   Create case â†’ Set facts â†’ Generate core sections â†’ Review sections â†’
+ *   Approve sections â†’ Attempt insert â†’ Check statuses â†’ Export bundle â†’ Cleanup
  *
  * Does NOT require ACI to be running.
  * Insert step gracefully accepts 503 (agent not running) as a valid outcome.
@@ -32,7 +32,7 @@ const CASES_DIR  = path.join(__dirname, 'cases');
 const BASE       = process.env.TEST_BASE_URL || 'http://localhost:5178';
 const TIMEOUT_MS = 60000; // generation calls take 5-15s each
 
-// ── Test runner ───────────────────────────────────────────────────────────────
+// â”€â”€ Test runner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let passed = 0, failed = 0;
 const failures = [];
@@ -40,11 +40,11 @@ const failures = [];
 async function test(name, fn) {
   try {
     await fn();
-    console.log(`  ✓ ${name}`);
+    console.log(`  âœ“ ${name}`);
     passed++;
   } catch (err) {
-    console.error(`  ✗ ${name}`);
-    console.error(`    → ${err.message}`);
+    console.error(`  âœ— ${name}`);
+    console.error(`    â†’ ${err.message}`);
     failures.push({ name, error: err.message });
     failed++;
   }
@@ -77,7 +77,7 @@ const post  = (p, b)    => api('POST',   p, b).then(r => r.body);
 const patch = (p, b)    => api('PATCH',  p, b).then(r => r.body);
 const del   = (p)       => api('DELETE', p).then(r => r.body);
 
-// ── Test data — realistic 1004 single-family assignment ───────────────────────
+// â”€â”€ Test data â€” realistic 1004 single-family assignment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const SUBJECT = {
   address:       '4821 Maple Ridge Drive',
@@ -102,16 +102,16 @@ const SUBJECT = {
   concessions:   'None',
 };
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let caseId = null;
 
-// ── Phase 1: Server health ────────────────────────────────────────────────────
+// â”€â”€ Phase 1: Server health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\n══════════════════════════════════════════════════════');
-console.log('  CACC Writer — End-to-End 1004 Workflow Test');
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+console.log('  Appraisal Agent â€” End-to-End 1004 Workflow Test');
 console.log('  Subject: ' + SUBJECT.address + ', ' + SUBJECT.city + ' ' + SUBJECT.state);
-console.log('══════════════════════════════════════════════════════\n');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
 console.log('Phase 1: Server health');
 
@@ -131,7 +131,7 @@ await test('1004 form is in active scope', async () => {
     '1004 form not found or blocked');
 });
 
-// ── Phase 2: Case creation ────────────────────────────────────────────────────
+// â”€â”€ Phase 2: Case creation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 2: Case creation');
 
@@ -148,11 +148,11 @@ await test('Create 1004 case with subject metadata', async () => {
   assert(r.ok === true,    `create failed: ${JSON.stringify(r).slice(0, 200)}`);
   assert(r.caseId,         'caseId missing from create response');
   caseId = r.caseId;
-  console.log(`    → caseId: ${caseId}`);
+  console.log(`    â†’ caseId: ${caseId}`);
 });
 
 await test('Case directory exists on disk', async () => {
-  assert(caseId, 'caseId not set — create must have failed');
+  assert(caseId, 'caseId not set â€” create must have failed');
   const caseDir = path.join(CASES_DIR, caseId);
   assert(fs.existsSync(caseDir), `Case directory not found: ${caseDir}`);
   assert(fs.existsSync(path.join(caseDir, 'meta.json')), 'meta.json missing');
@@ -164,11 +164,11 @@ await test('GET /api/cases/:caseId returns case', async () => {
     `GET case returned unexpected: ${JSON.stringify(r).slice(0, 200)}`);
 });
 
-// ── Phase 3: Facts entry ──────────────────────────────────────────────────────
+// â”€â”€ Phase 3: Facts entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 3: Facts entry');
 
-await test('PUT /api/cases/:caseId/facts — write subject facts', async () => {
+await test('PUT /api/cases/:caseId/facts â€” write subject facts', async () => {
   const r = await api('PUT', `/api/cases/${caseId}/facts`, {
     bedrooms:     SUBJECT.bedrooms,
     bathrooms:    SUBJECT.bathrooms,
@@ -190,28 +190,28 @@ await test('PUT /api/cases/:caseId/facts — write subject facts', async () => {
 
 await test('Facts are persisted in facts.json', async () => {
   const factsPath = path.join(CASES_DIR, caseId, 'facts.json');
-  assert(fs.existsSync(factsPath), 'facts.json not found — check PUT /facts handler');
+  assert(fs.existsSync(factsPath), 'facts.json not found â€” check PUT /facts handler');
   const facts = JSON.parse(fs.readFileSync(factsPath, 'utf8'));
   assert(facts.bedrooms || facts.gla || facts.condition || Object.keys(facts).length > 0,
-    'facts.json is empty — check PUT /facts handler');
+    'facts.json is empty â€” check PUT /facts handler');
 });
 
-// ── Phase 4: Core section generation ─────────────────────────────────────────
+// â”€â”€ Phase 4: Core section generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\nPhase 4: Core section generation (calls OpenAI — ~30-60s)');
+console.log('\nPhase 4: Core section generation (calls OpenAI â€” ~30-60s)');
 
 let generatedSections = {};
 
-await test('POST /api/cases/:caseId/generate-core — generates 1004 sections', async () => {
-  console.log('    → Calling generate-core (this may take 30-60s)...');
+await test('POST /api/cases/:caseId/generate-core â€” generates 1004 sections', async () => {
+  console.log('    â†’ Calling generate-core (this may take 30-60s)...');
   const r = await post(`/api/cases/${caseId}/generate-core`, {});
   assert(r.ok === true, `generate-core failed: ${JSON.stringify(r).slice(0, 300)}`);
   // Response: { ok, caseId, formType, results:{}, generated:N, failed:N, coreSections:[] }
   assert(r.results !== undefined || typeof r.generated === 'number',
-    `generate-core response missing results/generated — got: ${JSON.stringify(r).slice(0, 200)}`);
+    `generate-core response missing results/generated â€” got: ${JSON.stringify(r).slice(0, 200)}`);
   generatedSections = r.results || {};
   const count = typeof r.generated === 'number' ? r.generated : Object.keys(generatedSections).length;
-  console.log(`    → Generated ${count} sections`);
+  console.log(`    â†’ Generated ${count} sections`);
   assert(count >= 3, `Expected at least 3 sections, got ${count}`);
 });
 
@@ -221,8 +221,8 @@ await test('outputs.json exists and has generated text', async () => {
   const outputs = JSON.parse(fs.readFileSync(outPath, 'utf8'));
   const withText = Object.entries(outputs)
     .filter(([k, v]) => k !== 'updatedAt' && typeof v === 'object' && v.text && v.text.length > 20);
-  console.log(`    → ${withText.length} sections have text in outputs.json`);
-  assert(withText.length >= 3, `Expected ≥3 sections with text, got ${withText.length}`);
+  console.log(`    â†’ ${withText.length} sections have text in outputs.json`);
+  assert(withText.length >= 3, `Expected â‰¥3 sections with text, got ${withText.length}`);
 });
 
 await test('Priority sections have non-empty text', async () => {
@@ -231,19 +231,19 @@ await test('Priority sections have non-empty text', async () => {
   const priority = ['neighborhood_description', 'market_conditions', 'site_description',
                     'improvements_description', 'reconciliation'];
   const found = priority.filter(s => outputs[s]?.text?.length > 20);
-  console.log(`    → Priority sections with text: ${found.join(', ') || 'none'}`);
+  console.log(`    â†’ Priority sections with text: ${found.join(', ') || 'none'}`);
   // At least 2 of the 5 priority sections should have been generated
   assert(found.length >= 2,
-    `Expected ≥2 priority sections with text, got ${found.length}: ${found.join(', ')}`);
+    `Expected â‰¥2 priority sections with text, got ${found.length}: ${found.join(', ')}`);
 });
 
-// ── Phase 5: Section review & approval ───────────────────────────────────────
+// â”€â”€ Phase 5: Section review & approval â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 5: Section review & approval');
 
 const APPROVE_SECTIONS = ['neighborhood_description', 'market_conditions', 'reconciliation'];
 
-await test('PATCH .../status → reviewed for generated sections', async () => {
+await test('PATCH .../status â†’ reviewed for generated sections', async () => {
   const outPath = path.join(CASES_DIR, caseId, 'outputs.json');
   const outputs = JSON.parse(fs.readFileSync(outPath, 'utf8'));
   let reviewed = 0;
@@ -253,11 +253,11 @@ await test('PATCH .../status → reviewed for generated sections', async () => {
       if (r.ok) reviewed++;
     }
   }
-  console.log(`    → Marked ${reviewed} sections as reviewed`);
+  console.log(`    â†’ Marked ${reviewed} sections as reviewed`);
   assert(reviewed >= 1, 'Could not mark any section as reviewed');
 });
 
-await test('PATCH .../status → approved triggers approval-to-memory', async () => {
+await test('PATCH .../status â†’ approved triggers approval-to-memory', async () => {
   const outPath = path.join(CASES_DIR, caseId, 'outputs.json');
   const outputs = JSON.parse(fs.readFileSync(outPath, 'utf8'));
   let approved = 0;
@@ -267,7 +267,7 @@ await test('PATCH .../status → approved triggers approval-to-memory', async ()
       if (r.ok && r.sectionStatus === 'approved') approved++;
     }
   }
-  console.log(`    → Approved ${approved} sections`);
+  console.log(`    â†’ Approved ${approved} sections`);
   assert(approved >= 1, 'Could not approve any section');
 });
 
@@ -278,46 +278,46 @@ await test('GET .../sections/status shows approved sections', async () => {
   const sections = r.sections || r;
   const approvedCount = Object.values(sections)
     .filter(s => typeof s === 'object' && s.sectionStatus === 'approved').length;
-  console.log(`    → ${approvedCount} sections in approved state`);
-  assert(approvedCount >= 1, `Expected ≥1 approved section, got ${approvedCount}`);
+  console.log(`    â†’ ${approvedCount} sections in approved state`);
+  assert(approvedCount >= 1, `Expected â‰¥1 approved section, got ${approvedCount}`);
 });
 
-// ── Phase 6: Insert attempt ───────────────────────────────────────────────────
+// â”€â”€ Phase 6: Insert attempt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 6: Insert attempt (ACI agent may or may not be running)');
 
-await test('POST /api/cases/:caseId/sections/neighborhood_description/insert — valid response', async () => {
+await test('POST /api/cases/:caseId/sections/neighborhood_description/insert â€” valid response', async () => {
   const r = await api('POST', `/api/cases/${caseId}/sections/neighborhood_description/insert`, {});
   // Accept: 200 ok:true (agent running + inserted), 503 (agent not running), 400 (no approved text)
   const validStatus = [200, 400, 503].includes(r.status);
   assert(validStatus,
     `Unexpected status ${r.status}: ${JSON.stringify(r.body).slice(0, 200)}`);
   if (r.status === 200) {
-    console.log('    → Agent running: insert succeeded');
+    console.log('    â†’ Agent running: insert succeeded');
     assert(r.body.ok === true, 'ok should be true on 200');
   } else if (r.status === 503) {
-    console.log('    → Agent not running: 503 returned (expected in CI)');
+    console.log('    â†’ Agent not running: 503 returned (expected in CI)');
     assert(r.body.ok === false, 'ok should be false on 503');
   } else {
-    console.log(`    → 400 returned: ${r.body.error || 'no approved text'}`);
+    console.log(`    â†’ 400 returned: ${r.body.error || 'no approved text'}`);
   }
 });
 
-await test('POST /api/cases/:caseId/insert-all — valid response', async () => {
+await test('POST /api/cases/:caseId/insert-all â€” valid response', async () => {
   const r = await api('POST', `/api/cases/${caseId}/insert-all`, {});
   const validStatus = [200, 400, 503].includes(r.status);
   assert(validStatus,
     `Unexpected status ${r.status}: ${JSON.stringify(r.body).slice(0, 200)}`);
   if (r.status === 200) {
-    console.log(`    → insert-all succeeded: ${r.body.inserted || 0} inserted`);
+    console.log(`    â†’ insert-all succeeded: ${r.body.inserted || 0} inserted`);
   } else if (r.status === 503) {
-    console.log('    → insert-all: 503 (agent not running)');
+    console.log('    â†’ insert-all: 503 (agent not running)');
   } else {
-    console.log(`    → insert-all: 400 — ${r.body.error}`);
+    console.log(`    â†’ insert-all: 400 â€” ${r.body.error}`);
   }
 });
 
-// ── Phase 7: Destination registry ────────────────────────────────────────────
+// â”€â”€ Phase 7: Destination registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 7: Destination registry');
 
@@ -327,8 +327,8 @@ await test('GET /api/cases/:caseId/destination-registry returns 1004 fields', as
   assert(r.formType === '1004', `Expected formType 1004, got ${r.formType}`);
   // Response: { ok, caseId, formType, software, fields:{}, fieldCount }
   assert(r.fields && typeof r.fields === 'object' && Object.keys(r.fields).length > 0,
-    `fields object missing or empty — got keys: ${Object.keys(r).join(', ')}`);
-  console.log(`    → ${r.fieldCount || Object.keys(r.fields).length} fields for 1004 (software: ${r.software})`);
+    `fields object missing or empty â€” got keys: ${Object.keys(r).join(', ')}`);
+  console.log(`    â†’ ${r.fieldCount || Object.keys(r.fields).length} fields for 1004 (software: ${r.software})`);
 });
 
 await test('neighborhood_description field targets ACI', async () => {
@@ -338,52 +338,52 @@ await test('neighborhood_description field targets ACI', async () => {
     'neighborhood_description not found in fields');
 });
 
-// ── Phase 8: Exceptions check ─────────────────────────────────────────────────
+// â”€â”€ Phase 8: Exceptions check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 8: Exceptions check');
 
-await test('GET /api/cases/:caseId/exceptions — returns valid structure', async () => {
+await test('GET /api/cases/:caseId/exceptions â€” returns valid structure', async () => {
   const r = await get(`/api/cases/${caseId}/exceptions`);
   assert(r.ok === true,          'exceptions ok !== true');
   assert(typeof r.count === 'number', 'exceptions.count should be a number');
   assert(Array.isArray(r.exceptions), 'exceptions.exceptions should be an array');
-  console.log(`    → ${r.count} exception(s) found`);
+  console.log(`    â†’ ${r.count} exception(s) found`);
 });
 
-// ── Phase 9: Support bundle ───────────────────────────────────────────────────
+// â”€â”€ Phase 9: Support bundle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 9: Support bundle export');
 
-await test('POST /api/export/bundle — creates bundle with this case', async () => {
-  console.log('    → Creating support bundle (may take 15-20s)...');
+await test('POST /api/export/bundle â€” creates bundle with this case', async () => {
+  console.log('    â†’ Creating support bundle (may take 15-20s)...');
   const r = await api('POST', '/api/export/bundle', { zip: true, label: 'e2e-test' });
   assert(r.status === 200, `bundle returned ${r.status}: ${JSON.stringify(r.body).slice(0, 200)}`);
   assert(r.body.ok === true,    'bundle ok !== true');
   assert(r.body.bundlePath,     'bundlePath missing');
   assert(r.body.isZip === true, 'isZip should be true');
-  console.log(`    → Bundle: ${path.basename(r.body.bundlePath)}`);
+  console.log(`    â†’ Bundle: ${path.basename(r.body.bundlePath)}`);
 });
 
-await test('GET /api/export/list — bundle appears in list', async () => {
+await test('GET /api/export/list â€” bundle appears in list', async () => {
   const r = await get('/api/export/list');
   assert(r.ok === true,          'export/list ok !== true');
   assert(Array.isArray(r.exports) && r.exports.length > 0,
     'No exports found after bundle creation');
-  console.log(`    → ${r.exports.length} export(s) in list`);
+  console.log(`    â†’ ${r.exports.length} export(s) in list`);
 });
 
-// ── Phase 10: Clipboard fallback ──────────────────────────────────────────────
+// â”€â”€ Phase 10: Clipboard fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 10: Clipboard fallback');
 
-await test('POST .../copy — clipboard fallback returns copied status', async () => {
+await test('POST .../copy â€” clipboard fallback returns copied status', async () => {
   const r = await api('POST', `/api/cases/${caseId}/sections/neighborhood_description/copy`, {});
   assert(r.status === 200,                    `copy returned ${r.status}`);
   assert(r.body.ok === true,                  'copy ok !== true');
   assert(r.body.sectionStatus === 'copied',   `sectionStatus should be 'copied', got ${r.body.sectionStatus}`);
   assert(r.body.manualPasteRequired === true, 'manualPasteRequired should be true');
   assert(r.body.text,                         'text missing from copy response');
-  console.log(`    → Clipboard text: ${r.body.text.slice(0, 60)}...`);
+  console.log(`    â†’ Clipboard text: ${r.body.text.slice(0, 60)}...`);
 });
 
 await test('"copied" status persisted in outputs.json', async () => {
@@ -394,11 +394,11 @@ await test('"copied" status persisted in outputs.json', async () => {
     `Expected sectionStatus 'copied', got '${sec?.sectionStatus}'`);
 });
 
-// ── Phase 11: Cleanup ─────────────────────────────────────────────────────────
+// â”€â”€ Phase 11: Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\nPhase 11: Cleanup');
 
-await test('DELETE /api/cases/:caseId — removes case', async () => {
+await test('DELETE /api/cases/:caseId â€” removes case', async () => {
   const r = await del(`/api/cases/${caseId}`);
   assert(r.ok === true, `delete failed: ${JSON.stringify(r).slice(0, 200)}`);
 });
@@ -413,14 +413,15 @@ await test('GET /api/cases/:caseId returns 404 after delete', async () => {
   assert(r.status === 404, `Expected 404 after delete, got ${r.status}`);
 });
 
-// ── Summary ───────────────────────────────────────────────────────────────────
+// â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\n══════════════════════════════════════════════════════');
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 console.log(`  E2E Results: ${passed} passed, ${failed} failed`);
 if (failures.length) {
   console.log('\n  FAILURES:');
-  failures.forEach(f => console.log(`    ✗ ${f.name}\n      → ${f.error}`));
+  failures.forEach(f => console.log(`    âœ— ${f.name}\n      â†’ ${f.error}`));
 }
-console.log('══════════════════════════════════════════════════════\n');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
 process.exit(failed > 0 ? 1 : 0);
+

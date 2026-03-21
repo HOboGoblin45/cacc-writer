@@ -170,7 +170,7 @@ app.use((err, req, res, next) => {
 });
 
 const server = app.listen(PORT, () => {
-  console.log('CACC Writer server running on port ' + PORT);
+  console.log('Appraisal Agent server running on port ' + PORT);
   console.log('Model: ' + MODEL);
   console.log('Cases dir: ' + CASES_DIR);
   console.log('Active forms: ' + ACTIVE_FORMS.join(', '));
@@ -192,7 +192,7 @@ const server = app.listen(PORT, () => {
   }
 
   try {
-    emitSystemEvent('system.startup', 'CACC Writer server started', {
+    emitSystemEvent('system.startup', 'Appraisal Agent server started', {
       port: PORT,
       model: MODEL,
       activeForms: ACTIVE_FORMS,

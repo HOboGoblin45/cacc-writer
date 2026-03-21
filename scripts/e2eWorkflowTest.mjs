@@ -1,12 +1,12 @@
-/**
+﻿/**
  * scripts/e2eWorkflowTest.mjs
  * ----------------------------
- * Comprehensive end-to-end workflow test for CACC Writer production validation.
+ * Comprehensive end-to-end workflow test for Appraisal Agent production validation.
  *
  * Tests:
- *   1. Upload real assignment sheet PDF → verify case created with correct facts
+ *   1. Upload real assignment sheet PDF â†’ verify case created with correct facts
  *   2. Geocode and verify boundary roads returned
- *   3. Generate all fields → verify 9/9 generated with no errors
+ *   3. Generate all fields â†’ verify 9/9 generated with no errors
  *   4. Check each generated field is non-empty and has no [INSERT] placeholders
  *      (except for sales_comparison_commentary / sca_summary which legitimately
  *       may reference [INSERT comp adjustments])
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Configuration ─────────────────────────────────────────────────────────────
+// â”€â”€ Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const BASE_URL = (() => {
   const idx = process.argv.indexOf('--base-url');
   return idx !== -1 ? process.argv[idx + 1] : (process.env.CACC_BASE_URL || 'http://localhost:5178');
@@ -52,28 +52,28 @@ const CRITICAL_FIELDS = [
   'reconciliation',
 ];
 
-// ── Result tracking ───────────────────────────────────────────────────────────
+// â”€â”€ Result tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const results = [];
 let criticalFailed = 0;
 
 function pass(check, detail = '') {
-  results.push({ status: '✓ PASS', check, detail });
-  console.log(`  ✓ PASS  ${check}${detail ? ' — ' + detail : ''}`);
+  results.push({ status: 'âœ“ PASS', check, detail });
+  console.log(`  âœ“ PASS  ${check}${detail ? ' â€” ' + detail : ''}`);
 }
 
 function fail(check, detail = '', critical = true) {
-  results.push({ status: '✗ FAIL', check, detail });
-  console.error(`  ✗ FAIL  ${check}${detail ? ' — ' + detail : ''}`);
+  results.push({ status: 'âœ— FAIL', check, detail });
+  console.error(`  âœ— FAIL  ${check}${detail ? ' â€” ' + detail : ''}`);
   if (critical) criticalFailed++;
 }
 
 function warn(check, detail = '') {
-  results.push({ status: '⚠ WARN', check, detail });
-  console.warn(`  ⚠ WARN  ${check}${detail ? ' — ' + detail : ''}`);
+  results.push({ status: 'âš  WARN', check, detail });
+  console.warn(`  âš  WARN  ${check}${detail ? ' â€” ' + detail : ''}`);
 }
 
 const CACC_API_KEY = 'cacc-local-key-2026';
-// ── HTTP helpers ──────────────────────────────────────────────────────────────
+// â”€â”€ HTTP helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function api(path, opts = {}) {
   const url = BASE_URL + path;
   const timeout = opts.timeout || 120000;
@@ -100,14 +100,14 @@ async function apiJson(path, opts = {}) {
   return { status: res.status, data };
 }
 
-// ── Main test flow ────────────────────────────────────────────────────────────
+// â”€â”€ Main test flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function run() {
-  console.log('\n═══════════════════════════════════════════════════════════');
-  console.log('  CACC Writer — End-to-End Workflow Test');
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  console.log('  Appraisal Agent â€” End-to-End Workflow Test');
   console.log('  Base URL:', BASE_URL);
-  console.log('═══════════════════════════════════════════════════════════\n');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
-  // ── CHECK 0: Server health ─────────────────────────────────────────────────
+  // â”€â”€ CHECK 0: Server health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('0. Server health check');
   try {
     const { status, data } = await apiJson('/api/health');
@@ -117,15 +117,15 @@ async function run() {
       fail('Server health check failed', JSON.stringify(data));
     }
   } catch (e) {
-    fail('Server unreachable', `${BASE_URL} — ${e.message}`);
+    fail('Server unreachable', `${BASE_URL} â€” ${e.message}`);
     console.error('\n  Cannot proceed without server. Exiting.\n');
     process.exit(1);
   }
 
-  // ── CHECK 1: Upload assignment sheet ───────────────────────────────────────
+  // â”€â”€ CHECK 1: Upload assignment sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n1. Upload assignment sheet PDF');
   if (!fs.existsSync(ASSIGNMENT_SHEET)) {
-    fail('Assignment sheet exists', ASSIGNMENT_SHEET + ' — file not found', true);
+    fail('Assignment sheet exists', ASSIGNMENT_SHEET + ' â€” file not found', true);
     console.error('\n  Cannot proceed without assignment sheet. Exiting.\n');
     process.exit(1);
   }
@@ -157,7 +157,7 @@ async function run() {
     process.exit(1);
   }
 
-  // ── CHECK 2: Verify extracted facts ───────────────────────────────────────
+  // â”€â”€ CHECK 2: Verify extracted facts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n2. Verify extracted facts');
 
   const expectedAddr = '14 Maple';
@@ -184,7 +184,7 @@ async function run() {
     warn('Form type not extracted, defaulting to 1004');
   }
 
-  // ── SEED: Minimal inspection facts (needed for fields that require physical inspection data)
+  // â”€â”€ SEED: Minimal inspection facts (needed for fields that require physical inspection data)
   // These are defaults so the generator doesn't output [INSERT] for template fields
   try {
     await apiJson(`/api/cases/${caseId}/facts`, {
@@ -217,7 +217,7 @@ async function run() {
     });
   } catch (e) { /* non-fatal */ }
 
-  // ── CHECK 3: Geocode / boundary roads ─────────────────────────────────────
+  // â”€â”€ CHECK 3: Geocode / boundary roads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n3. Geocode and boundary roads');
   try {
     const { status, data } = await apiJson(`/api/cases/${caseId}/geocode`, {
@@ -266,15 +266,15 @@ async function run() {
         warn('Geocode succeeded but no lat/lng returned');
       }
     } else if (status === 404) {
-      warn('Geocode endpoint not found', 'may be a different route path — skipping');
+      warn('Geocode endpoint not found', 'may be a different route path â€” skipping');
     } else {
       warn('Geocode returned error', data.error || JSON.stringify(data));
     }
   } catch (e) {
-    warn('Geocode request failed', e.message + ' — skipping (non-critical)');
+    warn('Geocode request failed', e.message + ' â€” skipping (non-critical)');
   }
 
-  // ── CHECK 4: Generate all fields ──────────────────────────────────────────
+  // â”€â”€ CHECK 4: Generate all fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n4. Generate all fields (generate-batch)');
 
   let generatedResults = {};
@@ -302,7 +302,7 @@ async function run() {
         warn(`${genCount} fields generated, ${errCount} errors`, Object.keys(generationErrors).join(', '));
       }
     } else if (status === 409) {
-      // Gate blocked — retry with bypass
+      // Gate blocked â€” retry with bypass
       warn('Pre-draft gate blocked, retrying with forceGateBypass');
       const { data: data2 } = await apiJson(`/api/cases/${caseId}/generate-all`, {
         method: 'POST',
@@ -324,7 +324,7 @@ async function run() {
     fail('Generation request threw exception', e.message);
   }
 
-  // ── CHECK 5: Validate generated field content ─────────────────────────────
+  // â”€â”€ CHECK 5: Validate generated field content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n5. Validate generated field content');
 
   const insertRe = /\[INSERT(?! comp adjustments)/i;
@@ -334,9 +334,9 @@ async function run() {
     const result = generatedResults[fieldId];
     if (!result || !result.text) {
       if (generationErrors[fieldId]) {
-        fail(`${fieldId} — generation error`, generationErrors[fieldId], true);
+        fail(`${fieldId} â€” generation error`, generationErrors[fieldId], true);
       } else {
-        fail(`${fieldId} — field not generated or empty`, '', true);
+        fail(`${fieldId} â€” field not generated or empty`, '', true);
       }
       continue;
     }
@@ -344,16 +344,16 @@ async function run() {
     const text = result.text.trim();
 
     if (emptyOrWorking(text)) {
-      fail(`${fieldId} — empty text`, '', true);
+      fail(`${fieldId} â€” empty text`, '', true);
       continue;
     }
 
     if (!ALLOW_INSERT_FIELDS.has(fieldId) && insertRe.test(text)) {
-      fail(`${fieldId} — contains [INSERT] placeholder`, text.slice(0, 120), true);
+      fail(`${fieldId} â€” contains [INSERT] placeholder`, text.slice(0, 120), true);
       continue;
     }
 
-    pass(`${fieldId} — OK`, `${text.length} chars`);
+    pass(`${fieldId} â€” OK`, `${text.length} chars`);
   }
 
   // Also report on other generated fields (non-critical)
@@ -361,11 +361,11 @@ async function run() {
     if (CRITICAL_FIELDS.includes(fieldId)) continue;
     const text = (result && result.text || '').trim();
     if (!text || text === 'Working...') {
-      warn(`${fieldId} — empty (non-critical)`);
+      warn(`${fieldId} â€” empty (non-critical)`);
     } else if (!ALLOW_INSERT_FIELDS.has(fieldId) && insertRe.test(text)) {
-      warn(`${fieldId} — contains [INSERT] placeholder (non-critical)`, text.slice(0, 80));
+      warn(`${fieldId} â€” contains [INSERT] placeholder (non-critical)`, text.slice(0, 80));
     } else {
-      pass(`${fieldId} — OK (non-critical)`, `${text.length} chars`);
+      pass(`${fieldId} â€” OK (non-critical)`, `${text.length} chars`);
     }
   }
 
@@ -374,14 +374,14 @@ async function run() {
     if (!generatedResults[fieldId]) {
       const isCritical = CRITICAL_FIELDS.includes(fieldId);
       if (isCritical) {
-        fail(`${fieldId} — error`, errMsg, true);
+        fail(`${fieldId} â€” error`, errMsg, true);
       } else {
-        warn(`${fieldId} — error (non-critical)`, errMsg);
+        warn(`${fieldId} â€” error (non-critical)`, errMsg);
       }
     }
   }
 
-  // ── CHECK 6: Total field count ─────────────────────────────────────────────
+  // â”€â”€ CHECK 6: Total field count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n6. Field count check');
   const totalGenerated = Object.keys(generatedResults).length;
   if (totalGenerated >= 9) {
@@ -392,7 +392,7 @@ async function run() {
     fail(`Too few fields generated: ${totalGenerated}/9`, 'Generation may be broken', true);
   }
 
-  // ── Cleanup: delete test case ──────────────────────────────────────────────
+  // â”€â”€ Cleanup: delete test case â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('\n7. Cleanup test case');
   try {
     const { data } = await apiJson(`/api/cases/${caseId}`, {
@@ -409,25 +409,25 @@ async function run() {
     warn('Test case cleanup failed', e.message);
   }
 
-  // ── Summary ────────────────────────────────────────────────────────────────
-  console.log('\n═══════════════════════════════════════════════════════════');
+  // â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
   console.log('  RESULTS SUMMARY');
-  console.log('═══════════════════════════════════════════════════════════');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
-  const passed = results.filter(r => r.status.startsWith('✓')).length;
-  const failed = results.filter(r => r.status.startsWith('✗')).length;
-  const warned = results.filter(r => r.status.startsWith('⚠')).length;
+  const passed = results.filter(r => r.status.startsWith('âœ“')).length;
+  const failed = results.filter(r => r.status.startsWith('âœ—')).length;
+  const warned = results.filter(r => r.status.startsWith('âš ')).length;
 
-  console.log(`  ✓ Passed:  ${passed}`);
-  console.log(`  ✗ Failed:  ${failed} (${criticalFailed} critical)`);
-  console.log(`  ⚠ Warned:  ${warned}`);
+  console.log(`  âœ“ Passed:  ${passed}`);
+  console.log(`  âœ— Failed:  ${failed} (${criticalFailed} critical)`);
+  console.log(`  âš  Warned:  ${warned}`);
   console.log('');
 
   if (criticalFailed === 0) {
-    console.log('  ✅ E2E TEST PASSED — All critical checks passed\n');
+    console.log('  âœ… E2E TEST PASSED â€” All critical checks passed\n');
     process.exit(0);
   } else {
-    console.log(`  ❌ E2E TEST FAILED — ${criticalFailed} critical check(s) failed\n`);
+    console.log(`  âŒ E2E TEST FAILED â€” ${criticalFailed} critical check(s) failed\n`);
     process.exit(1);
   }
 }
@@ -436,3 +436,4 @@ run().catch(err => {
   console.error('\n  FATAL:', err.message);
   process.exit(1);
 });
+

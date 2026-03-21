@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server/api/gmailRoutes.js
  * ---------------------------
  * Gmail OAuth + send routes.
@@ -25,7 +25,7 @@ import log from '../logger.js';
 
 const router = express.Router();
 
-// ── Status ──────────────────────────────────────────────────────────────────
+// â”€â”€ Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * GET /api/gmail/status
@@ -39,7 +39,7 @@ router.get('/gmail/status', (req, res) => {
   });
 });
 
-// ── OAuth Connect ─────────────────────────────────────────────────────────
+// â”€â”€ OAuth Connect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * GET /api/gmail/connect
@@ -87,10 +87,10 @@ router.get('/gmail/callback', async (req, res) => {
       '.box{background:#131929;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:40px;text-align:center;max-width:400px;}',
       'h2{color:#55d18f;margin-top:0;} a{color:#d7b35a;}</style></head>',
       '<body><div class="box">',
-      '<h2>✅ Gmail Connected!</h2>',
+      '<h2>âœ… Gmail Connected!</h2>',
       '<p>crescicharles@gmail.com is now authorized to send emails.</p>',
       '<p>You can close this tab and return to the app.</p>',
-      '<p><a href="/">Back to CACC Writer</a></p>',
+      '<p><a href="/">Back to Appraisal Agent</a></p>',
       '</div></body></html>',
     ].join(''));
   } catch (e) {
@@ -103,7 +103,7 @@ router.get('/gmail/callback', async (req, res) => {
   }
 });
 
-// ── Disconnect ────────────────────────────────────────────────────────────
+// â”€â”€ Disconnect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * POST /api/gmail/disconnect
@@ -114,7 +114,7 @@ router.post('/gmail/disconnect', (req, res) => {
   res.json({ ok: true, disconnected: removed });
 });
 
-// ── Send Email ────────────────────────────────────────────────────────────
+// â”€â”€ Send Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * POST /api/gmail/send
@@ -134,7 +134,7 @@ router.post('/gmail/send', async (req, res) => {
   res.json(result);
 });
 
-// ── Send Template ─────────────────────────────────────────────────────────
+// â”€â”€ Send Template â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * POST /api/gmail/send-template
@@ -189,3 +189,4 @@ router.get('/gmail/templates', (req, res) => {
 });
 
 export default router;
+

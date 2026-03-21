@@ -4,9 +4,9 @@ Inserts AI-generated commercial appraisal narrative text directly into Real Quan
 
 ## How It Works
 
-1. You generate a commercial narrative section in CACC Writer (browser)
+1. You generate a commercial narrative section in Appraisal Agent (browser)
 2. Click **Insert into Real Quantum** on any output card (commercial form only)
-3. CACC Writer calls this agent at `http://localhost:5181/insert`
+3. Appraisal Agent calls this agent at `http://localhost:5181/insert`
 4. The agent attaches to your open Chrome session, navigates to the correct section, and inserts the text
 
 ## Why Playwright (not pywinauto)

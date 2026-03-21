@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * scripts/ci-local.mjs
  * ---------------------
@@ -25,14 +25,14 @@ const steps = [
 ];
 
 console.log('='.repeat(60));
-console.log('CACC Writer — CI-Local Pipeline');
+console.log('Appraisal Agent â€” CI-Local Pipeline');
 console.log('='.repeat(60));
 
 let allPassed = true;
 
 for (const step of steps) {
-  console.log(`\n▶ ${step.name}`);
-  console.log('─'.repeat(60));
+  console.log(`\nâ–¶ ${step.name}`);
+  console.log('â”€'.repeat(60));
 
   const result = spawnSync(step.cmd, step.args, {
     cwd: projectRoot,
@@ -46,7 +46,7 @@ for (const step of steps) {
   });
 
   if (result.status !== 0) {
-    console.log(`\n✗ ${step.name} failed (exit code ${result.status})`);
+    console.log(`\nâœ— ${step.name} failed (exit code ${result.status})`);
 
     // Typecheck failures are warnings if tsconfig doesn't exist
     if (step.name === 'typecheck' && result.status !== 0) {
@@ -63,18 +63,19 @@ for (const step of steps) {
     }
 
     allPassed = false;
-    console.log('\n✗ Pipeline stopped at: ' + step.name);
+    console.log('\nâœ— Pipeline stopped at: ' + step.name);
     process.exit(1);
   }
 
-  console.log(`✓ ${step.name} passed`);
+  console.log(`âœ“ ${step.name} passed`);
 }
 
 console.log('\n' + '='.repeat(60));
 if (allPassed) {
-  console.log('✓ All CI-local steps passed');
+  console.log('âœ“ All CI-local steps passed');
 } else {
-  console.log('✗ Some steps failed');
+  console.log('âœ— Some steps failed');
   process.exit(1);
 }
 console.log('='.repeat(60));
+

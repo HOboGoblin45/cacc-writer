@@ -1,6 +1,6 @@
-# Gmail Integration Setup
+﻿# Gmail Integration Setup
 
-This guide sets up Gmail OAuth so CACC Writer can send emails on your behalf (as crescicharles@gmail.com).
+This guide sets up Gmail OAuth so Appraisal Agent can send emails on your behalf (as crescicharles@gmail.com).
 
 ## Prerequisites
 
@@ -12,32 +12,32 @@ This guide sets up Gmail OAuth so CACC Writer can send emails on your behalf (as
 ## Step 1: Google Cloud Console
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Select (or create) the **"CACC Writer"** project — same one used for Google Sheets
-3. If creating new: click **New Project** → name it "CACC Writer" → Create
+2. Select (or create) the **"Appraisal Agent"** project â€” same one used for Google Sheets
+3. If creating new: click **New Project** â†’ name it "Appraisal Agent" â†’ Create
 
 ---
 
 ## Step 2: Enable Gmail API
 
-1. In the left sidebar → **APIs & Services** → **Library**
+1. In the left sidebar â†’ **APIs & Services** â†’ **Library**
 2. Search for **"Gmail API"**
-3. Click **Gmail API** → **Enable**
+3. Click **Gmail API** â†’ **Enable**
 
 ---
 
 ## Step 3: Create OAuth 2.0 Credentials
 
-1. Go to **APIs & Services** → **Credentials**
-2. Click **+ Create Credentials** → **OAuth client ID**
+1. Go to **APIs & Services** â†’ **Credentials**
+2. Click **+ Create Credentials** â†’ **OAuth client ID**
 3. If prompted, configure the OAuth consent screen first:
    - User type: **External** (or Internal if using Google Workspace)
-   - App name: **CACC Writer**
+   - App name: **Appraisal Agent**
    - Support email: crescicharles@gmail.com
    - Add scope: `https://www.googleapis.com/auth/gmail.send`
    - Add test user: crescicharles@gmail.com
 4. Back in Create OAuth client ID:
    - Application type: **Web application**
-   - Name: **CACC Writer Gmail**
+   - Name: **Appraisal Agent Gmail**
    - Authorized redirect URIs: `http://localhost:5178/api/gmail/callback`
 5. Click **Create**
 6. Copy the **Client ID** and **Client Secret**
@@ -59,12 +59,12 @@ Restart the server after saving.
 
 ## Step 5: Authorize in the App
 
-1. Go to CACC Writer → **System** tab
+1. Go to Appraisal Agent â†’ **System** tab
 2. Find the **Gmail Integration** card
 3. Click **Connect Gmail** (opens Google consent screen)
 4. Sign in as crescicharles@gmail.com
 5. Grant permission to send email
-6. You'll see "✅ Gmail Connected!" — done!
+6. You'll see "âœ… Gmail Connected!" â€” done!
 
 ---
 
@@ -73,7 +73,7 @@ Restart the server after saving.
 Once connected, you can:
 
 - **From the app**: Use the Gmail card on the System tab
-- **Via Telegram**: Say "send an email to X about Y" — the assistant will draft and send it
+- **Via Telegram**: Say "send an email to X about Y" â€” the assistant will draft and send it
 - **Templates**: Common appraisal emails (inspection requests, report delivery, etc.) are pre-built
 
 ### Available Templates
@@ -90,7 +90,7 @@ Once connected, you can:
 
 ## Security Notes
 
-- Only `gmail.send` scope is requested — the app cannot read your email
+- Only `gmail.send` scope is requested â€” the app cannot read your email
 - Token is saved locally at `credentials/gmail-token.json`
 - Tokens auto-refresh when expired
 - Click **Disconnect** in the System tab to revoke access
@@ -99,7 +99,8 @@ Once connected, you can:
 
 ## Troubleshooting
 
-**"Gmail not configured"** — GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET not in .env  
-**"Access blocked: App not verified"** — Add yourself as a test user in OAuth consent screen  
-**Token expired / refresh fails** — Click Disconnect then Connect Gmail again  
-**"googleapis not found"** — Run `npm install googleapis` in the cacc-writer folder
+**"Gmail not configured"** â€” GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET not in .env  
+**"Access blocked: App not verified"** â€” Add yourself as a test user in OAuth consent screen  
+**Token expired / refresh fails** â€” Click Disconnect then Connect Gmail again  
+**"googleapis not found"** â€” Run `npm install googleapis` in the cacc-writer folder
+

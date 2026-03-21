@@ -1,7 +1,7 @@
 ﻿/**
  * _test_smoke.mjs
  * ---------------
- * Smoke tests for CACC Writer production server.
+ * Smoke tests for Appraisal Agent production server.
  *
  * Tests all critical API endpoints to confirm the server starts correctly
  * and all routes respond with expected shapes. Does NOT require a live
@@ -184,7 +184,7 @@ let smokeQueueJobId = null;
 // ── Test suites ───────────────────────────────────────────────────────────────
 
 console.log('\n══════════════════════════════════════════');
-console.log('  CACC Writer Smoke Tests');
+console.log('  Appraisal Agent Smoke Tests');
 console.log(`  Target: ${BASE}`);
 console.log('══════════════════════════════════════════\n');
 
@@ -1693,6 +1693,7 @@ console.log('══════════════════════�
 await serverHarness.stop();
 cleanupSmokeArtifacts();
 process.exit(failed > 0 ? 1 : 0);
+
 
 
 

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * server/business/quoteService.js
  * --------------------------------
- * Fee quote management service for CACC Writer.
+ * Fee quote management service for Appraisal Agent.
  *
  * Handles the full lifecycle of fee quotes: creation, sending, acceptance,
  * decline, expiration, and conversion to engagement records.
@@ -15,13 +15,13 @@ import { getDb } from '../db/database.js';
 import { emitAuditEvent, emitCaseEvent } from '../operations/auditLogger.js';
 import log from '../logger.js';
 
-// ── ID helper ────────────────────────────────────────────────────────────────
+// â”€â”€ ID helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeId() {
   return 'quot_' + randomUUID().slice(0, 12);
 }
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ JSON helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseJson(str, fallback = null) {
   if (!str) return fallback;
@@ -38,7 +38,7 @@ function stringifyJson(val) {
   return JSON.stringify(val);
 }
 
-// ── Row hydration ────────────────────────────────────────────────────────────
+// â”€â”€ Row hydration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function hydrateQuote(row) {
   if (!row) return null;
@@ -49,7 +49,7 @@ function hydrateQuote(row) {
   };
 }
 
-// ── Default fee schedule ─────────────────────────────────────────────────────
+// â”€â”€ Default fee schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Base fee schedule: sfr/1004 standard=$450, complex=$650, highly_complex=$850
 // Condo/1073: +$50, multi_family/1025: +$150, rush: +$200
 
@@ -71,7 +71,7 @@ const PROPERTY_TYPE_ADJUSTMENTS = {
 
 const RUSH_FEE_DEFAULT = 200;
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Calculate fee based on property type, form type, complexity, and rush.
@@ -541,3 +541,4 @@ export default {
   convertQuoteToCaseAndEngagement,
   getQuoteSummary,
 };
+

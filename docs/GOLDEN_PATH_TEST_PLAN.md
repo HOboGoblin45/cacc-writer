@@ -1,8 +1,8 @@
-# Golden Path Test Plan
+﻿# Golden Path Test Plan
 
 ## Goal
 
-Validate that CACC Writer can move a real fixture-backed assignment from intake through archive using shipped APIs and canonical case records, without database surgery.
+Validate that Appraisal Agent can move a real fixture-backed assignment from intake through archive using shipped APIs and canonical case records, without database surgery.
 
 This plan is intentionally stricter than smoke tests:
 
@@ -136,3 +136,4 @@ Phase 1 regression baseline:
 - run `npm run test:golden` on machines with live ACI and Real Quantum agents
 
 Phase 1 is only fully accepted when strict mode passes for both fixtures.
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * tests/unit/run.mjs
  * Runs all unit test suites sequentially and reports a combined summary.
  * Run: node tests/unit/run.mjs
@@ -34,6 +34,7 @@ const suites = [
   'xmlParser.test.mjs',
   'promptBuilder.test.mjs',
   'fieldProfiles.test.mjs',
+  'destinationMapper.test.mjs',
   'agentClient.test.mjs',
   'agentProbe.test.mjs',
   'insertionRunEngine.test.mjs',
@@ -50,13 +51,13 @@ let totalFailed = 0;
 const suiteSummaries = [];
 
 console.log('='.repeat(60));
-console.log('CACC Writer — Unit Test Suite');
+console.log('Appraisal Agent â€” Unit Test Suite');
 console.log('='.repeat(60));
 
 for (const suite of suites) {
   const suitePath = path.join(__dirname, suite);
-  console.log('\n▶ ' + suite);
-  console.log('─'.repeat(60));
+  console.log('\nâ–¶ ' + suite);
+  console.log('â”€'.repeat(60));
 
   const result = spawnSync(process.execPath, [suitePath], {
     stdio: 'pipe',
@@ -91,22 +92,23 @@ for (const suite of suites) {
   }
 }
 
-// ── Combined summary ──────────────────────────────────────────────────────────
+// â”€â”€ Combined summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\n' + '='.repeat(60));
 console.log('UNIT TEST SUMMARY');
 console.log('='.repeat(60));
 suiteSummaries.forEach(({ suite, passed, failed }) => {
-  const status = failed === 0 ? '✓' : '✗';
+  const status = failed === 0 ? 'âœ“' : 'âœ—';
   console.log(`  ${status}  ${suite.padEnd(30)} ${passed} passed, ${failed} failed`);
 });
-console.log('─'.repeat(60));
+console.log('â”€'.repeat(60));
 console.log(`     ${'TOTAL'.padEnd(30)} ${totalPassed} passed, ${totalFailed} failed`);
 console.log('='.repeat(60));
 
 if (totalFailed > 0) {
-  console.log('\n✗ ' + totalFailed + ' test(s) failed');
+  console.log('\nâœ— ' + totalFailed + ' test(s) failed');
   process.exit(1);
 } else {
-  console.log('\n✓ All ' + totalPassed + ' tests passed');
+  console.log('\nâœ“ All ' + totalPassed + ' tests passed');
 }
+

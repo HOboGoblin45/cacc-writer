@@ -1,4 +1,4 @@
-/**
+﻿/**
  * _test_thorough.mjs
  * Thorough integration tests covering PDF upload, extract-facts, questionnaire,
  * grade, generate-all, pipeline management, section approval, KB management,
@@ -11,7 +11,7 @@
 const BASE = 'http://localhost:5178';
 let passed = 0, failed = 0, warned = 0, caseId = null;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function req(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -35,20 +35,20 @@ async function upload(path, fieldName, filename, buffer, mimeType, extraFields =
 }
 
 function pass(label, detail) {
-  console.log(`  ✓ ${label}`);
+  console.log(`  âœ“ ${label}`);
   if (detail) console.log(`    ${detail}`);
   passed++;
 }
 
 function fail(label, detail) {
-  console.log(`  ✗ ${label}`);
-  if (detail) console.log(`    → ${detail}`);
+  console.log(`  âœ— ${label}`);
+  if (detail) console.log(`    â†’ ${detail}`);
   failed++;
 }
 
 function warn(label, detail) {
-  console.log(`  ⚠ ${label}`);
-  if (detail) console.log(`    → ${detail}`);
+  console.log(`  âš  ${label}`);
+  if (detail) console.log(`    â†’ ${detail}`);
   warned++;
 }
 
@@ -59,10 +59,10 @@ function section(title) {
 function truncate(str, n = 120) {
   if (!str) return '(empty)';
   const s = String(str);
-  return s.length > n ? s.slice(0, n) + '…' : s;
+  return s.length > n ? s.slice(0, n) + 'â€¦' : s;
 }
 
-// ── Minimal PDF builder ───────────────────────────────────────────────────────
+// â”€â”€ Minimal PDF builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Creates a valid PDF with enough text for pdf-parse to extract (>= 200 chars).
 function buildMinimalPDF(textContent) {
   const streamContent = `BT\n/F1 10 Tf\n50 750 Td\n${
@@ -96,15 +96,15 @@ function buildMinimalPDF(textContent) {
   return Buffer.from(header + obj1 + obj2 + obj3 + obj4 + obj5 + xref + trailer, 'utf8');
 }
 
-// ── Test Suite ────────────────────────────────────────────────────────────────
+// â”€â”€ Test Suite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\n══════════════════════════════════════════════════════');
-console.log('  CACC Writer Thorough Integration Tests');
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+console.log('  Appraisal Agent Thorough Integration Tests');
 console.log('  Target: ' + BASE);
-console.log('══════════════════════════════════════════════════════');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
-// ── 1. Setup ──────────────────────────────────────────────────────────────────
-section('1. Setup — Create case');
+// â”€â”€ 1. Setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('1. Setup â€” Create case');
 
 {
   const { status, json } = await req('POST', '/api/cases/create', {
@@ -117,27 +117,27 @@ section('1. Setup — Create case');
     pass(`Created test case: ${caseId}`);
   } else {
     fail('Create test case', `status=${status} ok=${json.ok}`);
-    console.log('\n  ⚠ Cannot continue without a case. Aborting.');
+    console.log('\n  âš  Cannot continue without a case. Aborting.');
     process.exit(1);
   }
 }
 
-// ── 2. Health Detailed ────────────────────────────────────────────────────────
+// â”€â”€ 2. Health Detailed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 section('2. GET /api/health/detailed');
 
 {
   const { status, json } = await req('GET', '/api/health/detailed');
   if (status === 200 && json.ok) {
     pass('Health detailed', `version=${json.version} model=${json.model} uptime=${json.uptimeS}s aiKeySet=${json.aiKeySet} kb.total=${json.kb?.totalExamples} cases=${json.cases?.total}`);
-    if (!json.aiKeySet) warn('aiKeySet is false — AI endpoints will fail');
-    if (!json.kb?.totalExamples) warn('KB has 0 examples — generation will have no style examples');
+    if (!json.aiKeySet) warn('aiKeySet is false â€” AI endpoints will fail');
+    if (!json.kb?.totalExamples) warn('KB has 0 examples â€” generation will have no style examples');
   } else {
     fail('Health detailed', `status=${status} error=${json.error}`);
   }
 }
 
-// ── 3. PDF Upload ─────────────────────────────────────────────────────────────
-section('3. POST /api/cases/:id/upload — PDF upload');
+// â”€â”€ 3. PDF Upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('3. POST /api/cases/:id/upload â€” PDF upload');
 
 let docTextInjected = false;
 {
@@ -161,7 +161,7 @@ let docTextInjected = false;
   ].join('\n');
 
   const pdfBuffer = buildMinimalPDF(pdfText);
-  console.log(`  → Uploading synthetic PDF (${pdfBuffer.length} bytes)…`);
+  console.log(`  â†’ Uploading synthetic PDF (${pdfBuffer.length} bytes)â€¦`);
 
   const { status, json } = await upload(
     `/api/cases/${caseId}/upload`,
@@ -175,12 +175,12 @@ let docTextInjected = false;
   } else {
     fail('PDF upload', `status=${status} error=${json.error || json._raw?.slice(0, 200)}`);
     // Fallback: inject doc_text via facts so extract-facts can still run
-    console.log('  → Falling back: injecting doc_text via direct facts for extract-facts test');
+    console.log('  â†’ Falling back: injecting doc_text via direct facts for extract-facts test');
   }
 }
 
-// ── 4. Extract Facts ──────────────────────────────────────────────────────────
-section('4. POST /api/cases/:id/extract-facts — AI fact extraction from document');
+// â”€â”€ 4. Extract Facts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('4. POST /api/cases/:id/extract-facts â€” AI fact extraction from document');
 
 {
   // If PDF upload failed, provide answers directly so extract-facts still runs
@@ -193,7 +193,7 @@ section('4. POST /api/cases/:id/extract-facts — AI fact extraction from docume
     'Opinion of value': '$310,000',
   };
 
-  console.log(`  → Calling AI to extract facts from ${docTextInjected ? 'uploaded PDF' : 'provided answers'} (may take 15–30s)…`);
+  console.log(`  â†’ Calling AI to extract facts from ${docTextInjected ? 'uploaded PDF' : 'provided answers'} (may take 15â€“30s)â€¦`);
   const start = Date.now();
   const { status, json } = await req('POST', `/api/cases/${caseId}/extract-facts`, { answers });
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
@@ -210,14 +210,14 @@ section('4. POST /api/cases/:id/extract-facts — AI fact extraction from docume
       if (val) console.log(`    ${k}: ${String(val).slice(0, 60)}`);
     }
   } else if (status === 400 && json.error?.includes('No documents')) {
-    warn('Extract-facts skipped — no doc_text and no answers provided', json.error);
+    warn('Extract-facts skipped â€” no doc_text and no answers provided', json.error);
   } else {
     fail('Extract-facts', `status=${status} error=${json.error}`);
   }
 }
 
-// ── 5. Save facts for downstream tests ───────────────────────────────────────
-section('5. PUT /api/cases/:id/facts — Save structured facts');
+// â”€â”€ 5. Save facts for downstream tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('5. PUT /api/cases/:id/facts â€” Save structured facts');
 
 {
   const { status, json } = await req('PUT', `/api/cases/${caseId}/facts`, {
@@ -243,11 +243,11 @@ section('5. PUT /api/cases/:id/facts — Save structured facts');
   }
 }
 
-// ── 6. Questionnaire ──────────────────────────────────────────────────────────
-section('6. POST /api/cases/:id/questionnaire — AI-generated intake questions');
+// â”€â”€ 6. Questionnaire â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('6. POST /api/cases/:id/questionnaire â€” AI-generated intake questions');
 
 {
-  console.log('  → Calling AI to generate questionnaire (may take 10–20s)…');
+  console.log('  â†’ Calling AI to generate questionnaire (may take 10â€“20s)â€¦');
   const start = Date.now();
   const { status, json } = await req('POST', `/api/cases/${caseId}/questionnaire`, {});
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
@@ -262,12 +262,12 @@ section('6. POST /api/cases/:id/questionnaire — AI-generated intake questions'
   }
 }
 
-// ── 7. Generate-All ───────────────────────────────────────────────────────────
-section('7. POST /api/cases/:id/generate-all — Generate all form fields');
+// â”€â”€ 7. Generate-All â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('7. POST /api/cases/:id/generate-all â€” Generate all form fields');
 
 let generatedFields = [];
 {
-  console.log('  → Generating all 1004 fields (may take 30–90s)…');
+  console.log('  â†’ Generating all 1004 fields (may take 30â€“90s)â€¦');
   const start = Date.now();
   const { status, json } = await req('POST', `/api/cases/${caseId}/generate-all`, {
     twoPass: false,
@@ -281,10 +281,10 @@ let generatedFields = [];
       pass(`Generate-all completed (${elapsed}s)`, `${generatedFields.length} generated, ${errorCount} errors, stage=${json.pipelineStage}`);
       for (const k of generatedFields.slice(0, 3)) {
         const t = json.results[k];
-        console.log(`    [${k}] ${t.text?.length || 0} chars — "${truncate(t.text, 80)}"`);
+        console.log(`    [${k}] ${t.text?.length || 0} chars â€” "${truncate(t.text, 80)}"`);
       }
       if (errorCount > 0) {
-        console.log(`    ⚠ Errors: ${JSON.stringify(json.errors).slice(0, 200)}`);
+        console.log(`    âš  Errors: ${JSON.stringify(json.errors).slice(0, 200)}`);
       }
     } else {
       fail('Generate-all returned 0 results', `errors: ${JSON.stringify(json.errors).slice(0, 300)}`);
@@ -294,14 +294,14 @@ let generatedFields = [];
   }
 }
 
-// ── 8. Grade ──────────────────────────────────────────────────────────────────
-section('8. POST /api/cases/:id/grade — AI narrative grading');
+// â”€â”€ 8. Grade â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('8. POST /api/cases/:id/grade â€” AI narrative grading');
 
 {
   if (generatedFields.length === 0) {
-    warn('Grade skipped — no generated outputs available');
+    warn('Grade skipped â€” no generated outputs available');
   } else {
-    console.log('  → Calling AI to grade generated narratives (may take 15–30s)…');
+    console.log('  â†’ Calling AI to grade generated narratives (may take 15â€“30s)â€¦');
     const start = Date.now();
     const { status, json } = await req('POST', `/api/cases/${caseId}/grade`, {});
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
@@ -322,13 +322,13 @@ section('8. POST /api/cases/:id/grade — AI narrative grading');
   }
 }
 
-// ── 9. Section Approval ───────────────────────────────────────────────────────
-section('9. PATCH /api/cases/:id/outputs/:fieldId — Section approval + KB save');
+// â”€â”€ 9. Section Approval â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('9. PATCH /api/cases/:id/outputs/:fieldId â€” Section approval + KB save');
 
 {
   const fieldToApprove = generatedFields[0];
   if (!fieldToApprove) {
-    warn('Section approval skipped — no generated fields available');
+    warn('Section approval skipped â€” no generated fields available');
   } else {
     const { status, json } = await req('PATCH', `/api/cases/${caseId}/outputs/${fieldToApprove}`, {
       approved: true,
@@ -341,16 +341,16 @@ section('9. PATCH /api/cases/:id/outputs/:fieldId — Section approval + KB save
   }
 }
 
-// ── 10. Pipeline Stage Management ─────────────────────────────────────────────
-section('10. PATCH /api/cases/:id/pipeline — Pipeline stage management');
+// â”€â”€ 10. Pipeline Stage Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('10. PATCH /api/cases/:id/pipeline â€” Pipeline stage management');
 
 {
   for (const stage of ['review', 'approved', 'inserting', 'complete']) {
     const { status, json } = await req('PATCH', `/api/cases/${caseId}/pipeline`, { stage });
     if (status === 200 && json.ok && json.pipelineStage === stage) {
-      pass(`Pipeline → ${stage}`);
+      pass(`Pipeline â†’ ${stage}`);
     } else {
-      fail(`Pipeline → ${stage}`, `status=${status} error=${json.error}`);
+      fail(`Pipeline â†’ ${stage}`, `status=${status} error=${json.error}`);
     }
   }
 
@@ -363,8 +363,8 @@ section('10. PATCH /api/cases/:id/pipeline — Pipeline stage management');
   }
 }
 
-// ── 11. Case History ──────────────────────────────────────────────────────────
-section('11. GET /api/cases/:id/history — Output history');
+// â”€â”€ 11. Case History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('11. GET /api/cases/:id/history â€” Output history');
 
 {
   const { status, json } = await req('GET', `/api/cases/${caseId}/history`);
@@ -376,8 +376,8 @@ section('11. GET /api/cases/:id/history — Output history');
   }
 }
 
-// ── 12. KB Management ─────────────────────────────────────────────────────────
-section('12. KB Management — status, reindex, migrate-voice');
+// â”€â”€ 12. KB Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('12. KB Management â€” status, reindex, migrate-voice');
 
 {
   // GET /api/kb/status
@@ -396,7 +396,7 @@ section('12. KB Management — status, reindex, migrate-voice');
     fail('KB reindex', `status=${s2} error=${j2.error}`);
   }
 
-  // POST /api/kb/migrate-voice (idempotent — already migrated is fine)
+  // POST /api/kb/migrate-voice (idempotent â€” already migrated is fine)
   const { status: s3, json: j3 } = await req('POST', '/api/kb/migrate-voice');
   if (s3 === 200 && j3.ok) {
     pass('KB migrate-voice', `migrated=${j3.migrated} skipped=${j3.skipped} total=${j3.total}`);
@@ -405,8 +405,8 @@ section('12. KB Management — status, reindex, migrate-voice');
   }
 }
 
-// ── 13. Case List and Detail ──────────────────────────────────────────────────
-section('13. GET /api/cases + GET /api/cases/:id — Case list and detail');
+// â”€â”€ 13. Case List and Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('13. GET /api/cases + GET /api/cases/:id â€” Case list and detail');
 
 {
   const { status: s1, json: j1 } = await req('GET', '/api/cases');
@@ -426,16 +426,16 @@ section('13. GET /api/cases + GET /api/cases/:id — Case list and detail');
   }
 }
 
-// ── 14. Case Status Update ────────────────────────────────────────────────────
-section('14. PATCH /api/cases/:id/status — Case status management');
+// â”€â”€ 14. Case Status Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('14. PATCH /api/cases/:id/status â€” Case status management');
 
 {
   for (const status of ['submitted', 'archived', 'active']) {
     const { status: s, json: j } = await req('PATCH', `/api/cases/${caseId}/status`, { status });
     if (s === 200 && j.ok && j.meta?.status === status) {
-      pass(`Status → ${status}`);
+      pass(`Status â†’ ${status}`);
     } else {
-      fail(`Status → ${status}`, `status=${s} error=${j.error}`);
+      fail(`Status â†’ ${status}`, `status=${s} error=${j.error}`);
     }
   }
 
@@ -448,19 +448,19 @@ section('14. PATCH /api/cases/:id/status — Case status management');
   }
 }
 
-// ── 15. Neighborhood Templates ────────────────────────────────────────────────
-section('15. Neighborhood Templates — CRUD');
+// â”€â”€ 15. Neighborhood Templates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('15. Neighborhood Templates â€” CRUD');
 
 let templateId = null;
 {
   // Create
   const { status: s1, json: j1 } = await req('POST', '/api/templates/neighborhood', {
-    name: 'Test Template — East Side',
+    name: 'Test Template â€” East Side',
     boundaries: 'North: Veterans Pkwy, South: Empire St, East: Towanda Ave, West: Main St',
-    description: 'Established residential neighborhood with mix of 1970s–2000s construction.',
+    description: 'Established residential neighborhood with mix of 1970sâ€“2000s construction.',
   });
   if (s1 === 200 && j1.ok) {
-    templateId = j1.templates?.find(t => t.name === 'Test Template — East Side')?.id;
+    templateId = j1.templates?.find(t => t.name === 'Test Template â€” East Side')?.id;
     pass('Template created', `id=${templateId}`);
   } else {
     fail('Template create', `status=${s1} error=${j1.error}`);
@@ -485,7 +485,7 @@ let templateId = null;
   }
 }
 
-// ── 16. Voice Examples API ────────────────────────────────────────────────────
+// â”€â”€ 16. Voice Examples API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 section('16. GET /api/voice/examples + folder-status');
 
 {
@@ -504,8 +504,8 @@ section('16. GET /api/voice/examples + folder-status');
   }
 }
 
-// ── 17. Forms API ─────────────────────────────────────────────────────────────
-section('17. GET /api/forms — Form configuration');
+// â”€â”€ 17. Forms API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('17. GET /api/forms â€” Form configuration');
 
 {
   const { status: s1, json: j1 } = await req('GET', '/api/forms');
@@ -525,28 +525,28 @@ section('17. GET /api/forms — Form configuration');
   }
 }
 
-// ── 18. Agent Status ──────────────────────────────────────────────────────────
-section('18. GET /api/agents/status — Agent reachability');
+// â”€â”€ 18. Agent Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('18. GET /api/agents/status â€” Agent reachability');
 
 {
   const { status, json } = await req('GET', '/api/agents/status');
   if (status === 200 && json.ok) {
     pass('Agent status', `aci=${json.aci} rq=${json.rq}`);
-    if (!json.aci) console.log('    ℹ ACI agent not running (expected if not started)');
-    if (!json.rq)  console.log('    ℹ RQ agent not running (expected if not started)');
+    if (!json.aci) console.log('    â„¹ ACI agent not running (expected if not started)');
+    if (!json.rq)  console.log('    â„¹ RQ agent not running (expected if not started)');
   } else {
     fail('Agent status', `status=${status}`);
   }
 }
 
-// ── 19. Error Handling ────────────────────────────────────────────────────────
-section('19. Error handling — Invalid inputs and edge cases');
+// â”€â”€ 19. Error Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+section('19. Error handling â€” Invalid inputs and edge cases');
 
 {
   // Invalid caseId format
   const { status: s1 } = await req('GET', '/api/cases/not-valid-id');
   if (s1 === 400) {
-    pass('Invalid caseId → 400');
+    pass('Invalid caseId â†’ 400');
   } else {
     fail('Invalid caseId validation', `expected 400 got ${s1}`);
   }
@@ -554,7 +554,7 @@ section('19. Error handling — Invalid inputs and edge cases');
   // Non-existent case
   const { status: s2 } = await req('GET', '/api/cases/00000000');
   if (s2 === 404) {
-    pass('Non-existent case → 404');
+    pass('Non-existent case â†’ 404');
   } else {
     fail('Non-existent case', `expected 404 got ${s2}`);
   }
@@ -562,7 +562,7 @@ section('19. Error handling — Invalid inputs and edge cases');
   // Generate without fieldId or prompt
   const { status: s3, json: j3 } = await req('POST', '/api/generate', {});
   if (s3 === 400) {
-    pass('Generate without fieldId/prompt → 400');
+    pass('Generate without fieldId/prompt â†’ 400');
   } else {
     fail('Generate missing params', `expected 400 got ${s3} error=${j3.error}`);
   }
@@ -570,7 +570,7 @@ section('19. Error handling — Invalid inputs and edge cases');
   // Feedback without fieldId
   const { status: s4 } = await req('POST', `/api/cases/${caseId}/feedback`, { editedText: 'test' });
   if (s4 === 400) {
-    pass('Feedback without fieldId → 400');
+    pass('Feedback without fieldId â†’ 400');
   } else {
     fail('Feedback missing fieldId', `expected 400 got ${s4}`);
   }
@@ -578,13 +578,13 @@ section('19. Error handling — Invalid inputs and edge cases');
   // Unknown form type
   const { status: s5 } = await req('GET', '/api/forms/unknown_form_type');
   if (s5 === 404) {
-    pass('Unknown form type → 404');
+    pass('Unknown form type â†’ 404');
   } else {
     fail('Unknown form type', `expected 404 got ${s5}`);
   }
 }
 
-// ── 20. Cleanup ───────────────────────────────────────────────────────────────
+// â”€â”€ 20. Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 section('20. Cleanup');
 
 {
@@ -596,8 +596,9 @@ section('20. Cleanup');
   }
 }
 
-// ── Results ───────────────────────────────────────────────────────────────────
-console.log('\n══════════════════════════════════════════════════════');
+// â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 console.log(`  Results: ${passed} passed, ${failed} failed, ${warned} warnings`);
-console.log('══════════════════════════════════════════════════════\n');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 if (failed > 0) process.exit(1);
+

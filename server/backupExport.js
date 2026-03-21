@@ -1,7 +1,7 @@
-/**
+﻿/**
  * backupExport.js
  * ---------------
- * Creates support bundles and project data exports for CACC Writer.
+ * Creates support bundles and project data exports for Appraisal Agent.
  *
  * Support bundle includes:
  *   - cases/ (all case data: meta, facts, outputs)
@@ -31,7 +31,7 @@ const KB_DIR       = path.join(ROOT, 'knowledge_base');
 const LOGS_DIR     = path.join(ROOT, 'logs');
 const PKG_PATH     = path.join(ROOT, 'package.json');
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function safeReadJSON(filePath) {
   try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
@@ -65,7 +65,7 @@ function copyFileToBundle(src, bundleDir, relBase) {
   return rel;
 }
 
-// ── Bundle stats ──────────────────────────────────────────────────────────────
+// â”€â”€ Bundle stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * getBundleStats()
@@ -104,7 +104,7 @@ export function getBundleStats() {
   };
 }
 
-// ── Create support bundle ─────────────────────────────────────────────────────
+// â”€â”€ Create support bundle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * createSupportBundle(options)
@@ -121,7 +121,7 @@ export async function createSupportBundle(options = {}) {
   try {
     ensureDir(EXPORTS_DIR);
 
-    // ── Local-time timestamp: YYYY-MM-DD-HHMM (no seconds, no UTC offset) ────
+    // â”€â”€ Local-time timestamp: YYYY-MM-DD-HHMM (no seconds, no UTC offset) â”€â”€â”€â”€
     function localTimestamp() {
       const d   = new Date();
       const pad = n => String(n).padStart(2, '0');
@@ -139,7 +139,7 @@ export async function createSupportBundle(options = {}) {
       counts:     { cases: 0, approvedNarratives: 0, approvedEdits: 0, logs: 0 },
     };
 
-    // ── 1. Cases ──────────────────────────────────────────────────────────────
+    // â”€â”€ 1. Cases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (fs.existsSync(CASES_DIR)) {
       const caseFiles = listFilesRecursive(CASES_DIR);
       for (const f of caseFiles) {
@@ -149,7 +149,7 @@ export async function createSupportBundle(options = {}) {
       }
     }
 
-    // ── 2. Approved Narratives ────────────────────────────────────────────────
+    // â”€â”€ 2. Approved Narratives â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const narDir = path.join(KB_DIR, 'approvedNarratives');
     if (fs.existsSync(narDir)) {
       const narFiles = listFilesRecursive(narDir);
@@ -160,7 +160,7 @@ export async function createSupportBundle(options = {}) {
       }
     }
 
-    // ── 3. Approved Edits (legacy KB) ─────────────────────────────────────────
+    // â”€â”€ 3. Approved Edits (legacy KB) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const editDir = path.join(KB_DIR, 'approved_edits');
     if (fs.existsSync(editDir)) {
       const editFiles = listFilesRecursive(editDir);
@@ -171,7 +171,7 @@ export async function createSupportBundle(options = {}) {
       }
     }
 
-    // ── 4. Logs ───────────────────────────────────────────────────────────────
+    // â”€â”€ 4. Logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (fs.existsSync(LOGS_DIR)) {
       const cutoff = includeAllLogs
         ? null
@@ -195,7 +195,7 @@ export async function createSupportBundle(options = {}) {
       }
     }
 
-    // ── 5. Health snapshot ────────────────────────────────────────────────────
+    // â”€â”€ 5. Health snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Captures service state at the moment the bundle was created.
     // Server is always healthy here (we are running). KB/narratives probed.
     let kbProbeOk = true, narProbeOk = true;
@@ -219,7 +219,7 @@ export async function createSupportBundle(options = {}) {
       appVersion:  manifest.appVersion,
       note:        'Service health at time of bundle creation',
       services: {
-        server:             { status: 'healthy', note: 'Server was running — bundle created successfully' },
+        server:             { status: 'healthy', note: 'Server was running â€” bundle created successfully' },
         knowledgeBase:      { status: kbProbeOk  ? 'healthy' : 'degraded', cases: manifest.counts.cases, approvedNarratives: manifest.counts.approvedNarratives },
         approvedNarratives: { status: narProbeOk ? 'healthy' : 'degraded', count: manifest.counts.approvedNarratives },
         logs:               { count: manifest.counts.logs },
@@ -232,7 +232,7 @@ export async function createSupportBundle(options = {}) {
     );
     manifest.files.push('health-snapshot.json');
 
-    // ── 6. Insertion diagnostics ──────────────────────────────────────────────
+    // â”€â”€ 6. Insertion diagnostics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Collects sectionStatus from all case outputs.json files.
     // Useful for diagnosing failed insertions after a support bundle is submitted.
     const insertionDiagnostics = {
@@ -263,7 +263,7 @@ export async function createSupportBundle(options = {}) {
           if (Object.keys(sections).length) {
             insertionDiagnostics.cases[caseId] = sections;
           }
-        } catch { /* non-fatal — skip corrupt outputs.json */ }
+        } catch { /* non-fatal â€” skip corrupt outputs.json */ }
       }
     }
     fs.writeFileSync(
@@ -273,14 +273,14 @@ export async function createSupportBundle(options = {}) {
     );
     manifest.files.push('insertion-diagnostics.json');
 
-    // ── 7. Manifest ───────────────────────────────────────────────────────────
+    // â”€â”€ 7. Manifest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     fs.writeFileSync(
       path.join(bundleDir, 'bundle-manifest.json'),
       JSON.stringify(manifest, null, 2),
       'utf8'
     );
 
-    // ── 8. Zip (optional, uses system zip/PowerShell) ─────────────────────────
+    // â”€â”€ 8. Zip (optional, uses system zip/PowerShell) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let zipPath = null;
     if (zip) {
       const zipFile = bundleDir + '.zip';
@@ -294,7 +294,7 @@ export async function createSupportBundle(options = {}) {
         fs.rmSync(bundleDir, { recursive: true, force: true });
         zipPath = zipFile;
       } catch {
-        // Zip failed — return the unzipped directory path instead
+        // Zip failed â€” return the unzipped directory path instead
         zipPath = null;
       }
     }
@@ -349,3 +349,4 @@ export default {
   createSupportBundle,
   listExports,
 };
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -124,25 +124,25 @@ button.sm{padding:5px 9px;font-size:11px;}
 .sev.critical{background:rgba(255,92,92,.25);color:#ffaaaa;}
 .sev.major{background:rgba(245,200,66,.2);color:var(--warn);}
 .sev.minor{background:rgba(255,255,255,.1);color:var(--muted);}
-/* ── Phase 7 QC severity badges ─────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC severity badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sev.blocker{background:rgba(255,50,50,.35);color:#ff9999;font-weight:900;}
 .sev.high{background:rgba(255,92,92,.25);color:#ffaaaa;}
 .sev.medium{background:rgba(245,200,66,.2);color:var(--warn);}
 .sev.low{background:rgba(255,255,255,.1);color:var(--muted);}
 .sev.advisory{background:rgba(100,180,255,.1);color:#8ac4ff;}
-/* ── Phase 7 QC grade-item severity variants ────────────────────────────── */
+/* â”€â”€ Phase 7 QC grade-item severity variants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .grade-item.blocker{background:rgba(255,50,50,.15);border:1px solid rgba(255,50,50,.35);}
 .grade-item.high{background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.25);}
 .grade-item.medium{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.25);}
 .grade-item.low{background:rgba(0,0,0,.15);border:1px solid var(--border);}
 .grade-item.advisory{background:rgba(100,180,255,.06);border:1px solid rgba(100,180,255,.2);}
-/* ── Phase 7 QC readiness signal ────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC readiness signal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-readiness{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.3px;}
 .qc-readiness.ready{background:rgba(85,209,143,.15);color:var(--ok);border:1px solid rgba(85,209,143,.3);}
 .qc-readiness.review_recommended{background:rgba(245,200,66,.12);color:var(--warn);border:1px solid rgba(245,200,66,.25);}
 .qc-readiness.needs_review{background:rgba(255,160,50,.12);color:#ffb347;border:1px solid rgba(255,160,50,.25);}
 .qc-readiness.not_ready{background:rgba(255,92,92,.12);color:var(--danger);border:1px solid rgba(255,92,92,.25);}
-/* ── Phase 7 QC summary grid ───────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC summary grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin:12px 0;}
 .qc-summary-cell{text-align:center;padding:8px 6px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid var(--border);}
 .qc-summary-cell .qc-cell-num{font-size:22px;font-weight:900;line-height:1;}
@@ -152,7 +152,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .qc-summary-cell.medium .qc-cell-num{color:var(--warn);}
 .qc-summary-cell.low .qc-cell-num{color:var(--muted);}
 .qc-summary-cell.advisory .qc-cell-num{color:#8ac4ff;}
-/* ── Phase 7 QC finding row ────────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC finding row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-finding-row{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:8px;margin-bottom:6px;font-size:12px;transition:background .15s;}
 .qc-finding-row:hover{background:rgba(255,255,255,.03);}
 .qc-finding-row.blocker{background:rgba(255,50,50,.08);border:1px solid rgba(255,50,50,.2);}
@@ -167,16 +167,16 @@ button.sm{padding:5px 9px;font-size:11px;}
 .qc-finding-detail{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35;}
 .qc-finding-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;align-items:center;}
 .qc-finding-actions{display:flex;gap:4px;flex-shrink:0;align-items:flex-start;margin-top:2px;}
-/* ── Phase 7 QC filter bar ─────────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center;}
 .qc-filter-bar select{font-size:11px;padding:3px 6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);}
 .qc-filter-bar .qc-filter-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
-/* ── Phase 7 QC run history ────────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC run history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-run-item{padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:11px;cursor:pointer;border:1px solid transparent;transition:border-color .15s,background .15s;}
 .qc-run-item:hover{background:rgba(255,255,255,.04);border-color:var(--border);}
 .qc-run-item.active{border-color:var(--gold);background:rgba(215,179,90,.06);}
 .qc-run-item .qc-run-meta{color:var(--muted);font-size:10px;margin-top:2px;}
-/* ── Phase 7 QC top risks ──────────────────────────────────────────────── */
+/* â”€â”€ Phase 7 QC top risks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qc-risk-item{display:flex;gap:6px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;}
 .qc-risk-item:last-child{border-bottom:none;}
 .hint{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px;}
@@ -192,25 +192,25 @@ button.sm{padding:5px 9px;font-size:11px;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px;}
-/* ── Assignment 4-card layout ───────────────────────────────────────────────── */
+/* â”€â”€ Assignment 4-card layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .assign-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
 .assign-grid .full{grid-column:1/-1;}
 @media(max-width:600px){.assign-grid{grid-template-columns:1fr;}}
 .card-row{display:flex;gap:12px;flex-wrap:wrap;}
 .card-row>.card{flex:1;min-width:240px;}
-/* ── Workflow status badge ──────────────────────────────────────────────────── */
+/* â”€â”€ Workflow status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .wf-badge{font-size:10px;padding:3px 10px;border-radius:999px;font-weight:700;border:1px solid;white-space:nowrap;display:inline-flex;align-items:center;}
 .wf-ok{color:var(--ok);border-color:rgba(85,209,143,.35);background:rgba(85,209,143,.08);}
 .wf-warn{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.08);}
 .wf-err{color:var(--danger);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.08);}
-/* ── Missing facts warning panel ────────────────────────────────────────────── */
+/* â”€â”€ Missing facts warning panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .missing-panel{border:1px solid rgba(245,200,66,.35);background:rgba(245,200,66,.05);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:none;}
 .missing-panel.visible{display:block;}
 .missing-panel-head{font-size:11px;font-weight:800;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
 .missing-item{font-size:11px;padding:2px 0;display:flex;align-items:center;gap:6px;}
 .missing-item.req{color:#ffcccc;}
 .missing-item.rec{color:var(--muted);}
-/* ── Case metadata chips ────────────────────────────────────────────────────── */
+/* â”€â”€ Case metadata chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .meta-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
 .meta-chip{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
 .meta-chip.purpose{border-color:rgba(215,179,90,.3);color:var(--gold);background:rgba(215,179,90,.06);}
@@ -218,9 +218,9 @@ button.sm{padding:5px 9px;font-size:11px;}
 .meta-chip.condition{border-color:rgba(255,92,92,.3);color:#ffaaaa;background:rgba(255,92,92,.06);}
 .meta-chip.geo{border-color:rgba(85,209,143,.25);color:var(--ok);background:rgba(85,209,143,.05);}
 .meta-chip.cond-rating{border-color:rgba(245,200,66,.3);color:var(--warn);background:rgba(245,200,66,.06);}
-/* ── Field helper text ──────────────────────────────────────────────────────── */
+/* â”€â”€ Field helper text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .field-hint{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
-/* ── Form picker (active vs deferred two-section layout) ────────────────────── */
+/* â”€â”€ Form picker (active vs deferred two-section layout) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form-picker{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
 .form-picker-section-head{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
 .form-picker-section-head.active-head{color:var(--gold);}
@@ -244,14 +244,14 @@ button.sm{padding:5px 9px;font-size:11px;}
 .deferred-section-toggle:hover{color:var(--text);}
 .deferred-section-body{display:none;}
 .deferred-section-body.open{display:block;}
-/* ── Deferred form banner ────────────────────────────────────────────────────── */
+/* â”€â”€ Deferred form banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .deferred-banner{border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.06);border-radius:8px;padding:9px 12px;margin-bottom:10px;display:none;}
 .deferred-banner.visible{display:block;}
 .deferred-banner-head{font-size:11px;font-weight:800;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
 .deferred-banner-body{font-size:11px;color:var(--muted);line-height:1.4;}
-/* ── Deferred form badge in case list ───────────────────────────────────────── */
+/* â”€â”€ Deferred form badge in case list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form-badge.deferred{border-color:rgba(245,200,66,.3);color:var(--warn);background:rgba(245,200,66,.06);}
-/* ── Section status badges (Phase 2 generate-core lifecycle) ─────────────────── */
+/* â”€â”€ Section status badges (Phase 2 generate-core lifecycle) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ss-badge{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;border:1px solid;white-space:nowrap;flex-shrink:0;}
 .ss-not_started{color:var(--muted);border-color:var(--border);background:transparent;}
 .ss-drafted{color:var(--warn);border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.07);}
@@ -260,7 +260,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .ss-inserted{color:var(--gold);border-color:rgba(215,179,90,.35);background:rgba(215,179,90,.08);}
 .ss-verified{color:var(--ok);border-color:rgba(85,209,143,.5);background:rgba(85,209,143,.12);font-weight:900;}
 .ss-error{color:var(--danger);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.08);}
-/* ── Service health strip ────────────────────────────────────────────────────── */
+/* â”€â”€ Service health strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .health-strip{display:flex;align-items:center;gap:6px;padding:5px 18px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.18);flex-wrap:wrap;min-height:30px;}
 .health-strip-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-right:4px;white-space:nowrap;}
 .hs-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.03);white-space:nowrap;cursor:default;transition:border-color .2s,color .2s;}
@@ -275,20 +275,20 @@ button.sm{padding:5px 9px;font-size:11px;}
 .hs-export-btn:disabled{opacity:.5;cursor:not-allowed;}
 .hs-refresh-btn{padding:2px 7px;font-size:10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;transition:color .15s;}
 .hs-refresh-btn:hover{color:var(--text);}
-/* ── Version badge ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Version badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .version-badge{font-size:10px;color:var(--muted);padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);white-space:nowrap;font-family:var(--mono);}
-/* ── Export status toast ─────────────────────────────────────────────────────── */
+/* â”€â”€ Export status toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .export-toast{position:fixed;bottom:18px;right:18px;padding:10px 16px;border-radius:10px;border:1px solid rgba(85,209,143,.4);background:rgba(11,16,32,.95);color:var(--ok);font-size:12px;font-weight:700;z-index:9999;display:none;box-shadow:0 4px 24px rgba(0,0,0,.5);}
 .export-toast.err{border-color:rgba(255,92,92,.4);color:var(--danger);}
 .export-toast.visible{display:block;}
-/* ── Core sections status panel ──────────────────────────────────────────────── */
+/* â”€â”€ Core sections status panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .core-panel{border:1px solid rgba(215,179,90,.3);background:rgba(215,179,90,.04);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none;}
 .core-panel.visible{display:block;}
 .core-panel-head{font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
 .core-section-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.05);}
 .core-section-row:last-child{border-bottom:none;}
 .core-section-name{flex:1;color:var(--text);}
-/* ── Comp Commentary Panel ───────────────────────────────────────────────────── */
+/* â”€â”€ Comp Commentary Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .comp-adj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px 8px;margin-top:4px;}
 .comp-adj-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;border:1px solid transparent;cursor:pointer;transition:background .12s,border-color .12s;}
 .comp-adj-item:hover{background:rgba(255,255,255,.04);border-color:var(--border);}
@@ -299,7 +299,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .comp-out-area{margin-top:10px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.15);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.6;white-space:pre-wrap;color:var(--text);min-height:80px;display:none;}
 .comp-out-area.visible{display:block;}
 .comp-out-meta{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-/* ── Full Draft Orchestrator Panel ───────────────────────────────────────────── */
+/* â”€â”€ Full Draft Orchestrator Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fd-panel{border:1px solid rgba(215,179,90,.35);background:rgba(215,179,90,.04);border-radius:12px;overflow:hidden;margin-bottom:10px;display:none;}
 .fd-panel.visible{display:block;}
 .fd-panel-head{padding:10px 14px;border-bottom:1px solid rgba(215,179,90,.2);display:flex;justify-content:space-between;align-items:center;background:rgba(215,179,90,.06);}
@@ -339,7 +339,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .fd-warnings.visible{display:block;}
 .fd-warning-item{font-size:11px;color:var(--warn);padding:2px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
 .fd-run-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;}
-/* ── Phase 3: Governance Cards ──────────────────────────────────────────────── */
+/* â”€â”€ Phase 3: Governance Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .gov-card{border:1px solid rgba(215,179,90,.2);background:rgba(215,179,90,.03);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
 .gov-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .gov-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--gold);}
@@ -359,7 +359,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .gov-dep-chip{font-size:9px;padding:1px 6px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
 .gov-dep-chip.present{color:var(--ok);border-color:rgba(85,209,143,.25);}
 .gov-dep-chip.missing{color:var(--danger);border-color:rgba(255,92,92,.25);}
-/* ── Phase 3: Readiness Checklist ───────────────────────────────────────────── */
+/* â”€â”€ Phase 3: Readiness Checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rdns-checklist{display:flex;flex-direction:column;gap:4px;}
 .rdns-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;font-size:11px;border:1px solid transparent;}
 .rdns-item.pass{background:rgba(85,209,143,.04);border-color:rgba(85,209,143,.12);}
@@ -368,7 +368,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .rdns-icon{width:16px;text-align:center;flex-shrink:0;font-size:12px;}
 .rdns-label{flex:1;font-weight:600;}
 .rdns-detail{font-size:10px;color:var(--muted);}
-/* ── Phase 3: Missing-Facts Dashboard ───────────────────────────────────────── */
+/* â”€â”€ Phase 3: Missing-Facts Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .mf-dashboard{display:flex;flex-direction:column;gap:8px;}
 .mf-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
 .mf-section-head{padding:6px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;}
@@ -379,7 +379,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .mf-fact-sev{font-size:9px;font-weight:800;padding:1px 5px;border-radius:999px;}
 .mf-fact-sev.required{color:var(--danger);border:1px solid rgba(255,92,92,.25);background:rgba(255,92,92,.08);}
 .mf-fact-sev.recommended{color:var(--warn);border:1px solid rgba(245,200,66,.25);background:rgba(245,200,66,.06);}
-/* ── Phase 3: Business Status Summary ───────────────────────────────────────── */
+/* â”€â”€ Phase 3: Business Status Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .biz-status-card{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:rgba(0,0,0,.12);}
 .biz-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
 .biz-metric{display:flex;flex-direction:column;gap:2px;}
@@ -388,7 +388,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .biz-metric-value.ok{color:var(--ok);}
 .biz-metric-value.warn{color:var(--warn);}
 .biz-metric-value.err{color:var(--danger);}
-/* ── Phase 3: Due-Date / Pipeline Dashboard ─────────────────────────────────── */
+/* â”€â”€ Phase 3: Due-Date / Pipeline Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .due-queue{display:flex;flex-direction:column;gap:4px;}
 .due-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:11px;border:1px solid var(--border);cursor:pointer;transition:background .15s;}
 .due-item:hover{background:rgba(255,255,255,.04);}
@@ -404,7 +404,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .pipeline-stage{font-size:9px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;}
 .pipeline-stage.active{border-color:var(--gold);color:var(--gold);background:rgba(215,179,90,.08);}
 .pipeline-stage .ps-count{font-weight:900;margin-left:3px;}
-/* ── Phase 4: Valuation Desk ────────────────────────────────────────────────── */
+/* â”€â”€ Phase 4: Valuation Desk â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .val-desk-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:12px;}
 .val-desk-tab{padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;text-transform:uppercase;letter-spacing:.3px;transition:color .15s,border-color .15s;}
 .val-desk-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
@@ -450,7 +450,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .recon-weight-input{width:60px;text-align:center;padding:4px;font-size:12px;font-weight:700;}
 .recon-narrative{margin-top:12px;}
 .recon-narrative textarea{min-height:120px;font-size:12px;line-height:1.5;}
-/* ── Phase 5: Learning Dashboard & Memory Health ──────────────────────────── */
+/* â”€â”€ Phase 5: Learning Dashboard & Memory Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .learn-dash{display:flex;flex-direction:column;gap:12px;}
 .learn-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
 .learn-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
@@ -489,7 +489,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .why-factor-value{font-weight:700;font-family:var(--mono);min-width:45px;text-align:right;}
 .why-factor-bar{width:50px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
 .why-factor-fill{height:100%;background:#8ac4ff;border-radius:2px;}
-/* ── Phase 6: System Reliability ──────────────────────────────────────────── */
+/* â”€â”€ Phase 6: System Reliability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sys-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
 .sys-stat{border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
 .sys-stat-value{font-size:20px;font-weight:900;font-family:var(--mono);}
@@ -533,7 +533,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .dr-status{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px;}
 .dr-check{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;}
 .dr-check-icon{min-width:14px;text-align:center;}
-/* ── Phase 7: Inspection Capture ──────────────────────────────────────────── */
+/* â”€â”€ Phase 7: Inspection Capture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .insp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:border-color .15s;}
 .insp-item:hover{border-color:rgba(215,179,90,.3);}
 .insp-item.active{border-color:var(--gold);background:rgba(215,179,90,.04);}
@@ -562,7 +562,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .cond-sev.good{color:var(--ok);border-color:rgba(85,209,143,.35);}
 .cond-sev.fair{color:var(--warn);border-color:rgba(245,200,66,.35);}
 .cond-sev.poor{color:var(--danger);border-color:rgba(255,92,92,.35);}
-/* ── Phase 7: Insertion Reliability Panel ─────────────────────────────────── */
+/* â”€â”€ Phase 7: Insertion Reliability Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ins-run-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
 .ins-run-item:hover{border-color:rgba(215,179,90,.3);}
 .ins-field-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;margin-bottom:3px;font-size:10px;}
@@ -571,7 +571,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .ins-field-status.pending{color:var(--warn);border-color:rgba(245,200,66,.35);}
 .ins-field-status.failed{color:var(--danger);border-color:rgba(255,92,92,.35);}
 .ins-field-status.clipboard{color:var(--muted);border-color:var(--border);}
-/* ── Pipeline fact cards ──────────────────────────────────────────────────── */
+/* â”€â”€ Pipeline fact cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fact-card{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
 .fact-card:hover{border-color:rgba(215,179,90,.3);}
 .fact-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
@@ -579,7 +579,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .fact-card-value{font-family:var(--mono);color:var(--gold);}
 .fact-card-prov{font-size:9px;color:var(--muted);}
 .fact-card-conflict{font-size:9px;color:var(--danger);font-weight:700;margin-top:2px;}
-/* ── Phase 8: Golden-Path Validation ──────────────────────────────────────── */
+/* â”€â”€ Phase 8: Golden-Path Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .gp-step{display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:11px;border-radius:6px;margin-bottom:2px;}
 .gp-step-icon{min-width:16px;text-align:center;font-size:12px;}
 .gp-step-dod{font-size:8px;padding:1px 5px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700;min-width:24px;text-align:center;}
@@ -593,7 +593,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .gp-summary-pass{color:var(--ok);}
 .gp-summary-fail{color:var(--danger);}
 .gp-summary-time{color:var(--muted);font-size:11px;font-weight:400;}
-/* ── Phase 9: Valuation Desk ─────────────────────────────────────────────── */
+/* â”€â”€ Phase 9: Valuation Desk â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .val-cand{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;transition:border-color .15s;}
 .val-cand:hover{border-color:rgba(215,179,90,.3);}
 .val-cand-score{font-size:14px;font-weight:900;font-family:var(--mono);min-width:36px;text-align:center;}
@@ -623,7 +623,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .val-final-value{font-size:24px;font-weight:900;font-family:var(--mono);color:var(--gold);margin-top:4px;}
 .val-income-row,.val-cost-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
 .val-income-row span:last-child,.val-cost-row span:last-child{font-family:var(--mono);font-weight:700;}
-/* ── Phase 10: Governance Dashboard ──────────────────────────────────────── */
+/* â”€â”€ Phase 10: Governance Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .gov-section{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:border-color .15s;}
 .gov-section:hover{border-color:rgba(215,179,90,.3);}
 .gov-section.current{border-left:3px solid var(--ok);}
@@ -654,7 +654,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .gov-donut{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
 .gov-donut-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;font-family:var(--mono);}
 .gov-donut-labels{font-size:11px;}
-/* ── Phase 11: Learning Dashboard ────────────────────────────────────────── */
+/* â”€â”€ Phase 11: Learning Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .lrn-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:8px;}
 .lrn-stat{border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
 .lrn-stat-val{font-size:20px;font-weight:900;font-family:var(--mono);color:var(--gold);}
@@ -676,7 +676,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 .lrn-influence-factor{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
 .lrn-diff-section{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;margin-bottom:3px;font-size:11px;}
 .lrn-diff-ratio{font-size:13px;font-weight:900;font-family:var(--mono);min-width:40px;text-align:center;}
-/* ── New UI Overhaul Styles ──────────────────────────────────────────────── */
+/* â”€â”€ New UI Overhaul Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /* Active case bar in header */
 .active-case-bar{display:none;align-items:center;gap:10px;padding:6px 18px;background:rgba(215,179,90,.06);border-bottom:1px solid rgba(215,179,90,.2);flex-wrap:wrap;}
@@ -765,7 +765,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 
 <header>
   <div style="display:flex;align-items:center;gap:10px;">
-    <h1 style="font-size:16px;font-weight:800;">CACC Writer</h1>
+    <h1 style="font-size:16px;font-weight:800;">Appraisal Agent</h1>
     <div class="sub" id="headerSub" style="color:var(--muted);font-size:11px;margin-top:0;">Cresci Appraisal &amp; Consulting</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -797,56 +797,56 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </header>
 
-<!-- ── Active Case Bar ──────────────────────────────────────────────────────── -->
+<!-- â”€â”€ Active Case Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div class="active-case-bar" id="activeCaseBar">
   <span class="acb-label">Active</span>
-  <span class="acb-name" id="acbName">—</span>
+  <span class="acb-name" id="acbName">â€”</span>
   <span class="acb-form" id="acbForm" style="display:none;"></span>
   <div class="acb-actions">
-    <button class="acb-btn" onclick="showTab('workspace')" title="Open workspace for this case">✏️ Workspace</button>
-    <button class="acb-btn" onclick="generateAll()" title="Generate all narrative sections">⚡ Generate All</button>
-    <button class="acb-btn" onclick="generateAllAndInsertAll()" title="Generate + insert all into ACI">⤵ Insert All</button>
+    <button class="acb-btn" onclick="showTab('workspace')" title="Open workspace for this case">âœï¸ Workspace</button>
+    <button class="acb-btn" onclick="generateAll()" title="Generate all narrative sections">âš¡ Generate All</button>
+    <button class="acb-btn" onclick="generateAllAndInsertAll()" title="Generate + insert all into ACI">â¤µ Insert All</button>
     <button class="acb-btn sec" onclick="showTab('case')" title="Go to case list">Cases</button>
   </div>
 </div>
 
-<!-- ── Service Health Strip ─────────────────────────────────────────────────── -->
+<!-- â”€â”€ Service Health Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div class="health-strip" id="healthStrip">
   <span class="health-strip-label">Services</span>
-  <span class="hs-chip checking" id="hs-server"    title="CACC Writer server (port 5178)"><span class="hs-dot"></span>Server</span>
-  <span class="hs-chip checking" id="hs-aciAgent"  title="ACI desktop agent — start desktop_agent/agent.py"><span class="hs-dot"></span>ACI Agent</span>
-  <span class="hs-chip checking" id="hs-rqAgent"   title="Real Quantum agent — start real_quantum_agent/agent.py"><span class="hs-dot"></span>RQ Agent</span>
+  <span class="hs-chip checking" id="hs-server"    title="Appraisal Agent server (port 5178)"><span class="hs-dot"></span>Server</span>
+  <span class="hs-chip checking" id="hs-aciAgent"  title="ACI desktop agent â€” start desktop_agent/agent.py"><span class="hs-dot"></span>ACI Agent</span>
+  <span class="hs-chip checking" id="hs-rqAgent"   title="Real Quantum agent â€” start real_quantum_agent/agent.py"><span class="hs-dot"></span>RQ Agent</span>
   <span class="hs-chip checking" id="hs-kb"        title="Knowledge base read/write"><span class="hs-dot"></span>KB</span>
   <span class="hs-chip checking" id="hs-narratives" title="Approved narratives store"><span class="hs-dot"></span>Narratives</span>
   <span class="hs-spacer"></span>
-  <button class="hs-refresh-btn" onclick="loadHealthStatus()" title="Refresh service health">↻</button>
-  <button class="hs-export-btn" id="exportBundleBtn" onclick="createSupportBundle()" title="Create support bundle (cases + narratives + logs as ZIP)">⬇ Export Bundle</button>
+  <button class="hs-refresh-btn" onclick="loadHealthStatus()" title="Refresh service health">â†»</button>
+  <button class="hs-export-btn" id="exportBundleBtn" onclick="createSupportBundle()" title="Create support bundle (cases + narratives + logs as ZIP)">â¬‡ Export Bundle</button>
 </div>
 
-<!-- ── Primary Navigation ─────────────────────────────────────────────────── -->
+<!-- â”€â”€ Primary Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <nav class="primary-nav">
-  <div class="tab" onclick="showTab('intake')" data-tab="intake">📥 New Order</div>
-  <div class="tab active" onclick="showTab('case')" data-tab="case">📋 Cases</div>
-  <div class="tab" onclick="showTab('workspace')" data-tab="workspace">✏️ Workspace</div>
-  <div class="tab" onclick="showTab('voice')" data-tab="voice">📚 Voice</div>
+  <div class="tab" onclick="showTab('intake')" data-tab="intake">ðŸ“¥ New Order</div>
+  <div class="tab active" onclick="showTab('case')" data-tab="case">ðŸ“‹ Cases</div>
+  <div class="tab" onclick="showTab('workspace')" data-tab="workspace">âœï¸ Workspace</div>
+  <div class="tab" onclick="showTab('voice')" data-tab="voice">ðŸ“š Voice</div>
   <div class="tools-menu-wrap">
-    <button class="tab tools-tab" id="toolsMenuBtn" onclick="toggleToolsMenu(event)" title="Developer & advanced tools">⚙️ Tools <span id="toolsMenuLabel" style="font-size:10px;"></span>▾</button>
+    <button class="tab tools-tab" id="toolsMenuBtn" onclick="toggleToolsMenu(event)" title="Developer & advanced tools">âš™ï¸ Tools <span id="toolsMenuLabel" style="font-size:10px;"></span>â–¾</button>
     <div class="tools-dropdown" id="toolsDropdown">
       <div class="tools-dropdown-section">Daily Tools</div>
-      <div class="tools-dropdown-item" onclick="showTab('generate')">⚡ Generate</div>
-      <div class="tools-dropdown-item" onclick="showTab('facts')">📋 Facts</div>
-      <div class="tools-dropdown-item" onclick="showTab('qc')">✅ QC Grade</div>
-      <div class="tools-dropdown-item" onclick="showTab('docs')">📁 Docs</div>
+      <div class="tools-dropdown-item" onclick="showTab('generate')">âš¡ Generate</div>
+      <div class="tools-dropdown-item" onclick="showTab('facts')">ðŸ“‹ Facts</div>
+      <div class="tools-dropdown-item" onclick="showTab('qc')">âœ… QC Grade</div>
+      <div class="tools-dropdown-item" onclick="showTab('docs')">ðŸ“ Docs</div>
       <div class="tools-dropdown-divider"></div>
       <div class="tools-dropdown-section">Advanced</div>
-      <div class="tools-dropdown-item" onclick="showTab('intel')">🔍 Intel</div>
-      <div class="tools-dropdown-item" onclick="showTab('valuation')">💰 Valuation</div>
-      <div class="tools-dropdown-item" onclick="showTab('memory')">🧠 Memory</div>
-      <div class="tools-dropdown-item" onclick="showTab('pipeline')">🔄 Pipeline</div>
-      <div class="tools-dropdown-item" onclick="showTab('inspect')">🔬 Inspect</div>
-      <div class="tools-dropdown-item" onclick="showTab('governance')">📜 Governance</div>
-      <div class="tools-dropdown-item" onclick="showTab('learning')">📖 Learning</div>
-      <div class="tools-dropdown-item" onclick="showTab('system')">⚙️ System</div>
+      <div class="tools-dropdown-item" onclick="showTab('intel')">ðŸ” Intel</div>
+      <div class="tools-dropdown-item" onclick="showTab('valuation')">ðŸ’° Valuation</div>
+      <div class="tools-dropdown-item" onclick="showTab('memory')">ðŸ§  Memory</div>
+      <div class="tools-dropdown-item" onclick="showTab('pipeline')">ðŸ”„ Pipeline</div>
+      <div class="tools-dropdown-item" onclick="showTab('inspect')">ðŸ”¬ Inspect</div>
+      <div class="tools-dropdown-item" onclick="showTab('governance')">ðŸ“œ Governance</div>
+      <div class="tools-dropdown-item" onclick="showTab('learning')">ðŸ“– Learning</div>
+      <div class="tools-dropdown-item" onclick="showTab('system')">âš™ï¸ System</div>
     </div>
   </div>
 </nav>
@@ -863,7 +863,7 @@ button.sm{padding:5px 9px;font-size:11px;}
           <div class="intake-step-sub">Upload assignment sheet</div>
         </div>
       </div>
-      <span class="intake-step-arrow">›</span>
+      <span class="intake-step-arrow">â€º</span>
       <div class="intake-step" id="iwStep2">
         <div class="intake-step-num">2</div>
         <div>
@@ -871,7 +871,7 @@ button.sm{padding:5px 9px;font-size:11px;}
           <div class="intake-step-sub">Check extracted data</div>
         </div>
       </div>
-      <span class="intake-step-arrow">›</span>
+      <span class="intake-step-arrow">â€º</span>
       <div class="intake-step" id="iwStep3">
         <div class="intake-step-num">3</div>
         <div>
@@ -882,25 +882,25 @@ button.sm{padding:5px 9px;font-size:11px;}
     </div>
 
     <div class="card">
-      <div class="card-head"><h3>📥 New Order — Drop Assignment PDF</h3></div>
+      <div class="card-head"><h3>ðŸ“¥ New Order â€” Drop Assignment PDF</h3></div>
       <div class="card-body">
         <div id="intake-drop-zone" style="border:2px dashed rgba(215,179,90,.35);border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;background:rgba(215,179,90,.03);" ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(215,179,90,.08)'" ondragleave="this.style.borderColor='rgba(215,179,90,.35)';this.style.background='rgba(215,179,90,.03)'" ondrop="handleIntakeDrop(event)">
-          <div style="font-size:40px;margin-bottom:12px">📄</div>
+          <div style="font-size:40px;margin-bottom:12px">ðŸ“„</div>
           <div style="color:var(--text);font-size:15px;font-weight:700;margin-bottom:6px">Drag &amp; drop order PDF here</div>
           <div style="color:var(--muted);font-size:12px;margin-bottom:16px">First State Mortgage, First State Bank, or any appraisal assignment sheet</div>
           <label style="display:inline-block;cursor:pointer;color:#000;font-weight:800;font-size:13px;background:var(--gold);padding:10px 24px;border-radius:8px;border:none;">
-            📁 Browse Files
+            ðŸ“ Browse Files
             <input type="file" id="intake-file-input" accept=".pdf" style="display:none" onchange="handleIntakeFile(this.files[0])">
           </label>
         </div>
         <!-- ACI XML intake -->
-        <div style="text-align:center;margin-bottom:8px;color:var(--muted);font-size:11px;">— or import a completed ACI XML export —</div>
+        <div style="text-align:center;margin-bottom:8px;color:var(--muted);font-size:11px;">â€” or import a completed ACI XML export â€”</div>
         <div id="intake-xml-drop-zone" style="border:2px dashed rgba(85,209,143,.25);border-radius:10px;padding:20px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;background:rgba(85,209,143,.03);" ondragover="event.preventDefault();this.style.borderColor='var(--ok)';this.style.background='rgba(85,209,143,.08)'" ondragleave="this.style.borderColor='rgba(85,209,143,.25)';this.style.background='rgba(85,209,143,.03)'" ondrop="handleIntakeXmlDrop(event)">
-          <div style="font-size:28px;margin-bottom:6px">📋</div>
+          <div style="font-size:28px;margin-bottom:6px">ðŸ“‹</div>
           <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:4px">Drop ACI XML Export here</div>
-          <div style="color:var(--muted);font-size:11px;margin-bottom:12px">Extracts all facts, comps &amp; adjustments — more complete than PDF intake</div>
+          <div style="color:var(--muted);font-size:11px;margin-bottom:12px">Extracts all facts, comps &amp; adjustments â€” more complete than PDF intake</div>
           <label style="display:inline-block;cursor:pointer;color:var(--ok);font-weight:700;font-size:12px;border:1px solid var(--ok);padding:6px 18px;border-radius:8px;">
-            📁 Browse XML
+            ðŸ“ Browse XML
             <input type="file" id="intake-xml-input" accept=".xml,.XML" style="display:none" onchange="handleIntakeXmlFile(this.files[0])">
           </label>
         </div>
@@ -911,7 +911,7 @@ button.sm{padding:5px 9px;font-size:11px;}
         <div id="intake-result" style="display:none">
           <div class="intake-success-card" id="intakeSuccessCard">
             <div class="intake-success-header">
-              <span class="intake-success-icon">✅</span>
+              <span class="intake-success-icon">âœ…</span>
               <div>
                 <div class="intake-success-title">Case Created</div>
                 <div class="intake-success-sub" id="intakeSuccessSub">Order processed and case ready.</div>
@@ -922,9 +922,9 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div class="card-body" id="intake-extracted"></div>
             </div>
             <div class="intake-success-actions">
-              <button class="intake-cta-btn" id="intake-goto-workspace-btn" style="display:none" onclick="intakeGotoWorkspace()">✏️ Review Facts &amp; Generate →</button>
-              <button class="intake-cta-btn sec" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">📋 Open in Cases</button>
-              <button class="intake-cta-btn sec" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">📁 Create Job Folder</button>
+              <button class="intake-cta-btn" id="intake-goto-workspace-btn" style="display:none" onclick="intakeGotoWorkspace()">âœï¸ Review Facts &amp; Generate â†’</button>
+              <button class="intake-cta-btn sec" id="intake-goto-case-btn" style="display:none" onclick="gotoIntakeCase()">ðŸ“‹ Open in Cases</button>
+              <button class="intake-cta-btn sec" id="intake-create-folder-btn" style="display:none" onclick="createIntakeFolder()">ðŸ“ Create Job Folder</button>
             </div>
             <div id="intake-folder-status" style="margin-top:8px;font-size:12px;color:var(--ok)"></div>
             <!-- Keep legacy button IDs for backward compat -->
@@ -938,14 +938,14 @@ button.sm{padding:5px 9px;font-size:11px;}
     <div class="card">
       <div class="card-head"><h3>How It Works</h3></div>
       <div class="card-body" style="font-size:12px;color:var(--muted);line-height:1.8">
-        <p><strong style="color:var(--gold);">Step 1 —</strong> Drop the PDF from your email</p>
-        <p><strong style="color:var(--gold);">Step 2 —</strong> AI extracts address, borrower, lender, form type &amp; fee automatically</p>
-        <p><strong style="color:var(--gold);">Step 3 —</strong> Click <em>Review Facts &amp; Generate</em> to open the Workspace</p>
+        <p><strong style="color:var(--gold);">Step 1 â€”</strong> Drop the PDF from your email</p>
+        <p><strong style="color:var(--gold);">Step 2 â€”</strong> AI extracts address, borrower, lender, form type &amp; fee automatically</p>
+        <p><strong style="color:var(--gold);">Step 3 â€”</strong> Click <em>Review Facts &amp; Generate</em> to open the Workspace</p>
         <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
         <p><strong style="color:var(--text)">Supported:</strong></p>
-        <p>• First State Mortgage Assignment Sheet</p>
-        <p>• First State Bank Request Form</p>
-        <p>• Any structured appraisal order PDF</p>
+        <p>â€¢ First State Mortgage Assignment Sheet</p>
+        <p>â€¢ First State Bank Request Form</p>
+        <p>â€¢ Any structured appraisal order PDF</p>
       </div>
     </div>
     <div class="card">
@@ -1034,7 +1034,7 @@ button.sm{padding:5px 9px;font-size:11px;}
                     <div class="form-picker-options" id="activeFormOptions">
                       <div class="form-picker-option selected" data-form-id="1004" onclick="selectFormFromPicker('1004',this)">
                         <div class="form-picker-radio"></div>
-                        <span class="form-picker-label">1004 URAR — Single Family</span>
+                        <span class="form-picker-label">1004 URAR â€” Single Family</span>
                         <span class="form-picker-badge active-badge">Active</span>
                       </div>
                     </div>
@@ -1048,12 +1048,12 @@ button.sm{padding:5px 9px;font-size:11px;}
                   </div>
                 </div>
                 <!-- Hidden select for backward compat -->
-                <select id="newFormType" style="display:none;"><option value="1004">1004 URAR — Single Family</option></select>
+                <select id="newFormType" style="display:none;"><option value="1004">1004 URAR â€” Single Family</option></select>
               </div>
               <div class="full">
                 <label>Property Type</label>
                 <select id="propertyType">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="Single Family">Single Family</option>
                   <option value="2-4 Unit">2-4 Unit</option>
                   <option value="Condo">Condo</option>
@@ -1067,7 +1067,7 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div>
                 <label>Assignment Purpose</label>
                 <select id="assignmentPurpose">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="Sale">Sale</option>
                   <option value="Refinance">Refinance</option>
                   <option value="Construction">Construction</option>
@@ -1078,7 +1078,7 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div>
                 <label>Loan Program</label>
                 <select id="loanProgram">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="Conventional">Conventional</option>
                   <option value="FHA">FHA</option>
                   <option value="USDA">USDA</option>
@@ -1100,7 +1100,7 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div>
                 <label>Occupancy</label>
                 <select id="occupancyType">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="Owner Occupied">Owner Occupied</option>
                   <option value="Tenant Occupied">Tenant Occupied</option>
                   <option value="Vacant">Vacant</option>
@@ -1111,19 +1111,19 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div>
                 <label>Subject Condition</label>
                 <select id="subjectCondition">
-                  <option value="">— Select —</option>
-                  <option value="C1">C1 — New</option>
-                  <option value="C2">C2 — Excellent</option>
-                  <option value="C3">C3 — Good</option>
-                  <option value="C4">C4 — Average</option>
-                  <option value="C5">C5 — Fair</option>
-                  <option value="C6">C6 — Poor</option>
+                  <option value="">â€” Select â€”</option>
+                  <option value="C1">C1 â€” New</option>
+                  <option value="C2">C2 â€” Excellent</option>
+                  <option value="C3">C3 â€” Good</option>
+                  <option value="C4">C4 â€” Average</option>
+                  <option value="C5">C5 â€” Fair</option>
+                  <option value="C6">C6 â€” Poor</option>
                 </select>
               </div>
               <div class="full">
                 <label>Report Condition</label>
                 <select id="reportConditionMode">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="As Is">As Is</option>
                   <option value="Subject To Completion">Subject To Completion</option>
                   <option value="Subject To Repairs">Subject To Repairs</option>
@@ -1179,7 +1179,7 @@ button.sm{padding:5px 9px;font-size:11px;}
               <div>
                 <label>Market Type</label>
                 <select id="marketType">
-                  <option value="">— Select —</option>
+                  <option value="">â€” Select â€”</option>
                   <option value="urban">Urban</option>
                   <option value="suburban">Suburban</option>
                   <option value="rural">Rural</option>
@@ -1322,7 +1322,7 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
       <div id="workspaceOverviewPanels" class="workspace-overview-panels" style="display:none;"></div>
 
-      <!-- ═══ Photos Panel ═══ -->
+      <!-- â•â•â• Photos Panel â•â•â• -->
       <div id="wsPhotosPanel" class="card" style="margin-top:14px;display:none;">
         <div class="card-head">
           <h3>&#x1F4F8; Photos</h3>
@@ -1341,7 +1341,7 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
       </div>
 
-      <!-- ═══ Comps Panel ═══ -->
+      <!-- â•â•â• Comps Panel â•â•â• -->
       <div id="wsCompsPanel" class="card" style="margin-top:14px;display:none;">
         <div class="card-head">
           <h3>&#x1F4CA; Comps</h3>
@@ -1547,7 +1547,7 @@ button.sm{padding:5px 9px;font-size:11px;}
             <button class="sec" onclick="generateAll()">Generate All</button>
           </div>
           <div class="gen-panel-action-row" style="margin-top:6px;">
-            <button id="genInsertAllBtn" class="btn" onclick="generateAllAndInsertAll()" title="Generate all fields then automatically insert all into ACI in sequence" style="background:rgba(215,179,90,.15);border:1px solid rgba(215,179,90,.4);color:var(--gold);font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;">⚡ Generate All + Insert All</button>
+            <button id="genInsertAllBtn" class="btn" onclick="generateAllAndInsertAll()" title="Generate all fields then automatically insert all into ACI in sequence" style="background:rgba(215,179,90,.15);border:1px solid rgba(215,179,90,.4);color:var(--gold);font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;">âš¡ Generate All + Insert All</button>
           </div>
           <div id="genStatus" class="status">Ready.</div>
           <div id="genErrBox" class="errbox"></div>
@@ -1809,7 +1809,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div><!-- /.gen-layout -->
 </div><!-- /#tab-generate -->
 
-<!-- ===== TAB: QC GRADE (Phase 7 — Quality Control & Review Automation) ===== -->
+<!-- ===== TAB: QC GRADE (Phase 7 â€” Quality Control & Review Automation) ===== -->
 <div class="page" id="tab-qc">
   <div class="col narrow">
 
@@ -1940,18 +1940,18 @@ button.sm{padding:5px 9px;font-size:11px;}
         <div class="hint" id="voiceImportHint">Upload completed appraisal PDFs to extract your narrative voice. The AI identifies narrative sections and uses them as writing examples for future generation.</div>
         <label>Form Type</label>
         <select id="voiceFormType" onchange="loadVoiceExamples()">
-          <option value="1004">1004 – Single Family Residential</option>
-          <option value="1025">1025 – Small Residential Income (2-4 Unit)</option>
-          <option value="1073">1073 – Individual Condo Unit</option>
+          <option value="1004">1004 â€“ Single Family Residential</option>
+          <option value="1025">1025 â€“ Small Residential Income (2-4 Unit)</option>
+          <option value="1073">1073 â€“ Individual Condo Unit</option>
           <option value="commercial">Commercial</option>
-          <option value="1004c">1004C – Manufactured Home</option>
+          <option value="1004c">1004C â€“ Manufactured Home</option>
         </select>
         <label style="margin-top:10px;">Drop PDF Reports (multiple OK)</label>
         <div id="voice-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;margin-bottom:10px;"
           ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
           ondragleave="this.style.borderColor='var(--border)'"
           ondrop="handleVoiceDrop(event)">
-          <div style="font-size:24px;margin-bottom:6px">📄</div>
+          <div style="font-size:24px;margin-bottom:6px">ðŸ“„</div>
           <div style="color:var(--muted);font-size:12px">Drop completed appraisal PDFs here (multiple OK)</div>
           <label style="display:inline-block;margin-top:8px;cursor:pointer;color:var(--gold);font-size:12px;border:1px solid var(--gold);padding:4px 12px;border-radius:6px;">
             Browse
@@ -1961,13 +1961,13 @@ button.sm{padding:5px 9px;font-size:11px;}
         <div id="voice-upload-queue" style="margin-bottom:8px;"></div>
         <div id="voiceImportStatus" class="status"></div>
         <div class="sep"></div>
-        <label style="margin-bottom:6px;">📋 Upload ACI XML Export</label>
-        <div class="hint" style="margin-bottom:8px;">More powerful than PDF — extracts all structured facts, comps, and adjustments automatically, plus saves the embedded PDF for narrative training.</div>
+        <label style="margin-bottom:6px;">ðŸ“‹ Upload ACI XML Export</label>
+        <div class="hint" style="margin-bottom:8px;">More powerful than PDF â€” extracts all structured facts, comps, and adjustments automatically, plus saves the embedded PDF for narrative training.</div>
         <div id="voice-xml-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;margin-bottom:8px;"
           ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
           ondragleave="this.style.borderColor='var(--border)'"
           ondrop="handleVoiceXmlDrop(event)">
-          <div style="font-size:20px;margin-bottom:4px">📋</div>
+          <div style="font-size:20px;margin-bottom:4px">ðŸ“‹</div>
           <div style="color:var(--muted);font-size:11px">Drop ACI XML exports here (extracts all facts + comps automatically)</div>
           <label style="display:inline-block;margin-top:6px;cursor:pointer;color:var(--gold);font-size:11px;border:1px solid var(--gold);padding:3px 10px;border-radius:6px;">
             Browse XML
@@ -1977,9 +1977,9 @@ button.sm{padding:5px 9px;font-size:11px;}
         <div id="voice-xml-queue" style="margin-bottom:8px;"></div>
         <div id="voiceXmlImportStatus" class="status"></div>
         <div class="sep"></div>
-        <div class="hint" style="margin-bottom:6px;"><strong>Note:</strong> ACI files (.aci) cannot be directly uploaded — they are a proprietary binary format. Please export your completed reports from ACI as PDF first (<em>File → Print → Save as PDF</em>), then upload the PDF here. Or use the XML export option above.</div>
+        <div class="hint" style="margin-bottom:6px;"><strong>Note:</strong> ACI files (.aci) cannot be directly uploaded â€” they are a proprietary binary format. Please export your completed reports from ACI as PDF first (<em>File â†’ Print â†’ Save as PDF</em>), then upload the PDF here. Or use the XML export option above.</div>
         <div class="sep"></div>
-        <div class="hint" style="margin-bottom:6px;">Or scan the <b>voice_pdfs/</b> folder — drop PDFs into the matching subfolder, then click Scan.</div>
+        <div class="hint" style="margin-bottom:6px;">Or scan the <b>voice_pdfs/</b> folder â€” drop PDFs into the matching subfolder, then click Scan.</div>
         <div id="folderStatus" style="font-size:11px;color:var(--muted);margin-bottom:6px;min-height:16px;"></div>
         <div class="btnrow">
           <button class="sec" onclick="scanVoiceFolder()">Scan Folder</button>
@@ -1989,7 +1989,7 @@ button.sm{padding:5px 9px;font-size:11px;}
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>Your Voice Training Library</h3><button class="ghost sm" onclick="refreshVoiceLibrary()">↻ Refresh</button></div>
+      <div class="card-head"><h3>Your Voice Training Library</h3><button class="ghost sm" onclick="refreshVoiceLibrary()">â†» Refresh</button></div>
       <div class="card-body">
         <div class="hint" style="margin-bottom:10px;">PDFs already saved in your <code>voice_pdfs/</code> subfolders. Import any that haven't been processed yet.</div>
         <div id="voiceLibraryStatus" style="font-size:12px;color:var(--muted);">Loading library...</div>
@@ -2006,7 +2006,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: INTEL (Phase 4 — Assignment Intelligence Inspector) ===== -->
+<!-- ===== TAB: INTEL (Phase 4 â€” Assignment Intelligence Inspector) ===== -->
 <div class="page" id="tab-intel">
 
   <!-- Valuation Desk Sub-Tabs -->
@@ -2207,7 +2207,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 
 </div>
 
-<!-- ===== TAB: VALUATION (Phase 9 — Unified Valuation Desk) ===== -->
+<!-- ===== TAB: VALUATION (Phase 9 â€” Unified Valuation Desk) ===== -->
 <div class="page" id="tab-valuation">
   <div class="col narrow">
 
@@ -2337,7 +2337,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: DOCS (Phase 5 — Document Intelligence) ===== -->
+<!-- ===== TAB: DOCS (Phase 5 â€” Document Intelligence) ===== -->
 <div class="page" id="tab-docs">
   <div class="col narrow">
     <div class="card">
@@ -2400,7 +2400,7 @@ button.sm{padding:5px 9px;font-size:11px;}
     <div class="card">
       <div class="card-head">
         <h3>Extracted Sections</h3>
-        <span style="font-size:11px;color:var(--ds-text-muted,#888);">Narrative sections from prior appraisals — approve to add to memory</span>
+        <span style="font-size:11px;color:var(--ds-text-muted,#888);">Narrative sections from prior appraisals â€” approve to add to memory</span>
       </div>
       <div class="card-body">
         <div class="btnrow" style="margin-bottom:8px;">
@@ -2413,7 +2413,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: MEMORY (Phase 6 — Memory, Voice & Retrieval) ===== -->
+<!-- ===== TAB: MEMORY (Phase 6 â€” Memory, Voice & Retrieval) ===== -->
 <div class="page" id="tab-memory">
   <div class="col narrow">
 
@@ -2444,8 +2444,8 @@ button.sm{padding:5px 9px;font-size:11px;}
         <label>Voice Dimensions</label>
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
           <div><label>Tone</label><input id="memVpTone" type="text" placeholder="professional, restrained, formal"/></div>
-          <div><label>Sentence Length</label><select id="memVpSentLen"><option value="">—</option><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option><option value="varied">Varied</option></select></div>
-          <div><label>Hedging Degree</label><select id="memVpHedging"><option value="">—</option><option value="direct">Direct / Certain</option><option value="moderate">Moderate</option><option value="cautious">Cautious / Hedged</option></select></div>
+          <div><label>Sentence Length</label><select id="memVpSentLen"><option value="">â€”</option><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option><option value="varied">Varied</option></select></div>
+          <div><label>Hedging Degree</label><select id="memVpHedging"><option value="">â€”</option><option value="direct">Direct / Certain</option><option value="moderate">Moderate</option><option value="cautious">Cautious / Hedged</option></select></div>
           <div><label>Terminology Preference</label><input id="memVpTerminology" type="text" placeholder="e.g. formal appraisal terminology"/></div>
           <div><label>Reconciliation Style</label><input id="memVpReconStyle" type="text" placeholder="e.g. weight-based, narrative"/></div>
           <div><label>Preferred Opening Style</label><input id="memVpOpening" type="text" placeholder="e.g. direct factual statement"/></div>
@@ -2777,7 +2777,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: INSPECT (Phase 7 — Inspection Capture) ===== -->
+<!-- ===== TAB: INSPECT (Phase 7 â€” Inspection Capture) ===== -->
 <div class="page" id="tab-inspect">
   <div class="col narrow">
 
@@ -2877,7 +2877,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: GOVERNANCE (Phase 10 — Section Governance, Missing Facts, Case Status) ===== -->
+<!-- ===== TAB: GOVERNANCE (Phase 10 â€” Section Governance, Missing Facts, Case Status) ===== -->
 <div class="page" id="tab-governance">
   <div class="col narrow">
 
@@ -2888,7 +2888,7 @@ button.sm{padding:5px 9px;font-size:11px;}
         <div id="govCaseStatusBody"><div class="hint">Select a case to view status.</div></div>
         <div class="sep" style="margin:8px 0;"></div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Pipeline Stage</div>
-        <div id="govPipelineBody"><div class="hint">—</div></div>
+        <div id="govPipelineBody"><div class="hint">â€”</div></div>
         <div class="sep" style="margin:8px 0;"></div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Advance Pipeline</div>
         <div class="btnrow" style="flex-wrap:wrap;">
@@ -2991,7 +2991,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: LEARNING (Phase 11 — Learning Dashboard & Suggestion Explainability) ===== -->
+<!-- ===== TAB: LEARNING (Phase 11 â€” Learning Dashboard & Suggestion Explainability) ===== -->
 <div class="page" id="tab-learning">
   <div class="col narrow">
 
@@ -3052,7 +3052,7 @@ button.sm{padding:5px 9px;font-size:11px;}
         </div>
       </div>
       <div class="card-body">
-        <div class="hint" style="margin-bottom:6px;">Patterns extracted from archived assignments. Confidence adjusts based on appraiser feedback (±0.05 per outcome).</div>
+        <div class="hint" style="margin-bottom:6px;">Patterns extracted from archived assignments. Confidence adjusts based on appraiser feedback (Â±0.05 per outcome).</div>
         <div id="lrnPatternsBody"><div class="hint">No patterns yet. Archive completed assignments to extract patterns.</div></div>
       </div>
     </div>
@@ -3130,7 +3130,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ===== TAB: SYSTEM (Phase 6 — System Reliability) ===== -->
+<!-- ===== TAB: SYSTEM (Phase 6 â€” System Reliability) ===== -->
 <div class="page" id="tab-system">
   <div class="col narrow">
 
@@ -3297,7 +3297,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 
         <!-- Test Plan -->
         <div id="gpTestPlan" style="margin-bottom:10px;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-bottom:6px;">Test Plan (14 steps × 2 form types)</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-bottom:6px;">Test Plan (14 steps Ã— 2 form types)</div>
           <div id="gpStepList"></div>
         </div>
 
@@ -3311,17 +3311,17 @@ button.sm{padding:5px 9px;font-size:11px;}
   </div>
 </div>
 
-<!-- ── Export toast notification ─────────────────────────────────────────────── -->
+<!-- â”€â”€ Export toast notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div class="export-toast" id="exportToast"></div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     CACC Writer — Phase 1 Design System
-     Scope: Generate tab · Full Draft panel · Comp Commentary panel
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Appraisal Agent â€” Phase 1 Design System
+     Scope: Generate tab Â· Full Draft panel Â· Comp Commentary panel
      Strategy: --ds-* tokens (additive) + #tab-generate scoped overrides
      All existing tabs unaffected.
-     ═══════════════════════════════════════════════════════════════════════════ -->
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <style>
-/* ── Design Tokens ─────────────────────────────────────────────────────────── */
+/* â”€â”€ Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --ds-bg:        #0c0c0e;
   --ds-surface:   #131315;
@@ -3354,7 +3354,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   --ds-mono:      "SF Mono",ui-monospace,Menlo,Monaco,Consolas,monospace;
 }
 
-/* ── Generate Tab: Layout ──────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate {
   background: var(--ds-bg);
   padding: 14px;
@@ -3362,7 +3362,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   align-items: flex-start;
 }
 
-/* ── Generate Tab: Cards ───────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .card {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
@@ -3390,7 +3390,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   padding: 12px 14px;
 }
 
-/* ── Generate Tab: Typography ──────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate label {
   display: block;
   font-size: 11px;
@@ -3410,7 +3410,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   margin: 10px 0;
 }
 
-/* ── Generate Tab: Inputs ──────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate input[type=text],
 #tab-generate input[type=number],
 #tab-generate textarea,
@@ -3435,7 +3435,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate select option { background: var(--ds-surface-2); color: var(--ds-text); }
 #tab-generate textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 
-/* ── Generate Tab: Buttons ─────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate button {
   border: 1px solid var(--ds-border-md);
   background: var(--ds-surface-2);
@@ -3485,7 +3485,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 }
 #tab-generate button.danger:hover { background: rgba(248,113,113,.14); }
 
-/* Full Draft — primary accent button */
+/* Full Draft â€” primary accent button */
 #tab-generate #genFullDraftBtn {
   border-color: var(--ds-accent-bd);
   background: var(--ds-accent-bg);
@@ -3511,7 +3511,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   align-items: center;
 }
 
-/* ── Generate Tab: Status ──────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .status {
   font-size: 11px;
   color: var(--ds-muted);
@@ -3537,7 +3537,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   line-height: 1.5;
 }
 
-/* ── Generate Tab: Chips ───────────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .chip {
   font-size: 10px;
   color: var(--ds-muted);
@@ -3550,7 +3550,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate .chip.warn { color: var(--ds-warn);   border-color: var(--ds-warn-bd);   }
 #tab-generate .chip.err  { color: var(--ds-danger); border-color: var(--ds-danger-bd); }
 
-/* ── Generate Tab: Field List ──────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Field List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .flist {
   max-height: 340px;
   overflow-y: auto;
@@ -3579,7 +3579,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate .ftitle { font-size: 12px; font-weight: 600; color: var(--ds-text); }
 #tab-generate .fmeta  { font-size: 10px; color: var(--ds-muted); margin-top: 2px; line-height: 1.3; }
 
-/* ── Generate Tab: Missing Facts Panel ─────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Missing Facts Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .missing-panel {
   border: 1px solid var(--ds-warn-bd);
   background: var(--ds-warn-bg);
@@ -3603,7 +3603,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate .missing-item { font-size: 11px; padding: 2px 0; display: flex; align-items: center; gap: 6px; color: var(--ds-muted); }
 #tab-generate .missing-item.req { color: #fca5a5; }
 
-/* ── Generate Tab: Core Sections Panel ─────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Core Sections Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .core-panel {
   border: 1px solid var(--ds-accent-bd);
   background: var(--ds-accent-bg);
@@ -3635,7 +3635,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 }
 #tab-generate .core-section-row:last-child { border-bottom: none; }
 
-/* ── Generate Tab: Concession Calculator ───────────────────────────────────── */
+/* â”€â”€ Generate Tab: Concession Calculator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .conc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 #tab-generate .conc-result {
   background: var(--ds-surface-2);
@@ -3649,7 +3649,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 }
 #tab-generate .conc-result b { color: var(--ds-accent); }
 
-/* ── Generate Tab: Section Status Badges ───────────────────────────────────── */
+/* â”€â”€ Generate Tab: Section Status Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .ss-badge {
   font-size: 9px;
   padding: 2px 7px;
@@ -3668,7 +3668,7 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate .ss-inserted    { color: var(--ds-accent);  border-color: var(--ds-accent-bd); background: var(--ds-accent-bg); }
 #tab-generate .ss-error       { color: var(--ds-danger);  border-color: var(--ds-danger-bd); background: var(--ds-danger-bg); }
 
-/* ── Generate Tab: Output Cards ────────────────────────────────────────────── */
+/* â”€â”€ Generate Tab: Output Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-generate .outwrap { display: flex; flex-direction: column; gap: 8px; }
 #tab-generate .outcard {
   border: 1px solid var(--ds-border);
@@ -3713,9 +3713,9 @@ button.sm{padding:5px 9px;font-size:11px;}
 #tab-generate .thumb.up.active  { border-color: var(--ds-ok-bd);     background: var(--ds-ok-bg);     color: var(--ds-ok); }
 #tab-generate .thumb.down.active{ border-color: var(--ds-danger-bd); background: var(--ds-danger-bg); color: var(--ds-danger); }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Full Draft Orchestrator Panel — Complete Redesign
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Full Draft Orchestrator Panel â€” Complete Redesign
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .fd-panel {
   border: 1px solid var(--ds-border-md);
@@ -3926,7 +3926,7 @@ button.sm{padding:5px 9px;font-size:11px;}
   gap: 7px;
   line-height: 1.4;
 }
-.fd-warning-item::before { content: '⚠'; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+.fd-warning-item::before { content: 'âš '; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
 
 /* Run actions */
 .fd-run-actions {
@@ -3938,9 +3938,9 @@ button.sm{padding:5px 9px;font-size:11px;}
   flex-wrap: wrap;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Comparable Sales Commentary Panel — Complete Redesign
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Comparable Sales Commentary Panel â€” Complete Redesign
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 #compCommentaryPanel.card {
   background: var(--ds-surface);
@@ -4208,14 +4208,14 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-generate .conc-result { font-family:var(--gen-font-body); font-size:13px; color:var(--gen-fg); background:var(--gen-muted); border:1px solid var(--gen-border); padding:12px 14px; border-radius:var(--gen-radius); line-height:1.7; }
 #tab-generate .chip { font-size:10px; font-weight:600; padding:3px 8px; border:1px solid var(--gen-border); color:var(--gen-fg-muted); background:var(--gen-muted); letter-spacing:.04em; text-transform:uppercase; display:inline-flex; align-items:center; gap:4px; border-radius:var(--gen-radius); }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CACC Writer — Phase 2 Design System
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Appraisal Agent â€” Phase 2 Design System
    Scope: Cases tab (#tab-case) only
    Strategy: --gen-* tokens (additive) + #tab-case scoped overrides
    All other tabs unaffected.
-   ═══════════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Cases Tab: Root Layout ────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Root Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case.active {
   display: block !important;
   padding: 0 !important;
@@ -4226,7 +4226,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   min-height: calc(100vh - 44px);
 }
 
-/* ── Cases Command Strip ───────────────────────────────────────────────────── */
+/* â”€â”€ Cases Command Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-strip {
   height: var(--gen-strip-h);
   border-bottom: 1px solid var(--gen-border);
@@ -4274,14 +4274,14 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   flex-shrink: 0;
 }
 
-/* ── Cases Workspace Layout ────────────────────────────────────────────────── */
+/* â”€â”€ Cases Workspace Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-layout {
   display: flex;
   align-items: flex-start;
   min-height: calc(100vh - var(--gen-strip-h) - 44px);
 }
 
-/* ── Left: Case Queue (~37%) ───────────────────────────────────────────────── */
+/* â”€â”€ Left: Case Queue (~37%) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-queue {
   width: 37%;
   flex-shrink: 0;
@@ -4296,7 +4296,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   overflow-y: auto;
 }
 
-/* ── Right: Case Detail (~63%) ─────────────────────────────────────────────── */
+/* â”€â”€ Right: Case Detail (~63%) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-detail {
   flex: 1;
   min-width: 0;
@@ -4307,7 +4307,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   background: var(--gen-bg);
 }
 
-/* ── Case Queue: Filter Bar ────────────────────────────────────────────────── */
+/* â”€â”€ Case Queue: Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-queue-filters {
   display: flex;
   gap: 6px;
@@ -4318,7 +4318,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   flex-shrink: 0;
 }
 
-/* ── Case Queue: Create/Edit Form ──────────────────────────────────────────── */
+/* â”€â”€ Case Queue: Create/Edit Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .case-queue-sep { height: 1px; background: var(--gen-border); }
 .case-queue-form {
   padding: 16px;
@@ -4336,7 +4336,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   margin-bottom: 12px;
 }
 
-/* ── Cases Tab: Cards ──────────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .card {
   background: var(--gen-bg) !important;
   border: 1px solid var(--gen-border) !important;
@@ -4363,7 +4363,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 }
 #tab-case .card-body { padding: 16px !important; }
 
-/* ── Cases Tab: Typography ─────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case label {
   display: block !important;
   font-family: var(--gen-font-body) !important;
@@ -4393,7 +4393,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   margin: 12px 0 !important;
 }
 
-/* ── Cases Tab: Inputs ─────────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case input[type=text],
 #tab-case textarea,
 #tab-case select {
@@ -4421,7 +4421,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-case select option { background: var(--gen-bg) !important; color: var(--gen-fg) !important; }
 #tab-case textarea { resize: vertical !important; min-height: 72px !important; line-height: 1.6 !important; }
 
-/* ── Cases Tab: Buttons ────────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case button,
 .case-strip button {
   font-family: var(--gen-font-body) !important;
@@ -4483,7 +4483,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   align-items: center !important;
 }
 
-/* ── Cases Tab: Status + Error ─────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Status + Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .status {
   font-family: var(--gen-font-body) !important;
   font-size: 12px !important;
@@ -4511,7 +4511,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   display: none;
 }
 
-/* ── Cases Tab: Case List ──────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Case List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .case-list {
   flex: 1;
   overflow-y: auto;
@@ -4538,7 +4538,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   padding-left: 13px !important;
 }
 
-/* ── Cases Tab: Filter Buttons ─────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Filter Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .filt-btn {
   padding: 4px 12px !important;
   font-size: 11px !important;
@@ -4567,7 +4567,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   transform: none !important;
 }
 
-/* ── Cases Tab: Form Badge ─────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Form Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .form-badge {
   font-family: var(--gen-font-mono) !important;
   font-size: 10px !important;
@@ -4585,7 +4585,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   background: var(--gen-warn-bg) !important;
 }
 
-/* ── Cases Tab: Case Status Badges ─────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Case Status Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .case-status {
   font-family: var(--gen-font-body) !important;
   font-size: 10px !important;
@@ -4604,7 +4604,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-case .cs-submitted { color: var(--gen-warn) !important; border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
 #tab-case .cs-archived { color: var(--gen-fg-muted) !important; border-color: var(--gen-border) !important; background: var(--gen-muted) !important; }
 
-/* ── Cases Tab: Workflow Badge ─────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Workflow Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .wf-badge {
   font-family: var(--gen-font-body) !important;
   font-size: 10px !important;
@@ -4620,7 +4620,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-case .wf-warn { color: var(--gen-warn) !important;   border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
 #tab-case .wf-err  { color: var(--gen-danger) !important; border-color: var(--gen-danger-border) !important; background: var(--gen-danger-bg) !important; }
 
-/* ── Cases Tab: Meta Chips ─────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Meta Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .meta-chips {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -4647,7 +4647,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 #tab-case .meta-chip.geo      { color: var(--gen-ok) !important;     border-color: var(--gen-ok-border) !important; background: var(--gen-ok-bg) !important; }
 #tab-case .meta-chip.cond-rating { color: var(--gen-warn) !important; border-color: var(--gen-warn-border) !important; background: var(--gen-warn-bg) !important; }
 
-/* ── Cases Tab: Form Picker ────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Form Picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .form-picker { display: flex !important; flex-direction: column !important; gap: 8px !important; margin-top: 6px !important; }
 #tab-case .form-picker-section-head {
   font-family: var(--gen-font-body) !important;
@@ -4708,7 +4708,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 }
 #tab-case .deferred-section-toggle:hover { color: var(--gen-fg) !important; background: var(--gen-muted) !important; }
 
-/* ── Cases Tab: Deferred Banner ────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Deferred Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .deferred-banner {
   border: 1px solid var(--gen-warn-border) !important;
   background: var(--gen-warn-bg) !important;
@@ -4729,7 +4729,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
   font-size: 12px !important; color: var(--gen-fg-muted) !important; line-height: 1.5 !important;
 }
 
-/* ── Cases Tab: Doc Slots ──────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Doc Slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .doc-slot {
   display: flex !important; gap: 10px !important; align-items: center !important;
   padding: 8px 0 !important; border-bottom: 1px solid var(--gen-border) !important;
@@ -4746,11 +4746,11 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 }
 #tab-case .doc-slot .ds-status.uploaded { color: var(--gen-ok) !important; }
 
-/* ── Cases Tab: Card Row ───────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Card Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .card-row { display: flex !important; gap: 16px !important; flex-wrap: wrap !important; }
 #tab-case .card-row > .card { flex: 1 !important; min-width: 240px !important; }
 
-/* ── Cases Tab: Assign Grid ────────────────────────────────────────────────── */
+/* â”€â”€ Cases Tab: Assign Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #tab-case .assign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px 16px !important; }
 #tab-case .assign-grid .full { grid-column: 1 / -1 !important; }
 
@@ -5232,7 +5232,7 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 </style>
 <link rel="stylesheet" href="styles.css"/>
 <style>
-/* ── Data Pipeline Tab Styles ────────────────────────────────────────────────── */
+/* â”€â”€ Data Pipeline Tab Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dp-comp-row{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);}
 .dp-comp-row:last-child{border-bottom:none;}
 .dp-comp-row label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;}
@@ -5275,3 +5275,4 @@ font-size: 10px; font-weight: 600; padding: 3px 8px;
 <script src="dataPipeline.js"></script>
 </body>
 </html>
+

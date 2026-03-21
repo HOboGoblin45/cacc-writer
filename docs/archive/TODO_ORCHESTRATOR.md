@@ -1,13 +1,13 @@
-# CACC Writer — Full-Draft Orchestrator Implementation
+﻿# Appraisal Agent â€” Full-Draft Orchestrator Implementation
 # ======================================================
-# Architecture upgrade: section-by-section → context-driven full-draft generation
-# Rollout: DUAL-PATH — legacy path preserved, new orchestrator path added alongside
+# Architecture upgrade: section-by-section â†’ context-driven full-draft generation
+# Rollout: DUAL-PATH â€” legacy path preserved, new orchestrator path added alongside
 # Active scope: 1004 (ACI) + commercial (Real Quantum) ONLY
 # Started: 2025
 
 ## CORE PRINCIPLE
-# Build context once → Retrieve memory once → Analyze once →
-# Draft sections in parallel → Validate once → Insert cleanly
+# Build context once â†’ Retrieve memory once â†’ Analyze once â†’
+# Draft sections in parallel â†’ Validate once â†’ Insert cleanly
 
 ## PERFORMANCE TARGETS
 # P50 full-draft latency: < 12 seconds
@@ -17,18 +17,18 @@
 # Report planning:         < 150ms
 # Retrieval pack:          < 500ms
 # Comp analysis:           < 1.5s
-# Parallel drafting:       ~4–8s
+# Parallel drafting:       ~4â€“8s
 # Validation + assembly:   < 1s
 # Max parallel jobs:       3
 # Retry per section:       1
 
 ---
 
-## PHASE 1 — SQLite Database Layer
+## PHASE 1 â€” SQLite Database Layer
 
 - [x] Install `better-sqlite3` dependency
-- [x] Create `server/db/database.js` — connection, WAL mode, helpers
-- [x] Create `server/db/schema.js` — all 10 tables
+- [x] Create `server/db/database.js` â€” connection, WAL mode, helpers
+- [x] Create `server/db/schema.js` â€” all 10 tables
 
 ### Tables
 - [x] assignments
@@ -44,7 +44,7 @@
 
 ---
 
-## PHASE 2 — Assignment Context + Report Planner + Retrieval Pack
+## PHASE 2 â€” Assignment Context + Report Planner + Retrieval Pack
 
 - [x] Create `server/context/assignmentContextBuilder.js`
   - [x] Read case meta.json + facts.json
@@ -69,7 +69,7 @@
 
 ---
 
-## PHASE 3 — Generator Profiles + Section Job Runner + Draft Assembler
+## PHASE 3 â€” Generator Profiles + Section Job Runner + Draft Assembler
 
 - [x] Create `server/generators/generatorProfiles.js`
   - [x] template-heavy profile
@@ -93,7 +93,7 @@
 
 ---
 
-## PHASE 4 — Generation Orchestrator (Core)
+## PHASE 4 â€” Generation Orchestrator (Core)
 
 - [x] Create `server/orchestrator/generationOrchestrator.js`
   - [x] Create generation_runs record
@@ -129,7 +129,7 @@
 
 ---
 
-## PHASE 5 — Legacy KB Migration
+## PHASE 5 â€” Legacy KB Migration
 
 - [x] Create `server/migration/legacyKbImport.js`
   - [x] Import from knowledge_base/approvedNarratives/ (approved=1, score=95)
@@ -141,7 +141,7 @@
 
 ---
 
-## PHASE 6 — New API Endpoints
+## PHASE 6 â€” New API Endpoints
 
 - [x] POST /api/cases/:caseId/generate-full-draft
 - [x] GET  /api/generation/runs/:runId/status
@@ -153,56 +153,56 @@
 
 ---
 
-## PHASE 7 — UI Updates
+## PHASE 7 â€” UI Updates
 
-- [x] index.html — "Generate Full Draft" button (iOS-style, prominent)
-- [x] index.html — Full-draft progress panel (phase indicator, section chips, timer)
-- [x] index.html — Draft package result panel
-- [x] index.html — Run metrics summary (collapsible)
-- [x] app.js — generateFullDraft(caseId)
-- [x] app.js — pollRunStatus(runId)
-- [x] app.js — renderDraftPackage(pkg)
-- [x] app.js — renderRunMetrics(metrics)
+- [x] index.html â€” "Generate Full Draft" button (iOS-style, prominent)
+- [x] index.html â€” Full-draft progress panel (phase indicator, section chips, timer)
+- [x] index.html â€” Draft package result panel
+- [x] index.html â€” Run metrics summary (collapsible)
+- [x] app.js â€” generateFullDraft(caseId)
+- [x] app.js â€” pollRunStatus(runId)
+- [x] app.js â€” renderDraftPackage(pkg)
+- [x] app.js â€” renderRunMetrics(metrics)
 
 ---
 
 ## BUG FIXES (post-implementation)
 
-### Fix 1 — Status normalization (2026-03-10)
-- **File:** `server/orchestrator/generationOrchestrator.js` → `getRunStatus()`
+### Fix 1 â€” Status normalization (2026-03-10)
+- **File:** `server/orchestrator/generationOrchestrator.js` â†’ `getRunStatus()`
 - **Problem:** SQLite stores `'completed'`; polling contract expected `'complete'`
 - **Fix:** Normalize `run.status === 'completed' ? 'complete' : run.status` before returning
 
-### Fix 2 — Cached result missing `sections` field (2026-03-10)
-- **File:** `cacc-writer-server.js` → cached result branch of `GET /api/generation/runs/:runId/result`
+### Fix 2 â€” Cached result missing `sections` field (2026-03-10)
+- **File:** `cacc-writer-server.js` â†’ cached result branch of `GET /api/generation/runs/:runId/result`
 - **Problem:** Cache hit branch returned `draftPackage` but not the top-level `sections` key the test checked
 - **Fix:** Added `sections: cached.draftPackage?.sections || {}` to the cached response JSON
 
-### Fix 3 — Non-existent case test used invalid caseId format (2026-03-10)
-- **File:** `_test_orchestrator_endpoints.mjs` → `testErrorPaths()`
-- **Problem:** `NONEXISTENT_CASE_XYZ` fails `CASE_ID_RE = /^[a-f0-9]{8}$/i` → 400 (not 404)
-- **Fix:** Changed to `ffffffff` — valid 8-char hex format that passes regex but has no case directory
+### Fix 3 â€” Non-existent case test used invalid caseId format (2026-03-10)
+- **File:** `_test_orchestrator_endpoints.mjs` â†’ `testErrorPaths()`
+- **Problem:** `NONEXISTENT_CASE_XYZ` fails `CASE_ID_RE = /^[a-f0-9]{8}$/i` â†’ 400 (not 404)
+- **Fix:** Changed to `ffffffff` â€” valid 8-char hex format that passes regex but has no case directory
 
 ---
 
 ## TEST RESULTS (2026-03-10)
 
 ### _test_orchestrator_imports.mjs
-- **Result:** 29/29 ✅
+- **Result:** 29/29 âœ…
 
 ### _test_orchestrator_endpoints.mjs
-- **Result:** 44 passed, 0 failed, 1 warning ✅
-- **Warning:** P90 latency 20.1s (target < 20s) — borderline, not a failure
+- **Result:** 44 passed, 0 failed, 1 warning âœ…
+- **Warning:** P90 latency 20.1s (target < 20s) â€” borderline, not a failure
 - **Full-draft run:** 10 sections, 0 retries, grade=good
 - **Retrieval:** 391 memory items scanned, 30 examples used (cache hit)
 - **Phase timings (typical):**
-  - contextBuildMs: 1ms ✓
-  - reportPlanMs: 0ms ✓
-  - retrievalMs: 0ms (cache hit) ✓
-  - analysisMs: 2ms ✓
-  - parallelDraftMs: ~14s (3 batches × 3 sections)
-  - validationMs: 0ms ✓
-  - assemblyMs: 1ms ✓
+  - contextBuildMs: 1ms âœ“
+  - reportPlanMs: 0ms âœ“
+  - retrievalMs: 0ms (cache hit) âœ“
+  - analysisMs: 2ms âœ“
+  - parallelDraftMs: ~14s (3 batches Ã— 3 sections)
+  - validationMs: 0ms âœ“
+  - assemblyMs: 1ms âœ“
 
 ---
 
@@ -248,3 +248,4 @@ Returns: { ok, imported, skipped, errors }
 # SQLite health
 GET /api/db/status
 Returns: { ok, tables, counts, dbPath, dbSizeBytes }
+

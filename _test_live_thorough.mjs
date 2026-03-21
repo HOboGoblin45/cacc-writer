@@ -1,13 +1,13 @@
-/**
+﻿/**
  * _test_live_thorough.mjs
  * -----------------------
  * Thorough live tests for the 6 areas not covered by smoke tests:
- *   1. feedback → KB write (savedToKB:true, actual KB count increases)
+ *   1. feedback â†’ KB write (savedToKB:true, actual KB count increases)
  *   2. review-section with real AI call (revisedText + issues[])
  *   3. generate-batch with twoPass:true (draft + review two-pass)
  *   4. RQ tab_click navigation (regional_overview sub-tab)
- *   5. RQ /list-detail-pages (binoculars — finds a.details_link)
- *   6. RQ /insert-detail-page (binoculars — insert into detail sub-page)
+ *   5. RQ /list-detail-pages (binoculars â€” finds a.details_link)
+ *   6. RQ /insert-detail-page (binoculars â€” insert into detail sub-page)
  *
  * Run: node _test_live_thorough.mjs
  * Requires: server on :5178, RQ agent on :5181, Chrome CDP on :9222
@@ -20,7 +20,7 @@ const UUID = 'feb03938-8e5f-4327-8230-0e31d20a6b2c';
 let passed = 0, failed = 0;
 let testCaseId = null;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function api(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -40,21 +40,21 @@ async function rq(method, path, body) {
 
 function pass(label, detail = '') {
   passed++;
-  console.log(`  ✓ ${label}${detail ? ' — ' + detail : ''}`);
+  console.log(`  âœ“ ${label}${detail ? ' â€” ' + detail : ''}`);
 }
 
 function fail(label, detail = '') {
   failed++;
-  console.log(`  ✗ ${label}${detail ? ' — ' + detail : ''}`);
+  console.log(`  âœ— ${label}${detail ? ' â€” ' + detail : ''}`);
 }
 
 function section(title) {
-  console.log(`\n${'═'.repeat(60)}`);
+  console.log(`\n${'â•'.repeat(60)}`);
   console.log(`  ${title}`);
-  console.log('═'.repeat(60));
+  console.log('â•'.repeat(60));
 }
 
-// ── Setup: create a test case with real facts ─────────────────────────────────
+// â”€â”€ Setup: create a test case with real facts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function setup() {
   const { json } = await api('POST', '/api/cases/create', {
@@ -82,7 +82,7 @@ async function setup() {
   console.log(`\nTest case created: ${testCaseId}`);
 }
 
-// ── Cleanup ───────────────────────────────────────────────────────────────────
+// â”€â”€ Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function cleanup() {
   if (testCaseId) {
@@ -91,10 +91,10 @@ async function cleanup() {
   }
 }
 
-// ── TEST 1: feedback → KB write ───────────────────────────────────────────────
+// â”€â”€ TEST 1: feedback â†’ KB write â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testFeedbackKB() {
-  section('TEST 1: feedback → KB write (savedToKB:true)');
+  section('TEST 1: feedback â†’ KB write (savedToKB:true)');
 
   // Get KB count before
   const { json: before } = await api('GET', '/api/kb/status');
@@ -122,7 +122,7 @@ async function testFeedbackKB() {
     fail('savedToKB:true expected', `got savedToKB=${j1.savedToKB}`);
   }
 
-  // Submit feedback with edited text only (no rating — should still save)
+  // Submit feedback with edited text only (no rating â€” should still save)
   const { json: j2 } = await api('POST', `/api/cases/${testCaseId}/feedback`, {
     fieldId: 'zoning_remarks',
     fieldTitle: 'Zoning Remarks',
@@ -159,13 +159,13 @@ async function testFeedbackKB() {
   console.log(`  KB examples after: ${countAfter}`);
 
   if (countAfter >= countBefore + 2) {
-    pass(`KB count increased by ≥2 (${countBefore} → ${countAfter})`);
+    pass(`KB count increased by â‰¥2 (${countBefore} â†’ ${countAfter})`);
   } else {
-    fail(`KB count should have increased by ≥2`, `${countBefore} → ${countAfter}`);
+    fail(`KB count should have increased by â‰¥2`, `${countBefore} â†’ ${countAfter}`);
   }
 }
 
-// ── TEST 2: review-section with real AI call ──────────────────────────────────
+// â”€â”€ TEST 2: review-section with real AI call â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testReviewSection() {
   section('TEST 2: review-section with real AI call');
@@ -176,7 +176,7 @@ contains approximately 4,200 square feet of gross living area. Market conditions
 and the property is in average condition. The zoning is R-3 Multi-Family. 
 The property is definitely worth $2,000,000 based on our analysis.`;
 
-  console.log('  Calling review-section (AI call — may take 10-30s)...');
+  console.log('  Calling review-section (AI call â€” may take 10-30s)...');
   const start = Date.now();
 
   const { status, json } = await api('POST', `/api/cases/${testCaseId}/review-section`, {
@@ -222,7 +222,7 @@ The property is definitely worth $2,000,000 based on our analysis.`;
     fail('changesMade field missing');
   }
 
-  // The draft contains "definitely worth $2,000,000" — reviewer should flag this
+  // The draft contains "definitely worth $2,000,000" â€” reviewer should flag this
   const hasOverconfidenceFlag = json.issues?.some(i =>
     i.description?.toLowerCase().includes('definit') ||
     i.description?.toLowerCase().includes('value') ||
@@ -233,16 +233,16 @@ The property is definitely worth $2,000,000 based on our analysis.`;
   if (hasOverconfidenceFlag || json.changesMade) {
     pass('reviewer detected overconfident/unsupported claim (changesMade or issue flagged)');
   } else {
-    console.log('  ⚠ reviewer did not flag "definitely worth $2,000,000" — check review_pass.txt prompt');
+    console.log('  âš  reviewer did not flag "definitely worth $2,000,000" â€” check review_pass.txt prompt');
   }
 }
 
-// ── TEST 3: generate-batch with twoPass:true ──────────────────────────────────
+// â”€â”€ TEST 3: generate-batch with twoPass:true â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testGenerateBatchTwoPass() {
   section('TEST 3: generate-batch with twoPass:true');
 
-  console.log('  Calling generate-batch twoPass=true (AI call — may take 30-60s)...');
+  console.log('  Calling generate-batch twoPass=true (AI call â€” may take 30-60s)...');
   const start = Date.now();
 
   const { status, json } = await api('POST', '/api/generate-batch', {
@@ -286,7 +286,7 @@ async function testGenerateBatchTwoPass() {
   }
 }
 
-// ── TEST 4: RQ tab_click navigation ──────────────────────────────────────────
+// â”€â”€ TEST 4: RQ tab_click navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testRQTabClick() {
   section('TEST 4: RQ tab_click navigation (regional_overview)');
@@ -299,7 +299,7 @@ async function testRQTabClick() {
   } catch { agentUp = false; }
 
   if (!agentUp) {
-    console.log('  ⚠ RQ agent not reachable on :5181 — skipping RQ tests');
+    console.log('  âš  RQ agent not reachable on :5181 â€” skipping RQ tests');
     console.log('  (Start with: python real_quantum_agent/agent.py)');
     return;
   }
@@ -333,10 +333,10 @@ async function testRQTabClick() {
   }
 }
 
-// ── TEST 5: RQ /list-detail-pages (binoculars) ────────────────────────────────
+// â”€â”€ TEST 5: RQ /list-detail-pages (binoculars) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testRQListDetailPages() {
-  section('TEST 5: RQ /list-detail-pages (binoculars — a.details_link)');
+  section('TEST 5: RQ /list-detail-pages (binoculars â€” a.details_link)');
 
   let agentUp = false;
   try {
@@ -345,7 +345,7 @@ async function testRQListDetailPages() {
   } catch { agentUp = false; }
 
   if (!agentUp) {
-    console.log('  ⚠ RQ agent not reachable — skipping');
+    console.log('  âš  RQ agent not reachable â€” skipping');
     return;
   }
 
@@ -371,14 +371,14 @@ async function testRQListDetailPages() {
     if (pages.length > 0) {
       console.log(`    First detail URL: ${pages[0]?.slice(-60)}`);
     } else {
-      console.log('  ⚠ No detail pages found — sale_valuation may have no comparables yet');
+      console.log('  âš  No detail pages found â€” sale_valuation may have no comparables yet');
     }
   } else {
     fail('detailPages should be array', `got: ${typeof pages}`);
   }
 }
 
-// ── TEST 6: RQ /insert-detail-page (binoculars insert) ───────────────────────
+// â”€â”€ TEST 6: RQ /insert-detail-page (binoculars insert) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function testRQInsertDetailPage() {
   section('TEST 6: RQ /insert-detail-page (binoculars insert)');
@@ -390,7 +390,7 @@ async function testRQInsertDetailPage() {
   } catch { agentUp = false; }
 
   if (!agentUp) {
-    console.log('  ⚠ RQ agent not reachable — skipping');
+    console.log('  âš  RQ agent not reachable â€” skipping');
     return;
   }
 
@@ -403,7 +403,7 @@ async function testRQInsertDetailPage() {
 
   const pages = listJson.detailPages || [];
   if (pages.length === 0) {
-    console.log('  ⚠ No detail pages available — skipping insert test');
+    console.log('  âš  No detail pages available â€” skipping insert test');
     console.log('  (Add a sale comparable in RQ first to enable this test)');
     return;
   }
@@ -411,7 +411,7 @@ async function testRQInsertDetailPage() {
   const detailUrl = pages[0];
   console.log(`  Inserting into detail page: ...${detailUrl.slice(-50)}`);
 
-  const testText = '[TEST] Sale comparable remarks — CACC Writer live test. This text was inserted by the automated test suite.';
+  const testText = '[TEST] Sale comparable remarks â€” Appraisal Agent live test. This text was inserted by the automated test suite.';
 
   const { status, json } = await rq('POST', '/insert-detail-page', {
     detailUrl,
@@ -433,19 +433,19 @@ async function testRQInsertDetailPage() {
   }
 
   if (json.verified) {
-    pass('verified:true — content confirmed in DOM');
+    pass('verified:true â€” content confirmed in DOM');
   } else {
-    console.log('  ⚠ verified:false — insert may have succeeded but verification failed');
+    console.log('  âš  verified:false â€” insert may have succeeded but verification failed');
   }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function main() {
-  console.log('\n' + '═'.repeat(60));
-  console.log('  CACC Writer — Thorough Live Tests');
+  console.log('\n' + 'â•'.repeat(60));
+  console.log('  Appraisal Agent â€” Thorough Live Tests');
   console.log('  Target: ' + BASE + ' | RQ: ' + RQ);
-  console.log('═'.repeat(60));
+  console.log('â•'.repeat(60));
 
   try {
     await setup();
@@ -465,11 +465,12 @@ async function main() {
     await cleanup();
   }
 
-  console.log('\n' + '═'.repeat(60));
+  console.log('\n' + 'â•'.repeat(60));
   console.log(`  Results: ${passed} passed, ${failed} failed`);
-  console.log('═'.repeat(60) + '\n');
+  console.log('â•'.repeat(60) + '\n');
 
   process.exit(failed > 0 ? 1 : 0);
 }
 
 main().catch(e => { console.error('[FATAL]', e.message); process.exit(1); });
+

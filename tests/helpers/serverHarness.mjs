@@ -1,4 +1,4 @@
-/**
+﻿/**
  * tests/helpers/serverHarness.mjs
  * --------------------------------
  * Shared test helper to ensure the API server is reachable.
@@ -67,7 +67,7 @@ export async function ensureServerRunning({
   const appendTail = (tail, chunk) => (tail + chunk.toString()).slice(-4000);
   const detectBoundPort = (chunk) => {
     const text = chunk.toString();
-    const match = text.match(/CACC Writer server running on port (\d+)/);
+    const match = text.match(/Appraisal Agent server running on port (\d+)/);
     if (!match) return;
     const actualPort = match[1];
     const currentUrl = new URL(baseUrl);
@@ -114,3 +114,4 @@ export async function ensureServerRunning({
   const suffix = logs ? `\nLast server logs:\n${logs}` : '';
   throw new Error(`Failed to start server at ${baseUrl} within ${startupTimeoutMs}ms.${suffix}`);
 }
+

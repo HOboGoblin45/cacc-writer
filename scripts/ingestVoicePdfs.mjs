@@ -1,14 +1,14 @@
-/**
+﻿/**
  * scripts/ingestVoicePdfs.mjs
  * ----------------------------
- * Voice PDF Ingestion Pipeline — Extraction + Staging Layer
+ * Voice PDF Ingestion Pipeline â€” Extraction + Staging Layer
  *
  * Scans voice_pdfs/<formType>/ for appraisal PDFs, extracts narrative
  * sections using OpenAI, and saves structured staged candidates to
  * knowledge_base/staging/<formType>/<filename>.json for manual review.
  *
  * Workflow:
- *   Raw PDFs → Extraction → Staging → (manual review) → promoteStaged.mjs
+ *   Raw PDFs â†’ Extraction â†’ Staging â†’ (manual review) â†’ promoteStaged.mjs
  *
  * CLI:
  *   node scripts/ingestVoicePdfs.mjs
@@ -17,8 +17,8 @@
  *   node scripts/ingestVoicePdfs.mjs --dryRun
  *
  * Output:
- *   knowledge_base/staging/<formType>/<filename>.json  ← staged candidate
- *   knowledge_base/staging/manifest.json               ← processed file tracker
+ *   knowledge_base/staging/<formType>/<filename>.json  â† staged candidate
+ *   knowledge_base/staging/manifest.json               â† processed file tracker
  *
  * After running:
  *   1. Open knowledge_base/staging/<formType>/<filename>.json
@@ -35,23 +35,23 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT      = path.join(__dirname, '..');
 
-// ── CLI args ──────────────────────────────────────────────────────────────────
+// â”€â”€ CLI args â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const args       = process.argv.slice(2);
 const getArg     = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args[i + 1] : null; };
 const hasFlag    = (flag) => args.includes(flag);
 
-const FILTER_FORM = getArg('--formType');   // e.g. '1004' — null = all form types
-const FILTER_FILE = getArg('--file');       // e.g. 'Hundman.PDF' — null = all files
+const FILTER_FORM = getArg('--formType');   // e.g. '1004' â€” null = all form types
+const FILTER_FILE = getArg('--file');       // e.g. 'Hundman.PDF' â€” null = all files
 const DRY_RUN     = hasFlag('--dryRun');    // print what would be done, don't write
 
-// ── Paths ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const VOICE_PDFS_DIR = path.join(ROOT, 'voice_pdfs');
 const STAGING_DIR    = path.join(ROOT, 'knowledge_base', 'staging');
 const MANIFEST_FILE  = path.join(STAGING_DIR, 'manifest.json');
 
-// ── Form type configuration ───────────────────────────────────────────────────
+// â”€â”€ Form type configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const FORM_TYPES = ['1004', '1025', '1073', '1004c', 'commercial'];
 
@@ -118,7 +118,7 @@ const PROPERTY_TYPE_MAP = {
   'commercial': 'commercial',
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function readJSON(filePath, fallback) {
   try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
@@ -150,7 +150,7 @@ function wordCount(text) {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
-// ── PDF text extraction ───────────────────────────────────────────────────────
+// â”€â”€ PDF text extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function extractPdfText(pdfPath) {
   // Stage 1: pdf-parse (fast, works for digitally-created PDFs)
@@ -190,14 +190,14 @@ async function extractPdfText(pdfPath) {
   return { text: '', method: 'failed', pages: 0 };
 }
 
-// ── OpenAI extraction ─────────────────────────────────────────────────────────
+// â”€â”€ OpenAI extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function extractSectionsWithAI(pdfText, formType, filename) {
   const { callAI } = await import('../server/openaiClient.js');
 
   const fields = SECTION_FIELDS[formType] || SECTION_FIELDS['1004'];
 
-  // ── Section extraction ────────────────────────────────────────────────────
+  // â”€â”€ Section extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const fieldList = fields
     .map(f => `  "${f}": "<extracted narrative text or null if not found>"`)
     .join(',\n');
@@ -206,10 +206,10 @@ async function extractSectionsWithAI(pdfText, formType, filename) {
     `You are an expert appraisal report analyst. Extract ONLY the narrative commentary text for each field from this ${formType} appraisal report.`,
     ``,
     `Rules:`,
-    `- Extract ONLY the appraiser's written narrative commentary — not form checkboxes, numeric values, or boilerplate headers`,
-    `- Each extracted text should be 20–500 words of genuine narrative`,
+    `- Extract ONLY the appraiser's written narrative commentary â€” not form checkboxes, numeric values, or boilerplate headers`,
+    `- Each extracted text should be 20â€“500 words of genuine narrative`,
     `- Use null if a section is genuinely not present or has no narrative content`,
-    `- Do NOT fabricate or paraphrase — extract verbatim or near-verbatim`,
+    `- Do NOT fabricate or paraphrase â€” extract verbatim or near-verbatim`,
     `- Return ONLY valid JSON with these exact keys:`,
     ``,
     `{`,
@@ -233,10 +233,10 @@ async function extractSectionsWithAI(pdfText, formType, filename) {
     console.warn(`  [AI sections] extraction failed: ${err.message}`);
   }
 
-  // ── Phrase extraction ─────────────────────────────────────────────────────
+  // â”€â”€ Phrase extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const phrasePrompt = [
-    `You are an expert appraisal language analyst. From this ${formType} appraisal report, extract 3–8 SHORT, REUSABLE narrative clauses or phrases that:`,
-    `- Are 15–80 words each`,
+    `You are an expert appraisal language analyst. From this ${formType} appraisal report, extract 3â€“8 SHORT, REUSABLE narrative clauses or phrases that:`,
+    `- Are 15â€“80 words each`,
     `- Express a complete professional thought`,
     `- Could be reused in other appraisal reports of the same type`,
     `- Are NOT property-specific (no addresses, no specific dollar amounts, no specific dates)`,
@@ -265,7 +265,7 @@ async function extractSectionsWithAI(pdfText, formType, filename) {
     console.warn(`  [AI phrases] extraction failed: ${err.message}`);
   }
 
-  // ── Metadata extraction ───────────────────────────────────────────────────
+  // â”€â”€ Metadata extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const metaPrompt = [
     `From this appraisal report text, extract the following metadata. Return ONLY valid JSON:`,
     `{`,
@@ -299,7 +299,7 @@ async function extractSectionsWithAI(pdfText, formType, filename) {
   return { sections, phrases, metadata };
 }
 
-// ── Build staged candidate ────────────────────────────────────────────────────
+// â”€â”€ Build staged candidate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildStagedCandidate(filename, formType, pdfMeta, extracted) {
   const { sections, phrases, metadata } = extracted;
@@ -373,13 +373,13 @@ function buildStagedCandidate(filename, formType, pdfMeta, extracted) {
   };
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function main() {
-  console.log('\n══════════════════════════════════════════════════════');
-  console.log('  CACC Writer — Voice PDF Ingestion Pipeline');
-  console.log('══════════════════════════════════════════════════════');
-  if (DRY_RUN) console.log('  [DRY RUN] — no files will be written\n');
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  console.log('  Appraisal Agent â€” Voice PDF Ingestion Pipeline');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  if (DRY_RUN) console.log('  [DRY RUN] â€” no files will be written\n');
 
   ensureDir(STAGING_DIR);
 
@@ -393,7 +393,7 @@ async function main() {
     : FORM_TYPES;
 
   if (FILTER_FORM && !FORM_TYPES.includes(FILTER_FORM)) {
-    console.error(`  ✗ Unknown formType: ${FILTER_FORM}. Valid: ${FORM_TYPES.join(', ')}`);
+    console.error(`  âœ— Unknown formType: ${FILTER_FORM}. Valid: ${FORM_TYPES.join(', ')}`);
     process.exit(1);
   }
 
@@ -403,7 +403,7 @@ async function main() {
   for (const formType of formTypesToScan) {
     const formDir = path.join(VOICE_PDFS_DIR, formType);
     if (!fs.existsSync(formDir)) {
-      console.log(`  [${formType}] folder not found — skipping`);
+      console.log(`  [${formType}] folder not found â€” skipping`);
       continue;
     }
 
@@ -426,19 +426,19 @@ async function main() {
 
       // Skip already-staged files
       if (stagedSet.has(manifestKey)) {
-        console.log(`    ⊙ ${filename} — already staged, skipping`);
+        console.log(`    âŠ™ ${filename} â€” already staged, skipping`);
         totalSkipped++;
         continue;
       }
 
-      console.log(`    ⟳ ${filename} — extracting...`);
+      console.log(`    âŸ³ ${filename} â€” extracting...`);
       const pdfPath = path.join(formDir, filename);
 
       try {
         // Step 1: Extract PDF text
         const pdfMeta = await extractPdfText(pdfPath);
         if (!pdfMeta.text || pdfMeta.text.length < 100) {
-          console.warn(`    ✗ ${filename} — insufficient text extracted (${pdfMeta.text.length} chars)`);
+          console.warn(`    âœ— ${filename} â€” insufficient text extracted (${pdfMeta.text.length} chars)`);
           totalFailed++;
           results.push({ file: manifestKey, status: 'failed', reason: 'insufficient text' });
           continue;
@@ -475,21 +475,21 @@ async function main() {
           compExamples: candidate.compExamples.length,
           stagingFile:  `knowledge_base/staging/${formType}/${filename}.json`,
         });
-        console.log(`    ✓ ${filename} — staged`);
+        console.log(`    âœ“ ${filename} â€” staged`);
 
       } catch (err) {
-        console.error(`    ✗ ${filename} — ERROR: ${err.message}`);
+        console.error(`    âœ— ${filename} â€” ERROR: ${err.message}`);
         totalFailed++;
         results.push({ file: manifestKey, status: 'error', reason: err.message });
       }
     }
   }
 
-  // ── Summary ───────────────────────────────────────────────────────────────
-  console.log('\n══════════════════════════════════════════════════════');
+  // â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
   console.log(`  Ingestion Complete`);
   console.log(`  Found: ${totalFound}  |  Staged: ${totalProcessed}  |  Skipped: ${totalSkipped}  |  Failed: ${totalFailed}`);
-  console.log('══════════════════════════════════════════════════════');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
   if (totalProcessed > 0) {
     console.log('\n  Next steps:');
@@ -502,7 +502,7 @@ async function main() {
   if (totalFailed > 0) {
     console.log('\n  Failed files:');
     results.filter(r => r.status !== 'staged').forEach(r => {
-      console.log(`    ✗ ${r.file}: ${r.reason || r.status}`);
+      console.log(`    âœ— ${r.file}: ${r.reason || r.status}`);
     });
   }
 
@@ -513,3 +513,4 @@ main().catch(err => {
   console.error('\n  FATAL:', err.message);
   process.exit(1);
 });
+

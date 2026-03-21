@@ -1,4 +1,4 @@
-"""
+﻿"""
 real_quantum_agent/discover_full_map.py
 ---------------------------------------
 Comprehensive discovery of ALL TinyMCE text fields in Real Quantum,
@@ -17,8 +17,8 @@ Run this with the RQ agent STOPPED (uses CDP directly, no Flask):
     python real_quantum_agent/discover_full_map.py
 
 Output:
-    real_quantum_agent/discovered_full_map.json  — complete field map
-    real_quantum_agent/discovery_report.txt      — human-readable report
+    real_quantum_agent/discovered_full_map.json  â€” complete field map
+    real_quantum_agent/discovery_report.txt      â€” human-readable report
 """
 
 import json
@@ -34,7 +34,7 @@ except ImportError:
     print("ERROR: playwright not installed. Run: pip install playwright")
     sys.exit(1)
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CDP_URL      = 'http://127.0.0.1:9222'
 AGENT_DIR    = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE  = os.path.join(AGENT_DIR, 'config.json')
@@ -59,7 +59,7 @@ SECTIONS = [
     ('reconciliation',      'Reconciliation'),
 ]
 
-# ── JS helpers ────────────────────────────────────────────────────────────────
+# â”€â”€ JS helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 SCAN_IFRAMES_JS = """
 () => {
@@ -84,7 +84,7 @@ SCAN_EXPAND_BUTTONS_JS = """
     // - buttons near TinyMCE editors
     // - buttons with title/aria-label containing keywords
     // - SVG icons that look like binoculars (search icon)
-    // NOTE: className can be SVGAnimatedString on SVG elements — always use String()
+    // NOTE: className can be SVGAnimatedString on SVG elements â€” always use String()
     const keywords = ['detail', 'expand', 'view', 'more', 'search', 'binocular',
                       'additional', 'remarks', 'notes', 'comment', 'edit'];
     const results = [];
@@ -167,7 +167,7 @@ SCAN_MODAL_IFRAMES_JS = """
 }
 """
 
-# ── Main discovery ────────────────────────────────────────────────────────────
+# â”€â”€ Main discovery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def discover_section(page, slug, label, uuid):
     """Navigate to a section and discover all TinyMCE fields including sub-sections."""
@@ -272,7 +272,7 @@ def discover_section(page, slug, label, uuid):
 
 
 def main():
-    print("CACC Writer — Real Quantum Full Field Map Discovery")
+    print("Appraisal Agent â€” Real Quantum Full Field Map Discovery")
     print("="*60)
     print(f"CDP: {CDP_URL}")
     print(f"RQ Base: {RQ_BASE_URL}")
@@ -322,7 +322,7 @@ def main():
         # Write human-readable report
         out_txt = os.path.join(AGENT_DIR, 'discovery_report.txt')
         with open(out_txt, 'w') as f:
-            f.write("CACC Writer — Real Quantum Full Field Discovery Report\n")
+            f.write("Appraisal Agent â€” Real Quantum Full Field Discovery Report\n")
             f.write("="*60 + "\n\n")
             for r in all_results:
                 f.write(f"SECTION: {r['label']} ({r['slug']})\n")
@@ -361,3 +361,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

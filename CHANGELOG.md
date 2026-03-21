@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 ## 2026-03-21
 
@@ -23,7 +23,7 @@
 
 ### Branding and packaging
 - Renamed the package from `cacc-writer` to `appraisal-agent` and bumped the version to `3.0.0` in `package.json` and `package-lock.json`.
-- Updated UI branding from `CACC Writer` to `Appraisal Agent` in `index.html`.
+- Updated UI branding from `Appraisal Agent` to `Appraisal Agent` in `index.html`.
 - Updated the frontend runtime title in `app.js` and tuned the brand-mark styling in `styles.css` for the new initials.
 - Preserved `Cresci Appraisal & Consulting` as the company name.
 
@@ -32,5 +32,6 @@
 - Captured the backend audit follow-through work, branding pass, startup changes, and regression fixes in this changelog for handoff/reference.
 
 ### Validation
-- Ran `npm run test:unit` → `304 passed, 0 failed`.
-- Ran `npm run typecheck` → passed.
+- Ran `npm run test:unit` â†’ `304 passed, 0 failed`.
+- Ran `npm run typecheck` â†’ passed.
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 real_quantum_agent/selector_discovery.py
 -----------------------------------------
 Helper script to discover CSS selectors in Real Quantum's web interface.
@@ -16,8 +16,8 @@ Usage:
     5. Review the output and copy the correct selectors into field_maps/commercial.json
 
 Output files:
-    real_quantum_agent/discovered_elements.json  — full element dump
-    real_quantum_agent/selector_report.txt       — human-readable report
+    real_quantum_agent/discovered_elements.json  â€” full element dump
+    real_quantum_agent/selector_report.txt       â€” human-readable report
 """
 
 import json
@@ -47,7 +47,7 @@ RQ_URL   = config.get('rq_base_url', 'https://app.realquantum.com')
 
 def discover_elements():
     print(f"\n{'='*60}")
-    print("CACC Writer — Real Quantum Selector Discovery")
+    print("Appraisal Agent â€” Real Quantum Selector Discovery")
     print(f"{'='*60}")
     print(f"Connecting to Chrome at {CDP_URL}...")
     print("Make sure Chrome is open with your Real Quantum report.\n")
@@ -83,7 +83,7 @@ def discover_elements():
         print(f"\nCurrent page URL: {page.url}")
         print(f"Page title: {page.title()}\n")
 
-        # ── Collect all interactive elements ──────────────────────────────────
+        # â”€â”€ Collect all interactive elements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         print("Scanning page for interactive elements...")
 
         elements = page.evaluate("""
@@ -164,13 +164,13 @@ def discover_elements():
 
         print(f"Found {len(elements)} unique interactive elements.\n")
 
-        # ── Save full JSON dump ───────────────────────────────────────────────
+        # â”€â”€ Save full JSON dump â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         json_out = os.path.join(AGENT_DIR, 'discovered_elements.json')
         with open(json_out, 'w') as f:
             json.dump({'url': page.url, 'title': page.title(), 'elements': elements}, f, indent=2)
         print(f"Full element dump saved to: {json_out}")
 
-        # ── Generate human-readable report ────────────────────────────────────
+        # â”€â”€ Generate human-readable report â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         report_lines = [
             "REAL QUANTUM SELECTOR DISCOVERY REPORT",
             f"URL: {page.url}",
@@ -194,9 +194,9 @@ def discover_elements():
         for t in priority_types:
             if t not in by_type:
                 continue
-            report_lines.append(f"\n{'─'*50}")
+            report_lines.append(f"\n{'â”€'*50}")
             report_lines.append(f"TYPE: {t.upper()} ({len(by_type[t])} found)")
-            report_lines.append(f"{'─'*50}")
+            report_lines.append(f"{'â”€'*50}")
             for el in by_type[t]:
                 report_lines.append(f"  Tag:        {el['tag']}")
                 if el['id']:
@@ -241,14 +241,14 @@ def discover_elements():
             f.write('\n'.join(report_lines))
         print(f"Human-readable report saved to: {report_out}")
 
-        # ── Print summary to console ──────────────────────────────────────────
+        # â”€â”€ Print summary to console â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         print("\n" + "=" * 60)
-        print("QUICK SUMMARY — Textareas and Inputs Found:")
+        print("QUICK SUMMARY â€” Textareas and Inputs Found:")
         print("=" * 60)
         for el in elements:
             if el['query_type'] in ('textarea', 'text_input', 'contenteditable', 'named_element'):
                 name_or_id = el['id'] or el['name'] or '(no id/name)'
-                print(f"  {el['tag']:12} id={el['id'] or '—':30} name={el['name'] or '—':30} text={el['text_content'][:40]}")
+                print(f"  {el['tag']:12} id={el['id'] or 'â€”':30} name={el['name'] or 'â€”':30} text={el['text_content'][:40]}")
 
         print(f"\nOpen {report_out} for the full report.")
         print(f"Open {json_out} for the raw JSON dump.")
@@ -256,3 +256,4 @@ def discover_elements():
 
 if __name__ == '__main__':
     discover_elements()
+

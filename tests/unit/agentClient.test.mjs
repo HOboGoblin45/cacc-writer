@@ -127,6 +127,30 @@ await test('readFieldFromAgent forwards targetRect when exact geometry is availa
   });
 });
 
+await test('callAgentInsert forwards section hints for nested ACI field maps', async () => {
+  let seen = null;
+  global.fetch = async (url, options) => {
+    seen = { url, options };
+    return createJsonResponse(200, { ok: true, inserted: true });
+  };
+
+  await callAgentInsert({
+    fieldId: 'market_conditions',
+    text: 'Narrative',
+    formType: '1004',
+    section: 'narratives',
+    agentBaseUrl: 'http://localhost:5180',
+    timeout: 500,
+  });
+
+  assert.deepEqual(JSON.parse(seen.options.body), {
+    fieldId: 'market_conditions',
+    text: 'Narrative',
+    formType: '1004',
+    section: 'narratives',
+  });
+});
+
 await test('readFieldFromAgent throws when the agent returns an explicit read failure', async () => {
   global.fetch = async () => createJsonResponse(200, {
     ok: false,

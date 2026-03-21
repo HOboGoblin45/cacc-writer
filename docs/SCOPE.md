@@ -1,11 +1,11 @@
-# CACC Writer — Active Production Scope
+﻿# Appraisal Agent â€” Active Production Scope
 # =======================================
 # Last updated: 2025
-# Status: NARROWED — Two production lanes only
+# Status: NARROWED â€” Two production lanes only
 
 ## ACTIVE PRODUCTION LANES
 
-### Lane 1 — 1004 Single-Family Residential (ACI)
+### Lane 1 â€” 1004 Single-Family Residential (ACI)
 - Form type: `1004`
 - Software: ACI (Windows desktop automation via pywinauto)
 - Agent: `desktop_agent/agent.py` + `desktop_agent/agent_core.py`
@@ -28,7 +28,7 @@
 
 ---
 
-### Lane 2 — Commercial (Real Quantum)
+### Lane 2 â€” Commercial (Real Quantum)
 - Form type: `commercial`
 - Software: Real Quantum (browser automation via Playwright)
 - Agent: `real_quantum_agent/agent.py`
@@ -70,16 +70,16 @@ Files are preserved and must not be deleted. They may be activated in a future p
 ## IMPLEMENTATION PRIORITIES
 
 ### Highest Priority (build now)
-1. **1004 narrative generation** — all 10 priority sections fully wired
-2. **1004 section dependencies** — required/recommended facts per section
-3. **1004 ACI insertion** — tab targeting, TX32 control resolution, verification
-4. **Commercial narrative generation** — all 5 priority sections
-5. **Commercial Real Quantum insertion** — section navigation, editor targeting, verification
+1. **1004 narrative generation** â€” all 10 priority sections fully wired
+2. **1004 section dependencies** â€” required/recommended facts per section
+3. **1004 ACI insertion** â€” tab targeting, TX32 control resolution, verification
+4. **Commercial narrative generation** â€” all 5 priority sections
+5. **Commercial Real Quantum insertion** â€” section navigation, editor targeting, verification
 
 ### Medium Priority (build after lanes are stable)
-6. **Evaluation dataset** — 25 cases for 1004 + commercial
-7. **Production lane test** — one real 1004 assignment end-to-end
-8. **Pinecone knowledge base** — ingest approved 1004 + commercial sections
+6. **Evaluation dataset** â€” 25 cases for 1004 + commercial
+7. **Production lane test** â€” one real 1004 assignment end-to-end
+8. **Pinecone knowledge base** â€” ingest approved 1004 + commercial sections
 
 ### Deferred (do not build now)
 - 1025 deep wiring
@@ -91,7 +91,7 @@ Files are preserved and must not be deleted. They may be activated in a future p
 
 ## FILE / MODULE PRIORITIES
 
-### Active — invest full implementation effort
+### Active â€” invest full implementation effort
 | File                                        | Lane        |
 |---------------------------------------------|-------------|
 | `server/sectionDependencies.js`             | 1004 + comm |
@@ -110,7 +110,7 @@ Files are preserved and must not be deleted. They may be activated in a future p
 | `server/retrieval/llamaIndex.ts`            | both        |
 | `server/ingestion/documentParser.ts`        | both        |
 
-### Deferred — keep but do not extend
+### Deferred â€” keep but do not extend
 | File                                        | Reason      |
 |---------------------------------------------|-------------|
 | `forms/1025.js`                             | deferred    |
@@ -125,49 +125,49 @@ Files are preserved and must not be deleted. They may be activated in a future p
 ## TESTING PRIORITIES
 
 ### Run on every change
-- `npm test` — 28 smoke tests (all endpoints)
-- `node _test_missing_facts.mjs` — 22 missing-facts tests
-- `node _test_ui_flow.mjs` — 17 UI flow simulation tests
+- `npm test` â€” 28 smoke tests (all endpoints)
+- `node _test_missing_facts.mjs` â€” 22 missing-facts tests
+- `node _test_ui_flow.mjs` â€” 17 UI flow simulation tests
 
 ### Run before production lane test
-- `python _test_aci_live.py 1004` — live ACI insertion test (1004 fields)
-- `python _test_rq_sections.py` — live RQ section navigation test (commercial)
+- `python _test_aci_live.py 1004` â€” live ACI insertion test (1004 fields)
+- `python _test_rq_sections.py` â€” live RQ section navigation test (commercial)
 
 ### Deferred tests (do not prioritize)
 - Any test targeting 1025, 1073, 1004c specifically
 
 ---
 
-## SCOPE ENFORCEMENT — IMPLEMENTED
+## SCOPE ENFORCEMENT â€” IMPLEMENTED
 
 The following scope enforcement has been implemented across the full stack:
 
-### Central Config — `server/config/productionScope.js`
+### Central Config â€” `server/config/productionScope.js`
 - `ACTIVE_FORMS = ['1004', 'commercial']`
 - `DEFERRED_FORMS = ['1025', '1073', '1004c']`
-- `PRIORITY_SECTIONS_1004` — 10 sections
-- `PRIORITY_SECTIONS_COMMERCIAL` — 5 sections
-- `isActiveForm(ft)` / `isDeferredForm(ft)` — scope guards
-- `logDeferredAccess(ft, endpoint, log)` — logs all deferred access
-- `getScopeMetaForForm(ft)` — returns `{ scope, supported, warning }`
+- `PRIORITY_SECTIONS_1004` â€” 10 sections
+- `PRIORITY_SECTIONS_COMMERCIAL` â€” 5 sections
+- `isActiveForm(ft)` / `isDeferredForm(ft)` â€” scope guards
+- `logDeferredAccess(ft, endpoint, log)` â€” logs all deferred access
+- `getScopeMetaForForm(ft)` â€” returns `{ scope, supported, warning }`
 
-### API Enforcement — `cacc-writer-server.js`
+### API Enforcement â€” `cacc-writer-server.js`
 | Endpoint | Deferred behavior |
 |---|---|
 | `GET /api/forms` | Returns `activeForms`, `deferredForms`, `activeScope`, `deferredScope` |
-| `POST /api/cases/create` | **BLOCKED** — returns `{supported:false, scope:'deferred'}` |
-| `POST /api/generate` | **BLOCKED** — returns `{supported:false, scope:'deferred'}` |
-| `POST /api/generate-batch` | **BLOCKED** — returns `{supported:false, scope:'deferred'}` |
-| `POST /api/workflow/run` | **BLOCKED** — returns `{supported:false, scope:'deferred'}` |
-| `POST /api/workflow/run-batch` | **BLOCKED** — returns `{supported:false, scope:'deferred'}` |
-| `GET /api/cases/:caseId` | **ALLOWED** — returns `scopeStatus:'deferred'` + `scopeWarning` for legacy cases |
+| `POST /api/cases/create` | **BLOCKED** â€” returns `{supported:false, scope:'deferred'}` |
+| `POST /api/generate` | **BLOCKED** â€” returns `{supported:false, scope:'deferred'}` |
+| `POST /api/generate-batch` | **BLOCKED** â€” returns `{supported:false, scope:'deferred'}` |
+| `POST /api/workflow/run` | **BLOCKED** â€” returns `{supported:false, scope:'deferred'}` |
+| `POST /api/workflow/run-batch` | **BLOCKED** â€” returns `{supported:false, scope:'deferred'}` |
+| `GET /api/cases/:caseId` | **ALLOWED** â€” returns `scopeStatus:'deferred'` + `scopeWarning` for legacy cases |
 
-### Forms Registry — `forms/index.js`
-- `listForms()` — includes `scope`, `supported` fields on each form
-- `getActiveForms()` — returns only 1004 + commercial
-- `getDeferredForms()` — returns 1025, 1073, 1004c
+### Forms Registry â€” `forms/index.js`
+- `listForms()` â€” includes `scope`, `supported` fields on each form
+- `getActiveForms()` â€” returns only 1004 + commercial
+- `getDeferredForms()` â€” returns 1025, 1073, 1004c
 
-### UI Enforcement — `index.html` + `app.js`
+### UI Enforcement â€” `index.html` + `app.js`
 - Two-section form picker: **Active Production** (prominent) + **Deferred / Future** (collapsed toggle)
 - Deferred form banner: shown when a deferred form type is selected or loaded
 - Generate buttons disabled for deferred form types
@@ -189,33 +189,34 @@ The following scope enforcement has been implemented across the full stack:
 
 ---
 
-## DESKTOP PRODUCTION PHASE — ACTIVE PRIORITIES
+## DESKTOP PRODUCTION PHASE â€” ACTIVE PRIORITIES
 
 > This section reflects the current active implementation phase.
 > Full tracker: `TODO_DESKTOP_PHASE.md`
 
 ### What is complete (current state)
-- Voice engine Phase 1 — `addApprovedNarrative()`, weighted retrieval, disk write ✅
-- Narrative generation — all 10 priority 1004 sections + all 5 commercial sections ✅
-- Section dependency logic, subject condition support (C1–C6), phrase bank ✅
-- Two-pass draft/review workflow ✅
-- Scope enforcement across API + UI ✅
-- `server/destinationRegistry.js` — centralized insertion targets ✅
-- `server/fileLogger.js` — disk logging ✅
-- `server/backupExport.js` — support bundle export ✅
-- `cacc-writer-server.js` — 7 new production endpoints wired ✅
-- Electron shell — `desktop/electron/main.cjs`, `preload.cjs`, `forge.config.cjs` ✅
-- `package.json` — electron + forge devDeps + scripts ✅
-- UI health strip — `index.html` (#healthStrip, 5 hs-chips, #versionBadge, #exportToast) ✅
-- `app.js` — `loadHealthStatus()`, `renderHealthPanel()`, `createSupportBundle()`, `initVersionDisplay()` ✅
+- Voice engine Phase 1 â€” `addApprovedNarrative()`, weighted retrieval, disk write âœ…
+- Narrative generation â€” all 10 priority 1004 sections + all 5 commercial sections âœ…
+- Section dependency logic, subject condition support (C1â€“C6), phrase bank âœ…
+- Two-pass draft/review workflow âœ…
+- Scope enforcement across API + UI âœ…
+- `server/destinationRegistry.js` â€” centralized insertion targets âœ…
+- `server/fileLogger.js` â€” disk logging âœ…
+- `server/backupExport.js` â€” support bundle export âœ…
+- `cacc-writer-server.js` â€” 7 new production endpoints wired âœ…
+- Electron shell â€” `desktop/electron/main.cjs`, `preload.cjs`, `forge.config.cjs` âœ…
+- `package.json` â€” electron + forge devDeps + scripts âœ…
+- UI health strip â€” `index.html` (#healthStrip, 5 hs-chips, #versionBadge, #exportToast) âœ…
+- `app.js` â€” `loadHealthStatus()`, `renderHealthPanel()`, `createSupportBundle()`, `initVersionDisplay()` âœ…
 
 ### What is pending (ordered by priority)
-1. `_test_desktop_endpoints.mjs` — test suite for 8 new production endpoints
-2. ACI hardening — `/calibrate`, `/test-field`, `automation_id` strategy, escalating retry
-3. RQ hardening — real selector discovery, `/test-field`, screenshot on failure
-4. End-to-end test — one real 1004 assignment from generate → insert → verify
+1. `_test_desktop_endpoints.mjs` â€” test suite for 8 new production endpoints
+2. ACI hardening â€” `/calibrate`, `/test-field`, `automation_id` strategy, escalating retry
+3. RQ hardening â€” real selector discovery, `/test-field`, screenshot on failure
+4. End-to-end test â€” one real 1004 assignment from generate â†’ insert â†’ verify
 
 ### Decision rule
 > When deciding where to invest implementation effort, always ask:
 > **"Does this serve Lane 1 (1004/ACI) or Lane 2 (commercial/RQ)?"**
 > If no, defer it.
+

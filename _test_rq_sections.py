@@ -1,4 +1,4 @@
-"""
+﻿"""
 _test_rq_sections.py
 --------------------
 Tests RQ agent section navigation and TinyMCE selector detection across
@@ -28,7 +28,7 @@ passed = 0
 failed = 0
 results = []
 
-# ── Test 1: test-field across 4 sections ─────────────────────────────────────
+# â”€â”€ Test 1: test-field across 4 sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 print("=" * 60)
 print("TEST 1: test-field across multiple sections")
 print("=" * 60)
@@ -60,7 +60,7 @@ for fid in test_fields:
         results.append({"field": fid, "found": False, "error": str(e)})
     time.sleep(0.3)
 
-# ── Test 2: insert-batch (introduction + site_description) ───────────────────
+# â”€â”€ Test 2: insert-batch (introduction + site_description) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 print()
 print("=" * 60)
 print("TEST 2: insert-batch (2 fields)")
@@ -71,11 +71,11 @@ batch_payload = {
     "fields": [
         {
             "fieldId": "introduction",
-            "text": "CACC Writer batch test — introduction. This appraisal report has been prepared in conformance with USPAP."
+            "text": "Appraisal Agent batch test â€” introduction. This appraisal report has been prepared in conformance with USPAP."
         },
         {
             "fieldId": "site_description",
-            "text": "CACC Writer batch test — site description. The subject site is a rectangular parcel with adequate utilities."
+            "text": "Appraisal Agent batch test â€” site description. The subject site is a rectangular parcel with adequate utilities."
         }
     ]
 }
@@ -95,12 +95,12 @@ try:
         print(f"  [{status}] {fid}: method={r.get('method')} verified={r.get('verified')}")
     for fid, err in errs.items():
         failed += 1
-        print(f"  [FAIL] {fid}: ERROR — {err}")
+        print(f"  [FAIL] {fid}: ERROR â€” {err}")
 except Exception as e:
     failed += 2
     print(f"  [ERROR] insert-batch failed: {e}")
 
-# ── Test 3: Discover sale_valuation TinyMCE iframe IDs ───────────────────────
+# â”€â”€ Test 3: Discover sale_valuation TinyMCE iframe IDs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 print()
 print("=" * 60)
 print("TEST 3: Discover sale_valuation TinyMCE iframes")
@@ -126,7 +126,7 @@ try:
     else:
         print(f"  WARNING: Not on sale_valuation page (on: {url[-40:]})")
 
-    # The elements list won't show iframes directly — we need a direct CDP query
+    # The elements list won't show iframes directly â€” we need a direct CDP query
     # Use a screenshot to confirm the page state
     try:
         sc = get("/screenshot")
@@ -138,9 +138,10 @@ except Exception as e:
     failed += 1
     print(f"  [ERROR] sale_valuation discovery: {e}")
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+# â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 print()
 print("=" * 60)
 print(f"RESULTS: {passed} passed, {failed} failed")
 print("=" * 60)
 sys.exit(0 if failed == 0 else 1)
+

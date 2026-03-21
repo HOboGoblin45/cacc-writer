@@ -1,28 +1,28 @@
-/**
+﻿/**
  * server/workflow/appraisalWorkflow.ts
  * --------------------------------------
- * NEW ARCHITECTURE — LangGraph Workflow Runtime for CACC Writer.
+ * NEW ARCHITECTURE â€” LangGraph Workflow Runtime for Appraisal Agent.
  *
  * Implements the full 10-node appraisal workflow as a LangGraph StateGraph.
  * Each node is a pure function that reads from and writes to WorkflowState.
  *
  * Workflow nodes:
- *   create_case       → initialize case state, validate inputs
- *   parse_documents   → ingest uploaded PDFs, extract sections
- *   extract_facts     → load facts from case directory
- *   retrieve_examples → semantic retrieval from Pinecone / local KB
- *   draft_section     → generate narrative with OpenAI
- *   review_section    → two-pass review for quality + USPAP compliance
- *   insert_section    → insert into ACI or Real Quantum
- *   verify_insert     → confirm insertion, retry once on failure
- *   save_output       → store approved section to Pinecone + local KB
+ *   create_case       â†’ initialize case state, validate inputs
+ *   parse_documents   â†’ ingest uploaded PDFs, extract sections
+ *   extract_facts     â†’ load facts from case directory
+ *   retrieve_examples â†’ semantic retrieval from Pinecone / local KB
+ *   draft_section     â†’ generate narrative with OpenAI
+ *   review_section    â†’ two-pass review for quality + USPAP compliance
+ *   insert_section    â†’ insert into ACI or Real Quantum
+ *   verify_insert     â†’ confirm insertion, retry once on failure
+ *   save_output       â†’ store approved section to Pinecone + local KB
  *
  * Conditional edges:
- *   review_section → insert_section  (if no critical issues)
- *   review_section → draft_section   (if critical issues found, max 1 retry)
- *   verify_insert  → save_output     (if verification passed)
- *   verify_insert  → retry_insert    (if failed, retryCount === 0)
- *   verify_insert  → failed          (if failed, retryCount >= 1)
+ *   review_section â†’ insert_section  (if no critical issues)
+ *   review_section â†’ draft_section   (if critical issues found, max 1 retry)
+ *   verify_insert  â†’ save_output     (if verification passed)
+ *   verify_insert  â†’ retry_insert    (if failed, retryCount === 0)
+ *   verify_insert  â†’ failed          (if failed, retryCount >= 1)
  *
  * Usage:
  *   const workflow = createAppraisalWorkflow();
@@ -61,7 +61,7 @@ import type {
 // Re-export WorkflowState for other modules
 export type { WorkflowState };
 
-// ── LangGraph State Annotation ────────────────────────────────────────────────
+// â”€â”€ LangGraph State Annotation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // All fields use last-write-wins reducer: (_, y) => y
 // This means each node's returned partial state overwrites the previous value.
 
@@ -137,7 +137,7 @@ const WorkflowStateAnnotation = Annotation.Root({
   }),
 });
 
-// ── Node: create_case ─────────────────────────────────────────────────────────
+// â”€â”€ Node: create_case â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeCreateCase(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:create-case', { caseId: state.caseId, formType: state.formType, fieldId: state.fieldId });
@@ -161,7 +161,7 @@ async function nodeCreateCase(state: WorkflowState): Promise<Partial<WorkflowSta
       fieldId:  state.fieldId,
     });
   } catch {
-    // Non-fatal — tracing is optional
+    // Non-fatal â€” tracing is optional
   }
 
   return {
@@ -174,7 +174,7 @@ async function nodeCreateCase(state: WorkflowState): Promise<Partial<WorkflowSta
   };
 }
 
-// ── Node: parse_documents ─────────────────────────────────────────────────────
+// â”€â”€ Node: parse_documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeParseDocuments(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:parse-documents', { caseId: state.caseId });
@@ -184,14 +184,14 @@ async function nodeParseDocuments(state: WorkflowState): Promise<Partial<Workflo
   if (!state.documents || state.documents.length === 0) {
     return {
       currentStage: 'extract_facts',
-      warnings:     [...(state.warnings || []), 'No documents to parse — using existing facts'],
+      warnings:     [...(state.warnings || []), 'No documents to parse â€” using existing facts'],
     };
   }
 
   return { currentStage: 'extract_facts' };
 }
 
-// ── Node: extract_facts ───────────────────────────────────────────────────────
+// â”€â”€ Node: extract_facts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeExtractFacts(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:extract-facts', { caseId: state.caseId });
@@ -203,14 +203,14 @@ async function nodeExtractFacts(state: WorkflowState): Promise<Partial<WorkflowS
   if (Object.keys(facts).length === 0) {
     return {
       currentStage: 'retrieve_examples',
-      warnings:     [...(state.warnings || []), 'No facts available — generation will be generic'],
+      warnings:     [...(state.warnings || []), 'No facts available â€” generation will be generic'],
     };
   }
 
   return { currentStage: 'retrieve_examples', facts };
 }
 
-// ── Node: retrieve_examples ───────────────────────────────────────────────────
+// â”€â”€ Node: retrieve_examples â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeRetrieveExamples(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:retrieve-examples', { fieldId: state.fieldId });
@@ -238,7 +238,7 @@ async function nodeRetrieveExamples(state: WorkflowState): Promise<Partial<Workf
   return { currentStage: 'draft_section', examples };
 }
 
-// ── Node: draft_section ───────────────────────────────────────────────────────
+// â”€â”€ Node: draft_section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeDraftSection(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:draft-section', { fieldId: state.fieldId });
@@ -258,7 +258,7 @@ async function nodeDraftSection(state: WorkflowState): Promise<Partial<WorkflowS
   }
 }
 
-// ── Node: review_section ──────────────────────────────────────────────────────
+// â”€â”€ Node: review_section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeReviewSection(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:review-section', { fieldId: state.fieldId });
@@ -275,7 +275,7 @@ async function nodeReviewSection(state: WorkflowState): Promise<Partial<Workflow
       ],
     };
   } catch (err: any) {
-    // Review failure is non-fatal — use draft text
+    // Review failure is non-fatal â€” use draft text
     log.warn('workflow:review-section', { error: err.message, nonFatal: true });
     return {
       currentStage: 'insert_section',
@@ -286,7 +286,7 @@ async function nodeReviewSection(state: WorkflowState): Promise<Partial<Workflow
   }
 }
 
-// ── Node: insert_section ──────────────────────────────────────────────────────
+// â”€â”€ Node: insert_section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeInsertSection(state: WorkflowState): Promise<Partial<WorkflowState>> {
   const { caseId, formType, fieldId, finalText, reviewedText, draftText } = state;
@@ -339,7 +339,7 @@ async function nodeInsertSection(state: WorkflowState): Promise<Partial<Workflow
   };
 }
 
-// ── Node: verify_insert ───────────────────────────────────────────────────────
+// â”€â”€ Node: verify_insert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeVerifyInsert(state: WorkflowState): Promise<Partial<WorkflowState>> {
   log.info('workflow:verify-insert', { fieldId: state.fieldId, retryCount: state.retryCount });
@@ -347,7 +347,7 @@ async function nodeVerifyInsert(state: WorkflowState): Promise<Partial<WorkflowS
   const verificationResult = await verifyInsertion(state);
 
   if (!verificationResult.passed && (state.retryCount || 0) === 0) {
-    // First failure — retry insertion
+    // First failure â€” retry insertion
     log.warn('workflow:verify-insert', { fieldId: state.fieldId, action: 'retrying' });
     const retryResult = await retryInsertion(state);
     const retryVerify = await verifyInsertion({ ...state, retryCount: 1 });
@@ -372,7 +372,7 @@ async function nodeVerifyInsert(state: WorkflowState): Promise<Partial<WorkflowS
   };
 }
 
-// ── Node: save_output ─────────────────────────────────────────────────────────
+// â”€â”€ Node: save_output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function nodeSaveOutput(state: WorkflowState): Promise<Partial<WorkflowState>> {
   const { caseId, formType, fieldId, finalText, reviewedText, draftText } = state;
@@ -422,10 +422,10 @@ async function nodeSaveOutput(state: WorkflowState): Promise<Partial<WorkflowSta
   };
 }
 
-// ── createAppraisalWorkflow ───────────────────────────────────────────────────
+// â”€â”€ createAppraisalWorkflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * createAppraisalWorkflow — builds and compiles the LangGraph StateGraph.
+ * createAppraisalWorkflow â€” builds and compiles the LangGraph StateGraph.
  *
  * Returns a compiled workflow that can be invoked with an initial state.
  * The graph is compiled once and reused across requests.
@@ -442,7 +442,7 @@ export function createAppraisalWorkflow() {
     .addNode('verify_insert',     nodeVerifyInsert)
     .addNode('save_output',       nodeSaveOutput)
 
-    // ── Edges ──────────────────────────────────────────────────────────────
+    // â”€â”€ Edges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     .addEdge(START,               'create_case')
     .addEdge('create_case',       'parse_documents')
     .addEdge('parse_documents',   'extract_facts')
@@ -452,7 +452,7 @@ export function createAppraisalWorkflow() {
     .addEdge('review_section',    'insert_section')
     .addEdge('insert_section',    'verify_insert')
 
-    // ── Conditional: verify_insert → save_output | END ────────────────────
+    // â”€â”€ Conditional: verify_insert â†’ save_output | END â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     .addConditionalEdges('verify_insert', (state: WorkflowState) => {
       if (state.currentStage === 'complete' || state.currentStage === 'save_output') {
         return 'save_output';
@@ -468,7 +468,7 @@ export function createAppraisalWorkflow() {
   return graph.compile();
 }
 
-// ── Singleton compiled workflow ───────────────────────────────────────────────
+// â”€â”€ Singleton compiled workflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let _compiledWorkflow: ReturnType<typeof createAppraisalWorkflow> | null = null;
 
@@ -479,10 +479,10 @@ export function getWorkflow() {
   return _compiledWorkflow;
 }
 
-// ── runWorkflow ───────────────────────────────────────────────────────────────
+// â”€â”€ runWorkflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * runWorkflow — runs the full appraisal workflow for a single field.
+ * runWorkflow â€” runs the full appraisal workflow for a single field.
  *
  * @param input  Partial WorkflowState with required fields
  * @returns      Final WorkflowState after all nodes complete
@@ -516,16 +516,16 @@ export async function runWorkflow(input: Partial<WorkflowState> & {
   };
 
   const workflow = getWorkflow();
-  // Cast to any to avoid LangGraph's internal UpdateType constraint —
+  // Cast to any to avoid LangGraph's internal UpdateType constraint â€”
   // the runtime shape is correct; the type mismatch is a LangGraph generic variance issue.
   const finalState = await workflow.invoke(initialState as any);
   return finalState as WorkflowState;
 }
 
-// ── runBatchWorkflow ──────────────────────────────────────────────────────────
+// â”€â”€ runBatchWorkflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * runBatchWorkflow — runs the workflow for multiple fields sequentially.
+ * runBatchWorkflow â€” runs the workflow for multiple fields sequentially.
  *
  * Processes the 5 production lane fields for a 1004 appraisal.
  * Each field is run independently; failures in one field do not stop others.
@@ -609,3 +609,4 @@ export async function runBatchWorkflow(input: BatchWorkflowInput): Promise<Batch
     durationMs,
   };
 }
+

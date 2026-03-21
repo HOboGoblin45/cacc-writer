@@ -1,7 +1,7 @@
-/**
+﻿/**
  * server/business/pipelineService.js
  * ------------------------------------
- * Pipeline/workflow dashboard service for CACC Writer.
+ * Pipeline/workflow dashboard service for Appraisal Agent.
  *
  * Tracks assignments through the full business pipeline from prospect
  * through payment. Provides the canonical workflow dashboard view.
@@ -18,13 +18,13 @@ import { getDb } from '../db/database.js';
 import { emitAuditEvent, emitCaseEvent } from '../operations/auditLogger.js';
 import log from '../logger.js';
 
-// ── ID helper ────────────────────────────────────────────────────────────────
+// â”€â”€ ID helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeId() {
   return 'pipe_' + randomUUID().slice(0, 12);
 }
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ JSON helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseJson(str, fallback = null) {
   if (!str) return fallback;
@@ -41,7 +41,7 @@ function stringifyJson(val) {
   return JSON.stringify(val);
 }
 
-// ── Row hydration ────────────────────────────────────────────────────────────
+// â”€â”€ Row hydration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function hydratePipelineEntry(row) {
   if (!row) return null;
@@ -52,14 +52,14 @@ function hydratePipelineEntry(row) {
   };
 }
 
-// ── Stage order ──────────────────────────────────────────────────────────────
+// â”€â”€ Stage order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STAGE_ORDER = [
   'prospect', 'quoted', 'engaged', 'in_progress',
   'review', 'submitted', 'invoiced', 'paid', 'closed',
 ];
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Create a new pipeline entry.
@@ -235,7 +235,7 @@ export function advanceStage(id, newStage) {
   const entry = getPipelineEntry(id);
   if (!entry) return null;
 
-  // Update stage history — close the current stage and add the new one
+  // Update stage history â€” close the current stage and add the new one
   const history = Array.isArray(entry.stage_history_json) ? [...entry.stage_history_json] : [];
 
   // Close the last open stage
@@ -487,3 +487,4 @@ export default {
   getAppraisersWorkload,
   syncPipelineFromCase,
 };
+

@@ -1,7 +1,7 @@
 /**
  * desktop/electron/preload.cjs
  * -----------------------------
- * CACC Writer — Electron Preload Script
+ * Appraisal Agent — Electron Preload Script
  *
  * Runs in the renderer process with Node.js access BEFORE the page loads.
  * Uses contextBridge to safely expose a minimal API to the renderer (app.js).

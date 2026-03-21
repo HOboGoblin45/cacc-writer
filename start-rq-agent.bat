@@ -1,9 +1,9 @@
-@echo off
+﻿@echo off
 title CACC Real Quantum Agent
 cd /d "%~dp0"
 
 echo ============================================================
-echo  CACC Writer — Real Quantum Automation Agent
+echo  Appraisal Agent â€” Real Quantum Automation Agent
 echo ============================================================
 echo.
 echo  This agent inserts AI-generated narratives into Real Quantum
@@ -36,3 +36,4 @@ if exist "real_quantum_agent\venv\Scripts\activate.bat" (
 
 python real_quantum_agent\agent.py
 pause
+

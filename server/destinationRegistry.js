@@ -1,19 +1,19 @@
-/**
+﻿/**
  * destinationRegistry.js
  * ----------------------
- * Centralized registry of all insertion targets for CACC Writer.
+ * Centralized registry of all insertion targets for Appraisal Agent.
  *
- * Maps sectionId + formType → targetSoftware, tab/section, field selector,
+ * Maps sectionId + formType â†’ targetSoftware, tab/section, field selector,
  * verification method, and fallback strategy.
  *
  * All insertion logic (ACI agent, Real Quantum agent) must resolve through
  * this registry before attempting insertion. No hardcoded targets elsewhere.
  *
  * Active production scope: 1004 (ACI) + commercial (Real Quantum)
- * Deferred: 1025, 1073, 1004c — entries kept but marked deferred.
+ * Deferred: 1025, 1073, 1004c â€” entries kept but marked deferred.
  */
 
-// ── Registry entries ──────────────────────────────────────────────────────────
+// â”€â”€ Registry entries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * @typedef {Object} DestinationEntry
@@ -31,9 +31,9 @@
 
 const REGISTRY = [
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // 1004 SINGLE-FAMILY — ACI (ACTIVE PRODUCTION)
-  // ══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // 1004 SINGLE-FAMILY â€” ACI (ACTIVE PRODUCTION)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   {
     sectionId:          'neighborhood_description',
@@ -168,9 +168,9 @@ const REGISTRY = [
     active:             true,
   },
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // COMMERCIAL — REAL QUANTUM (ACTIVE PRODUCTION)
-  // ══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // COMMERCIAL â€” REAL QUANTUM (ACTIVE PRODUCTION)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   {
     sectionId:          'neighborhood',
@@ -250,9 +250,9 @@ const REGISTRY = [
     active:             true,
   },
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // DEFERRED FORMS — kept for future, not actively wired
-  // ══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // DEFERRED FORMS â€” kept for future, not actively wired
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   {
     sectionId:          'neighborhood_description',
@@ -264,7 +264,7 @@ const REGISTRY = [
     verificationMethod: 'contains_text',
     fallbackStrategy:   'retry_then_clipboard',
     active:             false,
-    notes:              'DEFERRED — 1025 not in active production scope',
+    notes:              'DEFERRED â€” 1025 not in active production scope',
   },
   {
     sectionId:          'neighborhood_description',
@@ -276,7 +276,7 @@ const REGISTRY = [
     verificationMethod: 'contains_text',
     fallbackStrategy:   'retry_then_clipboard',
     active:             false,
-    notes:              'DEFERRED — 1073 not in active production scope',
+    notes:              'DEFERRED â€” 1073 not in active production scope',
   },
   {
     sectionId:          'neighborhood_description',
@@ -288,11 +288,11 @@ const REGISTRY = [
     verificationMethod: 'contains_text',
     fallbackStrategy:   'retry_then_clipboard',
     active:             false,
-    notes:              'DEFERRED — 1004c not in active production scope',
+    notes:              'DEFERRED â€” 1004c not in active production scope',
   },
 ];
 
-// ── Lookup helpers ────────────────────────────────────────────────────────────
+// â”€â”€ Lookup helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * getDestination(formType, sectionId)
@@ -371,3 +371,4 @@ export default {
   getFallbackStrategy,
   listAllDestinations,
 };
+

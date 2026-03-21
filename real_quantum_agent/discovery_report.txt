@@ -1,4 +1,4 @@
-CACC Writer � Real Quantum Full Field Discovery Report
+﻿Appraisal Agent — Real Quantum Full Field Discovery Report
 ============================================================
 
 SECTION: Introduction (introduction)
@@ -222,4 +222,5 @@ SECTION: Reconciliation (reconciliation)
       iframe: reconciliation_section_content_text_area_ifr
     Button: 'table'
       iframe: reconciliation_section_content_text_area_ifr
+
 

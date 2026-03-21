@@ -1,7 +1,7 @@
-/**
+﻿/**
  * server/db/database.js
  * ----------------------
- * SQLite database connection for CACC Writer.
+ * SQLite database connection for Appraisal Agent.
  * Uses better-sqlite3 (synchronous, WAL mode, prepared statements).
  *
  * Database path: data/cacc-writer.db (default)
@@ -24,7 +24,7 @@ import { initSchema } from './schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Database path ─────────────────────────────────────────────────────────────
+// â”€â”€ Database path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Default: <project-root>/data/cacc-writer.db
 // Override: set CACC_DB_PATH env var to an absolute or relative path
 const DEFAULT_DB_DIR  = path.join(__dirname, '..', '..', 'data');
@@ -38,12 +38,12 @@ function resolveDbPath() {
   return DEFAULT_DB_PATH;
 }
 
-// ── Singleton connection ──────────────────────────────────────────────────────
+// â”€â”€ Singleton connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _db = null;
 
 /**
  * Get (or initialize) the SQLite database connection.
- * Idempotent — safe to call multiple times.
+ * Idempotent â€” safe to call multiple times.
  *
  * @returns {import('better-sqlite3').Database}
  */
@@ -61,13 +61,13 @@ export function getDb() {
   _db = new BetterSqlite3(dbPath);
 
   // Performance + safety pragmas
-  _db.pragma('journal_mode = WAL');      // Write-Ahead Logging — faster concurrent reads
+  _db.pragma('journal_mode = WAL');      // Write-Ahead Logging â€” faster concurrent reads
   _db.pragma('foreign_keys = ON');       // Enforce FK constraints
   _db.pragma('synchronous = NORMAL');    // Balance safety vs speed for local desktop use
   _db.pragma('cache_size = -8000');      // 8MB page cache
   _db.pragma('temp_store = MEMORY');     // Temp tables in memory
 
-  // Initialize schema (idempotent — uses CREATE TABLE IF NOT EXISTS)
+  // Initialize schema (idempotent â€” uses CREATE TABLE IF NOT EXISTS)
   initSchema(_db);
 
   return _db;
@@ -103,7 +103,7 @@ export function getDbSizeBytes() {
   }
 }
 
-// ── Query helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ Query helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Run a SELECT and return all matching rows.
@@ -141,7 +141,7 @@ export function dbRun(sql, params = []) {
 
 /**
  * Execute multiple statements inside a single transaction.
- * The callback receives no arguments — use dbRun() / dbAll() inside it.
+ * The callback receives no arguments â€” use dbRun() / dbAll() inside it.
  * Automatically rolls back on error.
  *
  * @param {() => void} fn
@@ -229,3 +229,4 @@ export function getTableCounts() {
   }
   return counts;
 }
+

@@ -1,20 +1,20 @@
-/**
+﻿/**
  * knowledgeBase.js
  * ----------------
- * Manages the local JSON knowledge base for CACC Writer.
+ * Manages the local JSON knowledge base for Appraisal Agent.
  *
  * Storage layout:
  *   knowledge_base/
- *     index.json                    ← master index (all example metadata)
- *     approved_edits/               ← appraiser-approved edits (highest quality)
+ *     index.json                    â† master index (all example metadata)
+ *     approved_edits/               â† appraiser-approved edits (highest quality)
  *       <id>.json
- *     curated_examples/             ← hand-curated examples per form type
+ *     curated_examples/             â† hand-curated examples per form type
  *       1004/<id>.json
  *       1025/<id>.json
  *       1073/<id>.json
  *       commercial/<id>.json
  *     phrase_bank/
- *       phrases.json                ← reusable clauses
+ *       phrases.json                â† reusable clauses
  *
  * Each example JSON file contains:
  *   {
@@ -44,7 +44,7 @@ const PHRASE_FILE = path.join(KB_DIR, 'phrase_bank', 'phrases.json');
 const NARRATIVES_DIR        = path.join(KB_DIR, 'narratives');
 const APPROVED_NARR_DIR     = path.join(KB_DIR, 'approvedNarratives');
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function readJSON(filePath, fallback = {}) {
   try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
@@ -65,7 +65,7 @@ function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-// ── Index management ──────────────────────────────────────────────────────────
+// â”€â”€ Index management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * indexExamples()
@@ -119,7 +119,7 @@ export function indexExamples() {
   return index;
 }
 
-// ── Core CRUD ─────────────────────────────────────────────────────────────────
+// â”€â”€ Core CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * addExample(data)
@@ -128,7 +128,7 @@ export function indexExamples() {
  * @param {object} data
  *   Required: fieldId, text
  *   Optional: formType, propertyType, marketType, marketArea, sourceType,
- *             qualityScore (0–100), tags (string[])
+ *             qualityScore (0â€“100), tags (string[])
  *
  * @returns {object} The saved example with generated id and timestamps.
  */
@@ -191,9 +191,9 @@ export function addExample(data) {
  * Returns examples from the index matching the given filters.
  *
  * Ranking priority (highest first):
- *   1. approved_edit  (qualityScore weight × 1.5)
- *   2. curated        (qualityScore weight × 1.0)
- *   3. imported       (qualityScore weight × 0.7)
+ *   1. approved_edit  (qualityScore weight Ã— 1.5)
+ *   2. curated        (qualityScore weight Ã— 1.0)
+ *   3. imported       (qualityScore weight Ã— 0.7)
  *
  * @param {object} filters
  *   @param {string} [filters.formType]
@@ -243,14 +243,14 @@ export function getPhrases(tag) {
   return tag ? phrases.filter(p => p.tag === tag) : phrases;
 }
 
-// ── Personal Appraiser Voice Engine — KB integration ─────────────────────────
+// â”€â”€ Personal Appraiser Voice Engine â€” KB integration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * addApprovedNarrative(data)
  *
  * Saves an approved narrative section to the voice engine storage layer.
  * Inline implementation using the same uuidv4 + readJSON/writeJSON helpers
- * already available in this module — avoids circular ESM import issues.
+ * already available in this module â€” avoids circular ESM import issues.
  *
  * Called from all approval paths in cacc-writer-server.js.
  *
@@ -291,7 +291,7 @@ export function addApprovedNarrative(data) {
     updatedAt:         now,
   };
 
-  // Optional standard fields — only include if non-empty
+  // Optional standard fields â€” only include if non-empty
   for (const k of ['marketArea', 'neighborhood', 'occupancyType', 'reportConditionMode', 'clientName', 'approvedBy']) {
     const v = String(data[k] || meta[k] || '').trim();
     if (v) entry[k] = v;
@@ -307,11 +307,11 @@ export function addApprovedNarrative(data) {
   // Save individual entry file (includes text)
   writeJSON(path.join(APPROVED_NARR_DIR, `${id}.json`), entry);
 
-  // Update index — metadata only, no text (keeps index lean for fast retrieval)
+  // Update index â€” metadata only, no text (keeps index lean for fast retrieval)
   const indexFile = path.join(APPROVED_NARR_DIR, 'index.json');
   const index = readJSON(indexFile, {
     version:     '1.0.0',
-    description: 'Personal Appraiser Voice Engine — Approved Narrative Index',
+    description: 'Personal Appraiser Voice Engine â€” Approved Narrative Index',
     count:       0,
     entries:     [],
   });
@@ -338,7 +338,7 @@ export function addApprovedNarrative(data) {
  */
 export { getApprovedNarratives } from './retrieval/approvedNarrativeRetriever.js';
 
-// ── Narrative template library ────────────────────────────────────────────────
+// â”€â”€ Narrative template library â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * getNarrativeTemplate(formType, category, key)
@@ -356,7 +356,7 @@ export { getApprovedNarratives } from './retrieval/approvedNarrativeRetriever.js
  *
  * Example:
  *   getNarrativeTemplate('1004', 'condition', 'C3')
- *   → { uadDefinition: '...', narrativeGuidance: '...', promptInstruction: '...' }
+ *   â†’ { uadDefinition: '...', narrativeGuidance: '...', promptInstruction: '...' }
  */
 export function getNarrativeTemplate(formType, category, key) {
   if (!formType || !category || !key) return null;
@@ -371,3 +371,4 @@ export function getNarrativeTemplate(formType, category, key) {
     return null;
   }
 }
+

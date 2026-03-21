@@ -4,9 +4,9 @@ Inserts AI-generated appraisal narrative text directly into ACI appraisal softwa
 
 ## How It Works
 
-1. You generate a narrative section in CACC Writer (browser)
+1. You generate a narrative section in Appraisal Agent (browser)
 2. Click **Insert into ACI** on any output card
-3. CACC Writer calls this agent at `http://localhost:5180/insert`
+3. Appraisal Agent calls this agent at `http://localhost:5180/insert`
 4. The agent locates the ACI window, finds the correct field, and inserts the text
 
 ## Setup

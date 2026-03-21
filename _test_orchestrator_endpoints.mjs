@@ -1,4 +1,4 @@
-/**
+﻿/**
  * _test_orchestrator_endpoints.mjs
  * Full API test for all 7 new orchestrator endpoints.
  * Requires server running at http://localhost:5178
@@ -11,20 +11,20 @@ let passed = 0;
 let failed = 0;
 let warnings = 0;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ok(label, val, detail = '') {
   if (val) {
-    console.log(`  ✓ ${label}${detail ? ' — ' + detail : ''}`);
+    console.log(`  âœ“ ${label}${detail ? ' â€” ' + detail : ''}`);
     passed++;
   } else {
-    console.error(`  ✗ ${label}${detail ? ' — ' + detail : ''}`);
+    console.error(`  âœ— ${label}${detail ? ' â€” ' + detail : ''}`);
     failed++;
   }
 }
 
 function warn(label, detail = '') {
-  console.warn(`  ⚠ ${label}${detail ? ' — ' + detail : ''}`);
+  console.warn(`  âš  ${label}${detail ? ' â€” ' + detail : ''}`);
   warnings++;
 }
 
@@ -42,23 +42,23 @@ async function api(method, path, body) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ── Test runner ───────────────────────────────────────────────────────────────
+// â”€â”€ Test runner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let _caseId = null;
 let _runId  = null;
 
-// ── 1. Server health ──────────────────────────────────────────────────────────
+// â”€â”€ 1. Server health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testServerHealth() {
-  console.log('\n── 1. Server Health ─────────────────────────────────────');
+  console.log('\nâ”€â”€ 1. Server Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('GET', '/api/health');
-  ok('GET /api/health → 200', status === 200, `status=${status}`);
+  ok('GET /api/health â†’ 200', status === 200, `status=${status}`);
   ok('health.ok = true', data.ok === true);
   console.log(`     model: ${data.model || '?'}, version: ${data.version || '?'}`);
 }
 
-// ── 2. GET /api/db/status ─────────────────────────────────────────────────────
+// â”€â”€ 2. GET /api/db/status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testDbStatus() {
-  console.log('\n── 2. GET /api/db/status ────────────────────────────────');
+  console.log('\nâ”€â”€ 2. GET /api/db/status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('GET', '/api/db/status');
   ok('status 200', status === 200, `got ${status}`);
   ok('data.ok = true', data.ok === true);
@@ -72,9 +72,9 @@ async function testDbStatus() {
   console.log(`     tables: ${Object.keys(data.tables || {}).join(', ')}`);
 }
 
-// ── 3. POST /api/db/migrate-legacy-kb ────────────────────────────────────────
+// â”€â”€ 3. POST /api/db/migrate-legacy-kb â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testMigrateLegacyKb() {
-  console.log('\n── 3. POST /api/db/migrate-legacy-kb ───────────────────');
+  console.log('\nâ”€â”€ 3. POST /api/db/migrate-legacy-kb â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('POST', '/api/db/migrate-legacy-kb');
   ok('status 200', status === 200, `got ${status}`);
   ok('data.ok = true', data.ok === true, JSON.stringify(data).slice(0, 200));
@@ -86,7 +86,7 @@ async function testMigrateLegacyKb() {
     console.log(`     durationMs: ${data.durationMs}ms`);
   }
 
-  // Verify idempotency — run again, should skip all
+  // Verify idempotency â€” run again, should skip all
   const { data: data2 } = await api('POST', '/api/db/migrate-legacy-kb');
   ok('idempotent: second run ok', data2.ok === true);
   if (data2.ok) {
@@ -95,11 +95,11 @@ async function testMigrateLegacyKb() {
   }
 }
 
-// ── 4. Get a case ID for testing ──────────────────────────────────────────────
+// â”€â”€ 4. Get a case ID for testing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function getTestCaseId() {
-  console.log('\n── 4. Resolve Test Case ─────────────────────────────────');
+  console.log('\nâ”€â”€ 4. Resolve Test Case â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('GET', '/api/cases');
-  ok('GET /api/cases → 200', status === 200);
+  ok('GET /api/cases â†’ 200', status === 200);
   ok('cases array returned', Array.isArray(data.cases));
 
   const activeCases = (data.cases || []).filter(c =>
@@ -108,21 +108,21 @@ async function getTestCaseId() {
   );
 
   if (activeCases.length === 0) {
-    warn('No active 1004/commercial cases found — skipping orchestrator endpoint tests');
+    warn('No active 1004/commercial cases found â€” skipping orchestrator endpoint tests');
     warn('Create a case with formType=1004 or commercial to test full-draft generation');
     return null;
   }
 
   _caseId = activeCases[0].caseId;
-  console.log(`     Using case: ${_caseId} (${activeCases[0].formType}) — ${activeCases[0].address || 'no address'}`);
+  console.log(`     Using case: ${_caseId} (${activeCases[0].formType}) â€” ${activeCases[0].address || 'no address'}`);
   ok('caseId resolved', !!_caseId);
   return _caseId;
 }
 
-// ── 5. GET /api/cases/:caseId/generation-runs (before any run) ────────────────
+// â”€â”€ 5. GET /api/cases/:caseId/generation-runs (before any run) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testListRunsEmpty() {
-  if (!_caseId) { warn('Skipping — no caseId'); return; }
-  console.log('\n── 5. GET /api/cases/:caseId/generation-runs (pre-run) ──');
+  if (!_caseId) { warn('Skipping â€” no caseId'); return; }
+  console.log('\nâ”€â”€ 5. GET /api/cases/:caseId/generation-runs (pre-run) â”€â”€');
   const { status, data } = await api('GET', `/api/cases/${_caseId}/generation-runs`);
   ok('status 200', status === 200, `got ${status}`);
   ok('data.ok = true', data.ok === true);
@@ -130,10 +130,10 @@ async function testListRunsEmpty() {
   console.log(`     existing runs: ${data.count || 0}`);
 }
 
-// ── 6. POST /api/cases/:caseId/generate-full-draft ───────────────────────────
+// â”€â”€ 6. POST /api/cases/:caseId/generate-full-draft â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testTriggerFullDraft() {
-  if (!_caseId) { warn('Skipping — no caseId'); return; }
-  console.log('\n── 6. POST /api/cases/:caseId/generate-full-draft ───────');
+  if (!_caseId) { warn('Skipping â€” no caseId'); return; }
+  console.log('\nâ”€â”€ 6. POST /api/cases/:caseId/generate-full-draft â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('POST', `/api/cases/${_caseId}/generate-full-draft`, {
     formType: '1004',
   });
@@ -150,10 +150,10 @@ async function testTriggerFullDraft() {
   }
 }
 
-// ── 7. GET /api/generation/runs/:runId/status (poll until complete) ───────────
+// â”€â”€ 7. GET /api/generation/runs/:runId/status (poll until complete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testPollRunStatus() {
-  if (!_runId) { warn('Skipping — no runId'); return; }
-  console.log('\n── 7. GET /api/generation/runs/:runId/status (polling) ──');
+  if (!_runId) { warn('Skipping â€” no runId'); return; }
+  console.log('\nâ”€â”€ 7. GET /api/generation/runs/:runId/status (polling) â”€â”€');
 
   const maxWaitMs  = 90000; // 90s max wait
   const pollMs     = 2000;
@@ -216,10 +216,10 @@ async function testPollRunStatus() {
   }
 }
 
-// ── 8. GET /api/generation/runs/:runId/result ─────────────────────────────────
+// â”€â”€ 8. GET /api/generation/runs/:runId/result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testGetRunResult() {
-  if (!_runId) { warn('Skipping — no runId'); return; }
-  console.log('\n── 8. GET /api/generation/runs/:runId/result ────────────');
+  if (!_runId) { warn('Skipping â€” no runId'); return; }
+  console.log('\nâ”€â”€ 8. GET /api/generation/runs/:runId/result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('GET', `/api/generation/runs/${_runId}/result`);
   ok('status 200', status === 200, `got ${status}`);
   ok('data.ok = true', data.ok === true);
@@ -233,10 +233,10 @@ async function testGetRunResult() {
   }
 }
 
-// ── 9. GET /api/cases/:caseId/generation-runs (after run) ────────────────────
+// â”€â”€ 9. GET /api/cases/:caseId/generation-runs (after run) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testListRunsAfter() {
-  if (!_caseId) { warn('Skipping — no caseId'); return; }
-  console.log('\n── 9. GET /api/cases/:caseId/generation-runs (post-run) ─');
+  if (!_caseId) { warn('Skipping â€” no caseId'); return; }
+  console.log('\nâ”€â”€ 9. GET /api/cases/:caseId/generation-runs (post-run) â”€');
   const { status, data } = await api('GET', `/api/cases/${_caseId}/generation-runs`);
   ok('status 200', status === 200);
   ok('data.ok = true', data.ok === true);
@@ -247,10 +247,10 @@ async function testListRunsAfter() {
   }
 }
 
-// ── 10. POST /api/generation/regenerate-section ───────────────────────────────
+// â”€â”€ 10. POST /api/generation/regenerate-section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testRegenerateSection() {
-  if (!_runId || !_caseId) { warn('Skipping — no runId/caseId'); return; }
-  console.log('\n── 10. POST /api/generation/regenerate-section ──────────');
+  if (!_runId || !_caseId) { warn('Skipping â€” no runId/caseId'); return; }
+  console.log('\nâ”€â”€ 10. POST /api/generation/regenerate-section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   const { status, data } = await api('POST', '/api/generation/regenerate-section', {
     runId:     _runId,
     sectionId: 'neighborhood_description',
@@ -262,40 +262,40 @@ async function testRegenerateSection() {
     ok('sectionId returned', data.sectionId === 'neighborhood_description');
     ok('text returned', typeof data.text === 'string' && data.text.length > 50,
       `${data.text?.length || 0} chars`);
-    console.log(`     text preview: "${(data.text || '').slice(0, 120)}…"`);
+    console.log(`     text preview: "${(data.text || '').slice(0, 120)}â€¦"`);
     console.log(`     metrics: ${JSON.stringify(data.metrics || {})}`);
   }
 }
 
-// ── 11. Error path: invalid caseId ───────────────────────────────────────────
+// â”€â”€ 11. Error path: invalid caseId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function testErrorPaths() {
-  console.log('\n── 11. Error Paths ──────────────────────────────────────');
+  console.log('\nâ”€â”€ 11. Error Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
 
-  // Non-existent case — must be valid 8-char hex format to pass the caseId regex,
+  // Non-existent case â€” must be valid 8-char hex format to pass the caseId regex,
   // but point to a case directory that does not exist on disk.
   const { status: s1, data: d1 } = await api('POST', '/api/cases/ffffffff/generate-full-draft', {});
-  ok('non-existent case → 404', s1 === 404, `got ${s1}`);
+  ok('non-existent case â†’ 404', s1 === 404, `got ${s1}`);
 
   // Non-existent run status
   const { status: s2, data: d2 } = await api('GET', '/api/generation/runs/FAKE_RUN_ID_XYZ/status');
-  ok('non-existent run status → 404', s2 === 404, `got ${s2}`);
+  ok('non-existent run status â†’ 404', s2 === 404, `got ${s2}`);
 
   // Non-existent run result
   const { status: s3, data: d3 } = await api('GET', '/api/generation/runs/FAKE_RUN_ID_XYZ/result');
-  ok('non-existent run result → 404', s3 === 404, `got ${s3}`);
+  ok('non-existent run result â†’ 404', s3 === 404, `got ${s3}`);
 
   // Regenerate with missing params
   const { status: s4, data: d4 } = await api('POST', '/api/generation/regenerate-section', {});
-  ok('missing params → 400', s4 === 400, `got ${s4}`);
+  ok('missing params â†’ 400', s4 === 400, `got ${s4}`);
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function main() {
-  console.log('═══════════════════════════════════════════════════════════');
-  console.log('  CACC Writer — Orchestrator Endpoint Tests');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  console.log('  Appraisal Agent â€” Orchestrator Endpoint Tests');
   console.log('  Server: ' + BASE);
-  console.log('═══════════════════════════════════════════════════════════');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
   try {
     await testServerHealth();
@@ -304,10 +304,10 @@ async function main() {
     await getTestCaseId();
     await testListRunsEmpty();
     await testTriggerFullDraft();
-    await testPollRunStatus();       // ← waits up to 90s for orchestrator
+    await testPollRunStatus();       // â† waits up to 90s for orchestrator
     await testGetRunResult();
     await testListRunsAfter();
-    await testRegenerateSection();   // ← waits for single section regen
+    await testRegenerateSection();   // â† waits for single section regen
     await testErrorPaths();
   } catch (e) {
     console.error('\nFATAL:', e.message);
@@ -315,15 +315,16 @@ async function main() {
     failed++;
   }
 
-  console.log('\n═══════════════════════════════════════════════════════════');
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
   console.log(`  Results: ${passed} passed, ${failed} failed, ${warnings} warnings`);
   if (failed === 0) {
-    console.log('  ✓ ALL ENDPOINT TESTS PASSED');
+    console.log('  âœ“ ALL ENDPOINT TESTS PASSED');
   } else {
-    console.error('  ✗ SOME TESTS FAILED');
+    console.error('  âœ— SOME TESTS FAILED');
   }
-  console.log('═══════════════════════════════════════════════════════════\n');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
   process.exit(failed > 0 ? 1 : 0);
 }
 
 main();
+

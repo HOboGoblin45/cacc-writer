@@ -1,6 +1,6 @@
-@echo off
+﻿@echo off
 echo ============================================================
-echo  CACC Writer — Launch Chrome with Remote Debugging
+echo  Appraisal Agent â€” Launch Chrome with Remote Debugging
 echo ============================================================
 echo.
 echo This opens Chrome with remote debugging on port 9222.
@@ -45,3 +45,4 @@ echo   1. Log into Real Quantum in the Chrome window that just opened
 echo   2. Navigate to your commercial appraisal assignment
 echo   3. Run: python real_quantum_agent/selector_discovery.py
 echo.
+

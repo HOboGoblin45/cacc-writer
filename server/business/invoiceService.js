@@ -1,7 +1,7 @@
-/**
+﻿/**
  * server/business/invoiceService.js
  * -----------------------------------
- * Invoice management service for CACC Writer.
+ * Invoice management service for Appraisal Agent.
  *
  * Handles the full invoicing lifecycle: creation, issuance, payment recording,
  * reminders, voiding, and reporting.
@@ -15,13 +15,13 @@ import { getDb } from '../db/database.js';
 import { emitAuditEvent, emitCaseEvent } from '../operations/auditLogger.js';
 import log from '../logger.js';
 
-// ── ID helper ────────────────────────────────────────────────────────────────
+// â”€â”€ ID helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeId() {
   return 'inv_' + randomUUID().slice(0, 12);
 }
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ JSON helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseJson(str, fallback = null) {
   if (!str) return fallback;
@@ -38,7 +38,7 @@ function stringifyJson(val) {
   return JSON.stringify(val);
 }
 
-// ── Row hydration ────────────────────────────────────────────────────────────
+// â”€â”€ Row hydration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function hydrateInvoice(row) {
   if (!row) return null;
@@ -49,7 +49,7 @@ function hydrateInvoice(row) {
   };
 }
 
-// ── Payment terms → days mapping ─────────────────────────────────────────────
+// â”€â”€ Payment terms â†’ days mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PAYMENT_TERMS_DAYS = {
   due_on_receipt: 0,
@@ -59,7 +59,7 @@ const PAYMENT_TERMS_DAYS = {
   net_60: 60,
 };
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Generate a sequential invoice number: CACC-INV-YYYYMM-NNNN
@@ -548,7 +548,7 @@ export function createInvoiceFromEngagement(engagementId) {
 
   const lineItems = [
     {
-      description: `Appraisal services — ${eng.engagement_type}`,
+      description: `Appraisal services â€” ${eng.engagement_type}`,
       quantity: 1,
       unit_price: eng.fee_agreed,
       amount: eng.fee_agreed,
@@ -590,3 +590,4 @@ export default {
   generateInvoiceNumber,
   createInvoiceFromEngagement,
 };
+

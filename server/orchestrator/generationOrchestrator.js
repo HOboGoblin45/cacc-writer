@@ -1,21 +1,21 @@
-/**
+﻿/**
  * server/orchestrator/generationOrchestrator.js
  * -----------------------------------------------
- * Full-draft generation orchestrator for CACC Writer.
+ * Full-draft generation orchestrator for Appraisal Agent.
  *
- * Phase 3 — Workflow Authority
+ * Phase 3 â€” Workflow Authority
  *
  * Core principle:
- *   Build context once → Retrieve memory once → Analyze once →
- *   Draft sections in parallel → Validate once → Assemble → Persist
+ *   Build context once â†’ Retrieve memory once â†’ Analyze once â†’
+ *   Draft sections in parallel â†’ Validate once â†’ Assemble â†’ Persist
  *
  * Run lifecycle (canonical):
- *   queued → preparing → retrieving → analyzing → drafting →
- *   validating → assembling → complete | partial_complete | failed
+ *   queued â†’ preparing â†’ retrieving â†’ analyzing â†’ drafting â†’
+ *   validating â†’ assembling â†’ complete | partial_complete | failed
  *
  * Section job lifecycle (canonical):
- *   queued (independent) | blocked (dependent) →
- *   running → retrying → complete | failed | skipped
+ *   queued (independent) | blocked (dependent) â†’
+ *   running â†’ retrying â†’ complete | failed | skipped
  *
  * Concurrency: max 3 parallel section jobs
  * Retry policy: 1 retry per section
@@ -70,7 +70,7 @@ const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max conc
 const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
   .includes(String(process.env.CACC_ALLOW_FORCE_GATE_BYPASS || '').trim().toLowerCase());
 
-// ── Structured logger ─────────────────────────────────────────────────────────
+// â”€â”€ Structured logger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function log(level, phase, runId, data = {}) {
   const tag = `orchestrator:${phase}`;
@@ -120,20 +120,20 @@ function evaluateOrchestratorPreDraftGate({ caseId, formType = null, options = {
   };
 }
 
-// ── Pre-create section job records ────────────────────────────────────────────
+// â”€â”€ Pre-create section job records â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Pre-create section job records for all planned sections at run start.
  *
  * This gives the UI and logs immediate full visibility into the planned run:
- *   - Independent sections → JOB_STATUS.QUEUED
- *   - Dependent sections   → JOB_STATUS.BLOCKED
+ *   - Independent sections â†’ JOB_STATUS.QUEUED
+ *   - Dependent sections   â†’ JOB_STATUS.BLOCKED
  *
  * Returns a Map<sectionId, jobId> for use throughout the run.
  *
- * @param {object} plan   — ReportPlan from buildReportPlan()
+ * @param {object} plan   â€” ReportPlan from buildReportPlan()
  * @param {string} runId
- * @returns {Map<string, string>} sectionId → jobId
+ * @returns {Map<string, string>} sectionId â†’ jobId
  */
 function preCreateSectionJobs(plan, runId) {
   const jobMap = new Map();
@@ -180,7 +180,7 @@ function parseJsonSafe(raw, fallback) {
   }
 }
 
-// ── Analysis jobs ─────────────────────────────────────────────────────────────
+// â”€â”€ Analysis jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Run all required analysis jobs for the report plan.
@@ -242,7 +242,7 @@ async function runAnalysisJobs(context, plan, runId) {
   return { artifacts, durationMs: Date.now() - t0 };
 }
 
-// ── Analysis artifact builders ────────────────────────────────────────────────
+// â”€â”€ Analysis artifact builders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildCompAnalysisArtifact(context) {
   const comps  = context.comps || [];
@@ -293,7 +293,7 @@ function buildMarketAnalysisArtifact(context) {
   if (market.trend)    lines.push(`Market trend: ${market.trend}`);
   if (market.avgDom)   lines.push(`Average days on market: ${market.avgDom}`);
   if (market.priceLow && market.priceHigh) {
-    lines.push(`Price range: $${market.priceLow.toLocaleString()} – $${market.priceHigh.toLocaleString()}`);
+    lines.push(`Price range: $${market.priceLow.toLocaleString()} â€“ $${market.priceHigh.toLocaleString()}`);
   }
 
   return {
@@ -324,7 +324,7 @@ function buildHbuLogicArtifact(context) {
   };
 }
 
-// ── Parallel execution ────────────────────────────────────────────────────────
+// â”€â”€ Parallel execution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Run independent section jobs in parallel batches of MAX_PARALLEL.
@@ -405,7 +405,7 @@ async function runDependentSections(sectionDefs, jobParams, priorResults, jobMap
     );
 
     if (prereqsFailed && sectionDef.dependsOn.length > 0) {
-      // Skip this section — all prerequisites failed
+      // Skip this section â€” all prerequisites failed
       if (jobId) {
         markJobSkipped(jobId, `All prerequisites failed: ${sectionDef.dependsOn.join(', ')}`);
       }
@@ -413,7 +413,7 @@ async function runDependentSections(sectionDefs, jobParams, priorResults, jobMap
         ok:        false,
         sectionId: sectionDef.id,
         text:      '',
-        error:     'skipped — all prerequisites failed',
+        error:     'skipped â€” all prerequisites failed',
         metrics:   { durationMs: 0, attemptCount: 0 },
       };
       log('info', 'section-skipped', runId, {
@@ -458,15 +458,15 @@ async function runDependentSections(sectionDefs, jobParams, priorResults, jobMap
   return { results, durationMs: Date.now() - t0 };
 }
 
-// ── Main orchestrator ─────────────────────────────────────────────────────────
+// â”€â”€ Main orchestrator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Run the full-draft generation orchestrator for a case.
  *
  * @param {object} params
  *   @param {string} params.caseId
- *   @param {string} [params.formType]  — override form type (default: from case meta)
- *   @param {object} [params.options]   — future extension point
+ *   @param {string} [params.formType]  â€” override form type (default: from case meta)
+ *   @param {object} [params.options]   â€” future extension point
  *
  * @returns {Promise<OrchestratorResult>}
  *   {
@@ -494,7 +494,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
   log('info', 'start', runId, { caseId, formType });
 
-  // ── 1. Create generation run record (status: queued) ───────────────────────
+  // â”€â”€ 1. Create generation run record (status: queued) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   createRun({ runId, caseId, formType: formType || 'unknown', assignmentId: null });
 
   const gateCheck = evaluateOrchestratorPreDraftGate({ caseId, formType, options });
@@ -537,7 +537,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
   });
 
   try {
-    // ── 2. Transition to preparing — build assignment context ────────────────
+    // â”€â”€ 2. Transition to preparing â€” build assignment context â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.PREPARING);
 
     let context, plan, intelligenceBundle = null;
@@ -547,7 +547,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
 
     if (useIntelligence) {
       try {
-        // Phase 4 path: build intelligence bundle → get v2 context + smart plan
+        // Phase 4 path: build intelligence bundle â†’ get v2 context + smart plan
         const intel = await buildIntelligenceForOrchestrator(caseId);
         context = intel.context;
         plan = intel.orchestratorPlan;
@@ -617,12 +617,12 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       version:        intelligenceBundle ? '2.0' : '1.0',
     });
 
-    // ── 4. Pre-create all section job records ────────────────────────────────
-    // Independent sections → queued, Dependent sections → blocked
+    // â”€â”€ 4. Pre-create all section job records â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Independent sections â†’ queued, Dependent sections â†’ blocked
     // This gives the UI immediate full visibility into the planned run.
     const jobMap = preCreateSectionJobs(plan, runId);
 
-    // ── 5. Transition to retrieving — build retrieval pack ───────────────────
+    // â”€â”€ 5. Transition to retrieving â€” build retrieval pack â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.RETRIEVING);
 
     const t5            = Date.now();
@@ -662,7 +662,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs:         phaseMs.retrievalMs,
     });
 
-    // ── 6. Transition to analyzing — run analysis jobs ───────────────────────
+    // â”€â”€ 6. Transition to analyzing â€” run analysis jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.ANALYZING);
 
     const { artifacts: analysisArtifacts, durationMs: analysisDurationMs } =
@@ -674,7 +674,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs:    phaseMs.analysisMs,
     });
 
-    // ── 7. Transition to drafting — execute section jobs ─────────────────────
+    // â”€â”€ 7. Transition to drafting â€” execute section jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.DRAFTING);
 
     const parallelDefs = plan.sections.filter(s => s.dependsOn.length === 0);
@@ -698,7 +698,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs: phaseMs.parallelDraftMs,
     });
 
-    // ── 8. Execute dependent synthesis sections ──────────────────────────────
+    // â”€â”€ 8. Execute dependent synthesis sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const dependentDefs = plan.sections.filter(s => s.dependsOn.length > 0);
     let allResults = { ...parallelResults };
 
@@ -708,7 +708,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       allResults = { ...parallelResults, ...dependentResults };
     }
 
-    // ── 9. Transition to validating ──────────────────────────────────────────
+    // â”€â”€ 9. Transition to validating â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.VALIDATING);
 
     const successCount = Object.values(allResults).filter(r => r?.ok).length;
@@ -729,7 +729,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       assemblyMs:      0, // filled after assembly
     };
 
-    // ── 10. Transition to assembling — assemble draft package ────────────────
+    // â”€â”€ 10. Transition to assembling â€” assemble draft package â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunStatus(runId, RUN_STATUS.ASSEMBLING);
 
     const { draftPackage, validation, warnings } = assembleDraftPackage({
@@ -754,7 +754,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       grade:        draftPackage.metrics?.performanceGrade,
     });
 
-    // ── 11. Persist phase metrics ────────────────────────────────────────────
+    // â”€â”€ 11. Persist phase metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     updateRunPhaseMetrics(runId, {
       ...phaseMs,
       sectionCount:        plan.totalSections,
@@ -771,11 +771,11 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       },
     });
 
-    // ── 12. Persist draft package to SQLite ──────────────────────────────────
+    // â”€â”€ 12. Persist draft package to SQLite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Enables result retrieval after server restart without re-querying all sections.
     persistDraftPackage(runId, draftPackage);
 
-    // ── 13. Finalize run status ──────────────────────────────────────────────
+    // â”€â”€ 13. Finalize run status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const finalStatus = errorCount === 0
       ? RUN_STATUS.COMPLETE
       : errorCount < plan.totalSections
@@ -835,7 +835,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
   }
 }
 
-// ── Status + result queries ───────────────────────────────────────────────────
+// â”€â”€ Status + result queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get the current status of a generation run.
@@ -880,8 +880,8 @@ export function getRunStatus(runId) {
     runId:             run.id,
     caseId:            run.case_id,
     formType:          run.form_type,
-    status:            canonicalStatus,   // canonical — use this
-    legacyStatus,                         // backward-compat only — do not build new logic on this
+    status:            canonicalStatus,   // canonical â€” use this
+    legacyStatus,                         // backward-compat only â€” do not build new logic on this
     startedAt:         run.started_at,
     completedAt:       run.completed_at,
     durationMs:        run.duration_ms,
@@ -1003,3 +1003,4 @@ export { getRunsForCase };
  * @returns {object[]}
  */
 export { getGeneratedSectionsForRun };
+

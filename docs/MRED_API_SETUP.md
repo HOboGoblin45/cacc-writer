@@ -1,6 +1,6 @@
-# MRED API Setup Guide
+﻿# MRED API Setup Guide
 
-Connect CACC Writer to MRED (connectMLS) for live comp searches directly from the app.
+Connect Appraisal Agent to MRED (connectMLS) for live comp searches directly from the app.
 
 ---
 
@@ -34,13 +34,13 @@ MRED_CLIENT_SECRET=your_client_secret_here
 
 ## Step 3: Authorize the App
 
-1. Start CACC Writer (`npm start`)
+1. Start Appraisal Agent (`npm start`)
 2. Go to the **System** tab
 3. Find the **MRED Integration** card
-4. Click **🔴 Connect MRED**
-5. A browser window opens → log in with your MRED credentials → click Allow
+4. Click **ðŸ”´ Connect MRED**
+5. A browser window opens â†’ log in with your MRED credentials â†’ click Allow
 6. You're redirected back to the app automatically
-7. Status changes to **🟢 Connected**
+7. Status changes to **ðŸŸ¢ Connected**
 
 The access token is saved to `data/mred-token.json` and used automatically.
 
@@ -49,10 +49,10 @@ The access token is saved to `data/mred-token.json` and used automatically.
 ## How It Works
 
 ### OAuth 2.0 / OpenID Connect Flow
-1. You click "Connect MRED" → app opens the MRED authorize URL
-2. You log in at MRED's site → MRED redirects to `http://localhost:5178/api/mred/callback?code=...`
+1. You click "Connect MRED" â†’ app opens the MRED authorize URL
+2. You log in at MRED's site â†’ MRED redirects to `http://localhost:5178/api/mred/callback?code=...`
 3. App exchanges the code for an access token
-4. Token saved locally — you stay connected until it expires
+4. Token saved locally â€” you stay connected until it expires
 
 ### Live Comp Search
 Once connected, from any case workspace:
@@ -70,13 +70,13 @@ Once connected, from any case workspace:
 
 ---
 
-## CSV Export (Alternative — No API Key Needed)
+## CSV Export (Alternative â€” No API Key Needed)
 
 Until you have API credentials, export comp searches from MRED as CSV:
 
 1. In connectMLS, run your comp search
-2. Select all results → **Export → CSV**
-3. In CACC Writer, go to a case → **Comps** section → **Upload MRED CSV**
+2. Select all results â†’ **Export â†’ CSV**
+3. In Appraisal Agent, go to a case â†’ **Comps** section â†’ **Upload MRED CSV**
 4. Comps are parsed and saved to the case automatically
 
 ---
@@ -88,13 +88,14 @@ Until you have API credentials, export comp searches from MRED as CSV:
 | "Not connected" after authorizing | Check `MRED_CLIENT_ID` is in `.env` and matches what MRED issued |
 | Token expired | Click "Connect MRED" again to re-authorize |
 | Redirect fails | Confirm the redirect URI you gave MRED matches exactly: `http://localhost:5178/api/mred/callback` |
-| 401 errors on searches | Token expired — reconnect |
+| 401 errors on searches | Token expired â€” reconnect |
 | No results returned | Try widening search criteria (price range, date range, city) |
 
 ---
 
 ## Security Notes
 
-- `data/mred-token.json` is in `.gitignore` — never committed
-- Your MRED credentials only access MRED data — not the rest of your system
-- To disconnect: System tab → **Disconnect MRED** (clears the token file)
+- `data/mred-token.json` is in `.gitignore` â€” never committed
+- Your MRED credentials only access MRED data â€” not the rest of your system
+- To disconnect: System tab â†’ **Disconnect MRED** (clears the token file)
+

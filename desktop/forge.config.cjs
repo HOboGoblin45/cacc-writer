@@ -1,7 +1,7 @@
 /**
  * desktop/forge.config.cjs
  * -------------------------
- * CACC Writer — Electron Forge Configuration
+ * Appraisal Agent — Electron Forge Configuration
  *
  * Packaging target: Windows (Squirrel installer)
  * Entry point:      desktop/electron/main.cjs
@@ -21,8 +21,8 @@ const pkg  = require('../package.json');
 module.exports = {
   // ── Packager config ─────────────────────────────────────────────────────────
   packagerConfig: {
-    name:            'CACC Writer',
-    executableName:  'cacc-writer',
+    name:            'Appraisal Agent',
+    executableName:  'appraisal-agent',
     appVersion:      pkg.version,
     appCopyright:    `Copyright © ${new Date().getFullYear()} Cresci Appraisal & Consulting`,
 
@@ -46,9 +46,9 @@ module.exports = {
     // Windows-specific: embed app metadata in the .exe
     win32metadata: {
       CompanyName:      'Cresci Appraisal & Consulting',
-      FileDescription:  'CACC Writer — Appraisal Narrative Engine',
-      ProductName:      'CACC Writer',
-      InternalName:     'cacc-writer',
+      FileDescription:  'Appraisal Agent — Appraisal Narrative Engine',
+      ProductName:      'Appraisal Agent',
+      InternalName:     'appraisal-agent',
     },
   },
 

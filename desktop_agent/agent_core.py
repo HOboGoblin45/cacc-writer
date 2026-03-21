@@ -1,7 +1,7 @@
 """
 desktop_agent/agent_core.py
 ----------------------------
-CACC Writer — ACI Agent Core Logic (Phase 2)
+Appraisal Agent — ACI Agent Core Logic (Phase 2)
 
 All non-Flask logic: discovery, targeting, insertion, verification,
 learned targets, tab navigation. Imported by agent.py (Flask server).
@@ -1018,7 +1018,7 @@ _SKIP_CLS = frozenset({'TX32', 'ACIPaneTitle', 'Edit',
 # Navigation must be done by clicking at calculated X positions within
 # the ACISectionTabs control.
 #
-# Tab order confirmed from live ACI 1004 session (cacc-writer-test.aci).
+# Tab order confirmed from live ACI 1004 session (appraisal-agent-test.aci).
 # Each entry is the prefix used in field_map tab_name values.
 # TODO Phase 3: discover tab order dynamically from ACIPaneTitle changes.
 

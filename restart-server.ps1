@@ -1,4 +1,4 @@
-# Find and kill the process on port 5178
+﻿# Find and kill the process on port 5178
 $conn = Get-NetTCPConnection -LocalPort 5178 -State Listen -ErrorAction SilentlyContinue
 if ($conn) {
     $procId = $conn.OwningProcess
@@ -11,7 +11,7 @@ if ($conn) {
 }
 
 # Start the server in a new window
-Write-Host "Starting CACC Writer server..."
+Write-Host "Starting Appraisal Agent server..."
 Start-Process -FilePath "node" -ArgumentList "cacc-writer-server.js" -WorkingDirectory $PSScriptRoot -WindowStyle Normal
 Start-Sleep -Seconds 4
 
@@ -22,3 +22,4 @@ try {
 } catch {
     Write-Host "Server health check failed: $_"
 }
+

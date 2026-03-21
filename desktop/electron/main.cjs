@@ -1,7 +1,7 @@
-/**
+﻿/**
  * desktop/electron/main.cjs
  * --------------------------
- * CACC Writer — Electron Main Process
+ * Appraisal Agent â€” Electron Main Process
  *
  * Responsibilities:
  *   - Single-instance lock (prevent duplicate windows)
@@ -23,9 +23,9 @@ const path  = require('path');
 const fs    = require('fs');
 const { spawn } = require('child_process');
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const APP_NAME    = 'CACC Writer';
+const APP_NAME    = 'Appraisal Agent';
 const PORT        = 5178;
 const APP_URL     = `http://localhost:${PORT}`;
 const ROOT_DIR    = path.join(__dirname, '..', '..');
@@ -34,7 +34,7 @@ const STATE_FILE  = path.join(app.getPath('userData'), 'window-state.json');
 const DEFAULT_WIDTH  = 1280;
 const DEFAULT_HEIGHT = 820;
 
-// ── Single-instance lock ──────────────────────────────────────────────────────
+// â”€â”€ Single-instance lock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -43,7 +43,7 @@ if (!gotLock) {
   process.exit(0);
 }
 
-// ── Window state persistence ──────────────────────────────────────────────────
+// â”€â”€ Window state persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Load saved window bounds from userData.
@@ -58,7 +58,7 @@ function loadWindowState() {
       typeof state.width  !== 'number' || state.width  < 800  ||
       typeof state.height !== 'number' || state.height < 600
     ) {
-      return null; // invalid — use defaults
+      return null; // invalid â€” use defaults
     }
 
     // Guard: ensure the window is on at least one display
@@ -74,13 +74,13 @@ function loadWindowState() {
     });
 
     if (!onScreen) {
-      console.log('[electron] Saved window position is off-screen — using centered default.');
+      console.log('[electron] Saved window position is off-screen â€” using centered default.');
       return null;
     }
 
     return state;
   } catch {
-    return null; // file missing or corrupt — use defaults
+    return null; // file missing or corrupt â€” use defaults
   }
 }
 
@@ -99,7 +99,7 @@ function saveWindowState(win) {
   }
 }
 
-// ── Server process management ─────────────────────────────────────────────────
+// â”€â”€ Server process management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let serverProcess = null;
 
@@ -111,7 +111,7 @@ function startServer() {
     return;
   }
 
-  console.log('[electron] Starting CACC Writer server...');
+  console.log('[electron] Starting Appraisal Agent server...');
 
   serverProcess = spawn(process.execPath, [serverScript], {
     cwd:   ROOT_DIR,
@@ -130,7 +130,7 @@ function startServer() {
   });
 
   serverProcess.on('exit', (code, signal) => {
-    console.log(`[server] Exited — code=${code} signal=${signal}`);
+    console.log(`[server] Exited â€” code=${code} signal=${signal}`);
     serverProcess = null;
   });
 
@@ -149,7 +149,7 @@ function stopServer() {
   }
 }
 
-// ── Wait for server to be ready ───────────────────────────────────────────────
+// â”€â”€ Wait for server to be ready â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Poll the server health endpoint until it responds OK.
@@ -164,7 +164,7 @@ async function waitForServer(maxAttempts = 40, delayMs = 500) {
         return true;
       }
     } catch {
-      // server not up yet — keep polling
+      // server not up yet â€” keep polling
     }
     await new Promise(r => setTimeout(r, delayMs));
   }
@@ -172,7 +172,7 @@ async function waitForServer(maxAttempts = 40, delayMs = 500) {
   return false;
 }
 
-// ── Main window ───────────────────────────────────────────────────────────────
+// â”€â”€ Main window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let mainWindow = null;
 
@@ -201,7 +201,7 @@ function createWindow() {
 
   mainWindow = new BrowserWindow(winOptions);
 
-  // ── Window state save hooks ───────────────────────────────────────────────
+  // â”€â”€ Window state save hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let saveTimer = null;
   const debouncedSave = () => {
     clearTimeout(saveTimer);
@@ -215,19 +215,19 @@ function createWindow() {
     saveWindowState(mainWindow);
   });
 
-  // ── Show window when content is ready ────────────────────────────────────
+  // â”€â”€ Show window when content is ready â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
   });
 
-  // ── Open external links in system browser, not Electron ──────────────────
+  // â”€â”€ Open external links in system browser, not Electron â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  // ── Load the app ──────────────────────────────────────────────────────────
+  // â”€â”€ Load the app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   waitForServer().then(() => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.loadURL(APP_URL);
@@ -239,7 +239,7 @@ function createWindow() {
   });
 }
 
-// ── IPC handlers ──────────────────────────────────────────────────────────────
+// â”€â”€ IPC handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 ipcMain.handle('open-external', (_event, url) => {
   shell.openExternal(url);
@@ -249,11 +249,11 @@ ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });
 
-// ── App lifecycle ─────────────────────────────────────────────────────────────
+// â”€â”€ App lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.setName(APP_NAME);
 
-// Windows taskbar pinning — must be set before app.whenReady()
+// Windows taskbar pinning â€” must be set before app.whenReady()
 // Without this, the app may not pin correctly to the Windows taskbar.
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.cacc.writer');
@@ -294,3 +294,4 @@ app.on('before-quit', () => {
 app.on('will-quit', () => {
   stopServer();
 });
+

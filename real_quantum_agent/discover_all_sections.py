@@ -1,4 +1,4 @@
-"""
+﻿"""
 real_quantum_agent/discover_all_sections.py
 --------------------------------------------
 Enhanced multi-section selector discovery for Real Quantum.
@@ -41,7 +41,7 @@ def load_config():
 config  = load_config()
 CDP_URL = config.get('cdp_url', 'http://127.0.0.1:9222')
 
-# Sections to discover — (cacc_field_id, rq_section_slug, label)
+# Sections to discover â€” (cacc_field_id, rq_section_slug, label)
 SECTIONS_TO_DISCOVER = [
     ('introduction',          'introduction',          'Introduction'),
     ('market_area',           'market_data',           'Market Data'),
@@ -103,7 +103,7 @@ def get_text_inputs(page):
 
 def discover_all():
     print(f"\n{'='*60}")
-    print("CACC Writer — Multi-Section Real Quantum Discovery")
+    print("Appraisal Agent â€” Multi-Section Real Quantum Discovery")
     print(f"{'='*60}")
     print(f"Connecting to Chrome at {CDP_URL}...\n")
 
@@ -149,17 +149,17 @@ def discover_all():
         nav_links = get_nav_links(page)
         print(f"Found {len(nav_links)} nav links")
         for link in nav_links:
-            print(f"  [{link['text']}] → {link['href']}")
+            print(f"  [{link['text']}] â†’ {link['href']}")
 
         # Discover each section
         results = {}
-        print(f"\n{'─'*60}")
+        print(f"\n{'â”€'*60}")
         print("Navigating to each section...")
-        print(f"{'─'*60}\n")
+        print(f"{'â”€'*60}\n")
 
         for (field_id, section_slug, label) in SECTIONS_TO_DISCOVER:
             section_url = f"{base_url}/{section_slug}"
-            print(f"→ {label} ({section_slug})")
+            print(f"â†’ {label} ({section_slug})")
             print(f"  URL: {section_url}")
 
             try:
@@ -175,7 +175,7 @@ def discover_all():
 
                 print(f"  Text inputs/selects: {len(inputs)}")
                 for inp in inputs[:5]:
-                    print(f"    {inp['tag']} id={inp['id'] or '—'} name={inp['name'] or '—'}")
+                    print(f"    {inp['tag']} id={inp['id'] or 'â€”'} name={inp['name'] or 'â€”'}")
 
                 results[field_id] = {
                     'label': label,
@@ -196,7 +196,7 @@ def discover_all():
             json.dump({'assignment_uuid': assignment_uuid, 'base_url': base_url, 'sections': results}, f, indent=2, ensure_ascii=True)
         print(f"Raw discovery saved to: {OUTPUT_FILE}")
 
-        # ── Build field map update ────────────────────────────────────────────
+        # â”€â”€ Build field map update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         print(f"\n{'='*60}")
         print("FIELD MAP RECOMMENDATIONS")
         print(f"{'='*60}\n")
@@ -232,11 +232,11 @@ def discover_all():
                 # Derive TinyMCE editor ID from iframe ID (remove _ifr suffix)
                 entry['tinymce_id'] = main_iframe['id'].replace('_ifr', '')
                 entry['input_selector'] = f"iframe#{main_iframe['id']}"
-                print(f"[{field_id}] ✓ iframe={main_iframe['id']} nav=a[href*='/{section_slug}']")
+                print(f"[{field_id}] âœ“ iframe={main_iframe['id']} nav=a[href*='/{section_slug}']")
             else:
-                entry['tinymce_iframe_id'] = f"UNKNOWN — no TinyMCE found on {section_slug} page"
+                entry['tinymce_iframe_id'] = f"UNKNOWN â€” no TinyMCE found on {section_slug} page"
                 entry['input_selector'] = ''
-                print(f"[{field_id}] ⚠ No TinyMCE iframe found on {section_slug} page")
+                print(f"[{field_id}] âš  No TinyMCE iframe found on {section_slug} page")
 
             field_map_updates[field_id] = entry
 
@@ -251,3 +251,4 @@ def discover_all():
 
 if __name__ == '__main__':
     discover_all()
+

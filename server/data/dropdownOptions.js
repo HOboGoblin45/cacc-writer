@@ -1,10 +1,10 @@
-/**
+﻿/**
  * server/data/dropdownOptions.js
  * --------------------------------
- * Centralized dropdown option definitions for CACC Writer case metadata.
+ * Centralized dropdown option definitions for Appraisal Agent case metadata.
  *
  * All UI dropdowns and server-side validation reference these arrays.
- * To add a new option: add it here — no other files need changing.
+ * To add a new option: add it here â€” no other files need changing.
  * To move to a database/config later: replace exports with async loaders.
  *
  * Used by:
@@ -13,7 +13,7 @@
  *   - server/promptBuilder.js (context injection)
  */
 
-// ── Assignment Purpose ────────────────────────────────────────────────────────
+// â”€â”€ Assignment Purpose â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ASSIGNMENT_PURPOSES = [
   'Sale',
   'Refinance',
@@ -22,7 +22,7 @@ export const ASSIGNMENT_PURPOSES = [
   'Other',
 ];
 
-// ── Loan Program ──────────────────────────────────────────────────────────────
+// â”€â”€ Loan Program â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const LOAN_PROGRAMS = [
   'Conventional',
   'FHA',
@@ -33,7 +33,7 @@ export const LOAN_PROGRAMS = [
   'Other',
 ];
 
-// ── Property Type ─────────────────────────────────────────────────────────────
+// â”€â”€ Property Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const PROPERTY_TYPES = [
   'Single Family',
   '2-4 Unit',
@@ -45,7 +45,7 @@ export const PROPERTY_TYPES = [
   'Other',
 ];
 
-// ── Occupancy Type ────────────────────────────────────────────────────────────
+// â”€â”€ Occupancy Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const OCCUPANCY_TYPES = [
   'Owner Occupied',
   'Tenant Occupied',
@@ -54,7 +54,7 @@ export const OCCUPANCY_TYPES = [
   'Other',
 ];
 
-// ── Report Condition Mode ─────────────────────────────────────────────────────
+// â”€â”€ Report Condition Mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const REPORT_CONDITION_MODES = [
   'As Is',
   'Subject To Completion',
@@ -63,7 +63,7 @@ export const REPORT_CONDITION_MODES = [
   'Other',
 ];
 
-// ── Subject Condition (ANSI/Fannie Mae C-rating) ──────────────────────────────
+// â”€â”€ Subject Condition (ANSI/Fannie Mae C-rating) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // C1 = New / never occupied
 // C2 = No deferred maintenance, minor wear
 // C3 = Well-maintained, limited updating needed
@@ -72,7 +72,7 @@ export const REPORT_CONDITION_MODES = [
 // C6 = Substantial damage, unsafe, uninhabitable
 export const SUBJECT_CONDITIONS = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'];
 
-// ── Market Type ───────────────────────────────────────────────────────────────
+// â”€â”€ Market Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const MARKET_TYPES = [
   'urban',
   'suburban',
@@ -81,8 +81,8 @@ export const MARKET_TYPES = [
   'mixed',
 ];
 
-// ── Workflow Status ───────────────────────────────────────────────────────────
-// Mirrors server/workflowStatus.js — kept here for UI reference
+// â”€â”€ Workflow Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Mirrors server/workflowStatus.js â€” kept here for UI reference
 export const WORKFLOW_STATUSES = [
   'facts_incomplete',
   'ready_for_generation',
@@ -95,7 +95,7 @@ export const WORKFLOW_STATUSES = [
   'exception_flagged',
 ];
 
-// ── Consolidated export for API endpoint ─────────────────────────────────────
+// â”€â”€ Consolidated export for API endpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // GET /api/dropdown-options returns this object so the UI can render
 // all dropdowns dynamically without hardcoding values in HTML.
 export const ALL_OPTIONS = {
@@ -107,3 +107,4 @@ export const ALL_OPTIONS = {
   subjectCondition:    SUBJECT_CONDITIONS,
   marketType:          MARKET_TYPES,
 };
+

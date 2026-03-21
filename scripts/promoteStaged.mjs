@@ -1,13 +1,13 @@
-/**
+﻿/**
  * scripts/promoteStaged.mjs
  * --------------------------
- * Voice PDF Ingestion Pipeline — Staging Review → Promotion
+ * Voice PDF Ingestion Pipeline â€” Staging Review â†’ Promotion
  *
  * Reads staged candidate files from knowledge_base/staging/<formType>/
  * and promotes entries where "approved": true into production memory:
- *   - sections      → knowledge_base/approvedNarratives/
- *   - phrases       → knowledge_base/phrase_bank/phrases.json
- *   - compExamples  → knowledge_base/compExamples/<formType>/
+ *   - sections      â†’ knowledge_base/approvedNarratives/
+ *   - phrases       â†’ knowledge_base/phrase_bank/phrases.json
+ *   - compExamples  â†’ knowledge_base/compExamples/<formType>/
  *
  * CLI:
  *   node scripts/promoteStaged.mjs
@@ -31,7 +31,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT      = path.join(__dirname, '..');
 
-// ── CLI args ──────────────────────────────────────────────────────────────────
+// â”€â”€ CLI args â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const args      = process.argv.slice(2);
 const getArg    = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args[i + 1] : null; };
@@ -42,7 +42,7 @@ const FILTER_FILE = getArg('--file');
 const DRY_RUN     = hasFlag('--dryRun');
 const STATUS_ONLY = hasFlag('--status');
 
-// ── Paths ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STAGING_DIR    = path.join(ROOT, 'knowledge_base', 'staging');
 const PHRASE_BANK    = path.join(ROOT, 'knowledge_base', 'phrase_bank', 'phrases.json');
@@ -50,7 +50,7 @@ const COMP_EXAMPLES  = path.join(ROOT, 'knowledge_base', 'compExamples');
 
 const FORM_TYPES = ['1004', '1025', '1073', '1004c', 'commercial'];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function readJSON(filePath, fallback) {
   try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
@@ -67,7 +67,7 @@ function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-// ── Collect staging files ─────────────────────────────────────────────────────
+// â”€â”€ Collect staging files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function collectStagingFiles() {
   const files = [];
@@ -88,7 +88,7 @@ function collectStagingFiles() {
   return files;
 }
 
-// ── Status display ────────────────────────────────────────────────────────────
+// â”€â”€ Status display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function showStatus(stagingFiles) {
   console.log('\n  Staging Status:');
@@ -99,7 +99,7 @@ function showStatus(stagingFiles) {
 
   for (const { formType, jsonFile, filePath } of stagingFiles) {
     const candidate = readJSON(filePath, null);
-    if (!candidate) { console.log(`  [${formType}] ${jsonFile} — unreadable`); continue; }
+    if (!candidate) { console.log(`  [${formType}] ${jsonFile} â€” unreadable`); continue; }
 
     const secTotal    = candidate.sections?.length     || 0;
     const secApproved = candidate.sections?.filter(s => s.approved === true).length  || 0;
@@ -118,7 +118,7 @@ function showStatus(stagingFiles) {
   }
 }
 
-// ── Promote sections → approvedNarratives ────────────────────────────────────
+// â”€â”€ Promote sections â†’ approvedNarratives â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function promoteSections(candidate, stagingFilePath) {
   const { saveApprovedNarrative } = await import('../server/storage/saveApprovedNarrative.js');
@@ -155,9 +155,9 @@ async function promoteSections(candidate, stagingFilePath) {
       // Mark as promoted in staging file
       section.promotedId = entry.id;
       promoted++;
-      console.log(`      ✓ section [${section.sectionType}] → approvedNarratives/${entry.id}.json`);
+      console.log(`      âœ“ section [${section.sectionType}] â†’ approvedNarratives/${entry.id}.json`);
     } catch (err) {
-      console.error(`      ✗ section [${section.sectionType}] failed: ${err.message}`);
+      console.error(`      âœ— section [${section.sectionType}] failed: ${err.message}`);
       skipped++;
     }
   }
@@ -165,7 +165,7 @@ async function promoteSections(candidate, stagingFilePath) {
   return { promoted, skipped };
 }
 
-// ── Promote phrases → phrase_bank/phrases.json ────────────────────────────────
+// â”€â”€ Promote phrases â†’ phrase_bank/phrases.json â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function promotePhrases(candidate) {
   const toPromote = (candidate.phrases || []).filter(p => p.approved === true && !p.promotedAt);
@@ -180,7 +180,7 @@ function promotePhrases(candidate) {
   for (const phrase of toPromote) {
     // Deduplicate by id
     if (existingIds.has(phrase.id)) {
-      console.log(`      ⊙ phrase [${phrase.id}] — already in phrase bank, skipping`);
+      console.log(`      âŠ™ phrase [${phrase.id}] â€” already in phrase bank, skipping`);
       phrase.promotedAt = 'duplicate';
       skipped++;
       continue;
@@ -195,7 +195,7 @@ function promotePhrases(candidate) {
     existingIds.add(phrase.id);
     phrase.promotedAt = new Date().toISOString();
     promoted++;
-    console.log(`      ✓ phrase [${phrase.id}] → phrase_bank/phrases.json`);
+    console.log(`      âœ“ phrase [${phrase.id}] â†’ phrase_bank/phrases.json`);
   }
 
   if (promoted > 0) {
@@ -205,7 +205,7 @@ function promotePhrases(candidate) {
   return { promoted, skipped };
 }
 
-// ── Promote compExamples → compExamples/<formType>/ ───────────────────────────
+// â”€â”€ Promote compExamples â†’ compExamples/<formType>/ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function promoteCompExamples(candidate) {
   const toPromote = (candidate.compExamples || []).filter(c => c.approved === true && !c.promotedId);
@@ -234,19 +234,19 @@ function promoteCompExamples(candidate) {
     writeJSON(file, entry);
     example.promotedId = id;
     promoted++;
-    console.log(`      ✓ compExample [${example.sectionType}] → compExamples/${candidate.formType}/${id}.json`);
+    console.log(`      âœ“ compExample [${example.sectionType}] â†’ compExamples/${candidate.formType}/${id}.json`);
   }
 
   return { promoted };
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function main() {
-  console.log('\n══════════════════════════════════════════════════════');
-  console.log('  CACC Writer — Staging Promotion');
-  console.log('══════════════════════════════════════════════════════');
-  if (DRY_RUN) console.log('  [DRY RUN] — no files will be written\n');
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  console.log('  Appraisal Agent â€” Staging Promotion');
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  if (DRY_RUN) console.log('  [DRY RUN] â€” no files will be written\n');
 
   if (!fs.existsSync(STAGING_DIR)) {
     console.log('  No staging directory found. Run ingestVoicePdfs.mjs first.');
@@ -277,7 +277,7 @@ async function main() {
   for (const { formType, jsonFile, filePath } of stagingFiles) {
     const candidate = readJSON(filePath, null);
     if (!candidate) {
-      console.warn(`  ✗ Could not read ${jsonFile}`);
+      console.warn(`  âœ— Could not read ${jsonFile}`);
       continue;
     }
 
@@ -286,7 +286,7 @@ async function main() {
     const approvedCompExamples = (candidate.compExamples || []).filter(c => c.approved === true && !c.promotedId).length;
 
     if (approvedSections + approvedPhrases + approvedCompExamples === 0) {
-      console.log(`  [${formType}] ${jsonFile} — nothing approved to promote`);
+      console.log(`  [${formType}] ${jsonFile} â€” nothing approved to promote`);
       continue;
     }
 
@@ -323,20 +323,21 @@ async function main() {
       candidate.lastPromotedAt = new Date().toISOString();
 
       writeJSON(filePath, candidate);
-      console.log(`    ✓ Staging file updated`);
+      console.log(`    âœ“ Staging file updated`);
     }
   }
 
-  // ── Summary ───────────────────────────────────────────────────────────────
-  console.log('\n══════════════════════════════════════════════════════');
+  // â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
   console.log(`  Promotion Complete`);
-  console.log(`  Sections → approvedNarratives: ${totalSections}`);
-  console.log(`  Phrases  → phrase_bank:         ${totalPhrases}`);
-  console.log(`  CompExamples → compExamples:    ${totalCompExamples}`);
-  console.log('══════════════════════════════════════════════════════\n');
+  console.log(`  Sections â†’ approvedNarratives: ${totalSections}`);
+  console.log(`  Phrases  â†’ phrase_bank:         ${totalPhrases}`);
+  console.log(`  CompExamples â†’ compExamples:    ${totalCompExamples}`);
+  console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 }
 
 main().catch(err => {
   console.error('\n  FATAL:', err.message);
   process.exit(1);
 });
+

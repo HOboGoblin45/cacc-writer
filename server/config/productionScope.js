@@ -1,5 +1,5 @@
-// ============================================================
-// CACC Writer - Production Scope Configuration
+﻿// ============================================================
+// Appraisal Agent - Production Scope Configuration
 // ============================================================
 // Central authority for active vs deferred form type scope.
 // All API endpoints, UI logic, and workflow routing should
@@ -19,13 +19,13 @@
 export const CACC_APPRAISALS_ROOT = process.env.CACC_APPRAISALS_ROOT
   || 'C:\\Users\\ccres\\OneDrive\\Desktop\\CACC Appraisals';
 
-// ── Active production form types ─────────────────────────────────────────────
+// â”€â”€ Active production form types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_FORMS = ['1004', '1025', '1073', 'commercial'];
 
-// ── Deferred form types (files preserved, not actively extended) ─────────────
+// â”€â”€ Deferred form types (files preserved, not actively extended) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DEFERRED_FORMS = ['1004c'];
 
-// ── Lane 1: 1004 Single-Family Residential ───────────────────────────────────
+// â”€â”€ Lane 1: 1004 Single-Family Residential â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_RESIDENTIAL_LANE = {
   formType:    '1004',
   software:    'aci',
@@ -34,7 +34,7 @@ export const ACTIVE_RESIDENTIAL_LANE = {
   description: 'ACI desktop automation via pywinauto',
 };
 
-// ── Lane 1b: 1025 Small Residential Income ───────────────────────────────────
+// â”€â”€ Lane 1b: 1025 Small Residential Income â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_1025_LANE = {
   formType:    '1025',
   software:    'aci',
@@ -43,7 +43,7 @@ export const ACTIVE_1025_LANE = {
   description: 'ACI desktop automation via pywinauto',
 };
 
-// ── Lane 1c: 1073 Individual Condo Unit ────────────────────────────────────
+// â”€â”€ Lane 1c: 1073 Individual Condo Unit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_1073_LANE = {
   formType:    '1073',
   software:    'aci',
@@ -52,7 +52,7 @@ export const ACTIVE_1073_LANE = {
   description: 'ACI desktop automation via pywinauto',
 };
 
-// ── Lane 2: Commercial ───────────────────────────────────────────────────────
+// â”€â”€ Lane 2: Commercial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_COMMERCIAL_LANE = {
   formType:    'commercial',
   software:    'real_quantum',
@@ -61,7 +61,7 @@ export const ACTIVE_COMMERCIAL_LANE = {
   description: 'Real Quantum browser automation via Playwright',
 };
 
-// ── Priority sections: 1004 (deepest implementation focus) ───────────────────
+// â”€â”€ Priority sections: 1004 (deepest implementation focus) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const PRIORITY_SECTIONS_1004 = [
   'neighborhood_description',
   'market_conditions',
@@ -75,7 +75,7 @@ export const PRIORITY_SECTIONS_1004 = [
   'reconciliation',
 ];
 
-// ── Priority sections: commercial (deepest implementation focus) ──────────────
+// â”€â”€ Priority sections: commercial (deepest implementation focus) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const PRIORITY_SECTIONS_COMMERCIAL = [
   'neighborhood',
   'market_overview',
@@ -84,12 +84,12 @@ export const PRIORITY_SECTIONS_COMMERCIAL = [
   'reconciliation',
 ];
 
-// ── Deferred form metadata (for UI display and logging) ──────────────────────
+// â”€â”€ Deferred form metadata (for UI display and logging) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DEFERRED_FORM_META = {
-  '1004c': { label: '1004C – Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
+  '1004c': { label: '1004C â€“ Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
 };
 
-// ── Scope check helpers ───────────────────────────────────────────────────────
+// â”€â”€ Scope check helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * isActiveForm(formType)
@@ -169,3 +169,4 @@ export function getScopeMetaForForm(formType) {
   }
   return { scope: 'unknown', supported: false };
 }
+

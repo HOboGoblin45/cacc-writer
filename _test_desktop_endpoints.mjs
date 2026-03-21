@@ -1,4 +1,4 @@
-/**
+﻿/**
  * _test_desktop_endpoints.mjs
  * ----------------------------
  * Test suite for the 8 Desktop Production Phase endpoints.
@@ -35,7 +35,7 @@ const CASES_DIR  = path.join(__dirname, 'cases');
 const BASE       = process.env.TEST_BASE_URL || 'http://localhost:5178';
 const TIMEOUT_MS = 35000; // bundle creation via PowerShell Compress-Archive can take 15-20s
 
-// ── Test runner ───────────────────────────────────────────────────────────────
+// â”€â”€ Test runner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let passed = 0, failed = 0;
 const failures = [];
@@ -43,11 +43,11 @@ const failures = [];
 async function test(name, fn) {
   try {
     await fn();
-    console.log(`  ✓ ${name}`);
+    console.log(`  âœ“ ${name}`);
     passed++;
   } catch (err) {
-    console.error(`  ✗ ${name}`);
-    console.error(`    → ${err.message}`);
+    console.error(`  âœ— ${name}`);
+    console.error(`    â†’ ${err.message}`);
     failures.push({ name, error: err.message });
     failed++;
   }
@@ -80,7 +80,7 @@ async function api(method, path, body) {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const VALID_STATUSES = new Set(['healthy', 'degraded', 'offline', 'checking']);
 
@@ -89,16 +89,16 @@ function assertServiceChip(svc, name) {
   assert(VALID_STATUSES.has(svc.status),          `${name}: status "${svc.status}" not in valid set`);
 }
 
-// ── Banner ────────────────────────────────────────────────────────────────────
+// â”€â”€ Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\n══════════════════════════════════════════════════════');
-console.log('  CACC Writer — Desktop Production Endpoint Tests');
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+console.log('  Appraisal Agent â€” Desktop Production Endpoint Tests');
 console.log(`  Target: ${BASE}`);
-console.log('══════════════════════════════════════════════════════\n');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 1. GET /api/health/services
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('1. GET /api/health/services');
 
 await test('returns 200 with ok:true', async () => {
@@ -139,9 +139,9 @@ await test('checkedAt is an ISO timestamp string', async () => {
   assert(!isNaN(Date.parse(body.checkedAt)),           'checkedAt should be a valid ISO date');
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 2. GET /api/destination-registry
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n2. GET /api/destination-registry');
 
 await test('returns 200 with ok:true', async () => {
@@ -181,9 +181,9 @@ await test('active entries include 1004 and commercial form types', async () => 
   assert(formTypes.has('commercial'), 'entries should include commercial form type');
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 3. GET /api/destination-registry/:formType/:sectionId
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n3. GET /api/destination-registry/:formType/:sectionId');
 
 await test('1004/neighborhood_description returns entry', async () => {
@@ -214,13 +214,13 @@ await test('unknown formType/sectionId returns 404', async () => {
 
 await test('deferred form entry returns 404 without includeDeferred', async () => {
   const { status } = await api('GET', '/api/destination-registry/1025/neighborhood_description');
-  // Deferred entries are excluded by default — should 404
+  // Deferred entries are excluded by default â€” should 404
   assert(status === 404, `Expected 404 for deferred form without includeDeferred, got ${status}`);
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 4. GET /api/logs
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n4. GET /api/logs');
 
 await test('returns 200 with ok:true', async () => {
@@ -252,9 +252,9 @@ await test('each log file entry has name, path, sizeBytes, date fields', async (
   }
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 5. GET /api/logs/:date
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n5. GET /api/logs/:date');
 
 await test('valid date format returns 200 with entries shape', async () => {
@@ -282,7 +282,7 @@ await test('date with wrong format (MM-DD-YYYY) returns 400', async () => {
 });
 
 await test('valid date with no log file returns ok with empty entries', async () => {
-  // Use a date far in the past — no log file will exist
+  // Use a date far in the past â€” no log file will exist
   const { status, body } = await api('GET', '/api/logs/2000-01-01');
   assert(status === 200, `Expected 200, got ${status}`);
   assertOk(body, '/api/logs/2000-01-01');
@@ -296,9 +296,9 @@ await test('?limit param is respected', async () => {
   assert(body.returned <= 5, `returned (${body.returned}) should be <= limit 5`);
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 6. GET /api/export/stats
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n6. GET /api/export/stats');
 
 await test('returns 200 with ok:true', async () => {
@@ -335,9 +335,9 @@ await test('exportDir is a non-empty string', async () => {
   assert(typeof body.exportDir === 'string' && body.exportDir.length > 0, 'exportDir should be non-empty string');
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 7. POST /api/export/bundle
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n7. POST /api/export/bundle');
 
 let bundlePath = null;
@@ -354,7 +354,7 @@ await test('response contains bundlePath, isZip, manifest', async () => {
   assert(typeof body.isZip      === 'boolean',                               'isZip should be boolean');
   assert(body.manifest && typeof body.manifest === 'object',                 'manifest should be an object');
   bundlePath = body.bundlePath;
-  console.log(`    → Bundle created: ${bundlePath}`);
+  console.log(`    â†’ Bundle created: ${bundlePath}`);
 });
 
 await test('isZip is true when zip:true is requested', async () => {
@@ -370,9 +370,9 @@ await test('manifest contains expected keys', async () => {
     'manifest should contain at least one of: createdAt, bundleDir, files, appVersion');
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // 8. GET /api/export/list
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 console.log('\n8. GET /api/export/list');
 
 await test('returns 200 with ok:true', async () => {
@@ -404,10 +404,10 @@ await test('each export entry has name, path, sizeBytes, isZip, createdAt', asyn
   }
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// 9. GET /api/health — version field (hardening)
-// ══════════════════════════════════════════════════════════════════════════════
-console.log('\n9. GET /api/health — version field');
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 9. GET /api/health â€” version field (hardening)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+console.log('\n9. GET /api/health â€” version field');
 
 await test('returns ok:true with model and version fields', async () => {
   const { status, body } = await api('GET', '/api/health');
@@ -423,10 +423,10 @@ await test('version field matches semver pattern (X.Y.Z)', async () => {
     `version "${body.version}" should match semver pattern X.Y.Z`);
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// 10. POST /api/cases/:caseId/sections/:fieldId/copy — clipboard fallback
-// ══════════════════════════════════════════════════════════════════════════════
-console.log('\n10. POST /api/cases/:caseId/sections/:fieldId/copy — clipboard fallback');
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 10. POST /api/cases/:caseId/sections/:fieldId/copy â€” clipboard fallback
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+console.log('\n10. POST /api/cases/:caseId/sections/:fieldId/copy â€” clipboard fallback');
 
 // Setup: create a test case and write mock output text directly to outputs.json
 // (avoids OpenAI generation cost while still exercising the full copy endpoint)
@@ -449,12 +449,12 @@ let clipTestCaseId = null;
       if (!fs.existsSync(caseDir)) fs.mkdirSync(caseDir, { recursive: true });
       fs.writeFileSync(outputsPath, JSON.stringify(mockOutputs, null, 2), 'utf8');
     } catch (e) {
-      console.warn('    ⚠ Could not write mock outputs.json:', e.message);
+      console.warn('    âš  Could not write mock outputs.json:', e.message);
       clipTestCaseId = null;
     }
   }
-  if (clipTestCaseId) console.log(`    → Test case created: ${clipTestCaseId}`);
-  else                console.log('    ⚠ Test case creation failed — copy tests will be skipped');
+  if (clipTestCaseId) console.log(`    â†’ Test case created: ${clipTestCaseId}`);
+  else                console.log('    âš  Test case creation failed â€” copy tests will be skipped');
 }
 
 await test('returns 404 for non-existent case', async () => {
@@ -523,10 +523,10 @@ await test('sectionStatus is persisted as "copied" in outputs.json', async () =>
   }
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// 11. PATCH .../status — 'copied' is now a valid section status
-// ══════════════════════════════════════════════════════════════════════════════
-console.log('\n11. PATCH .../status — "copied" is a valid section status');
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 11. PATCH .../status â€” 'copied' is now a valid section status
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+console.log('\n11. PATCH .../status â€” "copied" is a valid section status');
 
 await test('"copied" is accepted by PATCH .../status (not rejected as invalid)', async () => {
   if (!clipTestCaseId) return;
@@ -535,7 +535,7 @@ await test('"copied" is accepted by PATCH .../status (not rejected as invalid)',
     `/api/cases/${clipTestCaseId}/sections/neighborhood_description/status`,
     { status: 'copied' }
   );
-  assert(status === 200,      `Expected 200, got ${status} — body: ${JSON.stringify(body).slice(0, 200)}`);
+  assert(status === 200,      `Expected 200, got ${status} â€” body: ${JSON.stringify(body).slice(0, 200)}`);
   assert(body.ok === true,    'ok should be true');
 });
 
@@ -550,14 +550,15 @@ await test('"copied" status is distinct from "inserted" and "verified" in persis
   assert(s !== 'verified',  '"copied" must not equal "verified"');
 });
 
-// ── Summary ───────────────────────────────────────────────────────────────────
+// â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-console.log('\n══════════════════════════════════════════════════════');
+console.log('\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 console.log(`  Results: ${passed} passed, ${failed} failed`);
 if (failures.length) {
   console.log('\n  FAILURES:');
-  failures.forEach(f => console.log(`    ✗ ${f.name}\n      → ${f.error}`));
+  failures.forEach(f => console.log(`    âœ— ${f.name}\n      â†’ ${f.error}`));
 }
-console.log('══════════════════════════════════════════════════════\n');
+console.log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
 process.exit(failed > 0 ? 1 : 0);
+

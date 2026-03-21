@@ -4,7 +4,7 @@ desktop_agent/agent.py
 # =============================================================================
 # LEGACY SYSTEM — DO NOT EXTEND
 # =============================================================================
-# This file is part of the original CACC Writer v1 ad-hoc agent architecture.
+# This file is part of the original Appraisal Agent v1 ad-hoc agent architecture.
 # It remains functional and is now wrapped as a deterministic TOOL by the new
 # LangGraph workflow system (server/tools/aciTool.ts).
 #
@@ -15,7 +15,7 @@ desktop_agent/agent.py
 # DO NOT delete this file — the new aciTool.ts calls this agent via HTTP.
 # =============================================================================
 
-CACC Writer — ACI Desktop Automation Agent  (Phase 2 — Flask HTTP Server)
+Appraisal Agent — ACI Desktop Automation Agent  (Phase 2 — Flask HTTP Server)
 
 Imports all core logic from agent_core.py and exposes it as HTTP endpoints.
 
@@ -1094,7 +1094,7 @@ def delete_learned_target(key):
 if __name__ == '__main__':
     import os
     log.info("=" * 60)
-    log.info("CACC Writer — ACI Desktop Agent  (Phase 2)")
+    log.info("Appraisal Agent — ACI Desktop Agent  (Phase 2)")
     log.info(f"Port:       {core.AGENT_PORT}")
     log.info(f"pywinauto:  {core.PYWINAUTO_AVAILABLE}")
     log.info(f"pyperclip:  {core.PYPERCLIP_AVAILABLE}")

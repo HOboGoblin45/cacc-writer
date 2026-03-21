@@ -1,10 +1,10 @@
-"""
+﻿"""
 real_quantum_agent/agent.py
 ---------------------------
 # =============================================================================
-# LEGACY SYSTEM — DO NOT EXTEND
+# LEGACY SYSTEM â€” DO NOT EXTEND
 # =============================================================================
-# This file is part of the original CACC Writer v1 ad-hoc agent architecture.
+# This file is part of the original Appraisal Agent v1 ad-hoc agent architecture.
 # It remains functional and is now wrapped as a deterministic TOOL by the new
 # LangGraph workflow system (server/tools/realQuantumTool.ts).
 #
@@ -12,13 +12,13 @@ real_quantum_agent/agent.py
 # New workflow logic belongs in:    server/workflow/appraisalWorkflow.ts
 #
 # DO NOT add new endpoints or business logic here.
-# DO NOT delete this file — the new realQuantumTool.ts calls this agent via HTTP.
+# DO NOT delete this file â€” the new realQuantumTool.ts calls this agent via HTTP.
 # =============================================================================
 
 Playwright-based web automation agent for Real Quantum commercial appraisal software.
 
 Purpose:
-    Receives generated narrative text from the CACC Writer Node.js server and
+    Receives generated narrative text from the Appraisal Agent Node.js server and
     inserts it into the correct section of a Real Quantum commercial report
     running in a Chrome/Edge browser window.
 
@@ -31,7 +31,7 @@ Architecture:
 
 Why Playwright (not pywinauto):
     Real Quantum is a web-based SaaS application running in a browser.
-    pywinauto automates Win32 desktop controls — it cannot reliably target
+    pywinauto automates Win32 desktop controls â€” it cannot reliably target
     elements inside a browser's rendered DOM. Playwright communicates directly
     with the browser via Chrome DevTools Protocol (CDP), giving precise control
     over every DOM element.
@@ -55,7 +55,7 @@ How to run:
 
 How to extend:
     - Update field selectors in field_maps/commercial.json as Real Quantum's
-      UI evolves (no code changes needed — just update the JSON)
+      UI evolves (no code changes needed â€” just update the JSON)
     - Add new section navigation strategies in navigate_to_section() for
       sections that require multi-step navigation (e.g., accordion panels)
     - Add screenshot capture on failure by calling page.screenshot() in the
@@ -73,7 +73,7 @@ import threading
 import pyperclip
 from flask import Flask, request, jsonify
 
-# ── Conditional import of Playwright ─────────────────────────────────────────
+# â”€â”€ Conditional import of Playwright â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Playwright only works when installed. On systems without it, we run in stub
 # mode so the server can still start and return meaningful errors.
 try:
@@ -83,7 +83,7 @@ except ImportError:
     PLAYWRIGHT_AVAILABLE = False
     print("[rq_agent] WARNING: playwright not installed. Run: pip install playwright && playwright install chromium")
 
-# ── Configuration ─────────────────────────────────────────────────────────────
+# â”€â”€ Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 AGENT_DIR        = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE      = os.path.join(AGENT_DIR, 'config.json')
@@ -110,7 +110,7 @@ NAVIGATION_TIMEOUT  = config.get('navigation_timeout_ms', 10000)
 RQ_BASE_URL         = config.get('rq_base_url', 'https://app.realquantum.com')
 SCREENSHOT_ON_FAIL  = config.get('screenshot_on_failure', True)
 
-# ── Logging ───────────────────────────────────────────────────────────────────
+# â”€â”€ Logging â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 logging.basicConfig(
     level=logging.INFO,
@@ -119,7 +119,7 @@ logging.basicConfig(
 )
 log = logging.getLogger('rq_agent')
 
-# ── Field map loader ──────────────────────────────────────────────────────────
+# â”€â”€ Field map loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _field_map_cache = {}
 
@@ -163,7 +163,7 @@ def load_field_map(form_type: str) -> dict:
         log.error(f"Invalid JSON in field map {map_file}: {e}")
         return {}
 
-# ── Screenshot helper ─────────────────────────────────────────────────────────
+# â”€â”€ Screenshot helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def capture_screenshot(page, label: str) -> str | None:
     """
@@ -186,9 +186,9 @@ def capture_screenshot(page, label: str) -> str | None:
         log.warning(f"Screenshot capture failed: {e}")
         return None
 
-# ── Playwright browser connection ─────────────────────────────────────────────
+# â”€â”€ Playwright browser connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-# Global Playwright state — reused across requests for performance
+# Global Playwright state â€” reused across requests for performance
 _playwright_instance = None
 _browser_instance    = None
 _page_instance       = None
@@ -325,7 +325,7 @@ def get_page():
 
     return None
 
-# ── Section navigation ────────────────────────────────────────────────────────
+# â”€â”€ Section navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _navigate_to_url(page, slug: str) -> bool:
     """
@@ -363,7 +363,7 @@ def _navigate_to_url(page, slug: str) -> bool:
         return True
 
     try:
-        log.info(f"Navigating to section: {slug} → {target_url}")
+        log.info(f"Navigating to section: {slug} â†’ {target_url}")
         page.goto(target_url, wait_until='domcontentloaded', timeout=NAVIGATION_TIMEOUT)
         # Wait for TinyMCE to initialize (editors load asynchronously after DOM)
         time.sleep(2.0)
@@ -386,7 +386,7 @@ def _navigate_tab_click(page, field_config: dict) -> bool:
     Discovered patterns:
       - Market Data: tabs are <a class="text-center"> with text like
         "regional overview", "industry overview", "national overview"
-      - Clicking the tab makes the corresponding hidden iframe visible (0x0 → 736x106)
+      - Clicking the tab makes the corresponding hidden iframe visible (0x0 â†’ 736x106)
 
     Args:
         page:         Playwright Page object
@@ -429,17 +429,17 @@ def navigate_to_section(page, field_config: dict) -> bool:
     Navigate to the correct section of the Real Quantum report.
 
     Navigation strategy (in order):
-        1. nav_url_slug  — direct URL navigation (most reliable, preferred)
-        2. tab_click     — click a sub-tab after URL navigation (Market Data sub-sections)
-        3. nav_selector  — CSS selector click on sidebar nav element
-        4. nav_text      — text-based click on sidebar nav element
+        1. nav_url_slug  â€” direct URL navigation (most reliable, preferred)
+        2. tab_click     â€” click a sub-tab after URL navigation (Market Data sub-sections)
+        3. nav_selector  â€” CSS selector click on sidebar nav element
+        4. nav_text      â€” text-based click on sidebar nav element
 
     The `navigation_strategy` field in the field map controls which post-navigation
     step is taken after URL navigation:
-        - "visible"   → no extra step needed (iframe already visible)
-        - "scroll"    → _insert_tinymce Strategy 2 handles scroll-into-view
-        - "tab_click" → click the sub-tab to make the iframe visible
-        - "detail_page" → handled separately via /insert-detail-page endpoint
+        - "visible"   â†’ no extra step needed (iframe already visible)
+        - "scroll"    â†’ _insert_tinymce Strategy 2 handles scroll-into-view
+        - "tab_click" â†’ click the sub-tab to make the iframe visible
+        - "detail_page" â†’ handled separately via /insert-detail-page endpoint
 
     Args:
         page:         Playwright Page object
@@ -453,7 +453,7 @@ def navigate_to_section(page, field_config: dict) -> bool:
     nav_text            = field_config.get('nav_text', '')
     navigation_strategy = field_config.get('navigation_strategy', 'visible')
 
-    # Step 1: URL-based navigation (preferred — most reliable for Real Quantum)
+    # Step 1: URL-based navigation (preferred â€” most reliable for Real Quantum)
     if nav_url_slug:
         ok = _navigate_to_url(page, nav_url_slug)
         if not ok:
@@ -489,7 +489,7 @@ def navigate_to_section(page, field_config: dict) -> bool:
         log.error(f"Navigation failed: {e}")
         return False
 
-# ── Text insertion ────────────────────────────────────────────────────────────
+# â”€â”€ Text insertion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def insert_text(page, field_config: dict, text: str) -> bool:
     """
@@ -522,11 +522,11 @@ def insert_text(page, field_config: dict, text: str) -> bool:
         log.error("No input_selector defined in field map. Update field_maps/commercial.json.")
         return False
 
-    # ── Strategy 1: TinyMCE rich text editor ─────────────────────────────────
+    # â”€â”€ Strategy 1: TinyMCE rich text editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if input_type == 'tinymce':
         return _insert_tinymce(page, field_config, text)
 
-    # ── Strategy 2: Direct fill (standard textarea/input) ─────────────────────
+    # â”€â”€ Strategy 2: Direct fill (standard textarea/input) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         page.wait_for_selector(input_selector, timeout=NAVIGATION_TIMEOUT)
         element = page.locator(input_selector).first
@@ -548,7 +548,7 @@ def insert_text(page, field_config: dict, text: str) -> bool:
     except Exception as e:
         log.warning(f"Direct fill failed: {e}. Trying clipboard fallback.")
 
-    # ── Strategy 3: Clipboard paste fallback ──────────────────────────────────
+    # â”€â”€ Strategy 3: Clipboard paste fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     return fallback_clipboard(page, field_config, text)
 
 _last_tinymce_polls = 0  # polls taken in most recent _wait_for_tinymce_init call
@@ -608,9 +608,9 @@ def _insert_tinymce(page, field_config: dict, text: str) -> bool:
     The TinyMCE editor ID is the same without the _ifr suffix.
 
     Insertion strategy (tried in order):
-        1. tinymce.get(id).setContent() — fastest, most reliable
-        2. Scroll iframe into view + click + select-all + type — for hidden editors
-        3. Clipboard paste into iframe body — last resort
+        1. tinymce.get(id).setContent() â€” fastest, most reliable
+        2. Scroll iframe into view + click + select-all + type â€” for hidden editors
+        3. Clipboard paste into iframe body â€” last resort
 
     Args:
         page:         Playwright Page object
@@ -624,7 +624,7 @@ def _insert_tinymce(page, field_config: dict, text: str) -> bool:
     tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
     editor_index     = field_config.get('editor_index', 0)
 
-    # ── Strategy 1: TinyMCE JS API (fastest) ─────────────────────────────────
+    # â”€â”€ Strategy 1: TinyMCE JS API (fastest) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         if tinymce_id:
             # Wait for TinyMCE to be initialized with this editor ID
@@ -647,7 +647,7 @@ def _insert_tinymce(page, field_config: dict, text: str) -> bool:
     except Exception as e:
         log.warning(f"TinyMCE JS API failed: {e}. Trying iframe interaction fallback.")
 
-    # ── Strategy 2: Scroll iframe into view + interact ────────────────────────
+    # â”€â”€ Strategy 2: Scroll iframe into view + interact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Handles hidden editors (sub-tabs not yet visible on page load)
     if tinymce_iframe_id:
         try:
@@ -681,7 +681,7 @@ def _insert_tinymce(page, field_config: dict, text: str) -> bool:
         except Exception as e2:
             log.warning(f"Iframe interaction fallback failed: {e2}. Trying clipboard fallback.")
 
-    # ── Strategy 3: Clipboard paste (last resort) ─────────────────────────────
+    # â”€â”€ Strategy 3: Clipboard paste (last resort) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     return fallback_clipboard(page, field_config, text)
 
 def fallback_clipboard(page, field_config: dict, text: str) -> bool:
@@ -689,7 +689,7 @@ def fallback_clipboard(page, field_config: dict, text: str) -> bool:
     Clipboard fallback: copy text to clipboard, focus the field, paste.
 
     This is the most reliable method for fields that don't respond to
-    direct fill() — including custom editors, contenteditable divs, and
+    direct fill() â€” including custom editors, contenteditable divs, and
     some React-controlled inputs.
 
     Args:
@@ -728,7 +728,7 @@ def fallback_clipboard(page, field_config: dict, text: str) -> bool:
         log.error(f"Clipboard fallback failed: {e}")
         return False
 
-# ── Verification ──────────────────────────────────────────────────────────────
+# â”€â”€ Verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _normalize_for_comparison(text: str) -> str:
     """Normalize text for verification comparison: strip HTML, collapse whitespace, lowercase."""
@@ -797,7 +797,7 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
             passed = check_expected[:50] in actual_normalized
 
         if passed:
-            log.info("Verification passed ✓")
+            log.info("Verification passed âœ“")
         else:
             log.warning(f"Verification FAILED.")
             log.warning(f"  Expected (first 60): '{check_expected[:60]}...'")
@@ -861,7 +861,7 @@ def read_field_value(page, field_config: dict) -> str:
     element = page.locator(input_selector).first
     return element.input_value() or element.text_content() or ''
 
-# ── Flask HTTP server ─────────────────────────────────────────────────────────
+# â”€â”€ Flask HTTP server â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 flask_app = Flask(__name__)
 
@@ -915,7 +915,7 @@ def insert():
     if not text:
         return jsonify({'ok': False, 'error': 'text is required'}), 400
 
-    # ── Stub mode ─────────────────────────────────────────────────────────────
+    # â”€â”€ Stub mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if not PLAYWRIGHT_AVAILABLE:
         log.info(f"[STUB] Would insert into '{field_id}' ({len(text)} chars)")
         return jsonify({
@@ -925,7 +925,7 @@ def insert():
             'message': 'playwright not installed. Run: pip install playwright && playwright install chromium',
         })
 
-    # ── Load field map ────────────────────────────────────────────────────────
+    # â”€â”€ Load field map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     field_map    = load_field_map(form_type)
     field_config = field_map.get(field_id, {})
     field_label  = field_config.get('label', field_id)
@@ -936,7 +936,7 @@ def insert():
 
     log.info(f"Inserting into '{field_label}' (fieldId={field_id}, chars={len(text)})")
 
-    # ── Connect to browser ────────────────────────────────────────────────────
+    # â”€â”€ Connect to browser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     page = get_page()
     if not page:
         return jsonify({
@@ -948,12 +948,12 @@ def insert():
             ),
         }), 503
 
-    # ── Navigate to section ───────────────────────────────────────────────────
+    # â”€â”€ Navigate to section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     nav_ok = navigate_to_section(page, field_config)
     if not nav_ok:
         log.warning(f"Navigation failed for '{field_label}'. Attempting insertion anyway.")
 
-    # ── Insert with retries ───────────────────────────────────────────────────
+    # â”€â”€ Insert with retries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     success = False
     for attempt in range(1, MAX_RETRIES + 1):
         log.info(f"Insertion attempt {attempt}/{MAX_RETRIES}")
@@ -970,7 +970,7 @@ def insert():
             'screenshot': screenshot_path,
         }), 500
 
-    # ── Verify ────────────────────────────────────────────────────────────────
+    # â”€â”€ Verify â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     verified = True
     if VERIFY_INSERTION:
         time.sleep(0.3)
@@ -1088,7 +1088,7 @@ def test_field():
         return jsonify({'ok': False, 'error': 'fieldId is required'}), 400
 
     if not PLAYWRIGHT_AVAILABLE:
-        return jsonify({'ok': True, 'found': False, 'message': 'stub mode — playwright not available'})
+        return jsonify({'ok': True, 'found': False, 'message': 'stub mode â€” playwright not available'})
 
     field_map    = load_field_map(form_type)
     field_config = field_map.get(field_id, {})
@@ -1127,13 +1127,13 @@ def test_field():
 
             # Fallback: check DOM presence for hidden/lazy-initialized iframes.
             # Hidden iframes (0x0) are not yet registered with tinymce.get() but DO
-            # exist in the DOM — the scroll strategy will activate them at insert time.
+            # exist in the DOM â€” the scroll strategy will activate them at insert time.
             if not result and tinymce_iframe_id:
                 result = page.evaluate(
                     f"document.querySelector('iframe#{tinymce_iframe_id}') !== null"
                 )
                 if result:
-                    log.info(f"test-field: iframe#{tinymce_iframe_id} found in DOM (hidden — scroll strategy will activate)")
+                    log.info(f"test-field: iframe#{tinymce_iframe_id} found in DOM (hidden â€” scroll strategy will activate)")
 
             input_found = bool(result)
         except Exception:
@@ -1294,7 +1294,7 @@ def list_detail_pages():
     Binoculars support: list all detail sub-page links on a section page.
 
     Navigates to the given section (e.g. sale_valuation) and finds all
-    <a class="details_link"> elements — these are the binoculars icons that
+    <a class="details_link"> elements â€” these are the binoculars icons that
     open individual comparable sale detail pages.
 
     Request:  { sectionSlug: "sale_valuation", formType: "commercial" }
@@ -1471,7 +1471,7 @@ def insert_detail_page():
         'editorUsed':  editor_id,
     })
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# â”€â”€ Entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 if __name__ == '__main__':
     os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
@@ -1484,9 +1484,10 @@ if __name__ == '__main__':
     log.info("SETUP REMINDER:")
     log.info("  1. Launch Chrome: chrome.exe --remote-debugging-port=9222 --user-data-dir=C:\\rq-session")
     log.info("  2. Log into Real Quantum and open your commercial report")
-    log.info("  3. Then use CACC Writer to generate and insert narratives")
+    log.info("  3. Then use Appraisal Agent to generate and insert narratives")
     log.info("")
     # threaded=False is required: Playwright sync API is not thread-safe.
     # All requests must be handled in the same thread that created the Playwright instance.
-    # This is correct for a single-user tool — requests are handled sequentially.
+    # This is correct for a single-user tool â€” requests are handled sequentially.
     flask_app.run(host='127.0.0.1', port=AGENT_PORT, debug=False, threaded=False)
+

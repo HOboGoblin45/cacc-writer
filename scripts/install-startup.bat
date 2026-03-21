@@ -1,9 +1,9 @@
-@echo off
+﻿@echo off
 setlocal
 
 set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 set "TARGET=%~dp0..\start-all-silent.bat"
-set "SHORTCUT=%STARTUP_DIR%\CACC Writer.bat"
+set "SHORTCUT=%STARTUP_DIR%\Appraisal Agent.bat"
 
 REM Resolve absolute path of target
 pushd "%~dp0.."
@@ -11,7 +11,7 @@ set "TARGET=%CD%\start-all-silent.bat"
 popd
 
 echo.
-echo Installing CACC Writer auto-startup...
+echo Installing Appraisal Agent auto-startup...
 echo.
 echo Source: %TARGET%
 echo Startup: %SHORTCUT%
@@ -33,7 +33,7 @@ REM Copy the bat file as a wrapper shortcut into the Startup folder
 ) > "%SHORTCUT%"
 
 if exist "%SHORTCUT%" (
-    echo SUCCESS! CACC Writer will now start automatically when Windows boots.
+    echo SUCCESS! Appraisal Agent will now start automatically when Windows boots.
     echo.
     echo To remove it later, run: scripts\uninstall-startup.bat
 ) else (
@@ -42,3 +42,4 @@ if exist "%SHORTCUT%" (
 )
 echo.
 pause
+

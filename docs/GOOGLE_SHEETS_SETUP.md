@@ -1,6 +1,6 @@
-# Google Sheets Integration — Setup Guide
+﻿# Google Sheets Integration â€” Setup Guide
 
-This guide walks you through connecting CACC Writer to your Google Sheet so new appraisal jobs are automatically logged.
+This guide walks you through connecting Appraisal Agent to your Google Sheet so new appraisal jobs are automatically logged.
 
 **Sheet ID:** `1at6WdnjEZ6fyauC-IsoSGO2TQWDUirgbZ9WlQPIntEU`
 
@@ -21,40 +21,40 @@ npm install googleapis
 ### 1. Create a Google Cloud Project
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Click the project selector at the top → **New Project**
-3. Name it `CACC Writer` → click **Create**
+2. Click the project selector at the top â†’ **New Project**
+3. Name it `Appraisal Agent` â†’ click **Create**
 4. Wait for it to be created, then select it from the project dropdown
 
 ### 2. Enable the Google Sheets API
 
-1. In the left sidebar, go to **APIs & Services → Library**
+1. In the left sidebar, go to **APIs & Services â†’ Library**
 2. Search for `Google Sheets API`
-3. Click it → click **Enable**
+3. Click it â†’ click **Enable**
 
 ### 3. Create a Service Account
 
-1. In the left sidebar, go to **APIs & Services → Credentials**
-2. Click **+ Create Credentials → Service Account**
+1. In the left sidebar, go to **APIs & Services â†’ Credentials**
+2. Click **+ Create Credentials â†’ Service Account**
 3. Name: `cacc-writer-sheets` (any name is fine)
-4. Click **Create and Continue** → skip role assignment → click **Done**
+4. Click **Create and Continue** â†’ skip role assignment â†’ click **Done**
 
 ### 4. Download the Service Account Key
 
 1. On the Credentials page, find your new service account under "Service Accounts"
 2. Click the service account name to open it
 3. Go to the **Keys** tab
-4. Click **Add Key → Create new key → JSON** → click **Create**
-5. A JSON file downloads automatically — save it as:
+4. Click **Add Key â†’ Create new key â†’ JSON** â†’ click **Create**
+5. A JSON file downloads automatically â€” save it as:
    ```
    credentials/google-service-account.json
    ```
    (inside the cacc-writer project folder)
 
-> ⚠️ **Never commit this file to git.** The `credentials/` folder is already in `.gitignore`.
+> âš ï¸ **Never commit this file to git.** The `credentials/` folder is already in `.gitignore`.
 
 ### 5. Share Your Spreadsheet with the Service Account
 
-1. Open the downloaded JSON file, find the `client_email` field — it looks like:
+1. Open the downloaded JSON file, find the `client_email` field â€” it looks like:
    ```
    cacc-writer-sheets@cacc-writer-xxxxx.iam.gserviceaccount.com
    ```
@@ -72,7 +72,7 @@ In your Google Sheet, make sure row 1 has these headers (in this exact order):
 |---|---|---|---|---|---|---|---|---|---|
 | Date | Order ID | Borrower | Address | Form Type | Fee | Lender | Transaction Type | Delivery Date | Pipeline Stage |
 
-> If the sheet is empty, CACC Writer will write to row 1 automatically. You may want to add the header manually first.
+> If the sheet is empty, Appraisal Agent will write to row 1 automatically. You may want to add the header manually first.
 
 ### 7. Add Environment Variables to `.env`
 
@@ -89,7 +89,7 @@ GOOGLE_SERVICE_ACCOUNT_PATH=./credentials/google-service-account.json
 
 - **Every new order intake** (PDF or XML) automatically logs a row to the sheet
 - **CSV backup** at `data/job-log.csv` always runs, even without credentials
-- If credentials aren't configured, intake still works — just logs to CSV only
+- If credentials aren't configured, intake still works â€” just logs to CSV only
 - The **Pipeline Stage** column (J) updates as jobs move through the workflow
 
 ---
@@ -107,6 +107,7 @@ GOOGLE_SERVICE_ACCOUNT_PATH=./credentials/google-service-account.json
 
 ## Security Notes
 
-- The `credentials/` folder is in `.gitignore` — the key file will never be committed
+- The `credentials/` folder is in `.gitignore` â€” the key file will never be committed
 - The service account only has access to sheets you explicitly share with it
-- You can revoke access anytime in Google Cloud Console → APIs & Services → Credentials
+- You can revoke access anytime in Google Cloud Console â†’ APIs & Services â†’ Credentials
+

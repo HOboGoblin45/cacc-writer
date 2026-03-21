@@ -1,20 +1,20 @@
-# CACC Writer — Machine Migration Runbook
+﻿# Appraisal Agent â€” Machine Migration Runbook
 
 Last updated: 2026-03-13
-Authority: DoD #10 — "Backup, restore, and machine migration are supported and tested."
+Authority: DoD #10 â€” "Backup, restore, and machine migration are supported and tested."
 
 ---
 
 ## Overview
 
-This runbook covers moving CACC Writer from one machine to another while preserving all case data, knowledge base, learned patterns, voice profiles, and backup history. The process takes approximately 15 minutes for a typical installation.
+This runbook covers moving Appraisal Agent from one machine to another while preserving all case data, knowledge base, learned patterns, voice profiles, and backup history. The process takes approximately 15 minutes for a typical installation.
 
 ---
 
 ## Prerequisites
 
 **Source machine:**
-- CACC Writer is installed and accessible.
+- Appraisal Agent is installed and accessible.
 - No active insertion operations running.
 
 **Target machine:**
@@ -30,23 +30,23 @@ All persistent data lives within the project directory:
 
 ```
 cacc-writer/
-├── data/
-│   └── cacc-writer.db          ← SQLite database (ALL structured data)
-├── cases/
-│   └── [case-id]/              ← Case files (meta, facts, outputs, history, documents)
-├── knowledge_base/
-│   ├── index.json              ← Master KB index
-│   ├── approvedNarratives/     ← Voice-trained narratives
-│   ├── approved_edits/         ← Appraiser-approved edits
-│   ├── curated_examples/       ← Hand-curated examples by form type
-│   ├── narratives/             ← Narrative templates
-│   └── phrase_bank/            ← Reusable clauses
-├── backups/
-│   └── cacc-backup-*.db        ← Database backups
-├── logs/
-│   └── cacc-*.log              ← Daily JSON-lines logs
-└── exports/
-    └── cacc-writer-support-bundle-*/  ← Support bundles
+â”œâ”€â”€ data/
+â”‚   â””â”€â”€ cacc-writer.db          â† SQLite database (ALL structured data)
+â”œâ”€â”€ cases/
+â”‚   â””â”€â”€ [case-id]/              â† Case files (meta, facts, outputs, history, documents)
+â”œâ”€â”€ knowledge_base/
+â”‚   â”œâ”€â”€ index.json              â† Master KB index
+â”‚   â”œâ”€â”€ approvedNarratives/     â† Voice-trained narratives
+â”‚   â”œâ”€â”€ approved_edits/         â† Appraiser-approved edits
+â”‚   â”œâ”€â”€ curated_examples/       â† Hand-curated examples by form type
+â”‚   â”œâ”€â”€ narratives/             â† Narrative templates
+â”‚   â””â”€â”€ phrase_bank/            â† Reusable clauses
+â”œâ”€â”€ backups/
+â”‚   â””â”€â”€ cacc-backup-*.db        â† Database backups
+â”œâ”€â”€ logs/
+â”‚   â””â”€â”€ cacc-*.log              â† Daily JSON-lines logs
+â””â”€â”€ exports/
+    â””â”€â”€ cacc-writer-support-bundle-*/  â† Support bundles
 ```
 
 **Environment variables** (optional overrides):
@@ -54,7 +54,7 @@ cacc-writer/
 |----------|---------|---------|
 | `CACC_DB_PATH` | `./data/cacc-writer.db` | Database file location |
 | `CACC_LOGS_DIR` | `./logs` | Log file directory |
-| `OPENAI_API_KEY` | — | Required for AI generation |
+| `OPENAI_API_KEY` | â€” | Required for AI generation |
 | `PORT` | `5178` | Server port |
 
 ---
@@ -63,7 +63,7 @@ cacc-writer/
 
 Stop all active work, then create a verified backup.
 
-**Option A — Via API:**
+**Option A â€” Via API:**
 ```bash
 # Create backup
 curl -X POST http://localhost:5178/api/security/backups/create \
@@ -73,12 +73,12 @@ curl -X POST http://localhost:5178/api/security/backups/create \
 curl -X POST http://localhost:5178/api/security/backups/BACKUP_ID/verify
 ```
 
-**Option B — Via UI:**
+**Option B â€” Via UI:**
 1. Go to the **System** tab.
 2. Click **Create Backup**.
 3. Wait for confirmation.
 
-**Option C — Manual SQLite copy (if server is stopped):**
+**Option C â€” Manual SQLite copy (if server is stopped):**
 ```bash
 cd /path/to/cacc-writer
 sqlite3 data/cacc-writer.db ".backup 'backups/pre-migration.db'"
@@ -106,7 +106,7 @@ Copy the entire project directory, or at minimum these directories:
 
 ### Transfer commands
 
-**rsync (preferred — incremental, handles interruptions):**
+**rsync (preferred â€” incremental, handles interruptions):**
 ```bash
 rsync -avz --progress \
   /source/cacc-writer/data \
@@ -247,7 +247,7 @@ After migration, confirm each item:
 
 ### "Database is locked"
 The SQLite database uses WAL mode. If you see lock errors:
-1. Ensure no other CACC Writer process is running on the same data directory.
+1. Ensure no other Appraisal Agent process is running on the same data directory.
 2. Delete stale WAL/SHM files if they exist: `data/cacc-writer.db-wal`, `data/cacc-writer.db-shm`.
 3. Restart the server.
 
@@ -278,7 +278,7 @@ Case files on disk and database records are complementary. If case files are mis
 
 If migration fails, the source machine data is unchanged:
 
-1. Stop CACC Writer on target.
+1. Stop Appraisal Agent on target.
 2. Continue using source machine as before.
 3. Investigate the issue using logs at `logs/cacc-*.log`.
 4. Retry migration after resolving the issue.
@@ -296,6 +296,7 @@ npm start
 ## Notes
 
 - **Data sovereignty:** All data remains local. No cloud sync or external dependencies.
-- **SQLite portability:** The database file is cross-platform (Windows ↔ macOS ↔ Linux).
+- **SQLite portability:** The database file is cross-platform (Windows â†” macOS â†” Linux).
 - **Backup retention:** Default schedule keeps 10 backups with 30-day retention. Adjust via `PUT /api/security/backups/schedule`.
 - **Large installations:** For cases with many uploaded documents (100+ cases), the `cases/` directory may be several GB. Plan transfer time accordingly.
+

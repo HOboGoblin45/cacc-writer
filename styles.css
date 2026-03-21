@@ -819,6 +819,10 @@ textarea {
   gap: 16px;
 }
 
+.facts-shell {
+  align-items: start;
+}
+
 .fact-group-card {
   padding: 16px;
   border: 1px solid var(--line);
@@ -1079,6 +1083,11 @@ th {
   gap: 10px;
 }
 
+.insert-checklist {
+  margin-top: 18px;
+  margin-bottom: 20px;
+}
+
 .checklist-item {
   display: flex;
   align-items: center;
@@ -1160,6 +1169,12 @@ th {
 
 .section-meta {
   font-size: 0.84rem;
+}
+
+.section-char-count,
+.section-updated {
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .results-list {

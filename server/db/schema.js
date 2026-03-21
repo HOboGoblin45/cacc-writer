@@ -1,34 +1,34 @@
-/**
+﻿/**
  * server/db/schema.js
  * --------------------
- * SQLite schema for CACC Writer orchestrator.
+ * SQLite schema for Appraisal Agent orchestrator.
  * All 10 tables as specified in the architecture upgrade.
  *
  * Tables:
- *   assignments          — normalized assignment context per case
- *   report_plans         — deterministic report plan per assignment
- *   generation_runs      — full-draft generation run tracking
- *   section_jobs         — individual section job tracking within a run
- *   generated_sections   — output text per section job
- *   memory_items         — unified narrative memory store (SQLite mirror of KB)
- *   retrieval_cache      — cached retrieval packs per assignment (1hr TTL)
- *   analysis_artifacts   — structured analysis outputs (comp, market, HBU)
- *   ingest_jobs          — PDF ingestion job tracking
- *   staged_memory_reviews — items awaiting human review before promotion
- *   assignment_intelligence — Phase 4 intelligence bundles per case
- *   case_documents         — Phase 5 source files attached to cases
- *   document_extractions   — Phase 5 extraction job + output tracking
- *   extracted_facts        — Phase 5 structured fact candidates from documents
- *   extracted_sections     — Phase 5 narrative sections from prior reports
+ *   assignments          â€” normalized assignment context per case
+ *   report_plans         â€” deterministic report plan per assignment
+ *   generation_runs      â€” full-draft generation run tracking
+ *   section_jobs         â€” individual section job tracking within a run
+ *   generated_sections   â€” output text per section job
+ *   memory_items         â€” unified narrative memory store (SQLite mirror of KB)
+ *   retrieval_cache      â€” cached retrieval packs per assignment (1hr TTL)
+ *   analysis_artifacts   â€” structured analysis outputs (comp, market, HBU)
+ *   ingest_jobs          â€” PDF ingestion job tracking
+ *   staged_memory_reviews â€” items awaiting human review before promotion
+ *   assignment_intelligence â€” Phase 4 intelligence bundles per case
+ *   case_documents         â€” Phase 5 source files attached to cases
+ *   document_extractions   â€” Phase 5 extraction job + output tracking
+ *   extracted_facts        â€” Phase 5 structured fact candidates from documents
+ *   extracted_sections     â€” Phase 5 narrative sections from prior reports
  */
 
-// ── Column migrations ─────────────────────────────────────────────────────────
+// â”€â”€ Column migrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SQLite does not support ALTER TABLE ... ADD COLUMN IF NOT EXISTS.
-// We use try/catch per statement — safe to run on every startup.
+// We use try/catch per statement â€” safe to run on every startup.
 // New columns added in Phase 3:
-//   generation_runs.draft_package_json   — persists assembled draft package
-//   section_jobs.retrieval_source_ids_json — stores example IDs used per section
-//   section_jobs.estimated_cost_usd      — optional cost tracking
+//   generation_runs.draft_package_json   â€” persists assembled draft package
+//   section_jobs.retrieval_source_ids_json â€” stores example IDs used per section
+//   section_jobs.estimated_cost_usd      â€” optional cost tracking
 
 import log from '../logger.js';
 import { initPhase6Schema } from '../migration/phase6Schema.js';
@@ -48,36 +48,36 @@ import { initPipelineSchema } from '../migration/pipelineSchema.js';
 
 function runMigrations(db) {
   const migrations = [
-    // Phase 3 — draft package persistence
+    // Phase 3 â€” draft package persistence
     `ALTER TABLE generation_runs ADD COLUMN draft_package_json TEXT`,
-    // Phase 3 — retrieval source IDs per section job
+    // Phase 3 â€” retrieval source IDs per section job
     `ALTER TABLE section_jobs ADD COLUMN retrieval_source_ids_json TEXT DEFAULT '[]'`,
-    // Phase 3 — optional cost tracking per section job
+    // Phase 3 â€” optional cost tracking per section job
     `ALTER TABLE section_jobs ADD COLUMN estimated_cost_usd REAL`,
-    // Phase D — deterministic section policy + prompt version pinning
+    // Phase D â€” deterministic section policy + prompt version pinning
     `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT DEFAULT '{}'`,
     `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT DEFAULT '{}'`,
-    // Phase D — section audit + quality metadata
+    // Phase D â€” section audit + quality metadata
     `ALTER TABLE generated_sections ADD COLUMN audit_metadata_json TEXT DEFAULT '{}'`,
     `ALTER TABLE generated_sections ADD COLUMN quality_score REAL`,
     `ALTER TABLE generated_sections ADD COLUMN quality_metadata_json TEXT DEFAULT '{}'`,
-    // Phase C document intake hardening — duplicate linkage
+    // Phase C document intake hardening â€” duplicate linkage
     `ALTER TABLE case_documents ADD COLUMN duplicate_of_document_id TEXT`,
-    // Phase C document intake hardening — ingestion warning note
+    // Phase C document intake hardening â€” ingestion warning note
     `ALTER TABLE case_documents ADD COLUMN ingestion_warning TEXT`,
-    // Phase D — section factory governance
+    // Phase D â€” section factory governance
     `ALTER TABLE generated_sections ADD COLUMN prompt_version TEXT`,
     `ALTER TABLE generated_sections ADD COLUMN section_policy_json TEXT`,
     `ALTER TABLE generated_sections ADD COLUMN dependency_snapshot_json TEXT`,
     `ALTER TABLE generated_sections ADD COLUMN audit_metadata_json TEXT`,
     `ALTER TABLE generated_sections ADD COLUMN quality_score REAL`,
     `ALTER TABLE generated_sections ADD COLUMN quality_factors_json TEXT`,
-    // Phase D — section job governance
+    // Phase D â€” section job governance
     `ALTER TABLE section_jobs ADD COLUMN prompt_version TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN section_policy_json TEXT`,
     `ALTER TABLE section_jobs ADD COLUMN dependency_snapshot_json TEXT`,
-    // Priority 3 — section freshness tracking
+    // Priority 3 â€” section freshness tracking
     `ALTER TABLE generated_sections ADD COLUMN freshness_status TEXT DEFAULT 'current'`,
     `ALTER TABLE generated_sections ADD COLUMN stale_reason TEXT`,
     `ALTER TABLE generated_sections ADD COLUMN stale_since TEXT`,
@@ -88,14 +88,14 @@ function runMigrations(db) {
     try {
       db.exec(sql);
     } catch {
-      // Column already exists — safe to ignore
+      // Column already exists â€” safe to ignore
     }
   }
 }
 
 export function initSchema(db) {
   db.exec(`
-    -- ── assignments ──────────────────────────────────────────────────────────
+    -- â”€â”€ assignments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS assignments (
       id          TEXT PRIMARY KEY,
       case_id     TEXT NOT NULL UNIQUE,
@@ -107,7 +107,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_assignments_case_id
       ON assignments(case_id);
 
-    -- ── case_records (Phase B) ───────────────────────────────────────────────
+    -- â”€â”€ case_records (Phase B) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Canonical assignment-level case header/state record.
     -- This becomes the authoritative mutable case source-of-truth over time.
     CREATE TABLE IF NOT EXISTS case_records (
@@ -126,7 +126,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_case_records_updated_at
       ON case_records(updated_at);
 
-    -- ── case_facts (Phase B) ─────────────────────────────────────────────────
+    -- â”€â”€ case_facts (Phase B) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Canonical structured facts payload + provenance links per case.
     CREATE TABLE IF NOT EXISTS case_facts (
       case_id         TEXT PRIMARY KEY,
@@ -136,7 +136,7 @@ export function initSchema(db) {
       FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
     );
 
-    -- ── case_outputs (Phase B) ───────────────────────────────────────────────
+    -- â”€â”€ case_outputs (Phase B) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Canonical drafted output payload per case.
     CREATE TABLE IF NOT EXISTS case_outputs (
       case_id     TEXT PRIMARY KEY,
@@ -145,7 +145,7 @@ export function initSchema(db) {
       FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
     );
 
-    -- ── case_history (Phase B) ───────────────────────────────────────────────
+    -- â”€â”€ case_history (Phase B) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Canonical section revision history per case.
     CREATE TABLE IF NOT EXISTS case_history (
       case_id      TEXT PRIMARY KEY,
@@ -154,7 +154,7 @@ export function initSchema(db) {
       FOREIGN KEY (case_id) REFERENCES case_records(case_id) ON DELETE CASCADE
     );
 
-    -- ── report_plans ─────────────────────────────────────────────────────────
+    -- â”€â”€ report_plans â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS report_plans (
       id            TEXT PRIMARY KEY,
       assignment_id TEXT NOT NULL,
@@ -166,7 +166,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_report_plans_assignment_id
       ON report_plans(assignment_id);
 
-    -- ── generation_runs ───────────────────────────────────────────────────────
+    -- â”€â”€ generation_runs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS generation_runs (
       id            TEXT PRIMARY KEY,
       case_id       TEXT NOT NULL,
@@ -211,7 +211,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_generation_runs_status
       ON generation_runs(status);
 
-    -- ── section_jobs ──────────────────────────────────────────────────────────
+    -- â”€â”€ section_jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS section_jobs (
       id               TEXT PRIMARY KEY,
       run_id           TEXT NOT NULL,
@@ -250,7 +250,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_section_jobs_status
       ON section_jobs(status);
 
-    -- ── generated_sections ────────────────────────────────────────────────────
+    -- â”€â”€ generated_sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS generated_sections (
       id            TEXT PRIMARY KEY,
       job_id        TEXT NOT NULL,
@@ -282,8 +282,8 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_generated_sections_section_id
       ON generated_sections(section_id, case_id);
 
-    -- ── memory_items ──────────────────────────────────────────────────────────
-    -- Unified narrative memory store — SQLite mirror of the flat KB files.
+    -- â”€â”€ memory_items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    -- Unified narrative memory store â€” SQLite mirror of the flat KB files.
     -- Source of truth remains the flat files; this is a queryable index.
     CREATE TABLE IF NOT EXISTS memory_items (
       id           TEXT PRIMARY KEY,
@@ -325,7 +325,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_memory_items_approved
       ON memory_items(approved, quality_score);
 
-    -- ── retrieval_cache ───────────────────────────────────────────────────────
+    -- â”€â”€ retrieval_cache â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS retrieval_cache (
       id            TEXT PRIMARY KEY,
       assignment_id TEXT NOT NULL,
@@ -340,7 +340,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_retrieval_cache_expires
       ON retrieval_cache(expires_at);
 
-    -- ── analysis_artifacts ────────────────────────────────────────────────────
+    -- â”€â”€ analysis_artifacts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS analysis_artifacts (
       id            TEXT PRIMARY KEY,
       run_id        TEXT NOT NULL,
@@ -356,7 +356,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_analysis_artifacts_run_id
       ON analysis_artifacts(run_id);
 
-    -- ── ingest_jobs ───────────────────────────────────────────────────────────
+    -- â”€â”€ ingest_jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS ingest_jobs (
       id                 TEXT PRIMARY KEY,
       source_file        TEXT NOT NULL,
@@ -375,7 +375,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_ingest_jobs_status
       ON ingest_jobs(status);
 
-    -- ── staged_memory_reviews ─────────────────────────────────────────────────
+    -- â”€â”€ staged_memory_reviews â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CREATE TABLE IF NOT EXISTS staged_memory_reviews (
       id            TEXT PRIMARY KEY,
       ingest_job_id TEXT,
@@ -400,7 +400,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_staged_reviews_form
       ON staged_memory_reviews(form_type, section_type);
 
-    -- ── assignment_intelligence (Phase 4) ───────────────────────────────────
+    -- â”€â”€ assignment_intelligence (Phase 4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Persisted assignment intelligence bundles.
     -- Contains the full Phase 4 output: normalized context v2, derived flags,
     -- compliance profile, report family, canonical fields, and section plan v2.
@@ -415,7 +415,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_assignment_intelligence_case_id
       ON assignment_intelligence(case_id);
 
-    -- ── case_documents (Phase 5) ──────────────────────────────────────────────
+    -- â”€â”€ case_documents (Phase 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- First-class source files attached to cases.
     -- Every uploaded file becomes a tracked document with classification and provenance.
     CREATE TABLE IF NOT EXISTS case_documents (
@@ -479,7 +479,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_doc_ingest_jobs_status
       ON document_ingest_jobs(status, updated_at DESC);
 
-    -- ── document_extractions (Phase 5) ────────────────────────────────────────
+    -- â”€â”€ document_extractions (Phase 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Tracks each extraction job run against a document.
     -- A document can be re-extracted multiple times (different methods/versions).
     CREATE TABLE IF NOT EXISTS document_extractions (
@@ -513,9 +513,9 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_doc_extractions_case_id
       ON document_extractions(case_id);
 
-    -- ── extracted_facts (Phase 5) ─────────────────────────────────────────────
+    -- â”€â”€ extracted_facts (Phase 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Structured fact candidates pulled from documents.
-    -- These are candidates — not automatically merged into facts.json.
+    -- These are candidates â€” not automatically merged into facts.json.
     CREATE TABLE IF NOT EXISTS extracted_facts (
       id              TEXT PRIMARY KEY,
       extraction_id   TEXT NOT NULL,
@@ -547,7 +547,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_extracted_facts_review
       ON extracted_facts(review_status);
 
-    -- ── extracted_sections (Phase 5) ──────────────────────────────────────────
+    -- â”€â”€ extracted_sections (Phase 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Narrative sections extracted from prior appraisal PDFs.
     -- These are staged for memory review before entering the memory bank.
     CREATE TABLE IF NOT EXISTS extracted_sections (
@@ -588,7 +588,7 @@ export function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_extracted_sections_hash
       ON extracted_sections(text_hash);
 
-    -- —— comparable intelligence (Phase D/H foundation) ——————————————————————————————
+    -- â€”â€” comparable intelligence (Phase D/H foundation) â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
     CREATE TABLE IF NOT EXISTS comp_candidates (
       id                 TEXT PRIMARY KEY,
       case_id            TEXT NOT NULL,
@@ -861,4 +861,5 @@ export function initSchema(db) {
     log.error('schema:pipeline-init', { error: err.message });
   }
 }
+
 

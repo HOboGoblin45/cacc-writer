@@ -86,14 +86,22 @@ function writeFacts(caseId, facts) {
     process.exit(1);
   }
 
-  // Pre-populate outputs for insert/exception tests
-  writeOutputSection(caseId, 'neighborhood_description', { text: 'The subject is located in a stable residential neighborhood.', sectionStatus: 'approved', approved: true });
-  writeOutputSection(caseId, 'market_conditions',        { text: 'Market conditions are stable with moderate demand.', sectionStatus: 'reviewed', approved: false });
-  writeOutputSection(caseId, 'reconciliation',           { text: 'Based on the analysis, the value is supported.', sectionStatus: 'error', statusNote: 'Insert failed: ACI timeout', approved: false });
-  writeOutputSection(commId, 'market_area',              { text: 'The subject is located in a commercial corridor.', sectionStatus: 'approved', approved: true });
+  // Pre-populate outputs via API for insert/exception tests
+  await patch(`/api/cases/${caseId}/outputs/neighborhood_description`, { text: 'The subject is located in a stable residential neighborhood.' });
+  await patch(`/api/cases/${caseId}/sections/neighborhood_description/status`, { status: 'approved' });
 
-  // Pre-populate facts with comps for comp commentary test
-  writeFacts(caseId, {
+  await patch(`/api/cases/${caseId}/outputs/market_conditions`, { text: 'Market conditions are stable with moderate demand.' });
+  // Leave market_conditions at drafted status (default after text set) — test [4] will approve it
+
+  await patch(`/api/cases/${caseId}/outputs/reconciliation`, { text: 'Based on the analysis, the value is supported.' });
+  await patch(`/api/cases/${caseId}/sections/reconciliation/status`, { status: 'error', notes: 'Insert failed: ACI timeout' });
+
+  await patch(`/api/cases/${commId}/outputs/market_area`, { text: 'The subject is located in a commercial corridor.' });
+  await patch(`/api/cases/${commId}/sections/market_area/status`, { status: 'approved' });
+
+  // Pre-populate facts with comps for comp commentary test (via API)
+  const put = (url, body) => fetch(BASE + url, { method: 'PUT', headers: h, body: JSON.stringify(body) }).then(r => r.json());
+  await put(`/api/cases/${caseId}/facts`, {
     comps: [
       { address: { value: '100 Elm St, Springfield IL' }, salePrice: { value: 250000 }, saleDate: { value: '2024-01-15' }, gla: { value: 1800 } },
       { address: { value: '200 Oak Ave, Springfield IL' }, salePrice: { value: 265000 }, saleDate: { value: '2024-02-20' }, gla: { value: 1950 } },
@@ -362,9 +370,11 @@ function writeFacts(caseId, facts) {
   // ─────────────────────────────────────────────────────────────────────────────
   console.log('\n[8] Exception queue — error section surfacing');
 
-  // Set multiple sections to error
-  writeOutputSection(caseId, 'site_description',  { text: 'Site text.', sectionStatus: 'error', statusNote: 'Tab not found' });
-  writeOutputSection(caseId, 'improvements_condition', { text: 'Improvements text.', sectionStatus: 'error', statusNote: 'Clipboard paste failed' });
+  // Set multiple sections to error via API
+  await patch(`/api/cases/${caseId}/outputs/site_description`, { text: 'Site text.' });
+  await patch(`/api/cases/${caseId}/sections/site_description/status`, { status: 'error', notes: 'Tab not found' });
+  await patch(`/api/cases/${caseId}/outputs/improvements_condition`, { text: 'Improvements text.' });
+  await patch(`/api/cases/${caseId}/sections/improvements_condition/status`, { status: 'error', notes: 'Clipboard paste failed' });
 
   const ex4 = await get(`/api/cases/${caseId}/exceptions`);
   check('8a. exceptions → ok:true',              ex4.ok === true);

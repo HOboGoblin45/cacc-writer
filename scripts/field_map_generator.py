@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""CACC Writer field-map tools.
+﻿#!/usr/bin/env python3
+"""Appraisal Agent field-map tools.
 
 Modes:
   --aci-diag      Diagnostic-only ACI surface scanner
@@ -419,7 +419,7 @@ def safe_merge(discovery_file, existing_file=None, output_file=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CACC Writer - Field Map Tools")
+    parser = argparse.ArgumentParser(description="Appraisal Agent - Field Map Tools")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--aci-diag", action="store_true", help="ACI diagnostic scan")
     mode.add_argument("--rq-discover", action="store_true", help="Real Quantum form discovery")
@@ -443,3 +443,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

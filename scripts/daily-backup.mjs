@@ -1,4 +1,4 @@
-/**
+﻿/**
  * scripts/daily-backup.mjs
  * -------------------------
  * Daily backup: copies cases/ and knowledge_base/ to backups/YYYY-MM-DD/.
@@ -73,7 +73,7 @@ function pruneOldBackups() {
   const dateFolders = entries
     .filter(e => e.isDirectory() && /^\d{4}-\d{2}-\d{2}$/.test(e.name))
     .map(e => e.name)
-    .sort(); // ascending — oldest first
+    .sort(); // ascending â€” oldest first
 
   const toDelete = dateFolders.slice(0, Math.max(0, dateFolders.length - KEEP_DAYS));
   for (const folder of toDelete) {
@@ -91,7 +91,7 @@ async function main() {
   const dateStr = today();
   const destBase = path.join(BACKUPS_DIR, dateStr);
 
-  log(`=== CACC Writer daily backup starting (${dateStr}) ===`);
+  log(`=== Appraisal Agent daily backup starting (${dateStr}) ===`);
 
   const sources = [
     { name: 'cases', src: path.join(PROJECT_ROOT, 'cases') },
@@ -103,13 +103,13 @@ async function main() {
   for (const { name, src } of sources) {
     const dest = path.join(destBase, name);
     if (!fs.existsSync(src)) {
-      log(`  Skipping ${name}/ — not found at ${src}`);
+      log(`  Skipping ${name}/ â€” not found at ${src}`);
       continue;
     }
     try {
       log(`  Backing up ${name}/ ...`);
       const count = copyDirSync(src, dest);
-      log(`  ✓ ${name}/: ${count} files copied → ${path.relative(PROJECT_ROOT, dest)}`);
+      log(`  âœ“ ${name}/: ${count} files copied â†’ ${path.relative(PROJECT_ROOT, dest)}`);
     } catch (e) {
       log(`  ERROR backing up ${name}/: ${e.message}`);
       anyError = true;
@@ -134,3 +134,4 @@ main().catch(err => {
   log(`Fatal error: ${err.message}`);
   process.exit(1);
 });
+

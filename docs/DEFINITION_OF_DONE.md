@@ -1,12 +1,12 @@
-# CACC Writer Definition of Done
+﻿# Appraisal Agent Definition of Done
 
-This is the canonical definition of "100% complete" for CACC Writer.
+This is the canonical definition of "100% complete" for Appraisal Agent.
 
 The target is internal business completion for one working appraiser first. It is not SaaS completion, team-scale completion, or "demo looks impressive" completion.
 
 ## Mission
 
-CACC Writer is complete only when it functions as the central operating system for:
+Appraisal Agent is complete only when it functions as the central operating system for:
 
 - intake
 - document organization
@@ -100,3 +100,4 @@ CACC Writer is complete only when it functions as the central operating system f
 ## Post-100 rule
 
 Do not expand deferred form scope until the active `1004` and `commercial` lanes satisfy this definition of done.
+

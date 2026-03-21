@@ -1,4 +1,4 @@
-# CACC Writer v2.0
+# Appraisal Agent v2.0
 
 AI-powered appraisal narrative generator for **Charles Cresci, Cresci Appraisal & Consulting Company**.
 
@@ -37,7 +37,7 @@ Automates the writing of professional, USPAP-conscious appraisal narratives for 
 └──────────────────────┬──────────────────────────────────────┘
                        │ HTTP
 ┌──────────────────────▼──────────────────────────────────────┐
-│         CACC Writer Server  cacc-writer-server.js  :5178     │
+│         Appraisal Agent Server  appraisal-agent-server.js  :5178     │
 │                                                              │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │  Modular Generation Layer  (server/)                 │    │
@@ -179,8 +179,8 @@ Or start individually:
 ## Project Structure
 
 ```
-cacc-writer/
-├── cacc-writer-server.js     ← Main production server (port 5178) ← SINGLE RUNTIME
+appraisal-agent/
+├── appraisal-agent-server.js     ← Main production server (port 5178) ← SINGLE RUNTIME
 ├── index.html                ← Browser UI
 ├── app.js                    ← Frontend JavaScript
 ├── start-server.bat          ← Start server only
@@ -190,7 +190,7 @@ cacc-writer/
 ├── .env                      ← Your API key (gitignored)
 │
 ├── server/                   ← Modular generation layer (imported by main server)
-│   ├── server.js             ← ⚠️ DEPRECATED as standalone — use cacc-writer-server.js
+│   ├── server.js             ← ⚠️ DEPRECATED as standalone — use appraisal-agent-server.js
 │   ├── openaiClient.js       ← OpenAI singleton + callAI()
 │   ├── knowledgeBase.js      ← addExample(), getExamples(), indexExamples()
 │   ├── retrieval.js          ← getRelevantExamples() (4-pass fallback)
@@ -209,7 +209,7 @@ cacc-writer/
 │   └── commercial.js         ← Commercial config
 │
 ├── prompts/                  ← AI system prompts
-│   ├── system_cacc_writer.txt ← CACC Writer role + confidence rules
+│   ├── system_cacc_writer.txt ← Appraisal Agent role + confidence rules
 │   ├── style_guide_cresci.txt ← Charles Cresci writing style guide
 │   └── review_pass.txt       ← Two-pass reviewer system prompt (JSON output)
 │
@@ -384,7 +384,7 @@ cacc-writer/
 ### Starting the system
 ```
 Double-click start-all.bat
-→ Opens 3 windows: CACC Writer server, ACI agent, RQ agent
+→ Opens 3 windows: Appraisal Agent server, ACI agent, RQ agent
 → Open http://localhost:5178 in browser
 ```
 
@@ -413,7 +413,7 @@ Double-click start-all.bat
 Import completed appraisal PDFs to teach the AI your writing style:
 
 **Option A — Single PDF upload**
-1. In CACC Writer, go to **Voice Training** tab
+1. In Appraisal Agent, go to **Voice Training** tab
 2. Select form type and upload a completed report PDF
 3. The AI extracts narrative sections and saves them to the KB immediately
 
@@ -467,7 +467,7 @@ Save to `knowledge_base/curated_examples/1004/my-example-001.json`, then call `P
 
 ## Geospatial / Location Context
 
-For neighborhood and market fields, CACC Writer can inject real location data into the AI prompt:
+For neighborhood and market fields, Appraisal Agent can inject real location data into the AI prompt:
 
 1. **Geocode the case:** `POST /api/cases/:id/geocode`
    - Geocodes subject address + all comp addresses via Nominatim (free, no API key)

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * logger.js
  * ---------
- * Structured logger for CACC Writer server.
+ * Structured logger for Appraisal Agent server.
  *
  * Outputs JSON-formatted log lines to stdout/stderr so they can be
  * parsed by log aggregators or grepped easily in the terminal.
@@ -19,7 +19,7 @@
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 };
 const MIN_LEVEL = LEVELS[String(process.env.LOG_LEVEL || 'info').toLowerCase()] ?? 1;
 
-// ── File logger fan-out (optional, initialized by initFileLogger()) ───────────
+// â”€â”€ File logger fan-out (optional, initialized by initFileLogger()) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Imported lazily to avoid circular deps at module load time.
 let _fileLoggerWrite = null;
 
@@ -87,3 +87,4 @@ const log = {
 };
 
 export default log;
+

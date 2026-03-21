@@ -1,7 +1,7 @@
 """
 desktop_agent/agent_v3.py
 --------------------------
-CACC Writer — ACI Desktop Agent v3 (Phase 3 — Click-to-Activate)
+Appraisal Agent — ACI Desktop Agent v3 (Phase 3 — Click-to-Activate)
 
 Clean rewrite using the new inserter.py module.
 All field positions come from field_maps/1004.json (ratio-based).
@@ -263,7 +263,7 @@ def list_windows():
 
 if __name__ == '__main__':
     log.info('=' * 60)
-    log.info('CACC Writer — ACI Desktop Agent v3 (Phase 3)')
+    log.info('Appraisal Agent — ACI Desktop Agent v3 (Phase 3)')
     log.info(f'Port:       {AGENT_PORT}')
     log.info(f'Strategy:   click-to-activate')
     log.info(f'pywinauto:  {inserter.PYWINAUTO_AVAILABLE}')

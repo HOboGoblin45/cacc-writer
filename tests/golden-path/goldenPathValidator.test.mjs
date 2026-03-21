@@ -1,10 +1,10 @@
-/**
+﻿/**
  * tests/golden-path/goldenPathValidator.test.mjs
  * -------------------------------------------------
- * Phase 8 — Golden-Path End-to-End Validation Harness
+ * Phase 8 â€” Golden-Path End-to-End Validation Harness
  *
  * Exercises the full appraisal lifecycle against a live server:
- *   Case create → Fact load → Generation → QC → Insertion prep → Archive → Backup
+ *   Case create â†’ Fact load â†’ Generation â†’ QC â†’ Insertion prep â†’ Archive â†’ Backup
  *
  * Validates all 10 Definition of Done conditions through concrete API calls.
  *
@@ -48,7 +48,7 @@ async function api(path, opts = {}) {
   try { return JSON.parse(text); } catch { return { _raw: text, _status: res.status }; }
 }
 
-// ── Health Check ────────────────────────────────────────────────────────────
+// â”€â”€ Health Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function checkHealth() {
   const res = await api('/api/health');
@@ -56,15 +56,15 @@ async function checkHealth() {
   return true;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Run Golden Path for a single fixture
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 async function runGoldenPath(fixture) {
   let caseId = null;
   let generationRunId = null;
 
-  // ── DoD #1: Case Created from an Order ──────────────────────────────────
+  // â”€â”€ DoD #1: Case Created from an Order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('case_create', `[${fixture.formType}] Create case from assignment`, async () => {
     const res = await api('/api/cases', { method: 'POST', body: fixture.caseCreate });
@@ -75,7 +75,7 @@ async function runGoldenPath(fixture) {
 
   if (!caseId) return; // Cannot continue without a case
 
-  // ── DoD #3: Facts Extracted and Verified ────────────────────────────────
+  // â”€â”€ DoD #3: Facts Extracted and Verified â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('facts_load', `[${fixture.formType}] Load ${fixture.facts.length} facts with provenance`, async () => {
     let loaded = 0;
@@ -96,7 +96,7 @@ async function runGoldenPath(fixture) {
     }
   });
 
-  // ── DoD #4: Report Family Selected Correctly ───────────────────────────
+  // â”€â”€ DoD #4: Report Family Selected Correctly â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('workspace_check', `[${fixture.formType}] Workspace matches form type`, async () => {
     const res = await api(`/api/cases/${caseId}`);
@@ -105,17 +105,17 @@ async function runGoldenPath(fixture) {
     assert.equal(formType, fixture.formType, `Form type should be ${fixture.formType}`);
   });
 
-  // ── DoD #3: Pre-draft gate ─────────────────────────────────────────────
+  // â”€â”€ DoD #3: Pre-draft gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('pre_draft_gate', `[${fixture.formType}] Pre-draft gate check runs`, async () => {
     const res = await api(`/api/cases/${caseId}/pre-draft-gate`);
-    // Gate may pass or fail depending on required fact coverage — just verify it runs
+    // Gate may pass or fail depending on required fact coverage â€” just verify it runs
     assert.ok(res != null, 'Pre-draft gate should return a response');
     assert.ok('ready' in res || 'passed' in res || 'gate' in res || 'ok' in res || 'status' in res || 'missing' in res,
       'Gate response should include a readiness indicator');
   });
 
-  // ── DoD #5: Narrative Sections Generated ───────────────────────────────
+  // â”€â”€ DoD #5: Narrative Sections Generated â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('generation_run', `[${fixture.formType}] Trigger generation run`, async () => {
     const res = await api(`/api/cases/${caseId}/generate`, {
@@ -136,7 +136,7 @@ async function runGoldenPath(fixture) {
     assert.ok(Array.isArray(sections), 'Sections endpoint should return an array');
   });
 
-  // ── DoD #7: QC Blockers Resolved ───────────────────────────────────────
+  // â”€â”€ DoD #7: QC Blockers Resolved â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('qc_run', `[${fixture.formType}] QC run executes`, async () => {
     const res = await api(`/api/cases/${caseId}/qc/run`, { method: 'POST', body: {} });
@@ -152,11 +152,11 @@ async function runGoldenPath(fixture) {
         assert.ok(f.severity || f.level, `Finding "${f.rule || f.type || 'unknown'}" should have severity`);
       }
     }
-    // Even zero findings is valid — means the data is clean
+    // Even zero findings is valid â€” means the data is clean
     assert.ok(Array.isArray(findings), 'Findings should be an array');
   });
 
-  // ── DoD #8: Insertion and Export ───────────────────────────────────────
+  // â”€â”€ DoD #8: Insertion and Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('insertion_prepare', `[${fixture.formType}] Insertion run prepares`, async () => {
     const targetSoftware = fixture.formType === '1004' ? 'aci' : 'realquantum';
@@ -174,7 +174,7 @@ async function runGoldenPath(fixture) {
     assert.ok(res != null, 'Preview should return a response');
   });
 
-  // ── DoD #10: System Reliability ───────────────────────────────────────
+  // â”€â”€ DoD #10: System Reliability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('audit_events', `[${fixture.formType}] Audit trail has events for this case`, async () => {
     const res = await api(`/api/operations/audit?caseId=${caseId}&limit=5`);
@@ -183,7 +183,7 @@ async function runGoldenPath(fixture) {
     assert.ok(Array.isArray(events), 'Audit events should be an array');
   });
 
-  // ── DoD #9: Archive and Learning ──────────────────────────────────────
+  // â”€â”€ DoD #9: Archive and Learning â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('case_archive', `[${fixture.formType}] Archive and restore case`, async () => {
     const archRes = await api(`/api/operations/archive/${caseId}`, { method: 'POST', body: {} });
@@ -193,7 +193,7 @@ async function runGoldenPath(fixture) {
     assert.ok(!restRes.error, 'Restore should succeed');
   });
 
-  // ── DoD #10: Backup ───────────────────────────────────────────────────
+  // â”€â”€ DoD #10: Backup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await test('backup_create', `[${fixture.formType}] Create and verify backup`, async () => {
     const createRes = await api('/api/security/backups/create', { method: 'POST', body: {} });
@@ -205,17 +205,17 @@ async function runGoldenPath(fixture) {
     }
   });
 
-  // ── Cleanup: Delete test case ─────────────────────────────────────────
+  // â”€â”€ Cleanup: Delete test case â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   await api(`/api/cases/${caseId}`, { method: 'DELETE' });
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Main
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 console.log('='.repeat(60));
-console.log('CACC Writer — Golden-Path End-to-End Validation');
+console.log('Appraisal Agent â€” Golden-Path End-to-End Validation');
 console.log('='.repeat(60));
 console.log(`Server: ${BASE}\n`);
 
@@ -228,13 +228,13 @@ try {
   process.exit(0);
 }
 
-console.log('── 1004 URAR Golden Path ──────────────────────────────────────');
+console.log('â”€â”€ 1004 URAR Golden Path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
 await runGoldenPath(FIXTURE_1004);
 
-console.log('\n── Commercial Golden Path ──────────────────────────────────────');
+console.log('\nâ”€â”€ Commercial Golden Path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
 await runGoldenPath(FIXTURE_COMMERCIAL);
 
-// ── Summary ─────────────────────────────────────────────────────────────────
+// â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 console.log('\n' + '='.repeat(60));
 console.log(`  Results: ${passed} passed, ${failed} failed`);
@@ -258,3 +258,4 @@ writeFileSync(resultsPath, JSON.stringify({
 console.log(`\nResults written to ${resultsPath}`);
 
 process.exit(failed > 0 ? 1 : 0);
+

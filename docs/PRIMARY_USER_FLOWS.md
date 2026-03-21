@@ -1,6 +1,6 @@
-# Primary User Flows
+﻿# Primary User Flows
 
-These are the primary operating flows CACC Writer must support for one working appraiser.
+These are the primary operating flows Appraisal Agent must support for one working appraiser.
 
 ## Flow 1: Intake to case creation
 
@@ -99,3 +99,4 @@ Current state:
 
 - Not yet complete.
 - This remains a core requirement for business completion.
+

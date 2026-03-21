@@ -34,6 +34,7 @@ const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cacc-form-draft-model-'))
 process.env.CACC_DB_PATH = path.join(tmpRoot, 'form-draft-model.db');
 
 const { getDb, closeDb } = await import('../../server/db/database.js');
+const { saveCaseProjection } = await import('../../server/caseRecord/caseRecordService.js');
 const { buildFormDraftModel, getFormDraftTextMap } = await import('../../server/insertion/formDraftModel.js');
 
 function insertGeneratedSection({ caseId, formType, sectionId, text, final = true }) {
@@ -142,6 +143,36 @@ await test('buildFormDraftModel backfills commercial rent roll remarks from mark
   assert.equal(rentRollRemarks.hasText, true);
   assert.equal(rentRollRemarks.aliasUsed, true);
   assert.match(rentRollRemarks.text, /market rent analysis/i);
+});
+
+await test('getFormDraftTextMap prefers edited case output text over stored generated section text', () => {
+  const caseId = randomId('case');
+  insertGeneratedSection({
+    caseId,
+    formType: '1004',
+    sectionId: 'reconciliation',
+    text: 'Stale generated reconciliation text.',
+  });
+
+  saveCaseProjection({
+    caseId,
+    meta: { formType: '1004', updatedAt: new Date().toISOString() },
+    facts: {},
+    provenance: {},
+    history: {},
+    docText: {},
+    outputs: {
+      reconciliation: {
+        text: 'Edited reconciliation text from the review workspace.',
+        approved: true,
+        sectionStatus: 'approved',
+        updatedAt: new Date().toISOString(),
+      },
+    },
+  });
+
+  const fieldTexts = getFormDraftTextMap({ caseId, formType: '1004', targetSoftware: 'aci' });
+  assert.equal(fieldTexts.get('reconciliation'), 'Edited reconciliation text from the review workspace.');
 });
 
 await test('getFormDraftTextMap backfills commercial income approach subfields from income approach text', () => {

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * server/business/engagementService.js
  * --------------------------------------
- * Engagement/order tracking service for CACC Writer.
+ * Engagement/order tracking service for Appraisal Agent.
  *
  * Tracks the full lifecycle of an appraisal engagement from order receipt
  * through completion, including fee adjustments, holds, and cancellations.
@@ -15,13 +15,13 @@ import { getDb } from '../db/database.js';
 import { emitAuditEvent, emitCaseEvent } from '../operations/auditLogger.js';
 import log from '../logger.js';
 
-// ── ID helper ────────────────────────────────────────────────────────────────
+// â”€â”€ ID helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeId() {
   return 'eng_' + randomUUID().slice(0, 12);
 }
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ JSON helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseJson(str, fallback = null) {
   if (!str) return fallback;
@@ -38,7 +38,7 @@ function stringifyJson(val) {
   return JSON.stringify(val);
 }
 
-// ── Row hydration ────────────────────────────────────────────────────────────
+// â”€â”€ Row hydration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function hydrateEngagement(row) {
   if (!row) return null;
@@ -50,7 +50,7 @@ function hydrateEngagement(row) {
   };
 }
 
-// ── Status history helper ────────────────────────────────────────────────────
+// â”€â”€ Status history helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function addStatusEntry(current, newStatus, reason) {
   const history = Array.isArray(current) ? [...current] : [];
@@ -62,7 +62,7 @@ function addStatusEntry(current, newStatus, reason) {
   return history;
 }
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Create a new engagement record and create/update associated pipeline entry.
@@ -544,3 +544,4 @@ export default {
   getEngagementsByDueDate,
   getOverdueEngagements,
 };
+

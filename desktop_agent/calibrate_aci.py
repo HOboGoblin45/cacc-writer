@@ -1,7 +1,7 @@
 """
 desktop_agent/calibrate_aci.py
 --------------------------------
-CACC Writer — ACI Calibration Tool  (Phase 2)
+Appraisal Agent — ACI Calibration Tool  (Phase 2)
 
 PURPOSE
     Calls the running ACI agent's /calibrate endpoint and displays the
@@ -99,7 +99,7 @@ def main():
 
     print()
     _sep('═')
-    print('  CACC Writer — ACI Calibration Tool  (Phase 2)')
+    print('  Appraisal Agent — ACI Calibration Tool  (Phase 2)')
     _sep('═')
     print()
 

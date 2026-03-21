@@ -1,7 +1,7 @@
-/**
+﻿/**
  * openaiClient.js
  * ---------------
- * Singleton OpenAI client for the CACC Writer server module.
+ * Singleton OpenAI client for the Appraisal Agent server module.
  *
  * Why a singleton?
  *   The OpenAI SDK initializes an HTTP connection pool on construction.
@@ -37,7 +37,7 @@ if (!OPENAI_API_KEY) {
 const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 let _openAIAuthProbeCache = null;
 
-// ── Concurrency limiter ─────────────────────────────────────────────────────
+// â”€â”€ Concurrency limiter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Prevents flooding OpenAI with too many parallel requests (avoids 429 errors)
 const MAX_CONCURRENT = Number(process.env.OPENAI_MAX_CONCURRENT) || 8;
 let _activeRequests = 0;
@@ -169,7 +169,7 @@ export async function probeOpenAIAuth({
  * @param {object} options
  *   @param {string}  [options.model]       Override the default model.
  *   @param {number}  [options.timeout]     Request timeout in ms (default 120s).
- *   @param {number}  [options.temperature] Sampling temperature (0–2, default model default).
+ *   @param {number}  [options.temperature] Sampling temperature (0â€“2, default model default).
  *   @param {number}  [options.maxTokens]   Max output tokens (maps to max_output_tokens).
  *   @param {number}  [options.maxRetries]  Max retry attempts (default 2).
  *
@@ -182,7 +182,7 @@ export async function callAI(inputMessages, options = {}) {
   const timeout    = options.timeout    || 120_000;
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
-  // Build API call params — only include optional fields if explicitly provided
+  // Build API call params â€” only include optional fields if explicitly provided
   const apiParams = { model, input: inputMessages };
   if (options.temperature != null) apiParams.temperature       = options.temperature;
   if (options.maxTokens   != null) apiParams.max_output_tokens = options.maxTokens;
@@ -228,7 +228,7 @@ export async function callAI(inputMessages, options = {}) {
         continue; // retry
       }
 
-      // Non-retryable error — log and throw immediately
+      // Non-retryable error â€” log and throw immediately
       log.error('openai:call-error', { model, error: err.message, status });
       throw err;
     } finally {
@@ -282,3 +282,4 @@ export function getContextWindowLimit(model) {
 }
 
 export { MODEL, client };
+
