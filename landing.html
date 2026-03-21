@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="description" content="Appraisal Agent — AI that writes appraisal narratives in YOUR voice. 15 seconds per section. Zero API costs. Built by an appraiser, for appraisers." />
+  <title>Appraisal Agent — AI Narrative Drafting for Appraisers</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23e2b714'/><text x='50' y='68' text-anchor='middle' font-size='52' font-weight='900' fill='%23111' font-family='system-ui'>AA</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1117; --text: #e6edf3; --muted: #8b949e;
+      --accent: #e2b714; --accent-soft: rgba(226,183,20,0.14);
+      --line: rgba(230,237,243,0.09); --success: #3fb950;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 16px; -webkit-font-smoothing: antialiased;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(226,183,20,0.08), transparent 28%),
+                  radial-gradient(circle at bottom right, rgba(88,166,255,0.06), transparent 22%),
+                  var(--bg);
+    }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* Nav */
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; max-width: 1200px; margin: 0 auto; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.1rem; }
+    .nav-mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: #111; font-weight: 900; font-size: 0.9rem; background: linear-gradient(135deg, #e2b714, #f5d54f); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); font-weight: 500; transition: color 0.18s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-nav { padding: 10px 20px; border-radius: 999px; background: linear-gradient(135deg,#e2b714,#f5d54f); color: #111; font-weight: 700; border: 0; cursor: pointer; transition: transform 0.18s; }
+    .btn-nav:hover { transform: translateY(-1px); }
+
+    /* Hero */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px; text-align: center; }
+    .hero-eyebrow { display: inline-block; padding: 8px 16px; border: 1px solid rgba(226,183,20,0.3); border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.1; max-width: 800px; margin: 0 auto 20px; }
+    .hero h1 span { background: linear-gradient(135deg, #e2b714, #f5d54f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto 32px; line-height: 1.6; }
+    .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero { padding: 16px 32px; border-radius: 999px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: transform 0.18s; border: 0; }
+    .btn-hero:hover { transform: translateY(-2px); }
+    .btn-primary { background: linear-gradient(135deg,#e2b714,#f5d54f); color: #111; box-shadow: 0 8px 32px rgba(226,183,20,0.25); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
+
+    /* Stats */
+    .stats { display: flex; justify-content: center; gap: 48px; padding: 40px; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat strong { display: block; font-size: 2rem; color: var(--accent); }
+    .stat span { color: var(--muted); font-size: 0.88rem; }
+
+    /* Features */
+    .features { max-width: 1200px; margin: 0 auto; padding: 60px 40px; }
+    .features h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    .features h2 span { color: var(--accent); }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .feature-card { padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); transition: transform 0.18s, border-color 0.18s; }
+    .feature-card:hover { transform: translateY(-3px); border-color: rgba(226,183,20,0.25); }
+    .feature-icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .feature-card h3 { margin-bottom: 8px; }
+    .feature-card p { color: var(--muted); line-height: 1.6; font-size: 0.92rem; }
+
+    /* Pricing */
+    .pricing { max-width: 1200px; margin: 0 auto; padding: 80px 40px; }
+    .pricing h2 { text-align: center; font-size: 2rem; margin-bottom: 12px; }
+    .pricing > p { text-align: center; color: var(--muted); margin-bottom: 48px; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .pricing-card { padding: 32px; border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); display: flex; flex-direction: column; }
+    .pricing-card.featured { border-color: rgba(226,183,20,0.5); background: linear-gradient(180deg, rgba(226,183,20,0.06), rgba(226,183,20,0.02)); }
+    .pricing-badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--accent); color: #111; font-size: 0.72rem; font-weight: 700; margin-bottom: 12px; width: fit-content; }
+    .pricing-card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+    .pricing-price { font-size: 2.2rem; font-weight: 900; margin-bottom: 4px; }
+    .pricing-price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+    .pricing-features { list-style: none; margin: 20px 0; flex: 1; }
+    .pricing-features li { padding: 8px 0; color: var(--muted); font-size: 0.9rem; border-bottom: 1px solid var(--line); }
+    .pricing-features li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+    .btn-pricing { width: 100%; padding: 14px; border-radius: 999px; font-weight: 700; cursor: pointer; border: 0; margin-top: 16px; transition: transform 0.18s; }
+
+    /* Footer */
+    .footer { text-align: center; padding: 40px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); margin-top: 60px; }
+
+    @media (max-width: 768px) {
+      .nav { padding: 16px 20px; }
+      .hero { padding: 48px 20px 40px; }
+      .stats { gap: 24px; }
+      .features, .pricing { padding: 40px 20px; }
+      .nav-links a:not(.btn-nav) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-mark">AA</div>
+      Appraisal Agent
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/login" class="btn-nav">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-eyebrow">Built by an appraiser, for appraisers</div>
+    <h1>AI that writes appraisal narratives <span>in your voice</span></h1>
+    <p>Stop spending hours writing the same paragraphs. Appraisal Agent drafts USPAP-compliant narratives that sound like you wrote them — because it learned from you.</p>
+    <div class="hero-cta">
+      <a href="/login" class="btn-hero btn-primary">Start free — 5 reports/month</a>
+      <a href="#features" class="btn-hero btn-outline">See how it works</a>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><strong>15s</strong><span>Per narrative section</span></div>
+    <div class="stat"><strong>5</strong><span>Form types supported</span></div>
+    <div class="stat"><strong>$0</strong><span>API costs with local AI</span></div>
+    <div class="stat"><strong>308</strong><span>Automated tests passing</span></div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Everything you need to <span>draft faster</span></h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI That Learns Your Voice</h3>
+        <p>Every report you approve teaches the AI your style. After 10 reports, it writes like you. After 50, your reviewers can't tell the difference.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>All Major Form Types</h3>
+        <p>1004 URAR, 1025 Small Income, 1073 Condo, Commercial Narrative, and 1004C Manufactured Home. One tool for your whole practice.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🖥️</div>
+        <h3>Direct ACI & RQ Insertion</h3>
+        <p>Generated text inserts directly into ACI and Real Quantum. No copy-paste. No reformatting. Click "Insert All" and walk away.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Your Data Stays Yours</h3>
+        <p>Run the AI locally on your own machine — nothing leaves your computer. Or use cloud AI with enterprise-grade encryption. Your choice.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Smart PDF Extraction</h3>
+        <p>Upload order forms and supporting docs. The 3-stage OCR pipeline extracts structured facts automatically. Review, edit, generate.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>Real Location Data</h3>
+        <p>Auto-geocodes subject and comps. Injects real boundary roads, distances, land use, and neighborhood features into every narrative.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>5-Step Wizard Workflow</h3>
+        <p>Import → Extract Facts → Generate → Review → Insert. Each step is clear, guided, and keyboard-shortcut friendly. Command palette included.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>QC Gates & Compliance</h3>
+        <p>Pre-insertion quality checks catch issues before they reach the lender. Exception queue, contradiction detection, and USPAP compliance validation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Two-Pass AI Review</h3>
+        <p>Every narrative gets a second AI pass that checks for hallucinations, unsupported claims, and confidence violations. Defensible output, every time.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <h2>Simple, honest pricing</h2>
+    <p>Start free. Upgrade when you're convinced.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="pricing-price">$0<span>/month</span></div>
+        <ul class="pricing-features">
+          <li>5 reports per month</li>
+          <li>Basic AI generation</li>
+          <li>1004 form type</li>
+          <li>Knowledge base (auto-learns)</li>
+        </ul>
+        <a href="/login" class="btn-pricing btn-outline">Get started</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="pricing-price">$49<span>/month</span></div>
+        <ul class="pricing-features">
+          <li>30 reports per month</li>
+          <li>All 5 form types</li>
+          <li>Voice training imports</li>
+          <li>Priority generation queue</li>
+        </ul>
+        <a href="/login" class="btn-pricing btn-outline">Start trial</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most Popular</div>
+        <h3>Professional</h3>
+        <div class="pricing-price">$149<span>/month</span></div>
+        <ul class="pricing-features">
+          <li>100 reports per month</li>
+          <li>Custom voice model</li>
+          <li>ACI + Real Quantum insertion</li>
+          <li>Two-pass AI review</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/login" class="btn-pricing btn-primary" style="background:linear-gradient(135deg,#e2b714,#f5d54f);color:#111;">Start trial</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="pricing-price">$299<span>/month</span></div>
+        <ul class="pricing-features">
+          <li>Unlimited reports</li>
+          <li>Custom fine-tuned model</li>
+          <li>API access</li>
+          <li>White-label option</li>
+          <li>AMC integration</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="/login" class="btn-pricing btn-outline">Contact sales</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p><strong>Appraisal Agent</strong> — Cresci Appraisal & Consulting Company</p>
+    <p style="margin-top:8px">Built in Illinois. For appraisers who value their time.</p>
+  </footer>
+</body>
+</html>

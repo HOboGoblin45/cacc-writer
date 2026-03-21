@@ -102,6 +102,7 @@ app.use((req, res, next) => {
 
 app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
+app.get('/landing', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
