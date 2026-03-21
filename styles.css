@@ -497,7 +497,7 @@ textarea {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -511,6 +511,52 @@ textarea {
 
 .hero-card strong {
   font-size: 1.35rem;
+}
+
+.hero-card-services {
+  grid-column: span 1;
+}
+
+.services-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.service-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: default;
+  transition: all 0.18s ease;
+}
+
+.service-dot.up {
+  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(63, 185, 80, 0.1);
+  color: var(--success);
+}
+
+.service-dot.down {
+  border-color: rgba(248, 81, 73, 0.35);
+  background: rgba(248, 81, 73, 0.08);
+  color: var(--danger);
+}
+
+.service-dot.warn {
+  border-color: rgba(226, 183, 20, 0.35);
+  background: rgba(226, 183, 20, 0.08);
+  color: var(--accent);
 }
 
 .hero-label,
@@ -1423,7 +1469,7 @@ body.sidebar-collapsed .sidebar-block-head {
   .hero-grid,
   .dropzone-grid,
   .progress-bar {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 

@@ -154,8 +154,35 @@ function renderCommandPaletteResults(palette, query) {
 // ── Auto-refresh polling ─────────────────────────────────────────────────────
 let pollTimer = null;
 
+async function checkServices() {
+  try {
+    const data = await api('/api/health/detailed');
+    const aiOk = data.ai?.ready;
+    const aciOk = data.agents?.aciReachable;
+    const rqOk = data.agents?.rqReachable;
+
+    const setDot = (id, state, title) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = `service-dot ${state}`;
+      el.title = title;
+    };
+
+    setDot('svc-ai', aiOk ? 'up' : 'down', aiOk ? 'OpenAI: Connected' : 'OpenAI: Key invalid or missing');
+    setDot('svc-aci', aciOk ? 'up' : 'warn', aciOk ? 'ACI agent: Running' : 'ACI agent: Not running');
+    setDot('svc-rq', rqOk ? 'up' : 'warn', rqOk ? 'Real Quantum: Running' : 'Real Quantum: Not running');
+
+    const label = document.getElementById('services-label');
+    if (label) {
+      const issues = [!aiOk && 'AI key', !aciOk && 'ACI', !rqOk && 'RQ'].filter(Boolean);
+      label.textContent = issues.length ? `Issues: ${issues.join(', ')}` : 'All systems go';
+    }
+  } catch (_) { /* health endpoint unavailable */ }
+}
+
 function startPolling() {
   stopPolling();
+  checkServices();
   pollTimer = window.setInterval(async () => {
     if (!S.caseId || S.generation.running) return;
     try {
@@ -170,6 +197,8 @@ function startPolling() {
       }
     } catch (_) { /* silent */ }
   }, 8000);
+  // Re-check services every 2 minutes
+  window.setInterval(checkServices, 120000);
 }
 
 function stopPolling() {
