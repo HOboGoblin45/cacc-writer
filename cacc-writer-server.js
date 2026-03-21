@@ -6,9 +6,10 @@
  */
 
 import dotenv from 'dotenv';
-dotenv.config({ override: true });
+dotenv.config();
 
 import express from 'express';
+import './server/utils/patchExpressAsync.js';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
@@ -138,6 +139,35 @@ app.use('/api', dataPipelineRouter);
 app.use('/api', intakeRouter);
 app.use('/api', compsRouter);
 app.use('/api', gmailRouter);
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+
+  const status = Number(err?.status || err?.statusCode) || 500;
+  const message = String(err?.message || 'Request failed');
+
+  log.error('request:error', {
+    method: req.method,
+    path: req.path,
+    status,
+    error: message,
+  });
+
+  const payload = {
+    ok: false,
+    error: status >= 500 ? 'Internal server error' : message,
+  };
+
+  if (err?.code) {
+    payload.code = String(err.code);
+  }
+
+  if (status >= 500 && process.env.NODE_ENV !== 'production') {
+    payload.detail = message;
+  }
+
+  res.status(status).json(payload);
+});
 
 const server = app.listen(PORT, () => {
   console.log('CACC Writer server running on port ' + PORT);

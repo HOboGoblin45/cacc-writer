@@ -23,7 +23,7 @@ import fs from 'fs';
 import { casePath } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
-import { upload } from '../utils/middleware.js';
+import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { scanDropboxForPhotos } from '../integrations/photoScanner.js';
 import { parseMredCsv, formatCompForDisplay } from '../comparables/mredCsvParser.js';
 import { extractCompPatterns, saveCompPatterns, getCompGuidance } from '../comparables/compPatternLearner.js';
@@ -37,6 +37,7 @@ import {
 } from '../integrations/mredApi.js';
 import { geocodeAddress, distanceMiles, cardinalDirection } from '../geocoder.js';
 import log from '../logger.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const router = Router();
 
@@ -106,7 +107,7 @@ router.post('/cases/:caseId/import-comps', upload.single('file'), async (req, re
       return res.status(415).json({ ok: false, error: 'Only .csv files accepted' });
     }
 
-    const csvText = req.file.buffer.toString('utf8');
+    const csvText = await readUploadedFile(req.file, 'utf8');
     let comps;
     try {
       comps = parseMredCsv(csvText);
@@ -223,7 +224,9 @@ router.get('/cases/:caseId/comp-guidance', (req, res) => {
         : 'Not enough data yet. Import comps from a few cases to build guidance.',
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 

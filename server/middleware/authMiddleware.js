@@ -45,6 +45,16 @@ export function requireAuth(req, res, next) {
 
   if (BYPASS_PATHS.has(req.path)) return next();
 
+  const validKey = String(process.env.CACC_API_KEY || '').trim();
+  if (!validKey) {
+    log.error('auth:misconfigured', { path: req.path });
+    return res.status(503).json({
+      ok: false,
+      code: 'AUTH_MISCONFIGURED',
+      error: 'Authentication is enabled but no API key is configured.',
+    });
+  }
+
   const token = extractToken(req);
   if (!token) {
     return res.status(401).json({
@@ -52,14 +62,6 @@ export function requireAuth(req, res, next) {
       code: 'AUTH_REQUIRED',
       error: 'Authentication required. Provide X-API-Key header or Authorization: Bearer <key>.',
     });
-  }
-
-  // For now, validate against a simple env-based key
-  // Future: validate against users table with hashed keys
-  const validKey = process.env.CACC_API_KEY;
-  if (!validKey) {
-    log.warn('auth:no-key-configured', { path: req.path });
-    return next(); // No key configured = pass through
   }
 
   if (token !== validKey) {

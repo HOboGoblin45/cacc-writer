@@ -16,7 +16,7 @@
  */
 
 import dotenv from 'dotenv';
-dotenv.config({ override: true }); // .env takes precedence over stale system env vars
+dotenv.config();
 import OpenAI from 'openai';
 import log from './logger.js';
 

@@ -17,7 +17,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
-import { upload } from '../utils/middleware.js';
+import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { parseOrderText, getMissingRequiredFields, buildFactsFromOrder } from '../intake/orderParser.js';
 import { parseAciXml, extractAndSavePdf, buildFactsFromXml } from '../intake/xmlParser.js';
@@ -31,6 +31,8 @@ import { logNewJob } from '../integrations/googleSheets.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { geocodeAddress } from '../geocoder.js';
 import { getNeighborhoodBoundaryFeatures } from '../neighborhoodContext.js';
+import { CACC_APPRAISALS_ROOT } from '../config/productionScope.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const router = Router();
 
@@ -66,7 +68,29 @@ function getMonthName(monthNum) {
  *
  * Pattern: CACC Appraisals\[YYYY] Appraisals\[Month]\[YYYY-MM-DD] - [BorrowerName] - [Address]
  */
-const CACC_APPRAISALS_ROOT = 'C:\\Users\\ccres\\OneDrive\\Desktop\\CACC Appraisals';
+function sanitizePathSegment(value, fallback = 'unknown', maxLen = 80) {
+  return String(value || '')
+    .trim()
+    .replace(/[<>:"/\\|?*\x00-\x1f]+/g, '_')
+    .replace(/\s+/g, ' ')
+    .replace(/^\.+/, '')
+    .slice(0, maxLen) || fallback;
+}
+
+function resolveAllowedIntakeFolderPath(folderPath) {
+  const trimmed = String(folderPath || '').trim();
+  if (!trimmed) return null;
+
+  const allowedRoot = path.resolve(CACC_APPRAISALS_ROOT);
+  const resolved = path.resolve(trimmed);
+  const relative = path.relative(allowedRoot, resolved);
+
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+    return null;
+  }
+
+  return resolved;
+}
 
 function buildJobFolderPath({ orderDate, borrowerName, address }) {
   let yyyy, mm, dd, monthNum;
@@ -147,8 +171,9 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
     }
 
     // Extract text from PDF
+    const pdfBuffer = await readUploadedFile(req.file);
     const { text, method: extractionMethod, error: extractionError } = await extractPdfText(
-      req.file.buffer,
+      pdfBuffer,
       client,
       MODEL,
     );
@@ -284,7 +309,9 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
     });
   } catch (err) {
     log.error('intake:order', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 
@@ -325,7 +352,7 @@ router.post('/intake/create-folder', (req, res) => {
     res.json({ ok: true, folderPath, created });
   } catch (err) {
     log.error('intake:create-folder', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -415,28 +442,37 @@ router.post('/intake/scan-job-folder', (req, res) => {
   if (!body) return;
 
   try {
-    if (!fs.existsSync(body.folderPath)) {
-      return res.status(404).json({
+    const folderPath = resolveAllowedIntakeFolderPath(body.folderPath);
+    if (!folderPath) {
+      return res.status(403).json({
         ok: false,
-        code: 'FOLDER_NOT_FOUND',
-        error: `Folder not found: ${body.folderPath}`,
+        code: 'FOLDER_PATH_NOT_ALLOWED',
+        error: `folderPath must be inside ${CACC_APPRAISALS_ROOT}`,
       });
     }
 
-    const stat = fs.statSync(body.folderPath);
+    if (!fs.existsSync(folderPath)) {
+      return res.status(404).json({
+        ok: false,
+        code: 'FOLDER_NOT_FOUND',
+        error: `Folder not found: ${folderPath}`,
+      });
+    }
+
+    const stat = fs.statSync(folderPath);
     if (!stat.isDirectory()) {
       return res.status(400).json({
         ok: false,
         code: 'NOT_A_DIRECTORY',
-        error: `Path is not a directory: ${body.folderPath}`,
+        error: `Path is not a directory: ${folderPath}`,
       });
     }
 
-    const result = classifyFiles(body.folderPath);
+    const result = classifyFiles(folderPath);
 
     res.json({
       ok: true,
-      folderPath: body.folderPath,
+      folderPath,
       assignmentSheet: result.assignmentSheet,
       completedReport: result.completedReport,
       otherFiles: result.otherFiles,
@@ -444,7 +480,7 @@ router.post('/intake/scan-job-folder', (req, res) => {
     });
   } catch (err) {
     log.error('intake:scan-job-folder', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -476,7 +512,7 @@ router.post('/intake/xml', upload.single('file'), async (req, res) => {
       return res.status(413).json({ ok: false, code: 'FILE_TOO_LARGE', error: `XML file too large (${Math.round(req.file.size / 1024 / 1024)}MB). Maximum is 100MB.` });
     }
 
-    const xmlContent = req.file.buffer.toString('utf8');
+    const xmlContent = await readUploadedFile(req.file, 'utf8');
 
     // Validate it's a VALUATION_RESPONSE
     if (!xmlContent.includes('<VALUATION_RESPONSE') && !xmlContent.includes('VALUATION_RESPONSE')) {
@@ -536,13 +572,17 @@ router.post('/intake/xml', upload.single('file'), async (req, res) => {
     // Extract and save embedded PDF for voice training
     let savedPdfPath = null;
     if (hasPdf && pdfBase64) {
-      const baseFilename = extracted.appraiserFileId ||
-        (req.file.originalname || 'aci-report').replace(/\.xml$/i, '');
-      // Save to voice_pdfs/<formType>/ directory
+      const baseFilename = sanitizePathSegment(
+        extracted.appraiserFileId || (req.file.originalname || 'aci-report').replace(/\.xml$/i, ''),
+        'aci-report',
+        120,
+      );
+      const voiceFormType = sanitizePathSegment(normalizeFormType(formTypeCode), 'unknown', 24);
+      const projectRoot = path.resolve(caseDir, '..', '..');
       const voicePdfDir = path.join(
-        path.dirname(path.dirname(path.dirname(path.dirname(caseDir)))), // workspace root
+        projectRoot,
         'voice_pdfs',
-        formTypeCode,
+        voiceFormType,
       );
       savedPdfPath = extractAndSavePdf(pdfBase64, voicePdfDir, baseFilename);
     }
@@ -609,7 +649,9 @@ router.post('/intake/xml', upload.single('file'), async (req, res) => {
     });
   } catch (err) {
     log.error('intake:xml', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 

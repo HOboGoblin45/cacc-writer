@@ -107,6 +107,38 @@ _map_cache: dict = {}
 _surface_cache: dict = {}
 
 
+def _looks_like_field_config(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    marker_keys = {
+        'label', 'field_click_ratio', 'edit_class', 'insert_mode', 'payload_mode',
+        'verification_mode', 'tab', 'tab_name', 'helper_button_ratio',
+        'uad_button_ratio', 'report_click_ratio', 'expected_classes',
+        'calibrated', 'live_calibration_status',
+    }
+    return any(key in value for key in marker_keys)
+
+
+def _flatten_field_map(raw: dict) -> dict:
+    flat: dict = {}
+
+    def walk(node: dict) -> None:
+        for key, value in node.items():
+            if str(key).startswith('_'):
+                continue
+            if _looks_like_field_config(value):
+                existing = flat.get(key, {})
+                merged = dict(existing)
+                merged.update(value)
+                flat[key] = merged
+                continue
+            if isinstance(value, dict):
+                walk(value)
+
+    walk(raw)
+    return flat
+
+
 def _load_json_file(path: str) -> dict:
     try:
         with open(path) as f:
@@ -140,7 +172,7 @@ def load_field_map(form_type: str) -> dict:
     if not raw:
         log.warning(f"Field map not found: {path}")
         return {}
-    fm = {k: v for k, v in raw.items() if not k.startswith('_')}
+    fm = _flatten_field_map(raw)
     surface = load_surface_profile(form_type)
     if surface:
         for field_id, cfg in fm.items():

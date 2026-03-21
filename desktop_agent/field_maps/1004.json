@@ -1,408 +1,561 @@
 {
   "_comment": "Field map for FNMA Form 1004 URAR - Single Family Residential.",
-  "_phase": "Phase 1 hardening baseline plus corpus-backed surface profiling. A March 13, 2026 audit confirmed the Sales/Reco group still has live navigation reliability gaps even though earlier calibration data existed.",
-  "_calibration_date": "2026-03-09",
-  "_calibration_note": "TX32 fields do not use UIA automation_ids. Neighborhood, Site, and Improvements paths still have live support. Sales, Reconciliation, Offering History, and Contract Analysis now rely on corpus-backed surface hints until owner-drawn tab navigation is deterministic.",
-  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1004 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py. 4) Re-run: python _test_aci_live.py 1004 to confirm live placement and read-back for each target field.",
-  "_schema": {
-    "label": "Human-readable field label - used for label-proximity TX32 matching",
-    "aliases": "Alternative label texts to try if primary label does not match",
-    "tab_name": "Partial tab name to click before targeting (e.g. 'Neig' matches 'Neighborhood' tab)",
-    "automation_id": "UIA AutomationId - fill from /calibrate output if available",
-    "class_name": "Windows class name for RichEdit controls - fill from /calibrate if available",
-    "class_index": "0-based index among controls of this class_name",
-    "control_index": "0-based index among ALL text-input controls - last resort fallback",
-    "expected_classes": "Expected Windows control classes for this field - used for validation",
-    "verification_mode": "How to verify insertion: tx32_readback | uia_get_value | skip",
-    "report_click_ratio": "Optional [x,y] ratio inside ACIFormView used to activate the visible report box before TX32 targeting",
-    "report_click_delay_ms": "Optional delay after a report-surface click before re-discovering TX32 controls",
-    "live_calibration_status": "Current truth state: live_confirmed | corpus_backed_pending_navigation_fix",
-    "notes": "Human notes about this field"
+  "_phase": "Phase 3 - Direct click-to-activate with 32-bit Python + pywinauto.",
+  "_calibration_date": "2026-03-19",
+  "_calibration_note": "All fields mapped by clicking on the ACI form to activate the yellow edit control, then recording the position as a ratio within ACIFormView. Tab positions are ratios within the ACISectionTabs control.",
+  "_strategy": "Two modes: (A) Single field: click tab → click field position → paste. Use for narratives on different tabs. (B) Sequential: click tab → click FIRST field → paste → Tab → paste → Tab → paste. Use for data fields on the same tab to avoid scroll drift.",
+  "_zoom_requirement": "ACI must be set to 'Page Height' zoom. Ratios calibrated at this zoom level.",
+  "_tab_orders": {
+    "_note": "Tab key order within each section. Use insert_sequential with the first field, then Tab advances in this order.",
+    "Subj": ["file_number", "property_address", "city", "state", "zip_code", "borrower", "owner_of_public_record", "county", "legal_description", "assessor_parcel", "tax_year", "re_taxes", "census_tract", "map_reference", "special_assessments", "hoa_dues"],
+    "Contr": ["offering_history", "financial_assistance", "contract_analysis", "contract_price", "date_of_sale", "data_source"],
+    "Site": ["dimensions", "site_area", "site_shape", "site_view", "zoning_classification", "zoning_description", "fema_flood_zone", "fema_map_number", "fema_map_date"],
+    "Impro": ["num_stories", "design_style", "year_built", "effective_age"]
   },
-  "neighborhood_description": {
-    "label": "Neighborhood Description",
-    "aliases": [
-      "Neighborhood Desc",
-      "Neighborhood",
-      "Neigh Description"
-    ],
-    "tab_name": "Neig",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "aci_full_addendum_view",
-    "notes": "Primary narrative field on Neighborhood tab. TX32 content area. No label title strip found - uses aci_full_addendum_view fallback."
+  "_tab_positions": {
+    "Subj": { "index": 0, "click_ratio": 0.04 },
+    "Contr": { "index": 1, "click_ratio": 0.14 },
+    "Neig": { "index": 2, "click_ratio": 0.21 },
+    "Site": { "index": 3, "click_ratio": 0.27 },
+    "Impro": { "index": 4, "click_ratio": 0.33 },
+    "Sales": { "index": 5, "click_ratio": 0.40 },
+    "Reco": { "index": 6, "click_ratio": 0.47 },
+    "Addit": { "index": 7, "click_ratio": 0.54 },
+    "Cost": { "index": 8, "click_ratio": 0.61 },
+    "Income": { "index": 9, "click_ratio": 0.69 },
+    "Sales_456": { "index": 15, "click_ratio": 0.83, "note": "Page 7 - comps 4/5/6" }
   },
-  "market_conditions": {
-    "label": "Market Conditions Comments",
-    "aliases": [
-      "Market Conditions",
-      "Market Conditions Addendum",
-      "Market Cond"
-    ],
-    "tab_name": "Neig",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity:Market Conditions Comments",
-    "notes": "Market conditions narrative on Neighborhood tab. Earlier live placement is still credible, and the PDF corpus confirms the same page cluster as neighborhood description."
+  "_comp_grid_geometry": {
+    "note": "Comp columns are evenly spaced. Subject column is narrower.",
+    "subject_x": 0.0493,
+    "comp1_x": 0.1214,
+    "comp2_x": 0.1868,
+    "comp3_x": 0.2522,
+    "comp_col_spacing": 0.0654,
+    "comp1_desc_x": 0.1072,
+    "comp2_desc_x": 0.1726,
+    "comp3_desc_x": 0.2380,
+    "comp1_adj_x": 0.1384,
+    "comp2_adj_x": 0.2038,
+    "comp3_adj_x": 0.2692
   },
-  "site_comments": {
-    "label": "Site Comments",
-    "aliases": [
-      "Site",
-      "Site Description",
-      "Site Comment"
-    ],
-    "tab_name": "Site",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity:Site Comments",
-    "notes": "Site section narrative. Tab partial: 'Site'. PDF corpus anchors this section to the page 3/4 neighborhood-site block."
+
+  "narratives": {
+    "_comment": "Narrative text fields - generated by AI. Remapped at fullscreen + Page Height 2026-03-19.",
+
+    "neighborhood_description": {
+      "label": "Neighborhood Description",
+      "tab": "Neig",
+      "tab_click_ratio": 0.21,
+      "field_click_ratio": [0.1478, 0.3798],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "market_conditions": {
+      "label": "Market Conditions Comments",
+      "tab": "Neig",
+      "tab_click_ratio": 0.21,
+      "field_click_ratio": [0.1478, 0.4136],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "adverse_site_conditions": {
+      "label": "Are there any adverse site conditions",
+      "tab": "Site",
+      "tab_click_ratio": 0.27,
+      "field_click_ratio": [0.1478, 0.5676],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "additional_features": {
+      "label": "Additional Features",
+      "tab": "Impro",
+      "tab_click_ratio": 0.33,
+      "field_click_ratio": [0.1478, 0.7597],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "improvements_condition": {
+      "label": "Condition of Improvements",
+      "tab": "Impro",
+      "tab_click_ratio": 0.33,
+      "field_click_ratio": [0.1478, 0.8162],
+      "edit_class": "ACITextEditField",
+      "verification_mode": "edit_readback"
+    },
+    "physical_deficiencies": {
+      "label": "Are there any physical deficiencies",
+      "tab": "Impro",
+      "tab_click_ratio": 0.33,
+      "field_click_ratio": [0.1478, 0.8677],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "property_conforms": {
+      "label": "Does the property generally conform",
+      "tab": "Impro",
+      "tab_click_ratio": 0.33,
+      "field_click_ratio": [0.1478, 0.9125],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "sales_comparison_commentary": {
+      "label": "Sales Comparison Comments",
+      "tab": "Sales",
+      "tab_click_ratio": 0.40,
+      "field_click_ratio": [0.1478, 0.7542],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "reconciliation": {
+      "label": "Reconciliation Comments",
+      "tab": "Reco",
+      "tab_click_ratio": 0.47,
+      "field_click_ratio": [0.1478, 0.8389],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "cost_approach": {
+      "label": "Cost Approach Comments",
+      "tab": "Cost",
+      "tab_click_ratio": 0.61,
+      "field_click_ratio": [0.3135, 0.5414],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "income_approach": {
+      "label": "Income Approach Comments",
+      "tab": "Income",
+      "tab_click_ratio": 0.69,
+      "field_click_ratio": [0.3135, 0.7327],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    },
+    "additional_comments": {
+      "label": "Additional Comments",
+      "tab": "Reco",
+      "tab_click_ratio": 0.47,
+      "field_click_ratio": [0.1478, 0.2890],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback",
+      "note": "Template text - only client name and fee change per report"
+    },
+    "sales_comparison_456": {
+      "label": "Sales Comparison Comments (Comps 4/5/6)",
+      "tab": "Sales_456",
+      "tab_click_ratio": 0.83,
+      "field_click_ratio": [0.1478, 0.7309],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback",
+      "note": "Page 7 of 12 - additional comps narrative"
+    },
+    "highest_best_use": {
+      "label": "Highest and Best Use",
+      "tab": "Site",
+      "tab_click_ratio": 0.27,
+      "field_click_ratio": [0.1478, 0.4928],
+      "edit_class": "ACITextToAddendumEditField",
+      "verification_mode": "edit_readback"
+    }
   },
-  "improvements_condition": {
-    "label": "Improvements Comments",
-    "aliases": [
-      "Improvements",
-      "Improvements Condition",
-      "Condition of Improvements",
-      "Subject Improvements"
-    ],
-    "tab_name": "Impro",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity:Improvements Comments",
-    "notes": "Improvements and condition narrative on the Improvements tab. PDF corpus anchors this section to the same page 3/4 block as the physical condition questions."
+
+  "subject": {
+    "_comment": "Subject tab - basic property identification",
+    "_tab": "Subj",
+    "_tab_click_ratio": 0.04,
+
+    "file_number": {
+      "label": "File Number",
+      "field_click_ratio": [0.2620, 0.0526],
+      "edit_class": "ACITextEditField",
+      "note": "File number on Subject tab (not the Order page version)"
+    },
+    "borrower_first_name": {
+      "label": "Borrower First Name",
+      "field_click_ratio": [0.0579, 0.1872],
+      "edit_class": "ACITextEditField"
+    },
+    "borrower_last_name": {
+      "label": "Borrower Last Name",
+      "field_click_ratio": [0.1119, 0.1872],
+      "edit_class": "ACITextEditField"
+    },
+    "owner_of_public_record": {
+      "label": "Owner of Public Record",
+      "field_click_ratio": [0.1782, 0.1872],
+      "edit_class": "ACITextEditField"
+    },
+    "property_address": {
+      "label": "Property Address",
+      "field_click_ratio": [0.0899, 0.0786],
+      "edit_class": "ACITextEditField"
+    },
+    "city": {
+      "label": "City",
+      "field_click_ratio": [0.1854, 0.0786],
+      "edit_class": "ACITextEditField"
+    },
+    "state": {
+      "label": "State",
+      "field_click_ratio": [0.2339, 0.0786],
+      "edit_class": "ACITextEditField"
+    },
+    "zip_code": {
+      "label": "Zip Code",
+      "field_click_ratio": [0.2698, 0.0786],
+      "edit_class": "ACITextEditField"
+    },
+    "county": {
+      "label": "County",
+      "field_click_ratio": [0.2584, 0.0903],
+      "edit_class": "ACITextEditField"
+    },
+    "legal_description": {
+      "label": "Legal Description",
+      "field_click_ratio": [0.1606, 0.1019],
+      "edit_class": "ACITextToAddendumEditField"
+    },
+    "assessor_parcel": {
+      "label": "Assessor's Parcel #",
+      "field_click_ratio": [0.0921, 0.1130],
+      "edit_class": "ACITextEditField"
+    },
+    "tax_year": {
+      "label": "Tax Year",
+      "field_click_ratio": [0.1890, 0.1130],
+      "edit_class": "ACITextEditField"
+    },
+    "re_taxes": {
+      "label": "R.E. Taxes",
+      "field_click_ratio": [0.2625, 0.1130],
+      "edit_class": "ACINumericEditField"
+    },
+    "census_tract": {
+      "label": "Census Tract",
+      "field_click_ratio": [0.2625, 0.1240],
+      "edit_class": "ACITextEditField"
+    },
+    "map_reference": {
+      "label": "Map Reference",
+      "field_click_ratio": [0.1932, 0.1240],
+      "edit_class": "ACITextEditField"
+    },
+    "special_assessments": {
+      "label": "Special Assessments",
+      "field_click_ratio": [0.1598, 0.1357],
+      "edit_class": "ACINumericEditField"
+    },
+    "hoa_dues": {
+      "label": "HOA Dues",
+      "field_click_ratio": [0.2302, 0.1357],
+      "edit_class": "ACINumericEditField"
+    }
   },
-  "sales_comparison_commentary": {
-    "label": "Sales Comparison Comments",
-    "aliases": [
-      "Sales Comparison Analysis",
-      "Sales Comparison",
-      "Sales Comparison Approach",
-      "Sales Comp Analysis"
-    ],
-    "tab_name": "Sales",
-    "insert_mode": "report_direct_paste",
-    "mode_required": true,
-    "skip_tab_navigation": false,
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": false,
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_method": "label_proximity:Sales Comparison Comments",
-    "report_click_ratio": [
-      0.475,
-      0.603
-    ],
-    "report_click_delay_ms": 800,
-    "notes": "Sales comparison narrative. A March 17, 2026 operator calibration confirmed the correct yellow 'Summary of Sales Comparison Approach' row is directly writable after a single row click. This field must fail closed if the report-row activation misses.",
-    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
+
+  "contract": {
+    "_comment": "Contract tab - sale/transaction details",
+    "_tab": "Contr",
+    "_tab_click_ratio": 0.14,
+
+    "contract_price": {
+      "label": "Contract Price",
+      "field_click_ratio": [0.0501, 0.2492],
+      "edit_class": "ACINumericEditField"
+    },
+    "date_of_sale": {
+      "label": "Date of Sale",
+      "field_click_ratio": [0.1055, 0.2492],
+      "edit_class": "ACITextEditField"
+    },
+    "data_source": {
+      "label": "Data Source",
+      "field_click_ratio": [0.2661, 0.2492],
+      "edit_class": "ACITextToAddendumEditField",
+      "default_value": "Assessor"
+    },
+    "date_of_contract": {
+      "label": "Date of Contract",
+      "field_click_ratio": [0.1055, 0.2492],
+      "edit_class": "ACITextEditField",
+      "note": "Same position as date_of_sale - may be same field"
+    },
+    "offering_history": {
+      "label": "Is the subject property currently offered for sale",
+      "field_click_ratio": [0.1478, 0.1982],
+      "edit_class": "ACITextEditField",
+      "insert_mode": "uad_popup",
+      "helper_button_ratio": [0.0938, 0.1910],
+      "note": "DOM, list price, MLS# - edited via green circle"
+    },
+    "financial_assistance": {
+      "label": "Is there any financial assistance",
+      "field_click_ratio": [0.1478, 0.2829],
+      "edit_class": "ACITextEditField",
+      "insert_mode": "uad_popup",
+      "helper_button_ratio": [0.1576, 0.2702],
+      "note": "Edited via green circle"
+    }
   },
-  "reconciliation": {
-    "label": "Reconciliation Comments",
-    "aliases": [
-      "Reconciliation",
-      "Final Reconciliation",
-      "Value Reconciliation"
-    ],
-    "tab_name": "Reco",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": false,
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_method": "label_proximity:Reconciliation Comments",
-    "notes": "Reconciliation narrative. Earlier label matching exists, but March 13, 2026 live testing showed owner-drawn tab navigation could land on the wrong visible section. Use corpus-backed surface hints until visual navigation is deterministic.",
-    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
+
+  "site": {
+    "_comment": "Site tab - lot and site details",
+    "_tab": "Site",
+    "_tab_click_ratio": 0.27,
+
+    "dimensions": {
+      "label": "Dimensions",
+      "field_click_ratio": [0.0657, 0.4529],
+      "edit_class": "ACITextEditField",
+      "note": "From plat map screenshot"
+    },
+    "site_area": {
+      "label": "Area",
+      "field_click_ratio": [0.1372, 0.4529],
+      "edit_class": "ACITextEditField"
+    },
+    "site_shape": {
+      "label": "Shape",
+      "field_click_ratio": [0.1996, 0.4529],
+      "edit_class": "ACITextEditField"
+    },
+    "site_view": {
+      "label": "View",
+      "field_click_ratio": [0.2600, 0.4529],
+      "edit_class": "ACITextEditField"
+    },
+    "zoning_classification": {
+      "label": "Specific Zoning Classification",
+      "field_click_ratio": [0.0780, 0.4646],
+      "edit_class": "ACITextToAddendumEditField"
+    },
+    "zoning_description": {
+      "label": "Zoning Description",
+      "field_click_ratio": [0.2082, 0.4646],
+      "edit_class": "ACITextToAddendumEditField"
+    },
+    "fema_flood_zone": {
+      "label": "FEMA Flood Zone",
+      "field_click_ratio": [0.1364, 0.5437],
+      "edit_class": "ACITextEditField"
+    },
+    "fema_map_number": {
+      "label": "FEMA Map #",
+      "field_click_ratio": [0.1968, 0.5437],
+      "edit_class": "ACITextEditField"
+    },
+    "fema_map_date": {
+      "label": "FEMA Map Date",
+      "field_click_ratio": [0.2639, 0.5437],
+      "edit_class": "ACITextEditField"
+    }
   },
-  "cost_approach": {
-    "label": "Cost Approach Comments",
-    "aliases": [
-      "Cost Approach",
-      "Cost Approach Analysis",
-      "Cost Approach Narrative"
-    ],
-    "tab_name": "Cost",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity",
-    "notes": "Cost approach narrative. PDF corpus anchors this section to the page 5/6 cost-income block."
+
+  "improvements": {
+    "_comment": "Improvements tab - building details",
+    "_tab": "Impro",
+    "_tab_click_ratio": 0.33,
+
+    "num_stories": {
+      "label": "# of Stories",
+      "field_click_ratio": [0.0582, 0.6346],
+      "edit_class": "ACITextEditField"
+    },
+    "design_style": {
+      "label": "Design (Style)",
+      "field_click_ratio": [0.0585, 0.6689],
+      "edit_class": "ACITextEditField"
+    },
+    "year_built": {
+      "label": "Year Built",
+      "field_click_ratio": [0.0554, 0.6800],
+      "edit_class": "ACITextEditField"
+    },
+    "effective_age": {
+      "label": "Effective Age",
+      "field_click_ratio": [0.0612, 0.6910],
+      "edit_class": "ACITextEditField"
+    },
+    "foundation_walls": {
+      "label": "Foundation Walls",
+      "field_click_ratio": [0.2049, 0.6235],
+      "edit_class": "ACITextEditField"
+    },
+    "exterior_walls": {
+      "label": "Exterior Walls",
+      "field_click_ratio": [0.2049, 0.6346],
+      "edit_class": "ACITextEditField"
+    },
+    "roof_surface": {
+      "label": "Roof Surface",
+      "field_click_ratio": [0.2049, 0.6456],
+      "edit_class": "ACITextEditField"
+    },
+    "gutters": {
+      "label": "Gutters & Downspouts",
+      "field_click_ratio": [0.2049, 0.6573],
+      "edit_class": "ACITextEditField"
+    },
+    "window_type": {
+      "label": "Window Type",
+      "field_click_ratio": [0.2049, 0.6689],
+      "edit_class": "ACITextEditField"
+    },
+    "storm_sash_insulated": {
+      "label": "Storm Sash/Insulated",
+      "field_click_ratio": [0.2049, 0.6800],
+      "edit_class": "ACITextEditField"
+    },
+    "screens": {
+      "label": "Screens",
+      "field_click_ratio": [0.2049, 0.6910],
+      "edit_class": "ACITextEditField"
+    },
+    "floors": {
+      "label": "Floors",
+      "field_click_ratio": [0.2667, 0.6235],
+      "edit_class": "ACITextEditField"
+    },
+    "walls": {
+      "label": "Walls",
+      "field_click_ratio": [0.2667, 0.6346],
+      "edit_class": "ACITextEditField"
+    },
+    "trim_finish": {
+      "label": "Trim/Finish",
+      "field_click_ratio": [0.2667, 0.6456],
+      "edit_class": "ACITextEditField"
+    },
+    "bath_floor": {
+      "label": "Bath Floor",
+      "field_click_ratio": [0.2667, 0.6573],
+      "edit_class": "ACITextEditField"
+    },
+    "bath_wainscot": {
+      "label": "Bath Wainscot",
+      "field_click_ratio": [0.2667, 0.6689],
+      "edit_class": "ACITextEditField"
+    },
+    "total_rooms": {
+      "label": "Total Rooms",
+      "field_click_ratio": [0.0885, 0.7597],
+      "edit_class": "ACINumericEditField"
+    },
+    "bedrooms": {
+      "label": "Bedrooms",
+      "field_click_ratio": [0.1286, 0.7597],
+      "edit_class": "ACINumericEditField"
+    },
+    "baths": {
+      "label": "Bath(s)",
+      "field_click_ratio": [0.1726, 0.7597],
+      "edit_class": "ACITextEditField"
+    },
+    "additional_features": {
+      "label": "Additional Features",
+      "field_click_ratio": [0.1478, 0.7763],
+      "edit_class": "ACITextToAddendumEditField"
+    },
+    "appraisal_made_as": {
+      "label": "This appraisal is made...",
+      "field_click_ratio": [0.1478, 0.8898],
+      "edit_class": "ACITextToAddendumEditField",
+      "note": "As-is / subject to conditions"
+    }
   },
-  "income_approach": {
-    "label": "Income Approach Comments",
-    "aliases": [
-      "Income Approach",
-      "Income Approach Analysis",
-      "Income Approach Narrative"
-    ],
-    "tab_name": "Income",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity",
-    "notes": "Income approach narrative. PDF corpus anchors this section to the page 5/6 cost-income block."
+
+  "sales_comparison_grid": {
+    "_comment": "Sales comparison grid - Comp 1 column mapped, Comp 2/3 calculated by offset",
+    "_tab": "Sales",
+    "_tab_click_ratio": 0.40,
+    "_column_offsets": {
+      "comp1_desc": 0.1072,
+      "comp2_desc": 0.1726,
+      "comp3_desc": 0.2380,
+      "comp1_addr": 0.1214,
+      "comp2_addr": 0.1868,
+      "comp3_addr": 0.2522,
+      "comp1_numeric": 0.1384,
+      "comp2_numeric": 0.2038,
+      "comp3_numeric": 0.2692,
+      "subject_addr": 0.0493,
+      "subject_numeric": 0.1030
+    },
+
+    "address":                  { "y": 0.1019, "x_type": "addr",    "edit_class": "ACITextEditField" },
+    "proximity":                { "y": 0.1240, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "sale_price":               { "y": 0.1357, "x_type": "numeric", "edit_class": "ACINumericEditField" },
+    "data_source":              { "y": 0.1584, "x_type": "addr",    "edit_class": "ACITextEditField", "has_helper": true },
+    "verification_source":      { "y": 0.1694, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "sale_financing_concessions": { "y": 0.1927, "x_type": "desc",  "edit_class": "ACITextEditField", "has_helper": true },
+    "date_of_sale":             { "y": 0.2148, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "location":                 { "y": 0.2265, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "leasehold_fee_simple":     { "y": 0.2381, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "site":                     { "y": 0.2492, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "view":                     { "y": 0.2602, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "design_style":             { "y": 0.2719, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "quality_construction":     { "y": 0.2835, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "actual_age":               { "y": 0.2946, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "condition":                { "y": 0.3056, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "room_count":               { "y": 0.3289, "x_type": "numeric", "edit_class": "ACITextEditField", "note": "16px wide" },
+    "bedrooms":                 { "y": 0.3289, "x_type": "numeric", "edit_class": "ACITextEditField", "x_offset_override": { "comp1": 0.1013, "comp2": 0.1667, "comp3": 0.2321 } },
+    "baths":                    { "y": 0.3289, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true, "x_offset_override": { "comp1": 0.1155, "comp2": 0.1809, "comp3": 0.2463 } },
+    "gla":                      { "y": 0.3400, "x_type": "numeric", "edit_class": "ACINumericEditField" },
+    "basement":                 { "y": 0.3511, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "functional_utility":       { "y": 0.3738, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "heating_cooling":          { "y": 0.3854, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "energy_efficient":         { "y": 0.3965, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "garage_carport":           { "y": 0.4075, "x_type": "desc",    "edit_class": "ACITextEditField", "has_helper": true },
+    "porch_patio_deck":         { "y": 0.4192, "x_type": "desc",    "edit_class": "ACITextEditField" },
+    "adjusted_sale_price":      { "y": 0.4873, "x_type": "numeric", "edit_class": "ACINumericEditField" }
   },
+
   "offering_history": {
     "label": "Offering History",
-    "aliases": [
-      "Prior Sales History",
-      "Offering History Comments",
-      "Prior Listing History"
-    ],
     "tab_name": "Contr",
-    "payload_mode": "offering_history_popup",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
+    "field_click_ratio": [0.1478, 0.1982],
+    "edit_class": "ACITextEditField",
+    "insert_mode": "uad_popup",
+    "helper_button_ratio": [0.0938, 0.1910],
+    "verification_mode": "edit_readback",
     "calibrated": false,
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_method": "label_proximity",
-    "notes": "Offering and prior sale history narrative. Earlier label matching exists, but March 13, 2026 live testing showed wrong-box risk when Sales tab navigation was not deterministic.",
-    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
+    "live_calibration_status": "corpus_backed_pending_navigation_fix",
+    "notes": "Fail closed until contract-block navigation is re-confirmed in live calibration."
   },
   "contract_analysis": {
     "label": "Contract Analysis",
-    "aliases": [
-      "Contract Comments",
-      "Purchase Contract Analysis",
-      "Contract"
-    ],
     "tab_name": "Contr",
     "insert_mode": "uad_dialog",
     "payload_mode": "contract_analysis_popup",
     "mode_required": true,
     "skip_tab_navigation": true,
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
     "verification_mode": "skip",
-    "calibrated": false,
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_method": "label_proximity",
-    "report_click_ratio": [
-      0.317,
-      0.213
-    ],
-    "uad_button_ratio": [
-      0.045,
-      0.213
-    ],
+    "report_click_ratio": [0.317, 0.213],
+    "uad_button_ratio": [0.045, 0.213],
     "uad_dialog_title": "Analysis of Contract",
-    "notes": "Contract analysis is on page 1 of the 1004 contract block, not the later Sales page. A March 17, 2026 operator calibration confirmed that the row must be selected and then edited through the green UAD extension arrow, which opens the Analysis of Contract popup.",
-    "verify_note": "TX32 readback unreliable on this field - use visual confirmation"
-  },
-  "functional_utility": {
-    "label": "Functional Utility",
-    "aliases": [
-      "Functional Obsolescence",
-      "Functional Utility Comments"
-    ],
-    "tab_name": "Impro",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity",
-    "notes": "Functional utility or obsolescence narrative. PDF corpus anchors this section to the page 3/4 improvements block."
-  },
-  "adverse_conditions": {
-    "label": "Adverse Conditions",
-    "aliases": [
-      "Adverse Site Conditions",
-      "External Factors",
-      "Adverse Conditions Comments"
-    ],
-    "tab_name": "Site",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": true,
-    "live_calibration_status": "live_confirmed",
-    "calibration_method": "label_proximity",
-    "notes": "Adverse conditions or external factors narrative. PDF corpus anchors this section to the page 3/4 site-improvements block."
-  },
-  "subject_address": {
-    "label": "Property Address",
-    "aliases": [
-      "Subject Address",
-      "Address",
-      "Property Addr"
-    ],
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
     "calibrated": false,
     "live_calibration_status": "corpus_backed_pending_navigation_fix",
-    "calibration_method": "label_proximity:Property Address",
-    "notes": "Subject property address field on the Subject tab. Basic info auto-population target. Needs live calibration on Subject tab."
+    "notes": "Fail closed until the contract-analysis popup path is re-confirmed in the live navigation flow."
   },
-  "borrower_name": {
-    "label": "Borrower",
-    "aliases": [
-      "Borrower Name",
-      "Borrower(s)",
-      "Mortgagor"
-    ],
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
+  "sales_comparison_commentary": {
+    "label": "Sales Comparison Comments",
+    "tab_name": "Sales",
+    "tab_click_ratio": 0.40,
+    "field_click_ratio": [0.1478, 0.7542],
+    "edit_class": "ACITextToAddendumEditField",
+    "verification_mode": "edit_readback",
     "calibrated": false,
     "live_calibration_status": "corpus_backed_pending_navigation_fix",
-    "calibration_method": "label_proximity:Borrower",
-    "notes": "Borrower name field on the Subject tab. Basic info auto-population target."
+    "notes": "Fail closed until Sales tab navigation is re-confirmed live."
   },
-  "lender_name": {
-    "label": "Lender/Client",
-    "aliases": [
-      "Lender",
-      "Client",
-      "Lending Institution",
-      "Lender Name"
-    ],
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
+  "reconciliation": {
+    "label": "Reconciliation Comments",
+    "tab_name": "Reco",
+    "tab_click_ratio": 0.47,
+    "field_click_ratio": [0.1478, 0.8389],
+    "edit_class": "ACITextToAddendumEditField",
+    "verification_mode": "edit_readback",
     "calibrated": false,
     "live_calibration_status": "corpus_backed_pending_navigation_fix",
-    "calibration_method": "label_proximity:Lender/Client",
-    "notes": "Lender/client name field on the Subject tab. Basic info auto-population target."
-  },
-  "file_number": {
-    "label": "File No.",
-    "aliases": [
-      "File Number",
-      "Order ID",
-      "File #",
-      "Loan Number"
-    ],
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
-    "calibration_method": "label_proximity:File No.",
-    "notes": "File number / order ID field on the Subject tab. Basic info auto-population target."
-  },
-  "effective_date": {
-    "label": "Effective Date of Appraisal",
-    "aliases": [
-      "Effective Date",
-      "Date of Appraisal",
-      "Appraisal Date"
-    ],
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "expected_classes": [
-      "TX32"
-    ],
-    "verification_mode": "tx32_readback",
-    "calibrated": false,
-    "live_calibration_status": "corpus_backed_pending_navigation_fix",
-    "calibration_method": "label_proximity:Effective Date of Appraisal",
-    "notes": "Effective date of appraisal on the Subject tab. Basic info auto-population target."
+    "notes": "Fail closed until Reconciliation tab navigation is re-confirmed live."
   }
 }

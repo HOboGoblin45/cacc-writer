@@ -68,6 +68,7 @@ import log from '../logger.js';
 // Run status is always read from SQLite; this stores the full result object
 // for fast retrieval without re-querying all section rows.
 // Capped at 100 entries to prevent unbounded memory growth.
+import { sendErrorResponse } from '../utils/errorResponse.js';
 const _MAX_RUN_RESULTS = 100;
 const _runResults = new Map();
 const MAX_BATCH_FIELDS = 20;
@@ -302,7 +303,7 @@ router.post('/generate', ensureAI, async (req, res) => {
     const r = await client.responses.create({ model: MODEL, input: genInput(prompt) });
     res.json({ ok: true, result: aiText(r) });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -439,7 +440,7 @@ router.post('/similar-examples', (req, res) => {
       examples: collectExamples(trimText(fieldId, 80) || null, safeLimit, normalized),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -572,7 +573,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
       pipelineStage: 'generating',
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -668,7 +669,7 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       examplesUsed: totalExamples,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -789,7 +790,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
 
     res.json({ ok: true, results, errors, statuses, formType, fieldsAttempted: allFields.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1050,7 +1051,7 @@ router.get('/generation/runs/:runId/status', (req, res) => {
     }
     res.json({ ok: true, ...status });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1158,7 +1159,7 @@ router.get('/generation/runs/:runId/result', (req, res) => {
       source:      'sqlite-fallback',
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1274,7 +1275,7 @@ router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
       charCount: text.length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1346,7 +1347,7 @@ router.post('/generation/regenerate-section', async (req, res) => {
     });
   } catch (err) {
     log.error('[regenerate-section]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1370,7 +1371,7 @@ router.post('/db/migrate-legacy-kb', async (req, res) => {
     res.json({ ok: result.ok, ...result });
   } catch (err) {
     log.error('[db/migrate-legacy-kb]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

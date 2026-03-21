@@ -61,6 +61,7 @@ import {
 import { buildRetrievalPack } from '../memory/retrievalPackBuilder.js';
 import { rankApprovedMemory, rankCompCommentary } from '../memory/retrievalRankingEngine.js';
 
+import { sendErrorResponse } from '../utils/errorResponse.js';
 const router = Router();
 const objectMutationSchema = z.object({}).passthrough();
 const emptyMutationSchema = z.object({}).strict();
@@ -172,7 +173,7 @@ router.get('/approved', (req, res) => {
 
     res.json({ ok: true, items, total, limit: filters.limit, offset: filters.offset });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -186,7 +187,7 @@ router.get('/approved/:id', (req, res) => {
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, item });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -225,7 +226,7 @@ router.post('/approved', (req, res) => {
 
     res.json({ ok: true, id });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -245,7 +246,7 @@ router.patch('/approved/:id', (req, res) => {
     const updated = getApprovedMemoryById(req.params.id);
     res.json({ ok: true, item: updated });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -260,7 +261,7 @@ router.delete('/approved/:id', (req, res) => {
     deactivateApprovedMemory(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -290,7 +291,7 @@ router.get('/staging', (req, res) => {
 
     res.json({ ok: true, items, total, limit: filters.limit, offset: filters.offset });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -303,7 +304,7 @@ router.get('/staging/summary', (_req, res) => {
     const summary = getStagingSummary();
     res.json({ ok: true, ...summary });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -317,7 +318,7 @@ router.get('/staging/:id', (req, res) => {
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, item });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -364,7 +365,7 @@ router.post('/staging', (req, res) => {
 
     res.json({ ok: true, id: result.id, status: result.status });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -386,7 +387,7 @@ router.post('/staging/:id/approve', (req, res) => {
 
     res.json({ ok: true, promotedId: result.promotedId, bucket: result.bucket });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -410,7 +411,7 @@ router.post('/staging/:id/reject', (req, res) => {
 
     res.json({ ok: true, status: 'rejected' });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -428,7 +429,7 @@ router.post('/staging/batch-approve', (req, res) => {
     const result = batchApprove(ids, overrides || {});
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -446,7 +447,7 @@ router.post('/staging/batch-reject', (req, res) => {
     const result = batchReject(ids, { reason, reviewedBy });
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -468,7 +469,7 @@ router.get('/voice/profiles', (req, res) => {
     const profiles = listVoiceProfiles(filters);
     res.json({ ok: true, profiles });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -482,7 +483,7 @@ router.get('/voice/profiles/:id', (req, res) => {
     if (!profile) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, profile });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -499,7 +500,7 @@ router.post('/voice/profiles', (req, res) => {
     const profile = getVoiceProfileById(id);
     res.json({ ok: true, id, profile });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -519,7 +520,7 @@ router.patch('/voice/profiles/:id', (req, res) => {
     const updated = getVoiceProfileById(req.params.id);
     res.json({ ok: true, profile: updated });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -537,7 +538,7 @@ router.delete('/voice/profiles/:id', (req, res) => {
     updateVoiceProfile(req.params.id, { active: false });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -559,7 +560,7 @@ router.get('/voice/resolve', (req, res) => {
 
     res.json({ ok: true, profile });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -575,7 +576,7 @@ router.get('/voice/profiles/:id/rules', (req, res) => {
     });
     res.json({ ok: true, rules });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -594,7 +595,7 @@ router.post('/voice/profiles/:id/rules', (req, res) => {
     });
     res.json({ ok: true, id: ruleId });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -609,7 +610,7 @@ router.delete('/voice/rules/:ruleId', (req, res) => {
     deleteVoiceRule(req.params.ruleId);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -634,7 +635,7 @@ router.get('/comp-commentary', (req, res) => {
     const items = listCompCommentary(filters);
     res.json({ ok: true, items });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -674,7 +675,7 @@ router.post('/comp-commentary', (req, res) => {
 
     res.json({ ok: true, id });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -690,7 +691,7 @@ router.patch('/comp-commentary/:id', (req, res) => {
     updateCompCommentary(req.params.id, body);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -705,7 +706,7 @@ router.delete('/comp-commentary/:id', (req, res) => {
     deactivateCompCommentary(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -735,7 +736,7 @@ router.post('/retrieval/preview', (req, res) => {
 
     res.json({ ok: true, pack });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -752,7 +753,7 @@ router.post('/retrieval/rank', (req, res) => {
     const result = rankApprovedMemory(query);
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -768,7 +769,7 @@ router.post('/retrieval/rank-comp', (req, res) => {
     const result = rankCompCommentary(body);
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -785,7 +786,7 @@ router.get('/summary', (_req, res) => {
     const summary = getMemorySummary();
     res.json({ ok: true, ...summary });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

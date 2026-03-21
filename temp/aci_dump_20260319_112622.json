@@ -1,0 +1,295 @@
+{
+  "window": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\49561.aci]",
+  "tree": [
+    {
+      "hwnd": 3343824,
+      "class": "MDIClient",
+      "text": "",
+      "rect": [
+        0,
+        67,
+        1920,
+        1011
+      ],
+      "w": 1920,
+      "h": 944,
+      "visible": true,
+      "depth": 0,
+      "children": [
+        {
+          "hwnd": 6097250,
+          "class": "OWL_Window",
+          "text": "C:\\Program Files (x86)\\ACI32\\REPORTS\\49561.aci",
+          "rect": [
+            -6,
+            38,
+            1926,
+            1017
+          ],
+          "w": 1932,
+          "h": 979,
+          "visible": true,
+          "depth": 1,
+          "children": [
+            {
+              "hwnd": 15339240,
+              "class": "ACIRpdView",
+              "text": "",
+              "rect": [
+                1,
+                68,
+                1919,
+                1010
+              ],
+              "w": 1918,
+              "h": 942,
+              "visible": true,
+              "depth": 2,
+              "children": [
+                {
+                  "hwnd": 6490164,
+                  "class": "ACIRpdCompView",
+                  "text": "",
+                  "rect": [
+                    2,
+                    70,
+                    118,
+                    1009
+                  ],
+                  "w": 116,
+                  "h": 939,
+                  "visible": true,
+                  "depth": 3,
+                  "children": []
+                },
+                {
+                  "hwnd": 71829918,
+                  "class": "ACISplitterBar",
+                  "text": "",
+                  "rect": [
+                    119,
+                    68,
+                    122,
+                    1010
+                  ],
+                  "w": 3,
+                  "h": 942,
+                  "visible": true,
+                  "depth": 3,
+                  "children": []
+                },
+                {
+                  "hwnd": 1509446,
+                  "class": "ACIFormViewLayout",
+                  "text": "",
+                  "rect": [
+                    122,
+                    81,
+                    1918,
+                    1009
+                  ],
+                  "w": 1796,
+                  "h": 928,
+                  "visible": true,
+                  "depth": 3,
+                  "children": [
+                    {
+                      "hwnd": 1705052,
+                      "class": "ACIFormView",
+                      "text": "",
+                      "rect": [
+                        122,
+                        81,
+                        1918,
+                        984
+                      ],
+                      "w": 1796,
+                      "h": 903,
+                      "visible": true,
+                      "depth": 4
+                    },
+                    {
+                      "hwnd": 2691456,
+                      "class": "ACISectionTabs",
+                      "text": "",
+                      "rect": [
+                        122,
+                        984,
+                        1918,
+                        1009
+                      ],
+                      "w": 1796,
+                      "h": 25,
+                      "visible": true,
+                      "depth": 4
+                    },
+                    {
+                      "hwnd": 3543050,
+                      "class": "ACIFullAddendumView",
+                      "text": "",
+                      "rect": [
+                        122,
+                        81,
+                        1918,
+                        984
+                      ],
+                      "w": 1796,
+                      "h": 903,
+                      "visible": false,
+                      "depth": 4
+                    },
+                    {
+                      "hwnd": 64752366,
+                      "class": "ACIAddendumView",
+                      "text": "",
+                      "rect": [
+                        122,
+                        81,
+                        1918,
+                        984
+                      ],
+                      "w": 1796,
+                      "h": 903,
+                      "visible": false,
+                      "depth": 4
+                    },
+                    {
+                      "hwnd": 169412872,
+                      "class": "ACIAddendumView",
+                      "text": "",
+                      "rect": [
+                        122,
+                        81,
+                        1918,
+                        984
+                      ],
+                      "w": 1796,
+                      "h": 903,
+                      "visible": false,
+                      "depth": 4
+                    }
+                  ]
+                },
+                {
+                  "hwnd": 34144490,
+                  "class": "ACIPaneTitle",
+                  "text": "1004_05UAD",
+                  "rect": [
+                    122,
+                    69,
+                    1918,
+                    81
+                  ],
+                  "w": 1796,
+                  "h": 12,
+                  "visible": true,
+                  "depth": 3,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "hwnd": 30148208,
+      "class": "OWL_Window",
+      "text": "Harbor",
+      "rect": [
+        0,
+        43,
+        0,
+        43
+      ],
+      "w": 0,
+      "h": 0,
+      "visible": false,
+      "depth": 0,
+      "children": []
+    },
+    {
+      "hwnd": 9833154,
+      "class": "OWL_Window:F",
+      "text": "BorderSlip",
+      "rect": [
+        0,
+        43,
+        1920,
+        67
+      ],
+      "w": 1920,
+      "h": 24,
+      "visible": true,
+      "depth": 0,
+      "children": [
+        {
+          "hwnd": 64948758,
+          "class": "OWL_Window:F",
+          "text": "Main",
+          "rect": [
+            -2,
+            41,
+            752,
+            67
+          ],
+          "w": 754,
+          "h": 26,
+          "visible": true,
+          "depth": 1,
+          "children": [
+            {
+              "hwnd": 71960058,
+              "class": "ComboBox",
+              "text": "",
+              "rect": [
+                660,
+                44,
+                745,
+                65
+              ],
+              "w": 85,
+              "h": 21,
+              "visible": true,
+              "depth": 2,
+              "children": [
+                {
+                  "hwnd": 19139008,
+                  "class": "Edit",
+                  "text": "",
+                  "rect": [
+                    663,
+                    47,
+                    725,
+                    62
+                  ],
+                  "w": 62,
+                  "h": 15,
+                  "visible": true,
+                  "depth": 3,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "hwnd": 10684116,
+      "class": "OWL_Window:F",
+      "text": "",
+      "rect": [
+        0,
+        1011,
+        1920,
+        1032
+      ],
+      "w": 1920,
+      "h": 21,
+      "visible": true,
+      "depth": 0,
+      "children": []
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "name": "cacc-writer",
-  "version": "2.0.0",
+  "name": "appraisal-agent",
+  "version": "3.0.0",
   "type": "module",
   "main": "desktop/electron/main.cjs",
   "scripts": {

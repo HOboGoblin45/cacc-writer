@@ -4,18 +4,14 @@
     "fieldId": "neighborhood_description",
     "label": "Neighborhood Description",
     "tabName": "Neig",
-    "strategy": "learned:tx32:label_proximity:Neighborhood",
-    "tx32_rect": {
-      "left": 1031,
-      "top": 735,
-      "width": 825,
-      "height": 271
-    },
+    "strategy": "clipboard",
+    "tx32_rect": null,
     "label_matched": "Neighborhood Description",
-    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\cacc-writer-test.aci]",
-    "success_count": 13,
-    "last_success": "2026-03-09T09:27:33.224614",
-    "verified": true
+    "window_signature": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\49561.aci]",
+    "success_count": 19,
+    "last_success": "2026-03-19T14:27:36.014316",
+    "verified": false,
+    "insertion_ok": true
   },
   "1004::market_conditions": {
     "formType": "1004",

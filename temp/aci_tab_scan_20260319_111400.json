@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-03-19T11:14:00.020295",
+  "window": "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\49561.aci]",
+  "tabs_rect": [
+    698,
+    992,
+    1532,
+    1017
+  ],
+  "sections": [
+    {
+      "pane_title": "1004_05UAD",
+      "click_x": 718,
+      "click_y": 1004,
+      "tab_x_ratio": 0.025,
+      "visible_tx32_count": 0,
+      "content_areas": 0,
+      "title_strips": 0,
+      "tx32_details": []
+    }
+  ]
+}

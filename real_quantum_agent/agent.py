@@ -582,8 +582,21 @@ def _wait_for_tinymce_init(page, tinymce_id: str, max_attempts: int = 10, interv
 
 
 def _strip_html(html: str) -> str:
-    """Strip HTML tags from a string and return plain text."""
-    return re.sub(r'<[^>]+>', '', html or '').strip()
+    """Strip HTML tags from a string, normalize whitespace, and return plain text."""
+    if not html:
+        return ''
+    # Replace block-level closing tags with newlines before stripping
+    text = re.sub(r'</(?:p|div|br|li|h[1-6])>', '\n', html, flags=re.IGNORECASE)
+    # Strip remaining HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    # Decode common HTML entities
+    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+    text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&nbsp;', ' ')
+    # Collapse whitespace: multiple spaces/tabs to single space, preserve newlines
+    text = re.sub(r'[^\S\n]+', ' ', text)
+    # Collapse multiple newlines
+    text = re.sub(r'\n\s*\n', '\n', text)
+    return text.strip()
 
 
 def _insert_tinymce(page, field_config: dict, text: str) -> bool:
@@ -717,14 +730,27 @@ def fallback_clipboard(page, field_config: dict, text: str) -> bool:
 
 # ── Verification ──────────────────────────────────────────────────────────────
 
+def _normalize_for_comparison(text: str) -> str:
+    """Normalize text for verification comparison: strip HTML, collapse whitespace, lowercase."""
+    stripped = _strip_html(text)
+    # Collapse all whitespace (spaces, newlines, tabs) to single space
+    normalized = re.sub(r'\s+', ' ', stripped).strip().lower()
+    # Normalize quotes and dashes
+    normalized = normalized.replace('\u201c', '"').replace('\u201d', '"')
+    normalized = normalized.replace('\u2018', "'").replace('\u2019', "'")
+    normalized = normalized.replace('\u2014', '--').replace('\u2013', '-')
+    return normalized
+
+
 def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
     """
     Read the field value back and verify the text was inserted correctly.
 
-    Checks that the field contains at least the first 100 characters of
-    the expected text. HTML tags are stripped from the readback value before
-    comparison so that TinyMCE's HTML output (e.g. <p>text</p>) correctly
-    matches plain-text input.
+    Scrolls the TinyMCE iframe back into view and polls for editor init
+    before readback (fixes verification failures on scroll-strategy fields).
+
+    Compares first 200 characters after normalizing both sides: stripping
+    HTML, collapsing whitespace, and lowercasing.
 
     Args:
         page:          Playwright Page object
@@ -735,16 +761,47 @@ def verify_insertion(page, field_config: dict, expected_text: str) -> bool:
         True if verification passed, False otherwise (non-fatal).
     """
     try:
-        check = expected_text[:100].strip()
-        raw_actual = read_field_value(page, field_config)
-        actual = _strip_html(raw_actual)
+        input_type = field_config.get('input_type', 'textarea')
+        tinymce_id = field_config.get('tinymce_id', '')
+        tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
 
-        passed = check in actual
+        # For TinyMCE fields: scroll iframe into view and wait for init before readback
+        if input_type == 'tinymce' and tinymce_iframe_id:
+            try:
+                page.evaluate(f"""
+                    const el = document.querySelector('iframe#{tinymce_iframe_id}');
+                    if (el) el.scrollIntoView({{behavior: 'instant', block: 'center'}});
+                """)
+                time.sleep(0.3)
+            except Exception:
+                pass  # Best-effort scroll
+
+            # Poll for TinyMCE init before attempting readback
+            if tinymce_id:
+                _wait_for_tinymce_init(page, tinymce_id, max_attempts=6, interval_ms=400)
+
+        raw_actual = read_field_value(page, field_config)
+        actual_normalized = _normalize_for_comparison(raw_actual)
+        expected_normalized = _normalize_for_comparison(expected_text)
+
+        # Compare first 200 chars of normalized text
+        check_len = 200
+        check_expected = expected_normalized[:check_len]
+        check_actual = actual_normalized[:check_len]
+
+        # Pass if expected snippet is found anywhere in actual, OR if first N chars match closely
+        passed = (check_expected in actual_normalized) or (check_expected == check_actual)
+
+        if not passed and len(check_expected) > 50:
+            # Fallback: check if first 50 chars match (handles minor truncation)
+            passed = check_expected[:50] in actual_normalized
+
         if passed:
             log.info("Verification passed ✓")
         else:
-            log.warning(f"Verification FAILED. Expected to find: '{check[:40]}...'")
-            log.debug(f"Verification readback (stripped): '{actual[:80]}'")
+            log.warning(f"Verification FAILED.")
+            log.warning(f"  Expected (first 60): '{check_expected[:60]}...'")
+            log.warning(f"  Actual   (first 60): '{check_actual[:60]}...'")
         return passed
 
     except Exception as e:
@@ -755,21 +812,41 @@ def read_field_value(page, field_config: dict) -> str:
     """
     Read the current field value from the active Real Quantum section.
 
+    For TinyMCE fields: scrolls the iframe into view and polls for editor
+    initialization before attempting readback. This fixes empty readback
+    on scroll-strategy fields where iframes are hidden/lazy-loaded.
+
     Returns plain text for both TinyMCE and direct input fields.
     Raises on transport/selector errors so the caller can surface diagnostics.
     """
     input_type = field_config.get('input_type', 'textarea')
 
     if input_type == 'tinymce':
-        tinymce_id   = field_config.get('tinymce_id', '')
-        editor_index = field_config.get('editor_index', 0)
+        tinymce_id        = field_config.get('tinymce_id', '')
+        tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
+        editor_index      = field_config.get('editor_index', 0)
+
+        # Scroll iframe into view to ensure TinyMCE is initialized for readback
+        if tinymce_iframe_id:
+            try:
+                page.evaluate(f"""
+                    const el = document.querySelector('iframe#{tinymce_iframe_id}');
+                    if (el) el.scrollIntoView({{behavior: 'instant', block: 'center'}});
+                """)
+                time.sleep(0.3)
+            except Exception as e:
+                log.debug(f"Scroll before readback failed (non-fatal): {e}")
+
+        # Poll for TinyMCE init before readback (fixes empty reads on scroll-strategy fields)
+        if tinymce_id:
+            _wait_for_tinymce_init(page, tinymce_id, max_attempts=8, interval_ms=400)
+
         try:
             if tinymce_id:
                 actual = page.evaluate(f"tinymce.get('{tinymce_id}') ? tinymce.get('{tinymce_id}').getContent({{format:'text'}}) : ''")
             else:
                 actual = page.evaluate(f"tinymce.editors[{editor_index}] ? tinymce.editors[{editor_index}].getContent({{format:'text'}}) : ''")
         except Exception:
-            tinymce_iframe_id = field_config.get('tinymce_iframe_id', '')
             if tinymce_iframe_id:
                 iframe_el = page.frame_locator(f"iframe#{tinymce_iframe_id}")
                 actual = iframe_el.locator('body').text_content() or ''

@@ -25,7 +25,7 @@ import {
   normalizeQuestions,
   normalizeGrade,
 } from '../utils/textUtils.js';
-import { upload, ensureAI } from '../utils/middleware.js';
+import { upload, ensureAI, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { getFormConfig } from '../../forms/index.js';
 
@@ -44,6 +44,7 @@ import { buildReviewMessages } from '../promptBuilder.js';
 import { onSectionApproved, onSectionRejected } from '../learning/feedbackLoopService.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -202,6 +203,7 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
     if (!cd) return;
 
     if (!req.file) return res.status(400).json({ ok: false, error: 'No file uploaded' });
+    const pdfBuffer = await readUploadedFile(req.file);
 
     const isPdf = req.file.mimetype === 'application/pdf'
       || String(req.file.originalname || '').toLowerCase().endsWith('.pdf');
@@ -210,15 +212,15 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
 
     const docType = trimText(body.docType || 'unknown', 60).replace(/[^a-z0-9_-]/gi, '_');
     fs.mkdirSync(path.join(cd, 'documents'), { recursive: true });
-    fs.writeFileSync(path.join(cd, 'documents', docType + '.pdf'), req.file.buffer);
+    fs.copyFileSync(req.file.path, path.join(cd, 'documents', docType + '.pdf'));
 
     let extractedText = '';
     let pageCount = 0;
     try {
-      const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
+      const { text, method } = await extractPdfText(pdfBuffer, client, MODEL);
       extractedText = text || '';
       try {
-        const p = await pdfParse(req.file.buffer);
+        const p = await pdfParse(pdfBuffer);
         pageCount = p.numpages || 0;
       } catch {
         pageCount = 0;
@@ -258,7 +260,9 @@ router.post('/:caseId/upload', upload.single('file'), async (req, res) => {
       preview: extractedText.slice(0, 400),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 
@@ -330,7 +334,7 @@ router.post('/:caseId/questionnaire', ensureAI, async (req, res) => {
     const parsed = parseJSONObject(aiText(r));
     res.json({ ok: true, questions: normalizeQuestions(parsed?.questions || []) });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -359,7 +363,7 @@ router.post('/:caseId/grade', ensureAI, async (req, res) => {
 
     res.json({ ok: true, fieldId, grade: normalizeGrade(grade) });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -428,7 +432,7 @@ router.post('/:caseId/feedback', async (req, res) => {
 
     res.json({ ok: true, saved: true, count: feedbackItems.length, savedToKB, feedbackLoop: feedbackLoopResult });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -452,7 +456,7 @@ router.post('/:caseId/review-section', ensureAI, async (req, res) => {
 
     res.json({ ok: true, fieldId, review });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -494,7 +498,7 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
       updatedAt: now,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -525,7 +529,7 @@ router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
 
     res.json({ ok: true, fieldId, text, charCount: text.length, status: 'copied', message: 'Text ready for manual paste' });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -560,7 +564,7 @@ router.get('/:caseId/sections/status', (req, res) => {
       completedSections: sectionsArr.filter(sec => ['approved', 'inserted', 'verified'].includes(sec.status)).length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -598,7 +602,7 @@ router.get('/:caseId/destination-registry', (req, res) => {
       count: destinations.length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -639,7 +643,7 @@ router.get('/:caseId/exceptions', (req, res) => {
 
     res.json({ ok: true, caseId: req.params.caseId, exceptions, count: exceptions.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -711,7 +715,7 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       qcGate,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -815,7 +819,7 @@ router.post('/:caseId/insert-all', (req, res) => {
       pipelineStage: meta.pipelineStage || 'inserting',
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -853,7 +857,7 @@ router.patch('/:caseId/outputs/:fieldId', (req, res) => {
 
     res.json({ ok: true, fieldId, charCount: text.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

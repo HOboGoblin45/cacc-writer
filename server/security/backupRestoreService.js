@@ -67,7 +67,7 @@ function getTableCounts() {
 /**
  * Create a full database backup.
  */
-export function createBackup(options = {}) {
+export async function createBackup(options = {}) {
   ensureBackupsDir();
 
   const id = genId();
@@ -75,18 +75,24 @@ export function createBackup(options = {}) {
   const filename = `cacc-backup-${timestamp}.db`;
   const backupPath = path.join(BACKUPS_DIR, filename);
   const backupType = options.type || 'full';
+  const createdAt = now();
 
   try {
-    // Copy the database file
     const dbPath = getDbPath();
     const db = getDb();
 
-    // Use SQLite backup API via better-sqlite3
-    db.backup(backupPath).then(() => {}).catch(() => {});
-
-    // Fallback: direct file copy if backup API is async
-    if (!fs.existsSync(backupPath)) {
+    if (typeof db.backup === 'function') {
+      await db.backup(backupPath);
+    } else {
+      try {
+        db.pragma('wal_checkpoint(FULL)');
+      } catch {
+      }
       fs.copyFileSync(dbPath, backupPath);
+    }
+
+    if (!fs.existsSync(backupPath)) {
+      throw new Error('Backup file was not created');
     }
 
     const stats = fs.statSync(backupPath);
@@ -96,13 +102,13 @@ export function createBackup(options = {}) {
     dbRun(
       `INSERT INTO backup_records (id, backup_type, file_path, file_size_bytes, file_hash, table_counts_json, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, 'completed', ?)`,
-      [id, backupType, backupPath, stats.size, fileHash, JSON.stringify(tableCounts), now()]
+      [id, backupType, backupPath, stats.size, fileHash, JSON.stringify(tableCounts), createdAt]
     );
 
     // Update schedule last_run_at
     dbRun(
       `UPDATE backup_schedule SET last_run_at = ?, updated_at = ? WHERE id = 'default'`,
-      [now(), now()]
+      [createdAt, createdAt]
     );
 
     log.info('backup:created', { id, path: backupPath, size: stats.size });
@@ -113,14 +119,21 @@ export function createBackup(options = {}) {
       fileSizeBytes: stats.size,
       fileHash,
       tableCounts,
-      createdAt: now(),
+      createdAt,
     };
   } catch (err) {
+    try {
+      if (fs.existsSync(backupPath)) {
+        fs.rmSync(backupPath, { force: true });
+      }
+    } catch {
+    }
+
     // Record failed backup
     dbRun(
       `INSERT INTO backup_records (id, backup_type, status, error_text, created_at)
        VALUES (?, ?, 'failed', ?, ?)`,
-      [id, backupType, err.message, now()]
+      [id, backupType, err.message, createdAt]
     );
     log.error('backup:create-failed', { error: err.message });
     return { error: err.message };

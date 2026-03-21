@@ -273,6 +273,14 @@ await test('POST /api/intake/create-folder — path contains YYYY-MM-DD prefix',
 
 console.log('\n3. Job Folder Scanner');
 
+await test('POST /api/intake/scan-job-folder rejects paths outside intake root', async () => {
+  const { status, body } = await api('POST', '/api/intake/scan-job-folder', {
+    folderPath: process.cwd(),
+  });
+  assert(status === 403, `Expected 403, got ${status}`);
+  assert(body?.code === 'FOLDER_PATH_NOT_ALLOWED', `Expected FOLDER_PATH_NOT_ALLOWED, got ${body?.code}`);
+});
+
 await test('POST /api/intake/scan-job-folder — rejects missing folderPath', async () => {
   const { status, body } = await api('POST', '/api/intake/scan-job-folder', {});
   assert(status === 400, `Expected 400, got ${status}`);
@@ -281,7 +289,7 @@ await test('POST /api/intake/scan-job-folder — rejects missing folderPath', as
 
 await test('POST /api/intake/scan-job-folder — returns 404 for nonexistent folder', async () => {
   const { status, body } = await api('POST', '/api/intake/scan-job-folder', {
-    folderPath: 'C:\\DoesNotExist\\MissingFolder\\Test',
+    folderPath: 'C:\\Users\\ccres\\OneDrive\\Desktop\\CACC Appraisals\\MissingFolderForTest',
   });
   assert(status === 404, `Expected 404, got ${status}`);
   assert(body?.code === 'FOLDER_NOT_FOUND', `Expected FOLDER_NOT_FOUND, got ${body?.code}`);

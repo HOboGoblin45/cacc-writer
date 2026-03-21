@@ -16,6 +16,9 @@
 // See SCOPE.md for full scope definition.
 // ============================================================
 
+export const CACC_APPRAISALS_ROOT = process.env.CACC_APPRAISALS_ROOT
+  || 'C:\\Users\\ccres\\OneDrive\\Desktop\\CACC Appraisals';
+
 // ── Active production form types ─────────────────────────────────────────────
 export const ACTIVE_FORMS = ['1004', '1025', '1073', 'commercial'];
 

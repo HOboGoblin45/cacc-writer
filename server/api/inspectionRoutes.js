@@ -92,6 +92,7 @@ import {
 import { z } from 'zod';
 import { parsePayload } from '../utils/routeUtils.js';
 
+import { sendErrorResponse } from '../utils/errorResponse.js';
 const createInspectionSchema = z.object({
   inspectionDate: z.string().max(30).optional(),
   inspectionTime: z.string().max(20).optional(),
@@ -165,7 +166,7 @@ router.post('/cases/:caseId/inspections', (req, res) => {
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:create-inspection', { caseId: req.params.caseId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -177,7 +178,7 @@ router.get('/cases/:caseId/inspections', (req, res) => {
     res.json({ ok: true, inspections });
   } catch (err) {
     log.error('api:list-inspections', { caseId: req.params.caseId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -194,7 +195,7 @@ router.get('/cases/:caseId/inspections/:inspectionId', (req, res) => {
     res.json({ ok: true, inspection });
   } catch (err) {
     log.error('api:get-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -213,7 +214,7 @@ router.put('/cases/:caseId/inspections/:inspectionId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:update-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -230,7 +231,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/start', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:start-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -249,7 +250,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/complete', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:complete-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -266,7 +267,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/cancel', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:cancel-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -285,7 +286,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/reschedule', (req, res) =>
     res.json({ ok: true });
   } catch (err) {
     log.error('api:reschedule-inspection', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -302,7 +303,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/summary', (req, res) => {
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:inspection-summary', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -325,7 +326,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/photos', (req, res) => {
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:add-photo', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -338,7 +339,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/photos', (req, res) => {
     res.json({ ok: true, photos });
   } catch (err) {
     log.error('api:list-photos', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -350,7 +351,7 @@ router.get('/cases/:caseId/photos', (req, res) => {
     res.json({ ok: true, photos });
   } catch (err) {
     log.error('api:list-case-photos', { caseId: req.params.caseId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -369,7 +370,7 @@ router.put('/cases/:caseId/photos/:photoId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:update-photo', { photoId: req.params.photoId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -386,7 +387,7 @@ router.delete('/cases/:caseId/photos/:photoId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:delete-photo', { photoId: req.params.photoId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -405,7 +406,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/photos/reorder', (req, res
     res.json({ ok: true });
   } catch (err) {
     log.error('api:reorder-photos', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -428,7 +429,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/measurements', (req, res) 
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:add-measurement', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -442,7 +443,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/measurements', (req, res) =
     res.json({ ok: true, measurements });
   } catch (err) {
     log.error('api:list-measurements', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -454,7 +455,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/measurements/gla', (req, re
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:calculate-gla', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -473,7 +474,7 @@ router.put('/cases/:caseId/measurements/:measurementId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:update-measurement', { measurementId: req.params.measurementId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -490,7 +491,7 @@ router.delete('/cases/:caseId/measurements/:measurementId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:delete-measurement', { measurementId: req.params.measurementId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -513,7 +514,7 @@ router.post('/cases/:caseId/inspections/:inspectionId/conditions', (req, res) =>
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
     log.error('api:add-condition', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -525,7 +526,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/conditions', (req, res) => 
     res.json({ ok: true, conditions });
   } catch (err) {
     log.error('api:list-conditions', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -542,7 +543,7 @@ router.get('/cases/:caseId/inspections/:inspectionId/conditions/summary', (req, 
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:condition-summary', { inspectionId: req.params.inspectionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -561,7 +562,7 @@ router.put('/cases/:caseId/conditions/:conditionId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:update-condition', { conditionId: req.params.conditionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -578,7 +579,7 @@ router.delete('/cases/:caseId/conditions/:conditionId', (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     log.error('api:delete-condition', { conditionId: req.params.conditionId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

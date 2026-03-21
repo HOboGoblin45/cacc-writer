@@ -23,7 +23,7 @@ import {
 } from '../utils/caseUtils.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { trimText } from '../utils/textUtils.js';
-import { upload, ensureAI } from '../utils/middleware.js';
+import { upload, ensureAI, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { getFormConfig } from '../../forms/index.js';
 
@@ -38,6 +38,7 @@ import { callAI, client, MODEL } from '../openaiClient.js';
 import { getRelevantExamplesWithVoice } from '../retrieval.js';
 import { buildPromptMessages, buildReviewMessages } from '../promptBuilder.js';
 import { applyMetaDefaults, buildAssignmentMetaBlock } from '../caseMetadata.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 import { getCaseProjection, saveCaseProjection, listCaseProjections } from '../caseRecord/caseRecordService.js';
 import { evaluatePreDraftGate } from '../factIntegrity/preDraftGate.js';
 import { buildFactDecisionQueue } from '../factIntegrity/factDecisionQueue.js';
@@ -427,7 +428,8 @@ router.post('/workflow/ingest-pdf', upload.single('file'), ensureAI, async (req,
       || String(req.file.originalname || '').toLowerCase().endsWith('.pdf');
     if (!isPdf) return res.status(400).json({ ok: false, error: 'Only PDF files are allowed' });
 
-    const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
+    const pdfBuffer = await readUploadedFile(req.file);
+    const { text, method } = await extractPdfText(pdfBuffer, client, MODEL);
     const clean = text
       .replace(/\n{4,}/g, '\n\n')
       .replace(/[ \t]{3,}/g, '  ')
@@ -441,7 +443,9 @@ router.post('/workflow/ingest-pdf', upload.single('file'), ensureAI, async (req,
       preview: clean.slice(0, 500),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 

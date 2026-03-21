@@ -18,9 +18,9 @@ echo.
 REM ── 1. Start ACI desktop agent ────────────────────────────────────────────
 echo Starting ACI Agent (residential: 1004 / 1025 / 1073 / 1004c)...
 if exist "desktop_agent\venv\Scripts\activate.bat" (
-    start "CACC ACI Agent" cmd /k "cd /d %~dp0 && call desktop_agent\venv\Scripts\activate.bat && python desktop_agent\agent.py"
+    start "CACC ACI Agent" cmd /k "cd /d %~dp0 && call desktop_agent\venv\Scripts\activate.bat && C:\Python313-32\python.exe desktop_agent\agent_v3.py"
 ) else (
-    start "CACC ACI Agent" cmd /k "cd /d %~dp0 && python desktop_agent\agent.py"
+    start "CACC ACI Agent" cmd /k "cd /d %~dp0 && C:\Python313-32\python.exe desktop_agent\agent_v3.py"
 )
 
 REM ── 2. Start Real Quantum agent ───────────────────────────────────────────

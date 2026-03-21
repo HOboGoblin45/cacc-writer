@@ -29,7 +29,7 @@ import { z } from 'zod';
 import { normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON, writeJSON, withVoiceLock } from '../utils/fileUtils.js';
 import { trimText, asArray, aiText, parseJSONObject } from '../utils/textUtils.js';
-import { upload, ensureAI } from '../utils/middleware.js';
+import { upload, ensureAI, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 
 // ── Domain modules ────────────────────────────────────────────────────────────
 import { DEFAULT_FORM_TYPE, getFormConfig } from '../../forms/index.js';
@@ -37,6 +37,7 @@ import { addExample, indexExamples } from '../knowledgeBase.js';
 import { client, MODEL } from '../openaiClient.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import log from '../logger.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const __dirname    = path.dirname(fileURLToPath(import.meta.url));
 const VOICE_FILE   = path.join(__dirname, '..', '..', 'voice_training.json');
@@ -78,7 +79,7 @@ router.get('/kb/status', (_req, res) => {
       voiceTrainingCount: voiceCount,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -94,7 +95,7 @@ router.post('/kb/reindex', (_req, res) => {
       total:  Array.isArray(index.examples) ? index.examples.length : 0,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -125,7 +126,7 @@ router.post('/kb/migrate-voice', (_req, res) => {
     }
     res.json({ ok: true, migrated, skipped, total: voiceEntries.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -151,7 +152,7 @@ router.post('/kb/ingest-to-pinecone', async (_req, res) => {
     const result = await ingestLocalKBToPinecone();
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -159,6 +160,7 @@ router.post('/kb/ingest-to-pinecone', async (_req, res) => {
 router.post('/voice/import-pdf', ensureAI, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ ok: false, error: 'No file uploaded' });
+    const pdfBuffer = await readUploadedFile(req.file);
 
     const isPdf = req.file.mimetype === 'application/pdf' ||
       String(req.file.originalname || '').toLowerCase().endsWith('.pdf');
@@ -174,7 +176,7 @@ router.post('/voice/import-pdf', ensureAI, upload.single('file'), async (req, re
     }
 
     const { text: pdfText, method: extractMethod, error: extractError } =
-      await extractPdfText(req.file.buffer, client, MODEL);
+      await extractPdfText(pdfBuffer, client, MODEL);
 
     log.info('[voice/import-pdf]', { file: req.file.originalname, method: extractMethod, chars: pdfText.length });
 
@@ -231,7 +233,9 @@ router.post('/voice/import-pdf', ensureAI, upload.single('file'), async (req, re
     const total = readJSON(VOICE_FILE, []).length;
     res.json({ ok: true, importId, filename, formType: requestedFormType, extracted: added, total });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 
@@ -271,7 +275,7 @@ router.get('/voice/examples', (req, res) => {
       imports: Object.values(byImport).sort((a, b) => new Date(b.importedAt) - new Date(a.importedAt)),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -283,7 +287,7 @@ function deleteVoiceExamplesBy(field, rawValue, res) {
     writeJSON(VOICE_FILE, examples);
     res.json({ ok: true, total: examples.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 }
 
@@ -426,7 +430,7 @@ router.post('/voice/import-folder', ensureAI, async (req, res) => {
       total,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -458,7 +462,7 @@ router.get('/voice/folder-status', (req, res) => {
       newCount:     files.filter(f => !f.imported).length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

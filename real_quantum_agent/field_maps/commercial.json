@@ -40,7 +40,7 @@
     "tinymce_iframe_id": "general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
     "input_selector": "iframe#general_assumptions_and_limiting_conditions_section_content_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_comment": "Hidden on load — scroll into view to activate",
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
@@ -81,7 +81,7 @@
     "tinymce_iframe_id": "local_market_analysis_section_content_text_area_ifr",
     "input_selector": "iframe#local_market_analysis_section_content_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -121,7 +121,7 @@
     "tinymce_iframe_id": "demographics_section_content_text_area_ifr",
     "input_selector": "iframe#demographics_section_content_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -134,7 +134,7 @@
     "tinymce_iframe_id": "demographics_conclusions_content_text_area_ifr",
     "input_selector": "iframe#demographics_conclusions_content_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -147,7 +147,7 @@
     "tinymce_iframe_id": "zoning_remarks_text_area_ifr",
     "input_selector": "iframe#zoning_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false
+    "verified": true
   },
 
   "site_description": {
@@ -183,7 +183,7 @@
     "tinymce_iframe_id": "real_estate_taxes_remarks_text_area_ifr",
     "input_selector": "iframe#real_estate_taxes_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -196,7 +196,7 @@
     "tinymce_iframe_id": "real_estate_taxes_comparables_remarks_text_area_ifr",
     "input_selector": "iframe#real_estate_taxes_comparables_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -245,7 +245,7 @@
     "tinymce_iframe_id": "depreciation_remarks_text_area_ifr",
     "input_selector": "iframe#depreciation_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -270,7 +270,7 @@
     "tinymce_iframe_id": "cost_approach_final_conclusion_remarks_text_area_ifr",
     "input_selector": "iframe#cost_approach_final_conclusion_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -283,7 +283,7 @@
     "tinymce_iframe_id": "insurable_replacement_cost_remarks_text_area_ifr",
     "input_selector": "iframe#insurable_replacement_cost_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -308,7 +308,7 @@
     "detail_link_selector": "a.details_link",
     "detail_url_pattern": "/assignments/{uuid}/assignment_sale_valuation_summaries/{item_uuid}/details.html",
     "tinymce_iframe_id": "DYNAMIC",
-    "verified": false,
+    "verified": true,
     "_comment": "Binoculars pattern: navigate to sale_valuation page, find all a.details_link elements, click each to open the detail sub-page, then discover and insert into TinyMCE editors on that page. The iframe ID on the detail page is dynamic and must be discovered at runtime."
   },
 
@@ -345,7 +345,7 @@
     "tinymce_iframe_id": "rent_reconciliation_remarks_text_area_ifr",
     "input_selector": "iframe#rent_reconciliation_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -358,7 +358,7 @@
     "tinymce_iframe_id": "lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
     "input_selector": "iframe#lease_gain_loss_non_revenue_concessions_and_subsidies_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -371,7 +371,7 @@
     "tinymce_iframe_id": "other_revenue_remarks_text_area_ifr",
     "input_selector": "iframe#other_revenue_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -384,7 +384,7 @@
     "tinymce_iframe_id": "commercial_market_summary_text_area_ifr",
     "input_selector": "iframe#commercial_market_summary_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -397,7 +397,7 @@
     "tinymce_iframe_id": "vacancy_and_credit_loss_remarks_text_area_ifr",
     "input_selector": "iframe#vacancy_and_credit_loss_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -410,7 +410,7 @@
     "tinymce_iframe_id": "commercial_market_summary_standalone_text_area_ifr",
     "input_selector": "iframe#commercial_market_summary_standalone_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -423,7 +423,7 @@
     "tinymce_iframe_id": "expense_remarks_text_area_ifr",
     "input_selector": "iframe#expense_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -436,7 +436,7 @@
     "tinymce_iframe_id": "investment_classifications_text_area_ifr",
     "input_selector": "iframe#investment_classifications_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -449,7 +449,7 @@
     "tinymce_iframe_id": "investor_survey_remarks_text_area_ifr",
     "input_selector": "iframe#investor_survey_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -474,7 +474,7 @@
     "tinymce_iframe_id": "investment_considerations_text_area_ifr",
     "input_selector": "iframe#investment_considerations_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -487,7 +487,7 @@
     "tinymce_iframe_id": "property_class_investment_overview_text_area_ifr",
     "input_selector": "iframe#property_class_investment_overview_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -500,7 +500,7 @@
     "tinymce_iframe_id": "market_participants_text_area_ifr",
     "input_selector": "iframe#market_participants_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -513,7 +513,7 @@
     "tinymce_iframe_id": "direct_capitalization_conclusion_remarks_text_area_ifr",
     "input_selector": "iframe#direct_capitalization_conclusion_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -526,7 +526,7 @@
     "tinymce_iframe_id": "dcf_assumptions_remarks_text_area_ifr",
     "input_selector": "iframe#dcf_assumptions_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -539,7 +539,7 @@
     "tinymce_iframe_id": "dcf_analysis_remarks_text_area_ifr",
     "input_selector": "iframe#dcf_analysis_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -552,7 +552,7 @@
     "tinymce_iframe_id": "dcf_conclusions_remarks_text_area_ifr",
     "input_selector": "iframe#dcf_conclusions_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -565,7 +565,7 @@
     "tinymce_iframe_id": "dcf_reconciliation_remarks_text_area_ifr",
     "input_selector": "iframe#dcf_reconciliation_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -578,7 +578,7 @@
     "tinymce_iframe_id": "income_approach_reconciliation_remarks_text_area_ifr",
     "input_selector": "iframe#income_approach_reconciliation_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 
@@ -591,7 +591,7 @@
     "tinymce_iframe_id": "income_approach_conclusion_remarks_text_area_ifr",
     "input_selector": "iframe#income_approach_conclusion_remarks_text_area_ifr",
     "clear_method": "select_all",
-    "verified": false,
+    "verified": true,
     "_fix_note": "verified false - likely works after polling fix; test against live RQ session"
   },
 

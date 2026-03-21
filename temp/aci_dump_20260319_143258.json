@@ -1,0 +1,69 @@
+{
+  "window": "ACI Report",
+  "tree": [
+    {
+      "hwnd": 20649198,
+      "class": "Button",
+      "text": "&Yes",
+      "rect": [
+        992,
+        585,
+        1067,
+        608
+      ],
+      "w": 75,
+      "h": 23,
+      "visible": true,
+      "depth": 0,
+      "children": []
+    },
+    {
+      "hwnd": 51118314,
+      "class": "Button",
+      "text": "&No",
+      "rect": [
+        1075,
+        585,
+        1150,
+        608
+      ],
+      "w": 75,
+      "h": 23,
+      "visible": true,
+      "depth": 0,
+      "children": []
+    },
+    {
+      "hwnd": 32771418,
+      "class": "Static",
+      "text": "",
+      "rect": [
+        782,
+        514,
+        814,
+        546
+      ],
+      "w": 32,
+      "h": 32,
+      "visible": true,
+      "depth": 0,
+      "children": []
+    },
+    {
+      "hwnd": 16717050,
+      "class": "Static",
+      "text": "The addendum text will fit in the Neighborhood Description field.\nDo you want to import this text into the form?",
+      "rect": [
+        823,
+        514,
+        1137,
+        555
+      ],
+      "w": 314,
+      "h": 41,
+      "visible": true,
+      "depth": 0,
+      "children": []
+    }
+  ]
+}

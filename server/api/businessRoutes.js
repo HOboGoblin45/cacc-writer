@@ -97,6 +97,7 @@ import {
   recordBillingEvent, getBillingHistory, getBillingSummary,
 } from '../business/billingService.js';
 
+import { sendErrorResponse } from '../utils/errorResponse.js';
 const createQuoteSchema = z.object({
   clientName: z.string().max(200),
   propertyAddress: z.string().max(500).optional(),
@@ -185,7 +186,7 @@ router.get('/business/quotes/summary', (_req, res) => {
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:quote-summary', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -195,7 +196,7 @@ router.get('/business/quotes', (req, res) => {
     res.json({ ok: true, quotes });
   } catch (err) {
     log.error('api:quote-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -206,7 +207,7 @@ router.get('/business/quotes/:quoteId', (req, res) => {
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -307,7 +308,7 @@ router.get('/business/engagements/upcoming', (req, res) => {
     res.json({ ok: true, engagements });
   } catch (err) {
     log.error('api:engagement-upcoming', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -317,7 +318,7 @@ router.get('/business/engagements/overdue', (_req, res) => {
     res.json({ ok: true, engagements });
   } catch (err) {
     log.error('api:engagement-overdue', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -327,7 +328,7 @@ router.get('/business/engagements', (req, res) => {
     res.json({ ok: true, engagements });
   } catch (err) {
     log.error('api:engagement-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -338,7 +339,7 @@ router.get('/business/engagements/:engId', (req, res) => {
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -436,7 +437,7 @@ router.get('/business/invoices/summary', (_req, res) => {
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:invoice-summary', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -446,7 +447,7 @@ router.get('/business/invoices/overdue', (_req, res) => {
     res.json({ ok: true, invoices });
   } catch (err) {
     log.error('api:invoice-overdue', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -456,7 +457,7 @@ router.get('/business/invoices', (req, res) => {
     res.json({ ok: true, invoices });
   } catch (err) {
     log.error('api:invoice-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -467,7 +468,7 @@ router.get('/business/invoices/:invoiceId', (req, res) => {
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -543,7 +544,7 @@ router.get('/business/pipeline/summary', (_req, res) => {
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:pipeline-summary', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -553,7 +554,7 @@ router.get('/business/pipeline/workload', (_req, res) => {
     res.json({ ok: true, workload });
   } catch (err) {
     log.error('api:pipeline-workload', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -563,7 +564,7 @@ router.get('/business/pipeline', (req, res) => {
     res.json({ ok: true, entries });
   } catch (err) {
     log.error('api:pipeline-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -586,7 +587,7 @@ router.get('/business/pipeline/:entryId', (req, res) => {
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -666,7 +667,7 @@ router.get('/business/tenants', (req, res) => {
     res.json({ ok: true, tenants });
   } catch (err) {
     log.error('api:tenant-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -688,7 +689,7 @@ router.get('/business/tenants/:id', (req, res) => {
     res.json({ ok: true, tenant });
   } catch (err) {
     log.error('api:tenant-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -711,7 +712,7 @@ router.get('/business/feature-flags', (req, res) => {
     res.json({ ok: true, flags });
   } catch (err) {
     log.error('api:feature-flag-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -722,7 +723,7 @@ router.get('/business/feature-flags/:key', (req, res) => {
     res.json({ ok: true, flag });
   } catch (err) {
     log.error('api:feature-flag-get', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -767,7 +768,7 @@ router.get('/business/billing/:tenantId', (req, res) => {
     res.json({ ok: true, history });
   } catch (err) {
     log.error('api:billing-history', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -777,7 +778,7 @@ router.get('/business/billing/:tenantId/summary', (req, res) => {
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:billing-summary', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

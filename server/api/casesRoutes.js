@@ -111,6 +111,7 @@ import { getInsertionReplayPackage } from '../insertion/insertionRunEngine.js';
 import log from '../logger.js';
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
+import { sendErrorResponse } from '../utils/errorResponse.js';
 const CASE_STATUSES = ['active', 'submitted', 'archived'];
 const QC_GATED_CASE_STATUSES = new Set(['submitted']);
 const QC_GATED_PIPELINE_STAGES = new Set(['approved', 'inserting', 'complete']);
@@ -476,7 +477,7 @@ function createCaseHandler(req, res) {
     });
     res.json({ ok: true, caseId, meta: projection.meta });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 }
 
@@ -489,7 +490,7 @@ router.get('/', (_req, res) => {
     const cases = listCaseProjections().map(c => c.meta);
     res.json({ ok: true, cases });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -500,7 +501,7 @@ router.get('/records', (_req, res) => {
     const headers = records.map(r => r.header);
     res.json({ ok: true, count: records.length, headers });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -516,7 +517,7 @@ router.get('/migration/status', (req, res) => {
     const status = getCanonicalBackfillStatus({ includeIntegrity, integrityLimit });
     res.json({ ok: true, ...status });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -532,7 +533,7 @@ router.post('/migration/backfill', (req, res) => {
     });
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -546,7 +547,7 @@ router.get('/:caseId/record', (req, res) => {
       record: projection.caseRecord,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -649,7 +650,7 @@ router.get('/:caseId/workspace', (req, res) => {
       workspace,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -670,7 +671,7 @@ router.get('/:caseId/insertion-runs', (req, res) => {
       runs: insertionReliability.recentRuns,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -691,7 +692,7 @@ router.get('/:caseId/insertion-runs/:runId', (req, res) => {
       ...detail,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -712,7 +713,7 @@ router.get('/:caseId/insertion-runs/:runId/replay-package', (req, res) => {
       replayPackage: getInsertionReplayPackage(run.id) || { items: [], summary: {} },
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -741,7 +742,7 @@ router.get('/:caseId/contradiction-graph', (req, res) => {
       contradictionGraph,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -771,7 +772,7 @@ router.post('/:caseId/contradiction-graph/:contradictionId/resolve', (req, res) 
     const record = resolveContradiction(req.params.caseId, req.params.contradictionId, body);
     res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -784,7 +785,7 @@ router.post('/:caseId/contradiction-graph/:contradictionId/dismiss', (req, res) 
     const record = dismissContradiction(req.params.caseId, req.params.contradictionId, body);
     res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -797,7 +798,7 @@ router.post('/:caseId/contradiction-graph/:contradictionId/acknowledge', (req, r
     const record = acknowledgeContradiction(req.params.caseId, req.params.contradictionId, body);
     res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -810,7 +811,7 @@ router.post('/:caseId/contradiction-graph/:contradictionId/reopen', (req, res) =
     const record = reopenContradiction(req.params.caseId, req.params.contradictionId, body);
     res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -826,7 +827,7 @@ router.get('/:caseId/comparable-intelligence', (req, res) => {
       intelligence,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -890,7 +891,7 @@ router.get('/:caseId/section-audit', (req, res) => {
       sectionAudits,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -929,7 +930,7 @@ router.get('/:caseId/section-audit/:sectionId', (req, res) => {
       changedPaths: freshness.changedPaths,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1003,7 +1004,7 @@ router.post('/:caseId/valuation/sales-comparison', (req, res) => {
       indication,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1014,7 +1015,7 @@ router.post('/:caseId/valuation/income', (req, res) => {
     const result = computeIncomeApproachValue(body);
     res.json({ ok: true, caseId: req.params.caseId, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1025,7 +1026,7 @@ router.post('/:caseId/valuation/cost', (req, res) => {
     const result = computeCostApproachValue(body);
     res.json({ ok: true, caseId: req.params.caseId, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1036,7 +1037,7 @@ router.post('/:caseId/valuation/reconciliation', (req, res) => {
     const result = buildReconciliationSupport(body);
     res.json({ ok: true, caseId: req.params.caseId, ...result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1061,7 +1062,7 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', (
       meta: result.projection?.meta || null,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1083,7 +1084,7 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/hold', (re
       intelligence,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1107,7 +1108,7 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', (
       intelligence,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1134,7 +1135,7 @@ router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adju
       intelligence,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1201,7 +1202,7 @@ router.put('/:caseId/workspace', (req, res) => {
       factChangeInvalidation,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1216,7 +1217,7 @@ router.get('/:caseId/fact-sources', (req, res) => {
       count: Object.keys(sources).length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1253,7 +1254,7 @@ router.put('/:caseId/fact-sources', (req, res) => {
       count: Object.keys(updated.provenance || {}).length,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1264,7 +1265,7 @@ router.get('/:caseId/fact-conflicts', (req, res) => {
     if (!report) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, ...report });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1274,7 +1275,7 @@ router.get('/:caseId/fact-review-queue', (req, res) => {
     if (!queue) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, queue });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1296,7 +1297,7 @@ router.post('/:caseId/fact-review-queue/resolve', (req, res) => {
     if (!result) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1322,7 +1323,7 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
       decisionQueueSummary: decisionQueue?.summary || null,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1337,7 +1338,7 @@ router.get('/:caseId/qc-approval-gate', (req, res) => {
       gate,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1362,7 +1363,7 @@ router.get('/:caseId', (req, res) => {
       } : {}),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1400,7 +1401,7 @@ router.patch('/:caseId', (req, res) => {
     });
     res.json({ ok: true, meta: updated.meta || applyMetaDefaults(meta) });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1415,7 +1416,7 @@ router.delete('/:caseId', (req, res) => {
     safeDeleteCaseRecord(req.params.caseId);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1454,7 +1455,7 @@ router.patch('/:caseId/status', (req, res) => {
     });
     res.json({ ok: true, meta: updated.meta || meta });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1516,7 +1517,7 @@ router.patch('/:caseId/pipeline', (req, res) => {
       meta: updated?.meta || meta,
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1571,7 +1572,7 @@ router.patch('/:caseId/workflow-status', (req, res) => {
       meta: updated?.meta || applyMetaDefaults(meta),
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1618,7 +1619,7 @@ router.put('/:caseId/facts', (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1629,7 +1630,7 @@ router.get('/:caseId/history', (req, res) => {
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, history: projection.history || {} });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1639,7 +1640,7 @@ router.get('/:caseId/generation-runs', (req, res) => {
     const runs = getRunsForCase(req.params.caseId);
     res.json({ ok: true, runs, count: runs.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1768,7 +1769,7 @@ router.post('/:caseId/geocode', async (req, res) => {
     });
   } catch (err) {
     log.error('[/geocode]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1815,7 +1816,7 @@ router.get('/:caseId/location-context', async (req, res) => {
     });
   } catch (err) {
     log.error('[/location-context]', err.message);
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1900,7 +1901,7 @@ router.post('/:caseId/insert-basic-info', async (req, res) => {
     });
   } catch (err) {
     log.error('cases:insert-basic-info', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1980,7 +1981,7 @@ router.get('/:caseId/health', (req, res) => {
     });
   } catch (err) {
     log.error('cases:health', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -1997,7 +1998,7 @@ router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
     const formatted = formatMissingFactsForUI(missing);
     res.json({ ok: true, fieldId, ...formatted });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -2032,7 +2033,7 @@ router.post('/:caseId/missing-facts', (req, res) => {
 
     res.json({ ok: true, warnings: allWarnings });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

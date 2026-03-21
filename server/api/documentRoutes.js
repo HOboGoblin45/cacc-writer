@@ -28,7 +28,7 @@ import crypto from 'crypto';
 import { createRequire } from 'module';
 import { z } from 'zod';
 import { resolveCaseDir } from '../utils/caseUtils.js';
-import { upload } from '../utils/middleware.js';
+import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { extractImageText } from '../ingestion/imageOcrExtractor.js';
 import { scoreDocumentQuality } from '../ingestion/documentQuality.js';
@@ -55,6 +55,7 @@ import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordS
 import { readJSON } from '../utils/fileUtils.js';
 import { client, MODEL } from '../openaiClient.js';
 import log from '../logger.js';
+import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -200,6 +201,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ error: 'Case not found' });
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const uploadedBytes = await readUploadedFile(req.file);
 
     const uploadKind = detectUploadKind(req.file);
     if (!uploadKind.supported) {
@@ -213,7 +215,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     const caseId = req.params.caseId;
     const legacyDocType = body.docType || null;
     const originalFilename = req.file.originalname || 'document.pdf';
-    const fileHash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
+    const fileHash = crypto.createHash('sha256').update(uploadedBytes).digest('hex');
     const duplicateExisting = findDuplicateDocumentByHash(caseId, fileHash);
     const job = createDocumentIngestJob({
       caseId,
@@ -256,15 +258,15 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       },
       async () => {
         if (uploadKind.kind === 'pdf') {
-          const { text, method } = await extractPdfText(req.file.buffer, client, MODEL);
+          const { text, method } = await extractPdfText(uploadedBytes, client, MODEL);
           extractedText = text || '';
           extractionMethod = method || 'pdf_extract';
-          try { const p = await pdfParse(req.file.buffer); pageCount = p.numpages || 0; } catch { pageCount = 0; }
+          try { const p = await pdfParse(uploadedBytes); pageCount = p.numpages || 0; } catch { pageCount = 0; }
           if (!extractedText) throw new Error('PDF extraction produced empty text');
           return { meta: { method: extractionMethod, textLength: extractedText.length, pageCount } };
         }
 
-        const imageResult = await extractImageText(req.file.buffer, {
+        const imageResult = await extractImageText(uploadedBytes, {
           aiClient: client,
           model: MODEL,
           ext: uploadKind.ext,
@@ -290,7 +292,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
     const docsDir = path.join(cd, 'documents');
     fs.mkdirSync(docsDir, { recursive: true });
     if (!duplicateExisting) {
-      fs.writeFileSync(path.join(docsDir, storedFilename), req.file.buffer);
+      fs.copyFileSync(req.file.path, path.join(docsDir, storedFilename));
     } else {
       warnings.push(`Duplicate document detected (matches ${duplicateExisting.id}); skipped duplicate file write.`);
     }
@@ -475,7 +477,9 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       }
     }
     log.error('[documents] Upload error:', err.message);
-    res.status(500).json({ error: err.message, ingestJobId });
+    return sendErrorResponse(res, err, { extra: ingestJobId ? { ingestJobId } : undefined });
+  } finally {
+    await cleanupUploadedFile(req.file);
   }
 });
 
@@ -493,7 +497,7 @@ router.get('/cases/:caseId/documents', (req, res) => {
       })),
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -515,7 +519,7 @@ router.get('/cases/:caseId/documents/:docId', (req, res) => {
       extractions,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -536,7 +540,7 @@ router.delete('/cases/:caseId/documents/:docId', (req, res) => {
     deleteDocument(req.params.docId);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -553,7 +557,7 @@ router.patch('/cases/:caseId/documents/:docId/classify', (req, res) => {
     reclassifyDocument(req.params.docId, docType);
     res.json({ ok: true, docType, label: DOC_TYPE_LABELS[docType] });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -583,7 +587,7 @@ router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
     const result = await runDocumentExtraction(req.params.docId, text, { aiClient: client, model: MODEL });
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -595,7 +599,7 @@ router.get('/cases/:caseId/ingest-jobs', (req, res) => {
     const jobs = listCaseDocumentIngestJobs(req.params.caseId, limit);
     res.json({ ok: true, jobs });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -607,7 +611,7 @@ router.get('/cases/:caseId/ingest-jobs/:jobId', (req, res) => {
     }
     res.json({ ok: true, job });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -711,7 +715,7 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
       extraction: stepRun.result?.result || null,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 router.get('/cases/:caseId/extraction-summary', (req, res) => {
@@ -719,7 +723,7 @@ router.get('/cases/:caseId/extraction-summary', (req, res) => {
     const summary = getCaseExtractionSummary(req.params.caseId);
     res.json({ ok: true, ...summary });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -730,7 +734,7 @@ router.get('/cases/:caseId/extracted-facts', (req, res) => {
     const facts = getExtractedFacts(req.params.caseId, status);
     res.json({ ok: true, facts });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -743,7 +747,7 @@ router.post('/cases/:caseId/extracted-facts/review', (req, res) => {
     reviewFact(body.factId, body.action);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -756,7 +760,7 @@ router.post('/cases/:caseId/extracted-facts/merge', (req, res) => {
     const result = acceptAndMergeFacts(req.params.caseId, body.factIds);
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -767,7 +771,7 @@ router.get('/cases/:caseId/extracted-sections', (req, res) => {
     const sections = getExtractedSections(req.params.caseId, status);
     res.json({ ok: true, sections });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -779,7 +783,7 @@ router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
     const result = approveSection(req.params.id);
     res.json({ ok: true, ...result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 
@@ -791,7 +795,7 @@ router.post('/cases/:caseId/extracted-sections/:id/reject', (req, res) => {
     rejectSection(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorResponse(res, err);
   }
 });
 

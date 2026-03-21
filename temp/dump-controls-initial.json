@@ -1,0 +1,42 @@
+﻿{
+    "content_controls":  [
+                             {
+                                 "height":  873,
+                                 "left":  700,
+                                 "text":  "",
+                                 "top":  118,
+                                 "width":  830
+                             },
+                             {
+                                 "height":  890,
+                                 "left":  724,
+                                 "text":  "",
+                                 "top":  100,
+                                 "width":  806
+                             },
+                             {
+                                 "height":  861,
+                                 "left":  724,
+                                 "text":  "",
+                                 "top":  129,
+                                 "width":  806
+                             }
+                         ],
+    "current_tab":  "",
+    "label_texts":  [
+                        "Extra Comments"
+                    ],
+    "ok":  true,
+    "tab_requested":  null,
+    "title_controls":  [
+                           {
+                               "height":  29,
+                               "left":  724,
+                               "text":  "Extra Comments",
+                               "top":  100,
+                               "width":  806
+                           }
+                       ],
+    "total_tx32":  4,
+    "window":  "ACI Report - [C:\\Program Files (x86)\\ACI32\\REPORTS\\49561.aci]"
+}

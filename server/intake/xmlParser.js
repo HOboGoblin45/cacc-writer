@@ -348,8 +348,22 @@ export function extractAndSavePdf(pdfBase64, destDir, filename) {
       log.warn('xmlParser:pdf-invalid', { filename, headerBytes: buf.slice(0, 8).toString('hex') });
       return null;
     }
-    fs.mkdirSync(destDir, { recursive: true });
-    const pdfPath = path.join(destDir, `${filename}.pdf`);
+    const safeDestDir = path.resolve(String(destDir || ''));
+    const safeFilename = String(filename || 'document')
+      .trim()
+      .replace(/[<>:"/\\|?*\x00-\x1f]+/g, '_')
+      .replace(/\s+/g, ' ')
+      .replace(/^\.+/, '')
+      .slice(0, 120) || 'document';
+
+    fs.mkdirSync(safeDestDir, { recursive: true });
+
+    const pdfPath = path.resolve(safeDestDir, `${safeFilename}.pdf`);
+    const relative = path.relative(safeDestDir, pdfPath);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new Error('Resolved PDF path escaped destination directory');
+    }
+
     fs.writeFileSync(pdfPath, buf);
     log.info('xmlParser:pdf-saved', { pdfPath, sizeBytes: buf.length });
     return pdfPath;
