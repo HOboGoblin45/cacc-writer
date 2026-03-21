@@ -110,7 +110,7 @@ function parsePayload(schema, payload, res) {
 
 // ── GET /health ───────────────────────────────────────────────────────────────
 router.get('/health', (_req, res) => {
-  res.json({ ok: true, model: MODEL, version: '2.0.0' });
+  res.json({ ok: true, model: MODEL, version: '3.1.0' });
 });
 
 // ── GET /health/detailed ──────────────────────────────────────────────────────

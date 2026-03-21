@@ -54,6 +54,126 @@ const S = {
 
 const refs = {};
 
+// ── Keyboard shortcuts ───────────────────────────────────────────────────────
+const SHORTCUTS = [
+  { key: 's', ctrl: true, action: () => { if (S.step === 2) refs.saveFacts.click(); }, label: 'Save facts' },
+  { key: 'g', ctrl: true, shift: true, action: () => { if (S.caseId) gotoStep(3); refs.generateButton?.click(); }, label: 'Generate all' },
+  { key: 'Enter', ctrl: true, action: () => { if (S.step === 5) refs.insertButton.click(); }, label: 'Insert all' },
+  { key: '1', alt: true, action: () => gotoStep(1), label: 'Step 1: Import' },
+  { key: '2', alt: true, action: () => gotoStep(2), label: 'Step 2: Facts' },
+  { key: '3', alt: true, action: () => gotoStep(3), label: 'Step 3: Generate' },
+  { key: '4', alt: true, action: () => gotoStep(4), label: 'Step 4: Review' },
+  { key: '5', alt: true, action: () => gotoStep(5), label: 'Step 5: Insert' },
+  { key: 'k', ctrl: true, action: () => toggleCommandPalette(), label: 'Command palette' },
+  { key: 'Escape', action: () => { if (commandPaletteOpen) toggleCommandPalette(false); }, label: 'Close palette' },
+];
+
+let commandPaletteOpen = false;
+
+document.addEventListener('keydown', (e) => {
+  for (const shortcut of SHORTCUTS) {
+    if (shortcut.key !== e.key) continue;
+    if (shortcut.ctrl && !(e.ctrlKey || e.metaKey)) continue;
+    if (shortcut.shift && !e.shiftKey) continue;
+    if (shortcut.alt && !e.altKey) continue;
+    if (!shortcut.ctrl && (e.ctrlKey || e.metaKey) && shortcut.key !== 'Escape') continue;
+    if (!shortcut.alt && e.altKey) continue;
+    e.preventDefault();
+    shortcut.action();
+    return;
+  }
+});
+
+// ── Command Palette ──────────────────────────────────────────────────────────
+function toggleCommandPalette(force) {
+  commandPaletteOpen = force !== undefined ? force : !commandPaletteOpen;
+  let palette = document.getElementById('command-palette');
+  if (commandPaletteOpen) {
+    if (!palette) {
+      palette = document.createElement('div');
+      palette.id = 'command-palette';
+      palette.className = 'command-palette-overlay';
+      palette.innerHTML = `
+        <div class="command-palette-card">
+          <input type="text" class="command-palette-input" placeholder="Type a command…" autocomplete="off" />
+          <div class="command-palette-list"></div>
+        </div>
+      `;
+      document.body.appendChild(palette);
+      palette.addEventListener('click', (e) => { if (e.target === palette) toggleCommandPalette(false); });
+    }
+    palette.classList.remove('hidden');
+    const input = palette.querySelector('.command-palette-input');
+    input.value = '';
+    input.focus();
+    renderCommandPaletteResults(palette, '');
+    input.addEventListener('input', () => renderCommandPaletteResults(palette, input.value));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const first = palette.querySelector('.command-palette-item');
+        if (first) first.click();
+      }
+    });
+  } else if (palette) {
+    palette.classList.add('hidden');
+  }
+}
+
+function renderCommandPaletteResults(palette, query) {
+  const commands = [
+    { label: 'Go to Import', shortcut: 'Alt+1', action: () => { gotoStep(1); toggleCommandPalette(false); } },
+    { label: 'Go to Facts', shortcut: 'Alt+2', action: () => { gotoStep(2); toggleCommandPalette(false); } },
+    { label: 'Go to Generate', shortcut: 'Alt+3', action: () => { gotoStep(3); toggleCommandPalette(false); } },
+    { label: 'Go to Review', shortcut: 'Alt+4', action: () => { gotoStep(4); toggleCommandPalette(false); } },
+    { label: 'Go to Insert', shortcut: 'Alt+5', action: () => { gotoStep(5); toggleCommandPalette(false); } },
+    { label: 'Save facts', shortcut: 'Ctrl+S', action: () => { refs.saveFacts.click(); toggleCommandPalette(false); } },
+    { label: 'Generate all narratives', shortcut: 'Ctrl+Shift+G', action: () => { refs.generateButton?.click(); toggleCommandPalette(false); } },
+    { label: 'Approve all sections', action: () => { refs.approveAll?.click(); toggleCommandPalette(false); } },
+    { label: 'Insert into ACI', shortcut: 'Ctrl+Enter', action: () => { refs.insertButton?.click(); toggleCommandPalette(false); } },
+    { label: 'Refresh cases', action: () => { refreshCases({ restoreSelection: true }); toggleCommandPalette(false); } },
+    { label: 'Toggle sidebar', action: () => { toggleSidebar(); toggleCommandPalette(false); } },
+  ];
+
+  const q = query.toLowerCase().trim();
+  const filtered = q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
+  const list = palette.querySelector('.command-palette-list');
+  list.innerHTML = filtered.map(c => `
+    <button class="command-palette-item" type="button">
+      <span>${escapeHtml(c.label)}</span>
+      ${c.shortcut ? `<kbd>${escapeHtml(c.shortcut)}</kbd>` : ''}
+    </button>
+  `).join('') || '<div class="command-palette-empty">No matching commands</div>';
+
+  list.querySelectorAll('.command-palette-item').forEach((btn, i) => {
+    btn.addEventListener('click', () => filtered[i].action());
+  });
+}
+
+// ── Auto-refresh polling ─────────────────────────────────────────────────────
+let pollTimer = null;
+
+function startPolling() {
+  stopPolling();
+  pollTimer = window.setInterval(async () => {
+    if (!S.caseId || S.generation.running) return;
+    try {
+      const data = await api(`/api/cases/${S.caseId}`);
+      const newOutputKeys = Object.keys(data.outputs || {}).filter(k => data.outputs[k]?.text);
+      const oldOutputKeys = Object.keys(S.outputs || {}).filter(k => S.outputs[k]?.text);
+      if (newOutputKeys.length !== oldOutputKeys.length) {
+        S.outputs = data.outputs || {};
+        S.caseMeta = data.meta || data.caseMeta || S.caseMeta;
+        S.docSummary = data.docSummary || S.docSummary;
+        renderAll();
+      }
+    } catch (_) { /* silent */ }
+  }, 8000);
+}
+
+function stopPolling() {
+  if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+}
+
 document.addEventListener('DOMContentLoaded', init);
 
 async function api(path, opts = {}) {
@@ -90,6 +210,7 @@ function init() {
   bindDelegatedInputs();
   renderAll();
   refreshCases({ restoreSelection: true });
+  startPolling();
 }
 
 function cacheRefs() {
@@ -184,6 +305,9 @@ function bindCaseControls() {
 
   refs.refreshCases.addEventListener('click', () => refreshCases({ restoreSelection: true }));
   refs.headerRefresh.addEventListener('click', () => refreshCases({ restoreSelection: true }));
+  
+  const paletteTrigger = document.getElementById('cmd-palette-trigger');
+  if (paletteTrigger) paletteTrigger.addEventListener('click', () => toggleCommandPalette());
 
   refs.importContinue.addEventListener('click', () => gotoStep(2));
   refs.importExisting.addEventListener('click', () => {
@@ -483,7 +607,7 @@ function renderCaseSelect() {
 
   for (const item of S.cases) {
     const summary = getCaseSummary(item);
-    options.push(`<option value="${escapeAttr(summary.id)}">${escapeHtml(summary.address || 'Untitled case')} � ${escapeHtml(summary.borrower || 'Unknown borrower')}</option>`);
+    options.push(`<option value="${escapeAttr(summary.id)}">${escapeHtml(summary.address || 'Untitled case')} � ${escapeHtml(summary.borrower || 'Unknown borrower')}</option>`);
   }
 
   refs.caseSelect.innerHTML = options.join('');
@@ -542,7 +666,7 @@ function renderCaseHeader() {
   const approvedCount = Object.values(S.outputs || {}).filter((item) => item && item.approved).length;
 
   refs.headerCaseTitle.textContent = address;
-  refs.headerCaseMeta.textContent = `${borrower} � Form ${formType} � ${workflowStatus}`;
+  refs.headerCaseMeta.textContent = `${borrower} � Form ${formType} � ${workflowStatus}`;
   refs.heroCaseId.textContent = S.caseId;
   refs.heroCaseForm.textContent = `Form ${formType}`;
   refs.heroDocCount.textContent = String(Object.keys(S.docSummary || {}).length);
@@ -574,10 +698,10 @@ function renderImportSummary() {
     return;
   }
 
-  const address = getCaseAddress(S.caseMeta) || '�';
-  const borrower = getCaseBorrower(S.caseMeta) || '�';
-  const lender = getCaseLender(S.caseMeta) || '�';
-  const formType = getCaseFormType(S.caseMeta) || '�';
+  const address = getCaseAddress(S.caseMeta) || '�';
+  const borrower = getCaseBorrower(S.caseMeta) || '�';
+  const lender = getCaseLender(S.caseMeta) || '�';
+  const formType = getCaseFormType(S.caseMeta) || '�';
   const comps = Array.isArray(S.facts?.comps) ? S.facts.comps.length : (S.caseMeta.comps?.length || S.caseMeta.comparableCount || 0);
   const docs = Object.keys(S.docSummary || {}).length;
 
@@ -852,9 +976,9 @@ function renderGenerateSummary() {
     return;
   }
 
-  const address = getCaseAddress(S.caseMeta) || '�';
-  const borrower = getCaseBorrower(S.caseMeta) || '�';
-  const formType = getCaseFormType(S.caseMeta) || '�';
+  const address = getCaseAddress(S.caseMeta) || '�';
+  const borrower = getCaseBorrower(S.caseMeta) || '�';
+  const formType = getCaseFormType(S.caseMeta) || '�';
   const docs = Object.keys(S.docSummary || {}).length;
   const sectionCount = getSectionEntries().length;
 
@@ -917,7 +1041,7 @@ function renderGenerationStatus() {
 
   refs.generationProgressFill.style.width = `${progress}%`;
   refs.generateStatus.textContent = S.generation.running
-    ? `${S.generation.stages[S.generation.stageIndex]} � ${formatElapsed(S.generation.startedAt)}`
+    ? `${S.generation.stages[S.generation.stageIndex]} � ${formatElapsed(S.generation.startedAt)}`
     : S.generation.lastMessage;
 
   refs.generateStatus.className = '';

@@ -1,7 +1,10 @@
 :root {
   color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   --bg: #0d1117;
   --bg-elevated: #11161d;
   --bg-soft: #161b22;
@@ -46,6 +49,24 @@ body {
     radial-gradient(circle at top right, rgba(88, 166, 255, 0.06), transparent 22%),
     var(--bg);
   color: var(--text);
+}
+
+/* Subtle noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 body.sidebar-collapsed {
@@ -1404,6 +1425,227 @@ body.sidebar-collapsed .sidebar-block-head {
   .progress-bar {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Command Palette ───────────────────────────────────────────────────────── */
+
+.command-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: start center;
+  padding-top: min(18vh, 180px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  animation: palette-overlay-in 0.15s ease;
+}
+
+.command-palette-overlay.hidden {
+  display: none;
+}
+
+.command-palette-card {
+  width: min(540px, calc(100vw - 32px));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xl);
+  background: var(--bg-elevated);
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: palette-card-in 0.18s ease;
+}
+
+.command-palette-input {
+  width: 100%;
+  padding: 18px 22px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  font-size: 1.05rem;
+  color: var(--text);
+  outline: none;
+}
+
+.command-palette-input:focus {
+  box-shadow: none;
+  border-color: var(--line-strong);
+}
+
+.command-palette-list {
+  max-height: 340px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.command-palette-item {
+  width: 100%;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.command-palette-item:hover,
+.command-palette-item:focus-visible {
+  background: rgba(226, 183, 20, 0.1);
+}
+
+.command-palette-item kbd {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.command-palette-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--muted);
+}
+
+@keyframes palette-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes palette-card-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Page transitions ─────────────────────────────────────────────────────── */
+
+.wizard-step.is-active {
+  display: block;
+  animation: step-in 0.28s ease;
+}
+
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Card hover glow ──────────────────────────────────────────────────────── */
+
+.hero-card {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.hero-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(226, 183, 20, 0.25);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(226, 183, 20, 0.12);
+}
+
+/* ── Section card transitions ─────────────────────────────────────────────── */
+
+.section-card {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.section-card:hover {
+  border-color: rgba(226, 237, 243, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Skeleton loader ──────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-soft) 25%, rgba(255, 255, 255, 0.06) 50%, var(--bg-soft) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+  border-radius: 10px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Pulse animation for live indicators ──────────────────────────────────── */
+
+.live-pulse {
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(226, 183, 20, 0.12); }
+  50% { box-shadow: 0 0 0 14px rgba(226, 183, 20, 0.04); }
+}
+
+/* ── Focus ring ───────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid rgba(226, 183, 20, 0.6);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(226, 183, 20, 0.6);
+  outline-offset: 2px;
+}
+
+/* ── Smooth scrollbar ─────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Keyboard shortcut hint in topbar ─────────────────────────────────────── */
+
+.shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.shortcut-hint:hover {
+  border-color: rgba(226, 183, 20, 0.35);
+  background: rgba(226, 183, 20, 0.06);
+}
+
+.shortcut-hint kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-family: inherit;
+  font-size: 0.72rem;
 }
 
 @media (max-width: 720px) {

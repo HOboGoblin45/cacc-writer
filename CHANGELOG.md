@@ -1,6 +1,30 @@
 ﻿# Changelog
 
-## 2026-03-21
+## 2026-03-21 — v3.1.0
+
+### Frontend polish & UX excellence
+- Added command palette (Ctrl+K) with fuzzy search across all app commands
+- Added keyboard shortcuts: Ctrl+S (save facts), Ctrl+Shift+G (generate), Ctrl+Enter (insert), Alt+1-5 (navigate steps)
+- Added page transition animations (fade+slide on step changes)
+- Added micro-interactions: hero card hover glow, section card hover effects
+- Added skeleton loader utility class for future loading states
+- Added subtle noise texture overlay for depth
+- Added pulse animation for live generation indicator
+- Added custom scrollbar styling (thin, semi-transparent)
+- Added focus-visible ring for keyboard accessibility
+- Added SVG favicon with AA brand mark
+- Connected Google Fonts (Inter) for consistent typography rendering
+- Added auto-refresh polling (8s) to detect new generated content
+- Added shortcut hint pill in topbar linking to command palette
+- Version bumped to 3.1.0
+
+### Test fixes & verification
+- Fixed 4 failing Phase 3 tests (disk-write vs API-write mismatch for outputs)
+- Fixed 3 failing scope enforcement tests (activeScope vs activeForms array check)
+- Fixed SyntaxError in compsRoutes.js (await in non-async function)
+- Wired insertion pipeline to real run engine (was calling non-existent functions)
+- All test suites green: 308 unit, 147 integration, 70 Phase 3, 37 Phase 2, 22 missing facts, 17 scope
+- Installed vitest as devDependency, restored custom runner as primary test:unit
 
 ### Backend hardening
 - Removed `dotenv.config({ override: true })` from `cacc-writer-server.js` and `server/openaiClient.js` so runtime and harness environment variables can override `.env` safely.
