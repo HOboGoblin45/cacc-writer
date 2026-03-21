@@ -6,6 +6,7 @@
 
 import { Router } from 'express';
 import { registerUser, loginUser, verifyToken, authMiddleware, getSubscription, checkReportQuota, PLANS } from './authService.js';
+import { getUserKbStats } from '../retrieval/userScopedRetrieval.js';
 
 const router = Router();
 
@@ -57,6 +58,28 @@ router.get('/auth/me', (req, res) => {
       reportsLimit: sub.reports_limit,
       ...quota,
     } : null,
+  });
+});
+
+// ── GET /auth/voice-stats ─────────────────────────────────────────────────────
+
+router.get('/auth/voice-stats', authMiddleware, (req, res) => {
+  const stats = getUserKbStats(req.user.userId);
+  const readiness = stats.totalExamples >= 50 ? 'excellent'
+    : stats.totalExamples >= 20 ? 'good'
+    : stats.totalExamples >= 10 ? 'learning'
+    : 'starting';
+  res.json({
+    ok: true,
+    ...stats,
+    readiness,
+    message: readiness === 'excellent'
+      ? 'Your AI voice model is well-trained. Generation quality should closely match your writing style.'
+      : readiness === 'good'
+      ? 'Your voice model is building nicely. Keep approving sections to improve it further.'
+      : readiness === 'learning'
+      ? `${stats.totalExamples} approved sections so far. Aim for 20+ per form type for best results.`
+      : 'Your voice model is just getting started. Approve generated sections to teach the AI your style.',
   });
 });
 

@@ -54,6 +54,7 @@ import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
 import sseRouter from './server/api/sseRoutes.js';
 import authRouter from './server/auth/authRoutes.js';
+import billingRouter from './server/billing/billingRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -122,6 +123,7 @@ app.use(requireAuth);
 // Auth schema + routes (before other routes)
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
 app.use('/api', authRouter);
+app.use('/api', billingRouter);
 app.use('/api', healthRouter);
 app.use('/api', sseRouter);
 app.use('/api/cases', casesRouter);

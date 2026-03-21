@@ -51,6 +51,7 @@ import { onSectionApproved, onSectionRejected } from '../learning/feedbackLoopSe
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import log from '../logger.js';
 import { sendErrorResponse } from '../utils/errorResponse.js';
+import { saveUserApprovedSection } from '../retrieval/userScopedRetrieval.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -494,6 +495,24 @@ router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
 
     const meta = { ...(runtime.meta || {}), updatedAt: now };
     saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
+
+    // Save to user's personal KB when approved (multi-tenant voice learning)
+    if (isApprovedStatus && hasText) {
+      try {
+        const userId = req.user?.userId || 'default';
+        const formType = runtime.formType || meta.formType || '1004';
+        saveUserApprovedSection(userId, {
+          caseId: req.params.caseId,
+          fieldId,
+          formType,
+          text: outputs[fieldId].text,
+          county: runtime.facts?.subject?.county?.value,
+          city: runtime.facts?.subject?.city?.value,
+        });
+      } catch (kbErr) {
+        log.warn('user-kb:save-failed', { fieldId, error: kbErr.message });
+      }
+    }
 
     res.json({
       ok: true,
