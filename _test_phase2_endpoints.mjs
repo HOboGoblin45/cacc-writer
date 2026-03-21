@@ -99,17 +99,18 @@ const CASES_DIR = path.join(path.dirname(new URL(import.meta.url).pathname.repla
   console.log('\n[4] POST /api/cases/:caseId/generate-core — deferred scope enforcement');
 
   // Must use a valid 8-char hex caseId (CASE_ID_RE = /^[a-f0-9]{8}$/i)
-  const deferredId = 'def1025a';
+  // 1025 is now active (not deferred) — use 1004c which is the actual deferred form
+  const deferredId = 'de1004ca';
   const deferredDir = path.join(CASES_DIR, deferredId);
   fs.mkdirSync(deferredDir, { recursive: true });
   fs.writeFileSync(path.join(deferredDir, 'meta.json'),
-    JSON.stringify({ formType: '1025', address: 'Deferred Test', caseId: deferredId }));
+    JSON.stringify({ formType: '1004c', address: 'Deferred Test', caseId: deferredId }));
 
   const gc1 = await post(`/api/cases/${deferredId}/generate-core`, { twoPass: false });
-  check('4a. 1025 → ok:false',             gc1.ok === false,                        JSON.stringify(gc1));
+  check('4a. 1004c → ok:false',            gc1.ok === false,                        JSON.stringify(gc1));
   check('4b. scope=deferred',              gc1.scope === 'deferred',                JSON.stringify(gc1));
   check('4c. supported=false',             gc1.supported === false);
-  check('4d. formType in response',        gc1.formType === '1025');
+  check('4d. formType in response',        gc1.formType === '1004c');
   fs.rmSync(deferredDir, { recursive: true, force: true });
 
   // ── [5] generate-core: 1004 endpoint shape ────────────────────────────────
