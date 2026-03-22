@@ -92,6 +92,9 @@ import platformAIRouter from './server/api/platformAIRoutes.js';
 import calendarRouter from './server/api/calendarRoutes.js';
 import docGenRouter from './server/api/documentGenerationRoutes.js';
 import voiceRouter from './server/api/voiceRoutes.js';
+import webhookRouter from './server/api/webhookRoutes.js';
+import { ensureWebhookSchema } from './server/integrations/webhookNotifier.js';
+import { ensureWhitelabelSchema } from './server/whitelabel/whitelabelService.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
 import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
 import invoiceRouter from './server/api/invoiceRoutes.js';
@@ -183,6 +186,8 @@ try { ensureCollabSchema(); } catch (e) { console.warn('Collab schema init:', e.
 try { ensureMobileSchema(); } catch (e) { console.warn('Mobile schema init:', e.message); }
 try { ensureMarketTrendSchema(); } catch (e) { console.warn('Market trend schema init:', e.message); }
 try { ensureAutomationSchema(); } catch (e) { console.warn('Automation schema init:', e.message); }
+try { ensureWebhookSchema(); } catch (e) { console.warn('Webhook schema init:', e.message); }
+try { ensureWhitelabelSchema(); } catch (e) { console.warn('Whitelabel schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
@@ -213,6 +218,7 @@ app.use('/api', platformAIRouter);
 app.use('/api', calendarRouter);
 app.use('/api', docGenRouter);
 app.use('/api', voiceRouter);
+app.use('/api', webhookRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
