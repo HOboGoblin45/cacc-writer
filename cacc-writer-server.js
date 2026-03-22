@@ -71,6 +71,11 @@ import notificationRouter from './server/api/notificationRoutes.js';
 import { ensureNotificationSchema } from './server/notifications/notificationService.js';
 import schedulingRouter from './server/api/schedulingRoutes.js';
 import { ensureSchedulingSchema } from './server/scheduling/inspectionScheduler.js';
+import portalRouter from './server/api/portalRoutes.js';
+import { ensurePortalSchema } from './server/portal/clientPortal.js';
+import complianceRouter from './server/api/complianceRoutes.js';
+import { ensureComplianceSchema } from './server/compliance/workfileCompliance.js';
+import { ensurePhotoSchema } from './server/photos/photoManager.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -146,6 +151,9 @@ try { ensureAdjustmentLearnerSchema(); } catch (e) { console.warn('Adj learner s
 try { ensureRevisionSchema(); } catch (e) { console.warn('Revision schema init:', e.message); }
 try { ensureNotificationSchema(); } catch (e) { console.warn('Notification schema init:', e.message); }
 try { ensureSchedulingSchema(); } catch (e) { console.warn('Scheduling schema init:', e.message); }
+try { ensurePortalSchema(); } catch (e) { console.warn('Portal schema init:', e.message); }
+try { ensureComplianceSchema(); } catch (e) { console.warn('Compliance schema init:', e.message); }
+try { ensurePhotoSchema(); } catch (e) { console.warn('Photo schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -157,6 +165,8 @@ app.use('/api', revisionRouter);
 app.use('/api', analyticsRouter);
 app.use('/api', notificationRouter);
 app.use('/api', schedulingRouter);
+app.use('/api', portalRouter);
+app.use('/api', complianceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
