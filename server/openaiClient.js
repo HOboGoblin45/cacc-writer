@@ -20,13 +20,17 @@ dotenv.config();
 import OpenAI from 'openai';
 import log from './logger.js';
 import { callOllama, probeOllama, OLLAMA_MODEL } from './ollamaClient.js';
+import { callGemini, probeGemini, isGeminiConfigured } from './ai/geminiProvider.js';
 
-const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai' or 'ollama'
+const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai', 'ollama', or 'gemini'
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
-const MODEL = AI_PROVIDER === 'ollama' ? OLLAMA_MODEL : (process.env.OPENAI_MODEL || 'gpt-4.1');
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODEL = AI_PROVIDER === 'ollama' ? OLLAMA_MODEL : AI_PROVIDER === 'gemini' ? GEMINI_MODEL : (process.env.OPENAI_MODEL || 'gpt-4.1');
 
 if (AI_PROVIDER === 'ollama') {
   log.info('ai:provider', { provider: 'ollama', model: OLLAMA_MODEL });
+} else if (AI_PROVIDER === 'gemini') {
+  log.info('ai:provider', { provider: 'gemini', model: GEMINI_MODEL });
 } else {
   log.info('ai:provider', { provider: 'openai', model: MODEL });
 }
@@ -131,6 +135,20 @@ export async function probeOpenAIAuth({
   timeoutMs = 4000,
   fetchImpl = null,
 } = {}) {
+  // If using Gemini, probe Gemini instead
+  if (AI_PROVIDER === 'gemini') {
+    try {
+      const geminiStatus = await probeGemini();
+      return buildAuthProbeResult({
+        configured: geminiStatus.configured,
+        ready: geminiStatus.ready,
+        reason: geminiStatus.ready ? null : geminiStatus.reason,
+      });
+    } catch (err) {
+      return buildAuthProbeResult({ configured: true, ready: false, reason: err.message });
+    }
+  }
+
   // If using Ollama, probe Ollama instead
   if (AI_PROVIDER === 'ollama') {
     try {
@@ -207,6 +225,11 @@ export async function callAI(inputMessages, options = {}) {
   // Route to Ollama if configured
   if (AI_PROVIDER === 'ollama') {
     return callOllama(inputMessages, options);
+  }
+
+  // Route to Gemini if configured
+  if (AI_PROVIDER === 'gemini') {
+    return callGemini(inputMessages, options);
   }
 
   if (!client) throw new Error('OpenAI client is not initialized. Set OPENAI_API_KEY in .env');
