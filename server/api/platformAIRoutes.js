@@ -15,6 +15,8 @@ import {
   isPlatformAIAvailable, platformExtractPdf, platformAnalyzePhoto,
   platformClassifyDocument, platformSmartExtract, platformBatchExtract,
 } from '../ai/platformAI.js';
+import { analyzeSketchForCase } from '../ai/sketchAnalyzer.js';
+import { extractAndImportComps } from '../ai/multiCompExtractor.js';
 import { upload } from '../utils/middleware.js';
 import { addPhoto, autoCategorize } from '../photos/photoManager.js';
 import { dbRun, dbGet } from '../db/database.js';
@@ -224,6 +226,55 @@ router.post('/platform/classify', authMiddleware, upload.single('file'), async (
     const pdfBuffer = fs.readFileSync(req.file.path);
     const documentType = await platformClassifyDocument(pdfBuffer);
     res.json({ ok: true, documentType, fileName: req.file.originalname });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  } finally {
+    try { fs.unlinkSync(req.file.path); } catch { /* ok */ }
+  }
+});
+
+// ── POST /platform/analyze-sketch — Analyze floor plan sketch ────────────────
+
+router.post('/platform/analyze-sketch', authMiddleware, upload.single('sketch'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ ok: false, error: 'Sketch image required' });
+
+  try {
+    const imageBuffer = fs.readFileSync(req.file.path);
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const caseId = req.body.caseId;
+
+    if (caseId) {
+      const result = await analyzeSketchForCase(caseId, imageBuffer, mimeType);
+      res.json({ ok: true, ...result });
+    } else {
+      const { analyzeSketch } = await import('../ai/sketchAnalyzer.js');
+      const result = await analyzeSketch(imageBuffer, mimeType);
+      res.json({ ok: true, ...result });
+    }
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  } finally {
+    try { fs.unlinkSync(req.file.path); } catch { /* ok */ }
+  }
+});
+
+// ── POST /platform/extract-comps — Extract multiple comps from MLS PDF ───────
+
+router.post('/platform/extract-comps', authMiddleware, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
+
+  try {
+    const pdfBuffer = fs.readFileSync(req.file.path);
+    const caseId = req.body.caseId;
+
+    if (caseId) {
+      const result = await extractAndImportComps(caseId, pdfBuffer, { maxImport: parseInt(req.body.maxImport || '6') });
+      res.json({ ok: true, ...result });
+    } else {
+      const { extractMultipleComps } = await import('../ai/multiCompExtractor.js');
+      const result = await extractMultipleComps(pdfBuffer);
+      res.json({ ok: true, ...result });
+    }
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   } finally {
