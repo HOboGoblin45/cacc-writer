@@ -69,6 +69,8 @@ import { ensureRevisionSchema } from './server/revisions/revisionTracker.js';
 import analyticsRouter from './server/api/analyticsRoutes.js';
 import notificationRouter from './server/api/notificationRoutes.js';
 import { ensureNotificationSchema } from './server/notifications/notificationService.js';
+import schedulingRouter from './server/api/schedulingRoutes.js';
+import { ensureSchedulingSchema } from './server/scheduling/inspectionScheduler.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -143,6 +145,7 @@ try { ensureAmcSchema(); } catch (e) { console.warn('AMC schema init:', e.messag
 try { ensureAdjustmentLearnerSchema(); } catch (e) { console.warn('Adj learner schema init:', e.message); }
 try { ensureRevisionSchema(); } catch (e) { console.warn('Revision schema init:', e.message); }
 try { ensureNotificationSchema(); } catch (e) { console.warn('Notification schema init:', e.message); }
+try { ensureSchedulingSchema(); } catch (e) { console.warn('Scheduling schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -153,6 +156,7 @@ app.use('/api', amcRouter);
 app.use('/api', revisionRouter);
 app.use('/api', analyticsRouter);
 app.use('/api', notificationRouter);
+app.use('/api', schedulingRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
