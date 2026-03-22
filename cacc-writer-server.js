@@ -90,6 +90,7 @@ import { ensureAutomationSchema } from './server/automation/workflowAutomation.j
 import trainingRouter from './server/api/trainingRoutes.js';
 import platformAIRouter from './server/api/platformAIRoutes.js';
 import calendarRouter from './server/api/calendarRoutes.js';
+import docGenRouter from './server/api/documentGenerationRoutes.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
 import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
 import invoiceRouter from './server/api/invoiceRoutes.js';
@@ -209,6 +210,7 @@ app.use('/api', automationRouter);
 app.use('/api', trainingRouter);
 app.use('/api', platformAIRouter);
 app.use('/api', calendarRouter);
+app.use('/api', docGenRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
