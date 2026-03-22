@@ -66,6 +66,9 @@ import { ensureAmcSchema } from './server/integrations/amcConnector.js';
 import { ensureAdjustmentLearnerSchema } from './server/intelligence/adjustmentLearner.js';
 import revisionRouter from './server/api/revisionRoutes.js';
 import { ensureRevisionSchema } from './server/revisions/revisionTracker.js';
+import analyticsRouter from './server/api/analyticsRoutes.js';
+import notificationRouter from './server/api/notificationRoutes.js';
+import { ensureNotificationSchema } from './server/notifications/notificationService.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -139,6 +142,7 @@ try { ensureTemplateSchema(); } catch (e) { console.warn('Template schema init:'
 try { ensureAmcSchema(); } catch (e) { console.warn('AMC schema init:', e.message); }
 try { ensureAdjustmentLearnerSchema(); } catch (e) { console.warn('Adj learner schema init:', e.message); }
 try { ensureRevisionSchema(); } catch (e) { console.warn('Revision schema init:', e.message); }
+try { ensureNotificationSchema(); } catch (e) { console.warn('Notification schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -147,6 +151,8 @@ app.use('/api', templateRouter);
 app.use('/api', pipelineRouter);
 app.use('/api', amcRouter);
 app.use('/api', revisionRouter);
+app.use('/api', analyticsRouter);
+app.use('/api', notificationRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
