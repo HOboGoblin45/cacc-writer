@@ -57,6 +57,9 @@ import exportRouter from './server/api/exportRoutes.js';
 import authRouter from './server/auth/authRoutes.js';
 import billingRouter from './server/billing/billingRoutes.js';
 import adminRouter from './server/api/adminRoutes.js';
+import batchRouter from './server/api/batchRoutes.js';
+import templateRouter from './server/api/templateRoutes.js';
+import { ensureTemplateSchema } from './server/templates/reportTemplates.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -126,9 +129,12 @@ app.use(requireAuth);
 
 // Auth schema + routes (before other routes)
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
+try { ensureTemplateSchema(); } catch (e) { console.warn('Template schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
+app.use('/api', batchRouter);
+app.use('/api', templateRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
