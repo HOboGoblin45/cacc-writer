@@ -83,6 +83,10 @@ import dataEnrichRouter from './server/api/dataRoutes.js';
 import mobileRouter, { ensureMobileSchema } from './server/mobile/mobileApiRoutes.js';
 import businessIntelRouter from './server/api/businessIntelRoutes.js';
 import { ensureMarketTrendSchema } from './server/intelligence/marketTrendEngine.js';
+import deliveryRouter from './server/api/deliveryRoutes.js';
+import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
+import invoiceRouter from './server/api/invoiceRoutes.js';
+import { ensureInvoiceSchema } from './server/billing/invoiceGenerator.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -165,6 +169,8 @@ try { ensureApiKeySchema(); } catch (e) { console.warn('API key schema init:', e
 try { ensureCollabSchema(); } catch (e) { console.warn('Collab schema init:', e.message); }
 try { ensureMobileSchema(); } catch (e) { console.warn('Mobile schema init:', e.message); }
 try { ensureMarketTrendSchema(); } catch (e) { console.warn('Market trend schema init:', e.message); }
+try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
+try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -184,6 +190,8 @@ app.use('/api', collaborationRouter);
 app.use('/api', dataEnrichRouter);
 app.use('/api', mobileRouter);
 app.use('/api', businessIntelRouter);
+app.use('/api', deliveryRouter);
+app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
