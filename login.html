@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Appraisal Agent | Digital Ledger Login</title>
+<title>Appraisal Agent | Sign In</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -94,7 +94,7 @@
 <span class="text-on-primary font-black text-sm tracking-tighter">AA</span>
 </div>
 <h1 class="text-on-surface font-headline font-extrabold text-2xl tracking-tighter uppercase">Appraisal Agent</h1>
-<p class="text-on-secondary-container text-xs font-label tracking-[0.15em] uppercase opacity-70">AI-Powered Narrative Drafting</p>
+<p class="text-on-secondary-container text-xs font-label tracking-[0.15em] uppercase opacity-70">Cresci Appraisal &amp; Consulting</p>
 </div>
 <!-- Authentication Terminal Card -->
 <div class="w-full bg-surface-container-low ghost-border rounded-xl overflow-hidden shadow-2xl">
@@ -112,7 +112,7 @@
 <form class="space-y-5">
 <!-- Email/Username Input -->
 <div class="space-y-2">
-<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Identity Reference</label>
+<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Username or Email</label>
 <div class="relative group">
 <input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface placeholder:text-on-secondary-container/30 transition-all duration-300 py-3 px-0" placeholder="Email or Username" type="text"/>
 <span class="material-symbols-outlined absolute right-0 top-3 text-on-secondary-container/40 text-sm">alternate_email</span>
@@ -121,7 +121,7 @@
 <!-- Password Input -->
 <div class="space-y-2">
 <div class="flex justify-between items-center">
-<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Access Key</label>
+<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Password</label>
 <a class="text-[0.65rem] font-label text-primary hover:text-primary-fixed transition-colors tracking-[0.05em] uppercase" href="#">Forgot Password?</a>
 </div>
 <div class="relative group">
@@ -132,7 +132,7 @@
 <!-- Primary Action -->
 <div class="pt-4">
 <button class="w-full aureate-gradient h-12 rounded-full text-on-primary font-bold tracking-tight hover:shadow-[0_0_25px_rgba(226,183,20,0.4)] transition-all duration-300 active:scale-[0.98]" type="submit">
-                            Authorize Session
+                            Sign In
                         </button>
 </div>
 </form>
@@ -171,11 +171,11 @@
 <!-- Global Footer from Shared Components -->
 <footer class="flex flex-col items-center gap-4 pb-8 w-full fixed bottom-0">
 <div class="flex gap-4">
+<a class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] hover:text-[#dfe2eb] transition-opacity duration-300" href="/landing">Home</a>
 <a class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] hover:text-[#dfe2eb] transition-opacity duration-300" href="#">Terms of Service</a>
 <a class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] hover:text-[#dfe2eb] transition-opacity duration-300" href="#">Privacy Policy</a>
-<a class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] hover:text-[#dfe2eb] transition-opacity duration-300" href="#">Security</a>
 </div>
-<p class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4]">© 2024 Appraisal Agent. AI-Powered Narrative Drafting.</p>
+<p class="font-['Inter'] text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#b0b9c4]">© 2026 Appraisal Agent — Cresci Appraisal &amp; Consulting.</p>
 </footer>
 <script>
 // ── Appraisal Agent — Login/Register API Integration ────────────────────────
@@ -184,61 +184,53 @@ const API = window.location.origin + '/api';
 // Redirect if already logged in
 if (localStorage.getItem('aa-token')) window.location.href = '/dashboard';
 
-// Tab switching
-const tabs = document.querySelectorAll('header + main .flex.border-b button, .bg-surface-container-lowest\\/50 button, div[class*="border-b"] > button');
-let signInTab, createTab;
-
-document.querySelectorAll('button').forEach(btn => {
-  const text = btn.textContent.trim().toLowerCase();
-  if (text.includes('sign in')) signInTab = btn;
-  if (text.includes('create')) createTab = btn;
-});
-
-// Find the form and content area
-const contentArea = document.querySelector('.p-8, [class*="p-8"][class*="space-y"]');
 const form = document.querySelector('form');
-
 let isLoginMode = true;
+
+// Tab references
+let signInTab = null, createTab = null;
+document.querySelectorAll('button').forEach(btn => {
+  const t = btn.textContent.trim().toLowerCase();
+  if (t === 'sign in') signInTab = btn;
+  if (t === 'create account') createTab = btn;
+});
 
 function switchToLogin() {
   isLoginMode = true;
-  if (signInTab) { signInTab.classList.add('border-primary', 'text-on-surface'); signInTab.classList.remove('border-transparent', 'text-on-secondary-container'); }
-  if (createTab) { createTab.classList.remove('border-primary', 'text-on-surface'); createTab.classList.add('border-transparent', 'text-on-secondary-container'); }
-
-  // Remove extra fields if they exist
-  document.querySelectorAll('[data-register-field]').forEach(el => el.remove());
-
+  signInTab?.classList.add('border-primary', 'text-on-surface');
+  signInTab?.classList.remove('border-transparent', 'text-on-secondary-container');
+  createTab?.classList.remove('border-primary', 'text-on-surface');
+  createTab?.classList.add('border-transparent', 'text-on-secondary-container');
+  document.querySelectorAll('[data-reg]').forEach(el => el.remove());
   const submitBtn = form?.querySelector('button[type="submit"]');
-  if (submitBtn) submitBtn.textContent = 'Authorize Session';
+  if (submitBtn) submitBtn.textContent = 'Sign In';
+  const usernameInput = form?.querySelector('input[type="text"]');
+  if (usernameInput) usernameInput.placeholder = 'Email or Username';
 }
 
 function switchToRegister() {
   isLoginMode = false;
-  if (createTab) { createTab.classList.add('border-primary', 'text-on-surface'); createTab.classList.remove('border-transparent', 'text-on-secondary-container'); }
-  if (signInTab) { signInTab.classList.remove('border-primary', 'text-on-surface'); signInTab.classList.add('border-transparent', 'text-on-secondary-container'); }
+  createTab?.classList.add('border-primary', 'text-on-surface');
+  createTab?.classList.remove('border-transparent', 'text-on-secondary-container');
+  signInTab?.classList.remove('border-primary', 'text-on-surface');
+  signInTab?.classList.add('border-transparent', 'text-on-secondary-container');
 
-  // Add display name and email fields if not already there
-  if (!document.querySelector('[data-register-field]')) {
-    const firstField = form?.querySelector('.space-y-2');
-    if (firstField) {
-      const nameField = document.createElement('div');
-      nameField.className = 'space-y-2';
-      nameField.setAttribute('data-register-field', 'true');
-      nameField.innerHTML = `
-        <label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Display Name</label>
-        <input id="reg-name" class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface placeholder:text-on-secondary-container/30 transition-all duration-300 py-3 px-0" placeholder="Charles Cresci" type="text" required />
-      `;
-      firstField.before(nameField);
+  if (!document.querySelector('[data-reg]') && form) {
+    const firstField = form.querySelector('.space-y-2');
+    const nameField = document.createElement('div');
+    nameField.className = 'space-y-2'; nameField.setAttribute('data-reg', 'true');
+    nameField.innerHTML = `<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Full Name</label>
+      <div class="relative"><input id="reg-name" class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface placeholder:text-on-secondary-container/30 transition-all duration-300 py-3 px-0" placeholder="Charles Cresci" type="text" required /></div>`;
+    firstField?.before(nameField);
 
-      const emailField = document.createElement('div');
-      emailField.className = 'space-y-2';
-      emailField.setAttribute('data-register-field', 'true');
-      emailField.innerHTML = `
-        <label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Email Address</label>
-        <input id="reg-email" class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface placeholder:text-on-secondary-container/30 transition-all duration-300 py-3 px-0" placeholder="you@company.com" type="email" required />
-      `;
-      firstField.before(emailField);
-    }
+    const emailField = document.createElement('div');
+    emailField.className = 'space-y-2'; emailField.setAttribute('data-reg', 'true');
+    emailField.innerHTML = `<label class="block text-[0.65rem] font-label text-on-secondary-container tracking-[0.1em] uppercase">Email Address</label>
+      <div class="relative"><input id="reg-email" class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface placeholder:text-on-secondary-container/30 transition-all duration-300 py-3 px-0" placeholder="you@cresciappraisal.com" type="email" required /></div>`;
+    firstField?.before(emailField);
+
+    const usernameInput = form.querySelector('input[type="text"]:not([id])');
+    if (usernameInput) usernameInput.placeholder = 'Username (for login)';
   }
 
   const submitBtn = form?.querySelector('button[type="submit"]');
@@ -248,88 +240,77 @@ function switchToRegister() {
 if (signInTab) signInTab.onclick = switchToLogin;
 if (createTab) createTab.onclick = switchToRegister;
 
-// Error display
 function showError(msg) {
   let errEl = document.getElementById('auth-error');
   if (!errEl) {
     errEl = document.createElement('div');
     errEl.id = 'auth-error';
     errEl.className = 'p-3 rounded-lg bg-[#93000a]/20 border border-[#ffb4ab]/20 text-[#ffb4ab] text-xs font-semibold text-center';
-    form?.appendChild(errEl);
+    form?.insertBefore(errEl, form.querySelector('button[type="submit"]'));
   }
   errEl.textContent = msg;
   errEl.style.display = 'block';
 }
 
-// Form submit
+function clearError() {
+  const errEl = document.getElementById('auth-error');
+  if (errEl) errEl.style.display = 'none';
+}
+
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const inputs = form.querySelectorAll('input');
+    clearError();
     const submitBtn = form.querySelector('button[type="submit"]');
-    const origText = submitBtn?.textContent;
+    const origText = submitBtn?.textContent || 'Sign In';
+    submitBtn.disabled = true;
 
-    if (isLoginMode) {
-      // Login
-      const username = inputs[0]?.value;
-      const password = inputs[1]?.value;
-      if (!username || !password) return showError('All fields required');
+    try {
+      if (isLoginMode) {
+        const usernameInput = form.querySelector('input[type="text"]:not([id])') || form.querySelector('input[type="text"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const username = usernameInput?.value?.trim();
+        const password = passwordInput?.value;
+        if (!username || !password) { showError('Please enter your username and password.'); return; }
 
-      submitBtn.textContent = 'Authorizing...';
-      submitBtn.disabled = true;
-
-      try {
+        submitBtn.textContent = 'Signing in...';
         const res = await fetch(API + '/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Login failed');
-
+        if (!data.ok) throw new Error(data.error || 'Login failed. Check your credentials.');
         localStorage.setItem('aa-token', data.token);
         localStorage.setItem('aa-user', JSON.stringify(data.user));
         window.location.href = '/dashboard';
-      } catch (err) {
-        showError(err.message);
-        submitBtn.textContent = origText;
-        submitBtn.disabled = false;
-      }
-    } else {
-      // Register
-      const nameInput = document.getElementById('reg-name');
-      const emailInput = document.getElementById('reg-email');
-      const username = inputs[inputs.length - 2]?.value; // username field (after dynamic fields)
-      const password = inputs[inputs.length - 1]?.value;
+      } else {
+        const displayName = document.getElementById('reg-name')?.value?.trim();
+        const email = document.getElementById('reg-email')?.value?.trim();
+        const usernameInput = form.querySelector('input[type="text"]:not([id="reg-name"]):not([id="reg-email"])') || form.querySelector('input[type="text"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const username = usernameInput?.value?.trim();
+        const password = passwordInput?.value;
 
-      // Find the original username/password inputs
-      const allInputs = [...form.querySelectorAll('input')];
-      const usernameVal = allInputs.find(i => i.placeholder?.includes('Username') || i.placeholder?.includes('Email'))?.value;
-      const passwordVal = allInputs.find(i => i.type === 'password')?.value;
+        if (!displayName || !email || !username || !password) { showError('All fields are required.'); return; }
+        if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
 
-      if (!nameInput?.value || !emailInput?.value || !usernameVal || !passwordVal) return showError('All fields required');
-
-      submitBtn.textContent = 'Creating account...';
-      submitBtn.disabled = true;
-
-      try {
+        submitBtn.textContent = 'Creating account...';
         const res = await fetch(API + '/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            displayName: nameInput.value,
-            email: emailInput.value,
-            username: usernameVal,
-            password: passwordVal,
-          }),
+          body: JSON.stringify({ displayName, email, username, password }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Registration failed');
-
-        submitBtn.textContent = 'Account created! Signing in...';
-        setTimeout(() => switchToLogin(), 1500);
-      } catch (err) {
-        showError(err.message);
+        if (!data.ok) throw new Error(data.error || 'Registration failed.');
+        localStorage.setItem('aa-token', data.token);
+        localStorage.setItem('aa-user', JSON.stringify(data.user));
+        window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      if (submitBtn && submitBtn.disabled) {
         submitBtn.textContent = origText;
         submitBtn.disabled = false;
       }
@@ -337,6 +318,6 @@ if (form) {
   });
 }
 
-console.log('Login page loaded — connected to auth API');
+console.log('Login page loaded — Appraisal Agent');
 </script>
 </body></html>

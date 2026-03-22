@@ -94,42 +94,42 @@
 <aside class="hidden md:flex flex-col h-screen w-64 bg-[#181c22] border-r-0 shadow-[4px_0_24px_rgba(0,0,0,0.5)] fixed left-0 top-0 z-50">
 <div class="flex flex-col h-full py-8">
 <div class="px-6 mb-8">
-<h1 class="text-lg font-black text-[#dfe2eb] tracking-tighter uppercase">AI-Powered Narrative Drafting</h1>
-<p class="text-[10px] text-on-secondary-container opacity-60 tracking-[0.2em] uppercase mt-1">Premium Valuation Terminal</p>
+<h1 class="text-lg font-black text-[#dfe2eb] tracking-tighter uppercase">Appraisal Agent</h1>
+<p class="text-[10px] text-on-secondary-container opacity-60 tracking-[0.2em] uppercase mt-1">Cresci Appraisal &amp; Consulting</p>
 </div>
 <nav class="flex-1 space-y-1">
-<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="/dashboard">
 <span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="dashboard">dashboard</span>
 <span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Dashboard</span>
 </a>
-<a class="flex items-center text-[#ffd341] border-l-2 border-[#ffd341] bg-[#1c2026] py-3 px-6 transition-all group" href="#">
+<a class="flex items-center text-[#ffd341] border-l-2 border-[#ffd341] bg-[#1c2026] py-3 px-6 transition-all group" href="/analytics">
 <span class="material-symbols-outlined mr-3" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
 <span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Analytics</span>
 </a>
-<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
-<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="insert_chart">insert_chart</span>
-<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Valuations</span>
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="/">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="folder_open">folder_open</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Cases</span>
 </a>
-<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="/settings">
 <span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="settings">settings</span>
 <span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Settings</span>
 </a>
 </nav>
 <div class="px-6 mt-4">
-<button class="w-full aureate-gradient text-[#111] font-bold py-3 rounded-full flex items-center justify-center gap-2 active:opacity-80 transition-all scale-100 active:scale-95 shadow-[0_0_20px_rgba(226,183,20,0.2)]">
+<a href="/case" class="w-full aureate-gradient text-[#111] font-bold py-3 rounded-full flex items-center justify-center gap-2 active:opacity-80 transition-all scale-100 active:scale-95 shadow-[0_0_20px_rgba(226,183,20,0.2)]">
 <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
 <span class="text-xs uppercase tracking-widest">New Appraisal</span>
-</button>
+</a>
 </div>
 <div class="mt-auto border-t border-outline-variant/10 pt-4">
 <a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
 <span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="help_outline">help_outline</span>
 <span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Support</span>
 </a>
-<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
-<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="logout">logout</span>
-<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Logout</span>
-</a>
+<button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="w-full flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group">
+<span class="material-symbols-outlined mr-3" data-icon="logout">logout</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Sign Out</span>
+</button>
 </div>
 </div>
 </aside>
@@ -155,9 +155,7 @@
 <button class="text-[#b0b9c4] hover:bg-[#353940] p-2 rounded-full transition-colors duration-200">
 <span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
 </button>
-<div class="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
-<img alt="Agent Profile" class="w-full h-full object-cover" data-alt="Professional portrait of a male real estate agent" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu1xSZC597C6H1cYjmEwsHCMyleaEy5JL5VnJmqrrfR5hnfUqu4ZHcrJiIoG9g1xm9d8OWILEnjg7jKzKoC99_HfjI_YXjMqSHQkYz4azB5faZf_TXB5KAesG1kYGcABLE7eJ4plom9ibW1vLPQCE1_KhsKx2-R_X8t2VACbX2-nNjdweOs21M9tF3bseub5CloIbGdwb4giMmF7gPuKFsqm3XJr6-vT-EgMpo3EeAj5H68MOQTBSNc4Tp2wC3d9z5sXjUXP2Wo4s"/>
-</div>
+<div id="user-avatar" class="h-8 w-8 rounded-full overflow-hidden border border-primary/20 bg-[#e2b714] flex items-center justify-center text-[#111] font-black text-sm">?</div>
 </div>
 </div>
 </header>
@@ -418,7 +416,7 @@
 </div>
 </div>
 <footer class="p-8 border-t border-outline-variant/5 text-center">
-<p class="text-[10px] text-outline font-medium uppercase tracking-[0.3em]">© 2024 Appraisal Agent Systems • Proprietary Data Tier</p>
+<p class="text-[10px] text-outline font-medium uppercase tracking-[0.3em]">© 2026 Appraisal Agent • Cresci Appraisal &amp; Consulting</p>
 </footer>
 </main>
 </div>
@@ -427,114 +425,141 @@
 const API = window.location.origin + '/api';
 const token = localStorage.getItem('aa-token');
 if (!token) window.location.href = '/login';
+const user = JSON.parse(localStorage.getItem('aa-user') || '{}');
 const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
 
-function findByText(tag, text) {
-  return [...document.querySelectorAll(tag)].find(el => el.textContent.trim().includes(text));
-}
-function updateValue(searchText, newValue) {
-  const el = findByText('p,span,div,h3', searchText);
-  if (!el) return;
-  const card = el.closest('[class*="rounded"]') || el.parentElement;
-  const valueEl = card?.querySelector('[class*="text-3xl"],[class*="text-4xl"],[class*="text-5xl"],[class*="font-black"]');
-  if (valueEl && valueEl !== el) valueEl.textContent = newValue;
+// Set user avatar
+const avatarEl = document.getElementById('user-avatar');
+if (avatarEl) {
+  const name = user.displayName || user.username || '?';
+  avatarEl.textContent = name.charAt(0).toUpperCase();
 }
 
-// Fix nav links
-const dashLink = findByText('a', 'Dashboard');
-if (dashLink) dashLink.href = '/dashboard';
-const settingsLink = findByText('a', 'Settings');
-if (settingsLink) settingsLink.href = '/settings';
+// Stats card selectors — get all 4 top stat cards
+const statCards = document.querySelectorAll('.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-4 > div');
+function setStatCard(cardEl, bigValue, subValue) {
+  if (!cardEl) return;
+  const big = cardEl.querySelector('[class*="text-3xl"]');
+  if (big) {
+    // handle cases where value has a <span> suffix
+    const span = big.querySelector('span');
+    if (span) { big.childNodes[0].textContent = bigValue + ' '; }
+    else { big.textContent = bigValue; }
+  }
+  if (subValue !== undefined) {
+    const subs = cardEl.querySelectorAll('p, [class*="text-\\[10px\\]"]');
+    const lastSub = subs[subs.length - 1];
+    if (lastSub && lastSub !== big) lastSub.textContent = subValue;
+  }
+}
 
 // Load productivity stats
-fetch(API + '/analytics/productivity?period=month', { headers }).then(r => r.json()).then(data => {
-  if (!data.ok) return;
+(async () => {
+  try {
+    const r = await fetch(API + '/analytics/productivity?period=month', { headers });
+    const data = await r.json();
+    if (!data.ok && !data.volume) return;
 
-  // Volume stats
-  updateValue('Total Reports', data.volume?.completedReports || 0);
-  updateValue('Completed', data.volume?.completedReports || 0);
-  updateValue('In Progress', data.volume?.inProgress || 0);
+    // Stat card 0: Total Revenue
+    if (data.revenue?.total !== undefined) {
+      setStatCard(statCards[0], '$' + Number(data.revenue.total).toLocaleString(), 'vs previous 30 days');
+      // Update revenue growth badge
+      const changeEl = statCards[0]?.querySelector('[class*="text-green-400"],[class*="text-red-400"]');
+      if (changeEl && data.revenue.changePercent !== undefined) {
+        const pct = data.revenue.changePercent;
+        changeEl.textContent = (pct >= 0 ? '↑' : '↓') + Math.abs(pct).toFixed(0) + '%';
+      }
+    }
 
-  // Revenue
-  if (data.revenue?.total) {
-    updateValue('Revenue', '$' + data.revenue.total.toLocaleString());
-    updateValue('Total Revenue', '$' + data.revenue.total.toLocaleString());
-  }
-  if (data.revenue?.avgFee) {
-    updateValue('Average', '$' + data.revenue.avgFee.toLocaleString());
-    updateValue('Avg Fee', '$' + data.revenue.avgFee.toLocaleString());
-  }
+    // Stat card 1: Total Volume
+    if (data.volume?.completedReports !== undefined) {
+      const total = (data.volume.completedReports || 0) + (data.volume.inProgress || 0);
+      setStatCard(statCards[1], total, '30-day active period');
+      const span = statCards[1]?.querySelector('span');
+      if (span) span.textContent = ' Reports';
+    }
 
-  // AI savings
-  if (data.ai) {
-    updateValue('Hours Saved', data.ai.estimatedHoursSaved + 'h');
-    updateValue('Time Saved', data.ai.estimatedHoursSaved + 'h');
-    updateValue('Value Saved', '$' + data.ai.estimatedValueSaved.toLocaleString());
-    updateValue('Sections', data.ai.sectionsGenerated);
-  }
+    // Stat card 2: AI Time Savings
+    if (data.ai?.estimatedHoursSaved !== undefined) {
+      setStatCard(statCards[2], data.ai.estimatedHoursSaved, `$${Number(data.ai.estimatedValueSaved).toLocaleString()} Est. Value`);
+      const valBadge = statCards[2]?.querySelector('[class*="text-primary"][class*="text-\\[10px\\]"]');
+      if (valBadge) valBadge.textContent = '$' + Number(data.ai.estimatedValueSaved || 0).toLocaleString() + ' Est. Value';
+    }
 
-  // Turnaround
-  if (data.volume?.avgTurnaroundHours) {
-    updateValue('Turnaround', data.volume.avgTurnaroundHours.toFixed(1) + 'h');
-  }
+    // Stat card 3: Avg Fee
+    if (data.revenue?.avgFee !== undefined) {
+      setStatCard(statCards[3], '$' + Number(data.revenue.avgFee).toFixed(0));
+      // Progress bar
+      const bar = statCards[3]?.querySelector('[class*="bg-primary"][style*="width"]');
+      if (bar) {
+        const pct = Math.min(100, (data.revenue.avgFee / 600) * 100);
+        bar.style.width = pct + '%';
+      }
+    }
 
-  // Revision rate
-  if (data.quality) {
-    updateValue('Revision', data.quality.revisionRate);
+    // AMC breakdown table
+    if (data.amcBreakdown?.length > 0) {
+      const tbody = document.querySelector('table tbody');
+      if (tbody) {
+        tbody.innerHTML = data.amcBreakdown.map(amc => `
+          <tr class="hover:bg-surface-bright transition-colors">
+            <td class="px-8 py-5 text-sm font-semibold text-on-surface">${amc.name || 'Unknown'}</td>
+            <td class="px-8 py-5 text-sm text-on-secondary-container">${amc.orders || amc.count || 0}</td>
+            <td class="px-8 py-5 text-sm text-on-secondary-container">$${Number(amc.avgFee || 0).toFixed(0)}</td>
+            <td class="px-8 py-5 text-sm font-bold text-primary text-right">$${Number(amc.totalRevenue || amc.revenue || 0).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      }
+    }
+  } catch(e) {
+    console.error('Analytics productivity error:', e);
   }
-
-  // AMC breakdown - update table rows
-  if (data.amcBreakdown?.length > 0) {
-    const tableRows = document.querySelectorAll('tr');
-    data.amcBreakdown.slice(0, tableRows.length - 1).forEach((amc, i) => {
-      const row = tableRows[i + 1]; // skip header
-      if (!row) return;
-      const cells = row.querySelectorAll('td,span,p');
-      const allText = [...row.querySelectorAll('*')];
-      // Try to update the name and numbers in the row
-      const nameEl = allText.find(el => el.children.length === 0 && el.textContent.trim().length > 3);
-      if (nameEl) nameEl.textContent = amc.name;
-    });
-  }
-}).catch(() => {});
+})();
 
 // Load projections
-fetch(API + '/analytics/projections', { headers }).then(r => r.json()).then(data => {
-  if (!data.ok) return;
+(async () => {
+  try {
+    const r = await fetch(API + '/analytics/projections', { headers });
+    const data = await r.json();
+    if (!data.ok && !data.annualized) return;
 
-  if (data.annualized?.revenue) {
-    updateValue('Projected', '$' + data.annualized.revenue.toLocaleString());
-    updateValue('Annual', '$' + data.annualized.revenue.toLocaleString());
-    updateValue('$540,000', '$' + data.annualized.revenue.toLocaleString());
-  }
+    // Update projected annual revenue
+    if (data.annualized?.revenue) {
+      const projEl = document.querySelector('[class*="text-3xl"][class*="font-black"]');
+      if (projEl) projEl.textContent = '$' + Number(data.annualized.revenue).toLocaleString();
+    }
+  } catch(e) {}
+})();
 
-  if (data.efficiency?.reportsPerWeek) {
-    updateValue('Per Week', data.efficiency.reportsPerWeek);
-  }
+// Load business profitability
+(async () => {
+  try {
+    const r = await fetch(API + '/business/profitability?period=month', { headers });
+    const data = await r.json();
 
-  if (data.efficiency?.effectiveHourlyRate) {
-    updateValue('Hourly', '$' + data.efficiency.effectiveHourlyRate);
-    updateValue('Effective', '$' + data.efficiency.effectiveHourlyRate + '/hr');
-  }
-}).catch(() => {});
+    // Update profitability by form type bars
+    if (data.byFormType?.length > 0) {
+      const formBars = document.querySelectorAll('[class*="bg-surface-container-low"][class*="p-6"][class*="rounded-xl"][class*="ghost-border"]');
+      const profitCard = [...formBars].find(el => el.querySelector('[class*="font-bold"][class*="text-outline"]')?.textContent.includes('Profitability'));
+      if (profitCard) {
+        const total = data.byFormType.reduce((s, f) => s + (f.count || 0), 0) || 1;
+        const barsContainer = profitCard.querySelectorAll('[class*="flex-col"][class*="gap-2"]');
+        data.byFormType.slice(0, barsContainer.length).forEach((ft, i) => {
+          const container = barsContainer[i];
+          if (!container) return;
+          const label = container.querySelector('.text-on-surface');
+          const pctEl = container.querySelector('.text-primary');
+          const bar = container.querySelector('[class*="aureate-gradient"]');
+          const pct = Math.round(((ft.count || 0) / total) * 100);
+          if (label) label.textContent = ft.formType || ft.form_type || ft.name;
+          if (pctEl) pctEl.textContent = pct + '%';
+          if (bar) bar.style.width = pct + '%';
+        });
+      }
+    }
+  } catch(e) {}
+})();
 
-// Load profitability
-fetch(API + '/business/profitability?period=month', { headers }).then(r => r.json()).then(data => {
-  if (!data.ok) return;
-
-  if (data.effectiveHourlyRate) {
-    updateValue('Hourly Rate', '$' + data.effectiveHourlyRate);
-  }
-
-  // Update form type breakdown if cards exist
-  if (data.byFormType?.length > 0) {
-    const formCards = document.querySelectorAll('[class*="rounded-xl"][class*="bg-surface"]');
-    data.byFormType.slice(0, 4).forEach((ft, i) => {
-      // Try to match existing cards
-    });
-  }
-}).catch(() => {});
-
-console.log('Analytics page loaded — connected to live API');
+console.log('Analytics loaded — Appraisal Agent');
 </script>
 </body></html>

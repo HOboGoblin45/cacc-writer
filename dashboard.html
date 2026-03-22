@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Appraisal Agent | The Digital Ledger</title>
+<title>Appraisal Agent | Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -92,10 +92,10 @@
 <span class="text-xl font-bold bg-gradient-to-br from-[#e2b714] to-[#ffd341] bg-clip-text text-transparent px-2 py-1 rounded-lg">Appraisal Agent</span>
 </div>
 <nav class="hidden md:flex items-center gap-6">
-<a class="text-[#ffd341] border-b-2 border-[#e2b714] pb-1" href="#">Dashboard</a>
-<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="#">Market Trends</a>
-<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="#">Valuations</a>
-<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="#">Archive</a>
+<a class="text-[#ffd341] border-b-2 border-[#e2b714] pb-1" href="/dashboard">Dashboard</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/">Cases</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/analytics">Analytics</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/settings">Settings</a>
 </nav>
 </div>
 <div class="flex items-center gap-4">
@@ -103,15 +103,17 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-secondary-container text-sm">search</span>
 <input class="bg-surface-container-lowest border-none rounded-full pl-10 pr-4 py-1.5 text-xs w-64 focus:ring-1 focus:ring-primary text-on-surface" placeholder="Search ledger..." type="text"/>
 </div>
-<button class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full">
+<button id="notif-bell" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full relative" onclick="window.location.href='/dashboard'">
 <span class="material-symbols-outlined">notifications</span>
+<span id="notif-count" class="hidden absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold bg-[#ffd341] text-[#111] rounded-full flex items-center justify-center"></span>
 </button>
-<button class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full">
+<a href="/settings" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full">
 <span class="material-symbols-outlined">settings</span>
+</a>
+<button id="user-avatar" onclick="window.location.href='/settings'" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 bg-[#e2b714] flex items-center justify-center text-[#111] font-black text-sm">?</button>
+<button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full" title="Sign Out">
+<span class="material-symbols-outlined">logout</span>
 </button>
-<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
-<img class="w-full h-full object-cover" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT2nBFyOH29_FRCOKsvCZ9U5rQmzCdZNWsNQq_eV2aagEyYvSM2gdd2xu6syPtF3hzemv7tJD-0Mc3kUdsgRFB38jpmCsrUzzl0NRCYI-It5OxDvom6_rH2IIk0VSC-foU5L_H1yOEs0QO61FNyaKAULhNXviIwYkaXfSSffSglBlvorzRuPi7jcaGAPuI4OES-GEeuAUfNwabPhjsswTTetapiHVHzHPUzJDj5RUnQT4YHP2Tmb0PwQ_IZaS6d7gpUqaPpr6pCjQ"/>
-</div>
 </div>
 </header>
 <div class="flex min-h-[calc(100vh-64px)]">
@@ -120,36 +122,36 @@
 <div class="px-6 mb-8">
 <h3 class="font-['Inter'] text-xs font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] mb-4">Core Platform</h3>
 <div class="space-y-1">
-<div class="flex items-center gap-3 text-[#ffd341] bg-[#1c2026] border-l-2 border-[#ffd341] px-4 py-3 cursor-pointer active:opacity-80">
+<a href="/dashboard" class="flex items-center gap-3 text-[#ffd341] bg-[#1c2026] border-l-2 border-[#ffd341] px-4 py-3 cursor-pointer active:opacity-80">
 <span class="material-symbols-outlined">dashboard</span>
-<span class="text-xs font-semibold uppercase tracking-[0.08em]">Overview</span>
-</div>
-<div class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
-<span class="material-symbols-outlined">search</span>
-<span class="text-xs font-semibold uppercase tracking-[0.08em]">Property Search</span>
-</div>
-<div class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Dashboard</span>
+</a>
+<a href="/" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Cases</span>
+</a>
+<a href="/analytics" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
 <span class="material-symbols-outlined">analytics</span>
-<span class="text-xs font-semibold uppercase tracking-[0.08em]">Appraisal Tools</span>
-</div>
-<div class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
-<span class="material-symbols-outlined">receipt_long</span>
-<span class="text-xs font-semibold uppercase tracking-[0.08em]">Client Ledger</span>
-</div>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Analytics</span>
+</a>
+<a href="/settings" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Settings</span>
+</a>
 </div>
 </div>
 <div class="px-6 mt-auto space-y-1 border-t border-[#4d4633]/10 pt-6">
-<div class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
-<span class="material-symbols-outlined">help</span>
-<span class="text-xs font-semibold uppercase tracking-[0.08em]">Help Center</span>
-</div>
-<div class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<a href="/settings" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
 <span class="material-symbols-outlined">person</span>
 <span class="text-xs font-semibold uppercase tracking-[0.08em]">Account</span>
-</div>
+</a>
+<button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="w-full flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Sign Out</span>
+</button>
 </div>
 <div class="px-6 mt-6">
-<button class="w-full aureate-gradient text-on-primary h-12 rounded-full font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+<button onclick="window.location.href='/case'" class="w-full aureate-gradient text-on-primary h-12 rounded-full font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     New Valuation
                 </button>
 </div>
@@ -241,19 +243,19 @@
                             Quick Actions
                         </h3>
 <div class="grid grid-cols-2 gap-4">
-<button class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
+<button onclick="window.location.href='/case'" class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
 <span class="material-symbols-outlined text-primary mb-2 group-hover:scale-110 transition-transform">add_box</span>
 <span class="text-xs font-bold text-on-surface">New Report</span>
 </button>
-<button class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
+<button onclick="window.location.href='/'" class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
 <span class="material-symbols-outlined text-primary mb-2 group-hover:scale-110 transition-transform">upload_file</span>
 <span class="text-xs font-bold text-on-surface">Import Order</span>
 </button>
-<button class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
+<button onclick="window.location.href='/analytics'" class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
 <span class="material-symbols-outlined text-primary mb-2 group-hover:scale-110 transition-transform">ios_share</span>
-<span class="text-xs font-bold text-on-surface">Export Reports</span>
+<span class="text-xs font-bold text-on-surface">Analytics</span>
 </button>
-<button class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
+<button onclick="window.location.href='/settings'" class="bg-surface-container ghost-border p-4 rounded-DEFAULT flex flex-col items-center justify-center text-center hover-lift group">
 <span class="material-symbols-outlined text-primary mb-2 group-hover:scale-110 transition-transform">tune</span>
 <span class="text-xs font-bold text-on-surface">Settings</span>
 </button>
@@ -266,7 +268,7 @@
 <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
                                 Recent Cases
                             </h3>
-<button class="text-xs font-bold text-primary hover:underline">View All Ledger Entries</button>
+<a href="/" class="text-xs font-bold text-primary hover:underline">View All Cases</a>
 </div>
 <div class="space-y-4">
 <!-- Case Card 1 -->
@@ -344,7 +346,7 @@
 <div class="w-6 h-6 aureate-gradient rounded flex items-center justify-center">
 <span class="text-on-primary font-bold text-[10px]">AA</span>
 </div>
-<span class="text-xs font-semibold uppercase tracking-widest">The Digital Ledger © 2024</span>
+<span class="text-xs font-semibold uppercase tracking-widest">Appraisal Agent © 2026 — Cresci Appraisal &amp; Consulting</span>
 </div>
 <div class="flex gap-8">
 <a class="text-xs text-on-secondary-container hover:text-primary transition-colors uppercase tracking-widest font-semibold" href="#">Terms</a>
@@ -358,29 +360,29 @@
 </div>
 <!-- Mobile Navigation Shell -->
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-low border-t border-[#4d4633]/20 h-16 flex justify-around items-center px-4 z-[100]">
-<button class="flex flex-col items-center gap-1 text-primary">
+<a href="/dashboard" class="flex flex-col items-center gap-1 text-primary">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
 <span class="text-[10px] font-bold">HOME</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-on-secondary-container">
-<span class="material-symbols-outlined">search</span>
-<span class="text-[10px] font-bold">SEARCH</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-on-secondary-container">
+</a>
+<a href="/" class="flex flex-col items-center gap-1 text-on-secondary-container">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-[10px] font-bold">CASES</span>
+</a>
+<a href="/case" class="flex flex-col items-center gap-1 text-on-secondary-container">
 <span class="material-symbols-outlined">add_circle</span>
 <span class="text-[10px] font-bold">NEW</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-on-secondary-container">
-<span class="material-symbols-outlined">notifications</span>
-<span class="text-[10px] font-bold">ALERTS</span>
-</button>
-<button class="flex flex-col items-center gap-1 text-on-secondary-container">
-<span class="material-symbols-outlined">person</span>
-<span class="text-[10px] font-bold">PRO</span>
-</button>
+</a>
+<a href="/analytics" class="flex flex-col items-center gap-1 text-on-secondary-container">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-bold">ANALYTICS</span>
+</a>
+<a href="/settings" class="flex flex-col items-center gap-1 text-on-secondary-container">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold">SETTINGS</span>
+</a>
 </nav>
 <script>
-// ── Appraisal Agent — Live API Integration ──────────────────────────────────
+// ── Appraisal Agent — Dashboard API Integration ─────────────────────────────
 const API = window.location.origin + '/api';
 const token = localStorage.getItem('aa-token');
 const user = JSON.parse(localStorage.getItem('aa-user') || '{}');
@@ -389,131 +391,151 @@ if (!token) { window.location.href = '/login'; }
 
 const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
 
-// Helper: find element by text content
-function findByText(tag, text) {
-  return [...document.querySelectorAll(tag)].find(el => el.textContent.trim().includes(text));
-}
-
-// Helper: update stat value by finding its label
-function updateStat(labelText, value, subText) {
-  const label = findByText('p,span,div', labelText);
-  if (!label) return;
-  const card = label.closest('[class*="rounded"]') || label.parentElement;
-  if (!card) return;
-  const valueEl = card.querySelector('[class*="text-3xl"],[class*="text-4xl"],[class*="text-2xl"]');
-  if (valueEl) valueEl.textContent = value;
-  if (subText) {
-    const sub = card.querySelector('[class*="text-xs"]:last-child,[class*="text-sm"]:last-child');
-    if (sub) sub.textContent = subText;
-  }
+// Set user avatar
+const avatarEl = document.getElementById('user-avatar');
+if (avatarEl) {
+  const name = user.displayName || user.username || '?';
+  avatarEl.textContent = name.charAt(0).toUpperCase();
 }
 
 // ── Load real data ──────────────────────────────────────────────────────────
 
-// User greeting
-const greetEl = findByText('h2,h1,p', 'Welcome');
-if (greetEl) greetEl.textContent = `Welcome back, ${(user.displayName || user.username || '').split(' ')[0]}`;
-
 // Profile / subscription
-fetch(API + '/auth/me', { headers }).then(r => r.json()).then(data => {
-  if (data.subscription) {
-    updateStat('Reports', data.subscription.reportsUsed || 0,
-      `of ${data.subscription.reportsLimit === 999999 ? '∞' : data.subscription.reportsLimit} this month`);
-    updateStat('Plan', (data.subscription.plan || 'free').charAt(0).toUpperCase() + (data.subscription.plan || 'free').slice(1));
-  }
-}).catch(() => {});
+(async () => {
+  try {
+    const r = await fetch(API + '/auth/me', { headers });
+    const data = await r.json();
+    if (data.subscription) {
+      // Reports This Month card
+      const reportsCard = document.querySelector('[class*="text-3xl"]');
+      if (reportsCard) reportsCard.textContent = data.subscription.reportsUsed || 0;
+      const reportsLimit = document.querySelector('p[class*="text-\\[11px\\]"]');
+      if (reportsLimit) reportsLimit.textContent = `of ${data.subscription.reportsLimit === 999999 ? '∞' : data.subscription.reportsLimit} limit`;
+
+      // Active Plan
+      const planCards = document.querySelectorAll('[class*="text-3xl"]');
+      if (planCards[1]) {
+        const plan = data.subscription.plan || 'free';
+        planCards[1].textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+      }
+    }
+  } catch(e) {}
+})();
 
 // Voice stats
-fetch(API + '/auth/voice-stats', { headers }).then(r => r.json()).then(data => {
-  if (!data.ok) return;
-  updateStat('Voice', data.totalExamples, data.readiness + ' readiness');
-  updateStat('Training', data.totalExamples, data.readiness);
+(async () => {
+  try {
+    const r = await fetch(API + '/auth/voice-stats', { headers });
+    const data = await r.json();
+    if (!data.ok) return;
 
-  // Update progress bar if found
-  const bars = document.querySelectorAll('[class*="bg-"][style*="width"],.progress-bar,[role="progressbar"]');
-  const pct = data.readiness === 'excellent' ? 100 : data.readiness === 'good' ? 65 : data.readiness === 'learning' ? 35 : 10;
-  bars.forEach(bar => {
-    if (bar.style.width) bar.style.width = pct + '%';
-  });
+    // Update voice training count (4th stat card)
+    const statCards = document.querySelectorAll('[class*="text-3xl"]');
+    if (statCards[3]) statCards[3].textContent = data.totalExamples;
 
-  // Update voice message
-  const voiceMsg = findByText('p,span', 'voice model');
-  if (voiceMsg) voiceMsg.textContent = data.message;
+    // Readiness text
+    const readinessMap = { excellent: 'Excellent readiness', good: 'Good readiness', learning: 'Still learning', minimal: 'Getting started' };
+    const readinessEls = document.querySelectorAll('.text-green-400');
+    if (readinessEls[0]) readinessEls[0].textContent = readinessMap[data.readiness] || data.readiness;
 
-  // Update section tags
-  const tagContainer = document.querySelector('[class*="flex"][class*="gap-2"][class*="flex-wrap"]');
-  if (tagContainer && data.byField) {
-    const existingTags = tagContainer.querySelectorAll('[class*="rounded-full"],[class*="badge"]');
-    let i = 0;
-    for (const [field, count] of Object.entries(data.byField).slice(0, existingTags.length || 6)) {
-      if (existingTags[i]) {
-        existingTags[i].textContent = `${field.replace(/_/g, ' ')}: ${count}`;
+    // Progress bar
+    const pct = data.readiness === 'excellent' ? 100 : data.readiness === 'good' ? 65 : data.readiness === 'learning' ? 35 : 10;
+    const bars = document.querySelectorAll('[style*="width:"]');
+    bars.forEach(bar => { if (bar.style.width) bar.style.width = pct + '%'; });
+    // Also try inline style
+    const progressBar = document.querySelector('[class*="aureate-gradient"][class*="w-\\["]');
+    if (progressBar) progressBar.style.width = pct + '%';
+
+    // Readiness label
+    const readinessLabel = document.querySelector('[class*="text-\\[11px\\]"] ~ *,[class*="justify-between"] span:last-child');
+    const pctLabel = document.querySelector('span[class*="font-bold"][class*="text-\\[11px\\]"]');
+    const allSpans = [...document.querySelectorAll('span')];
+    const readySpan = allSpans.find(s => s.textContent.includes('% Ready'));
+    if (readySpan) readySpan.textContent = pct + '% Ready';
+
+    // Update voice training progress message
+    const voiceMsg = document.querySelector('section p.text-on-secondary-container.text-sm.mb-6');
+    if (voiceMsg) voiceMsg.textContent = data.message || voiceMsg.textContent;
+
+    // Update section tags
+    const tagContainer = document.querySelector('.flex.flex-wrap.gap-3.mt-8');
+    if (tagContainer && data.byField) {
+      const tags = tagContainer.querySelectorAll('span');
+      let i = 0;
+      for (const [field, count] of Object.entries(data.byField).slice(0, tags.length || 6)) {
+        if (tags[i]) tags[i].textContent = `${field.replace(/_/g, ' ')}: ${count}`;
+        i++;
       }
-      i++;
     }
+  } catch(e) {}
+})();
+
+// Recent cases — populate cards from API
+(async () => {
+  try {
+    const r = await fetch(API + '/cases?limit=6&sort=updated', { headers });
+    const data = await r.json();
+    const cases = data.cases || data.data || [];
+
+    // Update Active Cases count (3rd stat)
+    const statCards = document.querySelectorAll('[class*="text-3xl"]');
+    if (statCards[2]) statCards[2].textContent = cases.filter(c => c.status !== 'complete').length;
+
+    // Rebuild recent cases section
+    const caseContainer = document.querySelector('.space-y-4');
+    if (caseContainer && cases.length > 0) {
+      caseContainer.innerHTML = cases.slice(0, 6).map(c => {
+        const facts = typeof c.facts === 'string' ? (() => { try { return JSON.parse(c.facts); } catch(e) { return {}; } })() : (c.facts || {});
+        const addr = facts.subject?.address || facts.subject?.streetAddress || c.case_id || 'Unknown Address';
+        const city = facts.subject?.city ? `, ${facts.subject.city}` : '';
+        const formType = c.form_type || '1004';
+        const statusColor = c.status === 'complete' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                            c.status === 'review' ? 'bg-primary-container/10 text-primary border border-primary/20' :
+                            'bg-surface-variant text-on-secondary-container border border-outline-variant/20';
+        const statusLabel = c.status ? c.status.charAt(0).toUpperCase() + c.status.slice(1) : 'Draft';
+        const timeAgo = c.updated_at ? new Date(c.updated_at).toLocaleDateString() : 'Unknown';
+        const caseId = c.case_id || c.id || '';
+        return `
+          <div class="bg-surface-container-low ghost-border p-5 rounded-DEFAULT flex items-center justify-between group hover:bg-surface-container transition-colors cursor-pointer" onclick="window.location.href='/case?case=${caseId}'">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary border border-outline-variant/10">
+                <span class="material-symbols-outlined">home_work</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-on-surface text-sm">${addr}${city}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] text-on-secondary-container font-medium uppercase tracking-tighter">${formType} URAR</span>
+                  <span class="w-1 h-1 rounded-full bg-[#4d4633]"></span>
+                  <span class="text-[10px] text-on-secondary-container">${timeAgo}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor}">${statusLabel}</span>
+              <button class="text-on-secondary-container hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  } catch(e) {
+    console.error('Cases load failed:', e);
   }
-}).catch(() => {});
-
-// Recent cases
-fetch(API + '/cases?limit=6&sort=updated', { headers }).then(r => r.json()).then(data => {
-  const cases = data.cases || data.data || [];
-  updateStat('Active', cases.length, cases.length + ' in progress');
-  updateStat('Cases', cases.length);
-
-  // Try to populate case cards
-  const caseCards = document.querySelectorAll('[class*="cursor-pointer"][class*="rounded"]');
-  cases.slice(0, caseCards.length).forEach((c, i) => {
-    const card = caseCards[i];
-    if (!card) return;
-    const facts = typeof c.facts === 'string' ? JSON.parse(c.facts || '{}') : (c.facts || {});
-    const addr = facts.subject?.address || facts.subject?.streetAddress || c.case_id;
-    const city = facts.subject?.city || '';
-
-    const titleEl = card.querySelector('h3,h4,[class*="font-bold"],[class*="font-semibold"]');
-    if (titleEl) titleEl.textContent = addr;
-
-    const subEl = card.querySelector('p,[class*="text-xs"],[class*="text-sm"]');
-    if (subEl) subEl.textContent = `${city} • ${c.form_type || '1004'}`;
-
-    card.onclick = () => window.location.href = '/?case=' + (c.case_id || c.id);
-  });
-}).catch(() => {});
-
-// Analytics
-fetch(API + '/analytics/productivity', { headers }).then(r => r.json()).then(data => {
-  if (data.ai) {
-    const savedEl = findByText('span,p,div', 'saved');
-    if (savedEl) savedEl.textContent = `${data.ai.estimatedHoursSaved}h saved ($${data.ai.estimatedValueSaved})`;
-  }
-}).catch(() => {});
+})();
 
 // Notifications
-fetch(API + '/notifications', { headers }).then(r => r.json()).then(data => {
-  const badge = document.querySelector('[class*="notification-badge"],[class*="absolute"][class*="rounded-full"][class*="bg-"]');
-  if (badge && data.unread > 0) {
-    badge.textContent = data.unread;
-    badge.style.display = '';
-  }
-}).catch(() => {});
-
-// Quick action buttons
-const newReportBtn = findByText('span,p,div', 'New Report') || findByText('button', 'New');
-if (newReportBtn) {
-  const btn = newReportBtn.closest('button,a,[class*="cursor"]');
-  if (btn) btn.onclick = () => window.location.href = '/';
-}
-
-const importBtn = findByText('span,p,div', 'Import');
-if (importBtn) {
-  const btn = importBtn.closest('button,a,[class*="cursor"]');
-  if (btn) btn.onclick = () => window.location.href = '/';
-}
-
-// Sign out
-const signOut = findByText('button,a', 'Sign Out') || findByText('button,a', 'Logout') || findByText('button,a', 'Log out');
-if (signOut) {
-  signOut.onclick = () => { localStorage.removeItem('aa-token'); localStorage.removeItem('aa-user'); window.location.href = '/login'; };
-}
+(async () => {
+  try {
+    const r = await fetch(API + '/notifications', { headers });
+    const data = await r.json();
+    const badge = document.getElementById('notif-count');
+    if (badge && data.unread > 0) {
+      badge.textContent = data.unread > 9 ? '9+' : data.unread;
+      badge.classList.remove('hidden');
+    }
+  } catch(e) {}
+})();
 
 console.log('Appraisal Agent dashboard loaded — connected to live API');
 </script>
