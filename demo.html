@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free AI Appraisal Narrative Generator | Appraisal Agent Demo</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Generate professional appraisal narratives in seconds with AI. Try our free appraisal narrative generator — no signup required. Built for licensed appraisers."/>
+  <meta name="keywords" content="appraisal narrative generator, AI appraisal report writing, appraisal narrative AI, URAR narrative generator, appraisal automation, appraisal writing tool, free appraisal generator"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://appraisal-agent.com/demo"/>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Free AI Appraisal Narrative Generator — Try It Now"/>
+  <meta property="og:description" content="Watch AI write your appraisal narratives in 15 seconds. No signup. No credit card. Just results."/>
+  <meta property="og:url" content="https://appraisal-agent.com/demo"/>
+  <meta property="og:image" content="https://appraisal-agent.com/og-demo.png"/>
+  <meta property="og:site_name" content="Appraisal Agent"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Free AI Appraisal Narrative Generator"/>
+  <meta name="twitter:description" content="Generate professional appraisal narratives in seconds. No signup required."/>
+  <meta name="twitter:image" content="https://appraisal-agent.com/og-demo.png"/>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#0d1117",
+            "surface": "#0d1117",
+            "surface-container": "#21262d",
+            "surface-container-low": "#161b22",
+            "surface-container-high": "#30363d",
+            "surface-container-highest": "#31353c",
+            "on-surface": "#f0f6fc",
+            "on-surface-variant": "#d1c5ad",
+            "outline": "#484f58",
+            "outline-variant": "#30363d",
+            "primary": "#ffd341",
+            "primary-container": "#e2b714",
+            "on-primary": "#3c2f00",
+            "muted-text": "#8b949e",
+            "tertiary": "#f6d650",
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #f0f6fc;
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .aureate-gradient {
+      background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+    }
+    .nav-blur {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(240, 246, 252, 0.08);
+    }
+    .demo-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+    .demo-card:hover {
+      border-color: rgba(226, 183, 20, 0.3);
+    }
+    .spinner {
+      border: 3px solid rgba(255, 211, 65, 0.15);
+      border-top-color: #ffd341;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .result-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.5rem;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8b949e;
+      font-weight: 700;
+    }
+    input, select {
+      background: #21262d !important;
+      border-color: #30363d !important;
+      color: #f0f6fc !important;
+    }
+    input:focus, select:focus {
+      border-color: #ffd341 !important;
+      box-shadow: 0 0 0 2px rgba(255, 211, 65, 0.15) !important;
+      outline: none !important;
+    }
+    input::placeholder {
+      color: #8b949e !important;
+    }
+    .locked-badge {
+      background: rgba(255,211,65,0.12);
+      border: 1px solid rgba(255,211,65,0.25);
+      color: #ffd341;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-weight: 600;
+    }
+    .cta-banner {
+      background: linear-gradient(135deg, rgba(226,183,20,0.12) 0%, rgba(255,211,65,0.06) 100%);
+      border: 1px solid rgba(226,183,20,0.25);
+      border-radius: 16px;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #30363d;
+      color: #8b949e;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #f0f6fc;
+    }
+    .copy-btn.copied {
+      border-color: rgba(74,222,128,0.4);
+      color: #4ade80;
+    }
+    .generate-btn {
+      background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+      color: #111;
+      font-weight: 900;
+      font-size: 1.1rem;
+      border-radius: 9999px;
+      padding: 1rem 2.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 0 rgba(226,183,20,0);
+    }
+    .generate-btn:hover:not(:disabled) {
+      box-shadow: 0 0 30px rgba(226,183,20,0.3);
+      transform: translateY(-1px);
+    }
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 bg-[#0d1117]/70 nav-blur">
+  <div class="flex justify-between items-center max-w-6xl mx-auto px-6 h-16">
+    <a href="/" class="text-xl font-bold tracking-tight text-on-surface flex items-center gap-2">
+      <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#111] text-xs font-black">AA</span>
+      Appraisal Agent
+    </a>
+    <div class="flex items-center gap-3">
+      <a href="/login.html" class="px-4 py-2 text-muted-text text-sm font-medium hover:text-on-surface transition-colors">Login</a>
+      <a href="/login.html" class="px-5 py-2 aureate-gradient text-[#111] font-bold text-sm rounded-full hover:opacity-90 transition-all">Start Free Trial</a>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-16">
+
+  <!-- Hero -->
+  <section class="px-6 pt-16 pb-8 text-center">
+    <div class="max-w-3xl mx-auto">
+      <span class="inline-block py-1 px-4 rounded-full bg-surface-container-high border border-outline-variant text-primary text-xs font-bold tracking-[0.1em] uppercase mb-5">
+        Free Demo — No Signup Required
+      </span>
+      <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-5 leading-tight text-on-surface">
+        Watch AI Write Your<br/><span class="text-primary">Appraisal Narratives</span>
+      </h1>
+      <p class="text-muted-text text-lg mb-8 leading-relaxed max-w-xl mx-auto">
+        Enter a property below and get professional, URAR-ready narratives in seconds. Real AI, real output, zero fluff.
+      </p>
+    </div>
+  </section>
+
+  <!-- Demo Form -->
+  <section class="px-6 pb-12">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- Mode toggle -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="text-sm text-muted-text font-medium">Mode:</span>
+        <button id="btn-prefilled" onclick="setMode('prefilled')"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container-high text-on-surface border border-primary/40 transition-all">
+          📋 Pre-filled Example
+        </button>
+        <button id="btn-custom" onclick="setMode('custom')"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container text-muted-text border border-outline-variant transition-all">
+          ✏️ Try Your Own Property
+        </button>
+      </div>
+
+      <div class="demo-card p-6 md:p-8 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-bold text-on-surface text-lg">Property Details</h2>
+          <span id="edit-badge" class="text-xs text-muted-text border border-outline-variant rounded-full px-3 py-1">
+            View-only • Click "Try Your Own" to edit
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2">
+            <label class="section-label block mb-1">Street Address</label>
+            <input type="text" id="f-address" value="1205 E Vernon Ave" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">City</label>
+            <input type="text" id="f-city" value="Normal" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">State</label>
+            <input type="text" id="f-state" value="IL" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">County</label>
+            <input type="text" id="f-county" value="McLean" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Year Built</label>
+            <input type="number" id="f-yearBuilt" value="1965" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">GLA (sq ft)</label>
+            <input type="number" id="f-gla" value="1248" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Bedrooms</label>
+            <input type="number" id="f-bedrooms" value="3" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Bathrooms</label>
+            <input type="number" id="f-bathrooms" value="2" step="0.1" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Condition (UAD)</label>
+            <select id="f-condition" disabled
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface">
+              <option value="C1">C1 – New</option>
+              <option value="C2">C2 – Nearly New</option>
+              <option value="C3" selected>C3 – Average</option>
+              <option value="C4">C4 – Below Average</option>
+              <option value="C5">C5 – Poor</option>
+              <option value="C6">C6 – Severe Deterioration</option>
+            </select>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Quality (UAD)</label>
+            <select id="f-quality" disabled
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface">
+              <option value="Q1">Q1 – Exceptional</option>
+              <option value="Q2">Q2 – Above Average</option>
+              <option value="Q3" selected>Q3 – Average</option>
+              <option value="Q4">Q4 – Below Average</option>
+              <option value="Q5">Q5 – Poor</option>
+              <option value="Q6">Q6 – Lowest Quality</option>
+            </select>
+          </div>
+          <div>
+            <label class="section-label block mb-1">Design Style</label>
+            <input type="text" id="f-design" value="Ranch" readonly
+              class="w-full rounded-lg px-4 py-2.5 text-sm border border-outline-variant bg-surface-container text-on-surface"/>
+          </div>
+        </div>
+
+        <!-- Sections to generate -->
+        <div class="mt-6">
+          <label class="section-label block mb-3">Sections to Generate</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="chk-neighborhood" checked class="rounded border-outline-variant text-primary bg-surface-container" style="accent-color:#ffd341"/>
+              Neighborhood Description
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="chk-improvements" checked class="rounded border-outline-variant text-primary bg-surface-container" style="accent-color:#ffd341"/>
+              Improvements Description
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="chk-hbu" checked class="rounded border-outline-variant text-primary bg-surface-container" style="accent-color:#ffd341"/>
+              Highest &amp; Best Use
+            </label>
+          </div>
+        </div>
+
+        <!-- Generate button -->
+        <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
+          <button id="generate-btn" onclick="generateNarrative()" class="generate-btn w-full sm:w-auto flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-[22px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+            Generate Narrative
+          </button>
+          <p class="text-xs text-muted-text text-center sm:text-left">
+            🔒 3 free sections included · No account needed
+          </p>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-section" class="hidden text-center py-10">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-muted-text text-sm font-medium" id="loading-text">Generating narratives with AI…</p>
+        <p class="text-xs text-muted-text mt-1 opacity-60">Usually takes 10–20 seconds</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-section" class="hidden demo-card p-6 border-red-500/30 text-center">
+        <span class="material-symbols-outlined text-red-400 text-4xl mb-2 block">error</span>
+        <p class="text-red-400 font-semibold mb-1">Generation Failed</p>
+        <p id="error-msg" class="text-muted-text text-sm"></p>
+        <button onclick="resetState()" class="mt-4 text-sm text-primary underline">Try Again</button>
+      </div>
+
+      <!-- Results -->
+      <div id="results-section" class="hidden space-y-4">
+
+        <!-- Stats bar -->
+        <div class="flex flex-wrap items-center gap-3 px-1 mb-2">
+          <span class="section-label">Results</span>
+          <div class="flex flex-wrap gap-2 ml-auto">
+            <span id="stat-time" class="px-2 py-1 bg-green-500/15 text-green-400 text-xs rounded font-mono border border-green-500/20"></span>
+            <span id="stat-model" class="px-2 py-1 bg-blue-500/15 text-blue-400 text-xs rounded font-mono border border-blue-500/20"></span>
+            <span id="stat-sections" class="px-2 py-1 bg-purple-500/15 text-purple-400 text-xs rounded font-mono border border-purple-500/20"></span>
+          </div>
+        </div>
+
+        <!-- Generated cards container -->
+        <div id="results-cards"></div>
+
+        <!-- CTA Banner -->
+        <div class="cta-banner p-6 mt-8">
+          <div class="flex flex-col md:flex-row items-center gap-6">
+            <div class="flex-1 text-center md:text-left">
+              <div class="text-xs font-bold text-primary uppercase tracking-widest mb-2">You're Seeing 3 of 15+ Sections</div>
+              <h3 class="text-xl font-black text-on-surface mb-2">Want unlimited narratives?</h3>
+              <p class="text-muted-text text-sm leading-relaxed">
+                Unlock all 15 sections, voice training, one-click PDF export, and more.
+                <strong class="text-on-surface">5 full reports/month — free forever.</strong>
+              </p>
+            </div>
+            <div class="flex flex-col gap-3 shrink-0">
+              <a href="/login.html"
+                class="aureate-gradient text-[#111] font-black text-base px-8 py-3.5 rounded-full hover:opacity-90 transition-all text-center whitespace-nowrap shadow-lg">
+                Start Your Free Trial →
+              </a>
+              <a href="/login.html" class="text-center text-xs text-muted-text hover:text-on-surface transition-colors">
+                No credit card · Cancel anytime
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate again -->
+        <div class="text-center pt-4 pb-8">
+          <button onclick="resetState()" class="text-sm text-muted-text hover:text-on-surface transition-colors underline underline-offset-4">
+            ← Try another property
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Social proof strip -->
+  <section class="px-6 py-16 border-t border-outline-variant">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="text-xs text-muted-text uppercase tracking-widest mb-8 font-bold">What Appraisers Are Saying</p>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="demo-card p-5 text-left">
+          <div class="flex gap-1 mb-3">
+            <span class="text-primary text-sm">★★★★★</span>
+          </div>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-3">"Saved me 2 hours on my last report. The neighborhood description was literally better than what I would have written."</p>
+          <p class="text-xs text-muted-text font-semibold">— Licensed Appraiser, IL</p>
+        </div>
+        <div class="demo-card p-5 text-left">
+          <div class="flex gap-1 mb-3">
+            <span class="text-primary text-sm">★★★★★</span>
+          </div>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-3">"I was skeptical about AI writing appraisal narratives. This is different — it understands UAD language and sounds like ME."</p>
+          <p class="text-xs text-muted-text font-semibold">— SRA, 20 years experience</p>
+        </div>
+        <div class="demo-card p-5 text-left">
+          <div class="flex gap-1 mb-3">
+            <span class="text-primary text-sm">★★★★★</span>
+          </div>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-3">"Finally — software built BY an appraiser. It knows what we actually need to write, not generic AI fluff."</p>
+          <p class="text-xs text-muted-text font-semibold">— Residential Fee Appraiser, Midwest</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="px-6 py-20 text-center bg-surface-container-low border-t border-outline-variant">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-black text-on-surface mb-4 tracking-tighter">
+        Ready to <span class="text-primary">stop writing</span> and start appraising?
+      </h2>
+      <p class="text-muted-text mb-8">Join appraisers already saving hours per week.</p>
+      <a href="/login.html" class="aureate-gradient text-[#111] font-black text-lg px-10 py-4 rounded-full hover:opacity-90 transition-all inline-block shadow-lg">
+        Start Free — 5 Reports/Month
+      </a>
+      <p class="text-xs text-muted-text mt-4">No credit card required · Cancel anytime</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="px-6 py-8 border-t border-outline-variant text-center text-xs text-muted-text">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <span>© 2025 Appraisal Agent — Cresci Appraisal &amp; Consulting Company</span>
+    <div class="flex gap-6">
+      <a href="/login.html" class="hover:text-on-surface transition-colors">Login</a>
+      <a href="/login.html" class="hover:text-on-surface transition-colors">Sign Up</a>
+      <a href="/" class="hover:text-on-surface transition-colors">Home</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---- State ----
+  var currentMode = 'prefilled';
+
+  // ---- Mode toggle ----
+  function setMode(mode) {
+    currentMode = mode;
+    var inputs = document.querySelectorAll('#f-address, #f-city, #f-state, #f-county, #f-yearBuilt, #f-gla, #f-bedrooms, #f-bathrooms, #f-design');
+    var selects = document.querySelectorAll('#f-condition, #f-quality');
+    var badge = document.getElementById('edit-badge');
+    var btnPre = document.getElementById('btn-prefilled');
+    var btnCust = document.getElementById('btn-custom');
+
+    if (mode === 'custom') {
+      inputs.forEach(function(el) { el.removeAttribute('readonly'); });
+      selects.forEach(function(el) { el.removeAttribute('disabled'); });
+      badge.textContent = '✏️ Editing your own property';
+      badge.style.color = '#ffd341';
+      badge.style.borderColor = 'rgba(255,211,65,0.3)';
+      btnPre.className = 'px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container text-muted-text border border-outline-variant transition-all';
+      btnCust.className = 'px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container-high text-on-surface border border-primary/40 transition-all';
+    } else {
+      inputs.forEach(function(el) { el.setAttribute('readonly', ''); });
+      selects.forEach(function(el) { el.setAttribute('disabled', ''); });
+      // Reset to defaults
+      document.getElementById('f-address').value = '1205 E Vernon Ave';
+      document.getElementById('f-city').value = 'Normal';
+      document.getElementById('f-state').value = 'IL';
+      document.getElementById('f-county').value = 'McLean';
+      document.getElementById('f-yearBuilt').value = '1965';
+      document.getElementById('f-gla').value = '1248';
+      document.getElementById('f-bedrooms').value = '3';
+      document.getElementById('f-bathrooms').value = '2';
+      document.getElementById('f-condition').value = 'C3';
+      document.getElementById('f-quality').value = 'Q3';
+      document.getElementById('f-design').value = 'Ranch';
+      badge.textContent = 'View-only • Click "Try Your Own" to edit';
+      badge.style.color = '';
+      badge.style.borderColor = '';
+      btnPre.className = 'px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container-high text-on-surface border border-primary/40 transition-all';
+      btnCust.className = 'px-4 py-1.5 rounded-full text-sm font-semibold bg-surface-container text-muted-text border border-outline-variant transition-all';
+    }
+    resetState();
+  }
+
+  // ---- Generate ----
+  function generateNarrative() {
+    var btn = document.getElementById('generate-btn');
+    var sections = [];
+    if (document.getElementById('chk-neighborhood').checked) sections.push('neighborhood_description');
+    if (document.getElementById('chk-improvements').checked) sections.push('improvements_description');
+    if (document.getElementById('chk-hbu').checked) sections.push('highest_best_use');
+
+    if (sections.length === 0) {
+      alert('Please select at least one section to generate.');
+      return;
+    }
+
+    var payload = {
+      address: document.getElementById('f-address').value,
+      city: document.getElementById('f-city').value,
+      state: document.getElementById('f-state').value,
+      county: document.getElementById('f-county').value,
+      yearBuilt: document.getElementById('f-yearBuilt').value,
+      gla: document.getElementById('f-gla').value,
+      bedrooms: document.getElementById('f-bedrooms').value,
+      bathrooms: document.getElementById('f-bathrooms').value,
+      condition: document.getElementById('f-condition').value,
+      quality: document.getElementById('f-quality').value,
+      design: document.getElementById('f-design').value,
+      sections: sections
+    };
+
+    // UI state: loading
+    btn.disabled = true;
+    document.getElementById('loading-section').classList.remove('hidden');
+    document.getElementById('error-section').classList.add('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+
+    var loadingMsgs = [
+      'Generating narratives with AI…',
+      'Matching your appraiser voice…',
+      'Writing neighborhood description…',
+      'Applying UAD standards…',
+      'Almost done…'
+    ];
+    var msgIdx = 0;
+    var msgInterval = setInterval(function() {
+      msgIdx = (msgIdx + 1) % loadingMsgs.length;
+      var el = document.getElementById('loading-text');
+      if (el) el.textContent = loadingMsgs[msgIdx];
+    }, 3000);
+
+    fetch('/api/demo/quick-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      clearInterval(msgInterval);
+      btn.disabled = false;
+      document.getElementById('loading-section').classList.add('hidden');
+
+      if (!data.ok) {
+        showError(data.error || 'Unknown error');
+        return;
+      }
+
+      showResults(data);
+    })
+    .catch(function(err) {
+      clearInterval(msgInterval);
+      btn.disabled = false;
+      document.getElementById('loading-section').classList.add('hidden');
+      showError(err.message || 'Network error');
+    });
+  }
+
+  // ---- Show results ----
+  var SECTION_LABELS = {
+    neighborhood_description: 'Neighborhood Description',
+    improvements_description: 'Improvements Description',
+    highest_best_use: 'Highest & Best Use',
+    site_description: 'Site Description',
+    scope_of_work: 'Scope of Work',
+    reconciliation_narrative: 'Reconciliation',
+    sales_comparison: 'Sales Comparison',
+  };
+
+  function showResults(data) {
+    var sectionKeys = Object.keys(data.sections || {});
+    var count = sectionKeys.length;
+
+    document.getElementById('stat-time').textContent = '⏱ ' + (data.elapsed || '?') + ' elapsed';
+    document.getElementById('stat-model').textContent = '🤖 ' + (data.model || 'AI');
+    document.getElementById('stat-sections').textContent = count + ' section' + (count !== 1 ? 's' : '') + ' generated';
+
+    var container = document.getElementById('results-cards');
+    container.innerHTML = '';
+
+    sectionKeys.forEach(function(key) {
+      var text = data.sections[key] || '';
+      var label = SECTION_LABELS[key] || key.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      var card = document.createElement('div');
+      card.className = 'result-card';
+      card.id = 'card-' + key;
+      card.innerHTML =
+        '<div class="flex items-center justify-between mb-3">' +
+          '<span class="section-label">' + escHtml(label) + '</span>' +
+          '<button class="copy-btn" onclick="copySection(\'' + key + '\')" id="copy-' + key + '">' +
+            '<span class="material-symbols-outlined" style="font-size:14px">content_copy</span>' +
+            'Copy' +
+          '</button>' +
+        '</div>' +
+        '<p class="text-on-surface text-sm leading-relaxed" id="text-' + key + '">' + escHtml(text) + '</p>';
+      container.appendChild(card);
+    });
+
+    document.getElementById('results-section').classList.remove('hidden');
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ---- Copy to clipboard ----
+  function copySection(key) {
+    var textEl = document.getElementById('text-' + key);
+    var btn = document.getElementById('copy-' + key);
+    if (!textEl) return;
+    var text = textEl.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showCopied(btn);
+      }).catch(function() {
+        fallbackCopy(text, btn);
+      });
+    } else {
+      fallbackCopy(text, btn);
+    }
+  }
+
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopied(btn);
+  }
+
+  function showCopied(btn) {
+    btn.classList.add('copied');
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">check</span>Copied!';
+    setTimeout(function() {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">content_copy</span>Copy';
+    }, 2000);
+  }
+
+  // ---- Error ----
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-section').classList.remove('hidden');
+  }
+
+  // ---- Reset ----
+  function resetState() {
+    document.getElementById('loading-section').classList.add('hidden');
+    document.getElementById('error-section').classList.add('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+    var btn = document.getElementById('generate-btn');
+    if (btn) btn.disabled = false;
+  }
+
+  // ---- Escape HTML ----
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
+</body>
+</html>
