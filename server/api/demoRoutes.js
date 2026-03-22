@@ -202,6 +202,24 @@ router.post('/demo/quick-generate', async (req, res) => {
       },
     };
 
+    // Build a facts summary for the direct prompt
+    const factLines = [];
+    if (input.address) factLines.push(`Address: ${input.address}`);
+    if (input.city) factLines.push(`City: ${input.city}, ${input.state || 'IL'}`);
+    if (input.county) factLines.push(`County: ${input.county}`);
+    if (input.neighborhood) factLines.push(`Neighborhood: ${input.neighborhood}`);
+    if (input.yearBuilt) factLines.push(`Year Built: ${input.yearBuilt}`);
+    if (input.gla) factLines.push(`GLA: ${input.gla} sq ft`);
+    if (input.bedrooms) factLines.push(`Bedrooms: ${input.bedrooms}`);
+    if (input.bathrooms) factLines.push(`Bathrooms: ${input.bathrooms}`);
+    if (input.condition) factLines.push(`Condition: ${input.condition}`);
+    if (input.quality) factLines.push(`Quality: ${input.quality}`);
+    if (input.design) factLines.push(`Design: ${input.design}`);
+    if (input.stories) factLines.push(`Stories: ${input.stories}`);
+    if (input.lotSize) factLines.push(`Lot Size: ${input.lotSize}`);
+    if (input.salePrice) factLines.push(`Sale Price: $${input.salePrice}`);
+    const factsBlock = factLines.join('\n');
+
     const sections = {};
     const sectionIds = input.sections || [
       'neighborhood_description',
@@ -209,11 +227,37 @@ router.post('/demo/quick-generate', async (req, res) => {
       'highest_best_use',
     ];
 
+    // Get voice examples for style matching
+    const exampleTexts = [];
+    try {
+      for (const sid of sectionIds.slice(0, 1)) {
+        const examples = await getRelevantExamplesWithVoice(sid, facts);
+        if (examples?.voice?.length) {
+          exampleTexts.push(...examples.voice.slice(0, 3).map(e => e.text));
+        } else if (examples?.other?.length) {
+          exampleTexts.push(...examples.other.slice(0, 3).map(e => e.text));
+        }
+      }
+    } catch { /* ok */ }
+
+    const styleBlock = exampleTexts.length > 0
+      ? `\n\nHere are examples of the appraiser's writing style:\n${exampleTexts.map((t, i) => `Example ${i+1}:\n${t}`).join('\n\n')}`
+      : '';
+
     for (const sectionId of sectionIds) {
+      const sectionLabel = sectionId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       try {
-        const examples = await getRelevantExamplesWithVoice(sectionId, facts);
-        const messages = buildPromptMessages(sectionId, facts, examples, { formType: '1004' });
-        const result = await callAI(messages, { temperature: 0.3, max_tokens: 1500 });
+        const messages = [
+          {
+            role: 'system',
+            content: `You are an expert residential real estate appraiser writing narrative sections for URAR 1004 appraisal reports. Write in a professional, concise, data-driven style typical of Central Illinois appraisals. Every sentence should add value. Use standard appraisal terminology. Do NOT use placeholder brackets like [INSERT]. Fill in all details based on the provided facts and your knowledge of the area. If a specific detail is not provided, use reasonable professional language without placeholders.${styleBlock}`
+          },
+          {
+            role: 'user',
+            content: `Write the "${sectionLabel}" section for this appraisal:\n\n${factsBlock}\n\nWrite 2-4 sentences of professional appraisal narrative. No placeholders, no brackets.`
+          }
+        ];
+        const result = await callAI(messages, { temperature: 0.3, max_tokens: 800 });
         sections[sectionId] = result?.trim() || '';
       } catch (err) {
         sections[sectionId] = `[Error: ${err.message}]`;
