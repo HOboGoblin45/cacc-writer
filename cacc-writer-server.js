@@ -85,6 +85,9 @@ import businessIntelRouter from './server/api/businessIntelRoutes.js';
 import { ensureMarketTrendSchema } from './server/intelligence/marketTrendEngine.js';
 import aiRouter from './server/api/aiRoutes.js';
 import aiAdvancedRouter from './server/api/aiAdvancedRoutes.js';
+import automationRouter from './server/api/automationRoutes.js';
+import { ensureAutomationSchema } from './server/automation/workflowAutomation.js';
+import trainingRouter from './server/api/trainingRoutes.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
 import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
 import invoiceRouter from './server/api/invoiceRoutes.js';
@@ -175,6 +178,7 @@ try { ensureApiKeySchema(); } catch (e) { console.warn('API key schema init:', e
 try { ensureCollabSchema(); } catch (e) { console.warn('Collab schema init:', e.message); }
 try { ensureMobileSchema(); } catch (e) { console.warn('Mobile schema init:', e.message); }
 try { ensureMarketTrendSchema(); } catch (e) { console.warn('Market trend schema init:', e.message); }
+try { ensureAutomationSchema(); } catch (e) { console.warn('Automation schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
@@ -199,6 +203,8 @@ app.use('/api', businessIntelRouter);
 app.use('/api', deliveryRouter);
 app.use('/api', aiRouter);
 app.use('/api', aiAdvancedRouter);
+app.use('/api', automationRouter);
+app.use('/api', trainingRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
