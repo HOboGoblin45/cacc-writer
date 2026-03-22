@@ -976,22 +976,39 @@ async function saveFacts() {
 }
 
 async function handleIntakeUpload(type, file) {
-  const endpoint = type === 'xml' ? '/api/intake/xml' : '/api/intake/order';
+  // Determine file extension for routing
+  var fileExt = (file.name || '').split('.').pop().toLowerCase();
+  var isXml = type === 'xml' || fileExt === 'xml';
+  var isOrderPdf = type === 'order_sheet' || type === 'order' || (!isXml && fileExt === 'pdf');
+
+  // If we have an active case and the upload is an order PDF or XML,
+  // import INTO that case instead of creating a new one.
+  var endpoint;
+  var importIntoExisting = false;
+  if (S.caseId && (isOrderPdf || isXml)) {
+    endpoint = isXml
+      ? '/api/cases/' + S.caseId + '/import-xml'
+      : '/api/cases/' + S.caseId + '/import-order';
+    importIntoExisting = true;
+  } else {
+    endpoint = isXml ? '/api/intake/xml' : '/api/intake/order';
+  }
+
   setDropzoneBusy(type, true);
 
-  refs.importSummary.innerHTML = `
-    <div class="summary-note loading-note">
-      <div class="spinner spinner-small"></div>
-      <span>Uploading ${escapeHtml(file.name)}</span>
-    </div>
-  `;
+  refs.importSummary.innerHTML = [
+    '<div class="summary-note loading-note">',
+    '  <div class="spinner spinner-small"></div>',
+    '  <span>' + (importIntoExisting ? 'Extracting order data from ' : 'Importing ') + escapeHtml(file.name) + '&hellip;</span>',
+    '</div>',
+  ].join('');
 
   try {
-    const formData = new FormData();
+    var formData = new FormData();
     formData.append('file', file);
 
-    const data = await api(endpoint, { method: 'POST', body: formData });
-    const caseId = data.caseId || data.id || data.case?.id || S.caseId;
+    var data = await api(endpoint, { method: 'POST', body: formData });
+    var caseId = data.caseId || data.id || (data.case && data.case.id) || S.caseId;
 
     if (caseId) {
       S.caseId = caseId;
@@ -1000,20 +1017,39 @@ async function handleIntakeUpload(type, file) {
       await loadCase(caseId, { silent: true });
       renderCaseSelect();
       renderSidebarCases();
-      showToast(`${file.name} imported successfully.`, 'success');
+
+      // Build a descriptive toast from the extracted data
+      var extracted = data.extracted || {};
+      var toastMsg = '';
+      if (importIntoExisting && (extracted.address || extracted.borrowerName || extracted.lenderName || extracted.borrower)) {
+        var parts = [];
+        var addr = extracted.address || '';
+        var city = extracted.city || '';
+        var state = extracted.state || '';
+        var location = addr || (city && state ? city + ', ' + state : city || state);
+        if (location) parts.push(location);
+        var borrower = extracted.borrowerName || extracted.borrower || extracted.borrower1 || '';
+        var lender = extracted.lenderName || extracted.lender || '';
+        var people = [borrower, lender].filter(Boolean).join(' / ');
+        if (people) parts.push(people);
+        toastMsg = parts.length ? 'Extracted: ' + parts.join(' \u2014 ') : file.name + ' imported successfully.';
+      } else {
+        toastMsg = file.name + ' imported successfully.';
+      }
+      showToast(toastMsg, 'success');
     }
 
     renderImportSummary();
   } catch (error) {
     console.error(error);
-    refs.importSummary.innerHTML = `
-      <div class="summary-note error-note">
-        <strong>Upload failed</strong>
-        <span>${escapeHtml(error.message)}</span>
-      </div>
-    `;
+    refs.importSummary.innerHTML = [
+      '<div class="summary-note error-note">',
+      '  <strong>Upload failed</strong>',
+      '  <span>' + escapeHtml(error.message) + '</span>',
+      '</div>',
+    ].join('');
     setConnection(false, 'Import failed');
-    showToast(`Unable to import ${file.name}: ${error.message}`, 'error');
+    showToast('Unable to import ' + file.name + ': ' + error.message, 'error');
   } finally {
     setDropzoneBusy(type, false);
   }

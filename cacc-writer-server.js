@@ -50,6 +50,7 @@ import contradictionLifecycleRouter from './server/api/contradictionLifecycleRou
 import sectionGovernanceRouter from './server/api/sectionGovernanceRoutes.js';
 import dataPipelineRouter from './server/api/dataPipelineRoutes.js';
 import intakeRouter from './server/api/intakeRoutes.js';
+import importRouter from './server/api/importRoutes.js';
 import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
 import sseRouter from './server/api/sseRoutes.js';
@@ -307,6 +308,7 @@ app.use('/api', contradictionLifecycleRouter);
 app.use('/api', sectionGovernanceRouter);
 app.use('/api', dataPipelineRouter);
 app.use('/api', intakeRouter);
+app.use('/api', importRouter);
 app.use('/api', compsRouter);
 app.use('/api', gmailRouter);
 app.use('/api', demoRouter);
