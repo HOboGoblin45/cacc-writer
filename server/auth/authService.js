@@ -221,7 +221,7 @@ export function checkReportQuota(userId) {
 
 export function incrementReportCount(userId) {
   const db = getDb();
-  db.prepare('UPDATE subscriptions SET reports_this_month = reports_this_month + 1, updated_at = datetime("now") WHERE user_id = ?')
+  db.prepare('UPDATE subscriptions SET reports_this_month = reports_this_month + 1, updated_at = datetime('now') WHERE user_id = ?')
     .run(userId);
 }
 

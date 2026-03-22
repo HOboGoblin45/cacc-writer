@@ -72,7 +72,7 @@ Use typical assessment ratios and tax rates for ${subject.county || 'the'} count
 
   // Save to facts
   facts.taxData = { ...taxData, estimatedAt: new Date().toISOString(), source: 'ai_estimate' };
-  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?',
+  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?',
     [JSON.stringify(facts), caseId]);
 
   log.info('tax:estimated', { caseId, annualTax: taxData.estimatedAnnualTax });

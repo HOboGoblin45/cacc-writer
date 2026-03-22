@@ -85,7 +85,7 @@ export function validatePortalAccess(token) {
   }
 
   // Update view stats
-  db.prepare('UPDATE portal_links SET view_count = view_count + 1, last_viewed_at = datetime("now") WHERE id = ?').run(link.id);
+  db.prepare('UPDATE portal_links SET view_count = view_count + 1, last_viewed_at = datetime('now') WHERE id = ?').run(link.id);
 
   return {
     valid: true,

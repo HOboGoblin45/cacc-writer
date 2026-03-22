@@ -131,7 +131,7 @@ Return JSON:
   // Save to facts
   facts.neighborhood = { ...(facts.neighborhood || {}), ...boundaries, detectedAt: new Date().toISOString() };
   facts.subject = { ...subject, latitude: lat, longitude: lon };
-  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?', [JSON.stringify(facts), caseId]);
+  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?', [JSON.stringify(facts), caseId]);
 
   log.info('boundary:detected', { caseId, confidence: boundaries.confidence });
   return boundaries;

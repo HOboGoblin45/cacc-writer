@@ -166,7 +166,7 @@ export async function processWebhookOrder(connectionId, payload, signature) {
       .run(caseId, JSON.stringify(parsed.facts), 'parsed', orderId);
 
     // Update connection stats
-    db.prepare('UPDATE amc_connections SET last_order_at = datetime("now"), total_orders = total_orders + 1 WHERE id = ?')
+    db.prepare('UPDATE amc_connections SET last_order_at = datetime('now'), total_orders = total_orders + 1 WHERE id = ?')
       .run(connectionId);
 
     log.info('amc:order-processed', { connectionId, platform, orderId, caseId, fieldCount: parsed.meta.fieldCount });

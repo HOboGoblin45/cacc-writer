@@ -125,7 +125,7 @@ export async function fireTrigger(triggerType, context) {
     try {
       await executeAction(rule.action_type, JSON.parse(rule.action_config || '{}'), context);
 
-      db.prepare('UPDATE automation_rules SET run_count = run_count + 1, last_run = datetime("now") WHERE id = ?').run(rule.id);
+      db.prepare('UPDATE automation_rules SET run_count = run_count + 1, last_run = datetime('now') WHERE id = ?').run(rule.id);
       db.prepare('INSERT INTO automation_log (rule_id, case_id, trigger_type, action_type, status, details) VALUES (?, ?, ?, ?, ?, ?)')
         .run(rule.id, context.caseId || null, triggerType, rule.action_type, 'success', rule.name);
 
