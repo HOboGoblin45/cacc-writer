@@ -20,6 +20,7 @@
 
 import { parseOrderForm } from '../intake/smartOrderParser.js';
 import { analyzeMarket } from '../intelligence/marketAnalyzer.js';
+import { verifyCaseAddress } from '../data/addressVerification.js';
 import { analyzeComps } from '../comparables/compAnalyzer.js';
 import { batchGenerate, getSectionsForForm } from '../generation/batchGenerator.js';
 import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.js';
@@ -129,9 +130,22 @@ export async function runFullPipeline(input) {
     const enrichStart = Date.now();
 
     try {
+      // Verify address against USPS first
+      let addressVerified = false;
+      try {
+        const addrResult = await verifyCaseAddress(caseId);
+        addressVerified = addrResult.verified;
+        if (addrResult.corrections?.length > 0) {
+          log.info('pipeline:address-corrected', { pipelineId, corrections: addrResult.corrections });
+        }
+      } catch (addrErr) {
+        log.warn('pipeline:address-verify-failed', { error: addrErr.message });
+      }
+
       const marketResult = await analyzeMarket(caseId);
       results.stages.enrich = {
         ok: true,
+        addressVerified,
         confidence: marketResult.analysis?.confidence,
         hasGeo: !!marketResult.geo,
         durationMs: Date.now() - enrichStart,
