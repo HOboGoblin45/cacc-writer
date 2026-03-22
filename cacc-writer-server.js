@@ -60,6 +60,7 @@ import adminRouter from './server/api/adminRoutes.js';
 import batchRouter from './server/api/batchRoutes.js';
 import templateRouter from './server/api/templateRoutes.js';
 import { ensureTemplateSchema } from './server/templates/reportTemplates.js';
+import pipelineRouter from './server/api/pipelineRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -135,6 +136,7 @@ app.use('/api', billingRouter);
 app.use('/api', adminRouter);
 app.use('/api', batchRouter);
 app.use('/api', templateRouter);
+app.use('/api', pipelineRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
