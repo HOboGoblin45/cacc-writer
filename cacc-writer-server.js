@@ -95,6 +95,8 @@ import voiceRouter from './server/api/voiceRoutes.js';
 import webhookRouter from './server/api/webhookRoutes.js';
 import intelAdvancedRouter from './server/api/intelligenceAdvancedRoutes.js';
 import ratingRouter from './server/api/ratingRoutes.js';
+import ucdpRouter from './server/api/ucdpRoutes.js';
+import { ensureUcdpSchema } from './server/integrations/ucdpSubmission.js';
 import { ensureWebhookSchema } from './server/integrations/webhookNotifier.js';
 import { ensureWhitelabelSchema } from './server/whitelabel/whitelabelService.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
@@ -190,6 +192,7 @@ try { ensureMarketTrendSchema(); } catch (e) { console.warn('Market trend schema
 try { ensureAutomationSchema(); } catch (e) { console.warn('Automation schema init:', e.message); }
 try { ensureWebhookSchema(); } catch (e) { console.warn('Webhook schema init:', e.message); }
 try { ensureWhitelabelSchema(); } catch (e) { console.warn('Whitelabel schema init:', e.message); }
+try { ensureUcdpSchema(); } catch (e) { console.warn('UCDP schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
@@ -223,6 +226,7 @@ app.use('/api', voiceRouter);
 app.use('/api', webhookRouter);
 app.use('/api', intelAdvancedRouter);
 app.use('/api', ratingRouter);
+app.use('/api', ucdpRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
