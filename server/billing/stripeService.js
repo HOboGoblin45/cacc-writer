@@ -50,7 +50,7 @@ export async function createCheckoutSession(userId, plan) {
       metadata: { userId, username: user.username },
     });
     customerId = customer.id;
-    db.prepare('UPDATE subscriptions SET stripe_customer_id = ?, updated_at = datetime("now") WHERE user_id = ?')
+    db.prepare(`UPDATE subscriptions SET stripe_customer_id = ?, updated_at = datetime("now") WHERE user_id = ?`)
       .run(customerId, userId);
   }
 

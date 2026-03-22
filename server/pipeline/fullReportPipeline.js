@@ -282,7 +282,7 @@ export async function runFullPipeline(input) {
   // Update case status
   try {
     const newStatus = allOk ? 'complete' : someOk ? 'review' : 'draft';
-    dbRun('UPDATE case_records SET status = ?, updated_at = datetime("now") WHERE case_id = ?', [newStatus, caseId]);
+    dbRun(`UPDATE case_records SET status = ?, updated_at = datetime("now") WHERE case_id = ?`, [newStatus, caseId]);
   } catch { /* ok */ }
 
   results.totalDurationMs = totalDuration;

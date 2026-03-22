@@ -83,7 +83,7 @@ function validateApiKey(req, res, next) {
   if (!key) return res.status(401).json({ error: 'Invalid API key' });
 
   // Rate limiting (simple per-minute)
-  db.prepare('UPDATE api_keys SET last_used = datetime("now"), usage_count = usage_count + 1 WHERE id = ?').run(key.id);
+  db.prepare(`UPDATE api_keys SET last_used = datetime("now"), usage_count = usage_count + 1 WHERE id = ?`).run(key.id);
 
   req.apiUser = { userId: key.user_id, keyId: key.id, permissions: key.permissions };
   next();

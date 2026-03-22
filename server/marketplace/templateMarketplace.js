@@ -173,7 +173,7 @@ export function purchaseListing(buyerId, listingId) {
     .run(purchaseId, listingId, buyerId, listing.seller_id, listing.price, platformFee, sellerRevenue);
 
   // Update listing stats
-  db.prepare('UPDATE marketplace_listings SET purchase_count = purchase_count + 1, updated_at = datetime("now") WHERE id = ?').run(listingId);
+  db.prepare(`UPDATE marketplace_listings SET purchase_count = purchase_count + 1, updated_at = datetime("now") WHERE id = ?`).run(listingId);
 
   // Update seller earnings
   db.prepare(`UPDATE seller_earnings SET total_earnings = total_earnings + ?, pending_payout = pending_payout + ?,
