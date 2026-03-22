@@ -169,7 +169,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
+app.get('/app', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
+app.get('/workspace', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
 app.get('/dashboard', (_q, r) => r.sendFile(path.join(__dirname, 'dashboard.html')));
