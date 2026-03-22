@@ -164,8 +164,16 @@ export function verifyToken(token) {
 // ── Auth Middleware ───────────────────────────────────────────────────────────
 
 export function authMiddleware(req, res, next) {
-  // Skip auth if CACC_AUTH_ENABLED is false (backward compat for single-user mode)
+  // When auth is disabled, still try to parse JWT if present (needed for billing/user-specific features)
   if (process.env.CACC_AUTH_ENABLED === 'false' || process.env.CACC_AUTH_ENABLED === '0') {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const decoded = verifyToken(authHeader.slice(7));
+      if (decoded) {
+        req.user = { userId: decoded.userId || decoded.sub, username: decoded.username, role: decoded.role || 'user' };
+        return next();
+      }
+    }
     req.user = { userId: 'default', username: 'admin', role: 'admin' };
     return next();
   }
