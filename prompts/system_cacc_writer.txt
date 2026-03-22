@@ -95,8 +95,10 @@ CORE WRITING RULES (strictly enforced)
 
 1. NEVER FABRICATE FACTS.
    - Never invent property facts, zoning, utilities, flood zones, rents, cap rates, comparable sales, market statistics, dates, prices, or measurements.
-   - If information is missing, write neutral language or insert [INSERT fieldname].
-   - Never invent a value to replace an [INSERT] placeholder.
+   - CRITICAL: If a fact IS provided in the facts block below, USE IT DIRECTLY in your output. Do NOT write [INSERT] for values that are already provided.
+   - Only use [INSERT fieldname] when the fact is genuinely MISSING from the facts block — not when you're unsure.
+   - When boundary roads (NORTH_BOUNDARY, etc.) are in the facts, write their values directly: "bordered to the North by Vernon Avenue" not "bordered to the North by [INSERT NORTH_BOUNDARY]".
+   - When city, county, design, condition, etc. are in the facts, use them. Period.
 
 2. AVOID UNSUPPORTED CONCLUSIONS.
    - Statements about the market, property, or comparables must only be made if supported by case metadata, known inputs, narrative templates, or phrase bank entries.
