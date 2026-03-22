@@ -18,11 +18,11 @@
  *   [user]   Write the requested section            â† built from facts + fieldId
  *
  * Voice Engine (Block 3a):
- *   Voice examples are the PRIMARY style reference â€” appraiser's own completed reports.
+ *   Voice examples are the PRIMARY style reference â€" appraiser's own completed reports.
  *   They are labeled distinctly so the AI knows to prioritize them over generic examples.
  *   Pass voiceExamples from getRelevantExamplesWithVoice() in retrieval.js.
  *
- * UPDATED (Phase 1â€“5):
+ * UPDATED (Phase 1â€"5):
  *   - Added complete FIELD_LABELS for all form types
  *   - Added complete FIELD_PHRASE_TAGS for all fields
  *   - Added Block 3.5: form-specific tpl injection from form config
@@ -48,7 +48,7 @@ import { getFieldLabel, getPhraseTags } from './fieldRegistry.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROMPTS_DIR = path.join(__dirname, '..', 'prompts');
 
-// â”€â”€ Load static prompt files once at module load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Load static prompt files once at module load â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function loadPromptFile(filename) {
   try {
@@ -62,7 +62,7 @@ const SYSTEM_CACC  = loadPromptFile('system_cacc_writer.txt');
 const STYLE_CRESCI = loadPromptFile('style_guide_cresci.txt');
 const REVIEW_PASS  = loadPromptFile('review_pass.txt');
 
-// â”€â”€ Field metadata resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Field metadata resolution â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 // Canonical source: server/fieldRegistry.js (getFieldLabel / getPhraseTags).
 
 function resolveFieldLabel(formType, fieldId) {
@@ -73,17 +73,17 @@ function resolvePhraseTags(formType, fieldId) {
   return getPhraseTags(formType, fieldId) || [];
 }
 
-// â”€â”€ Confidence-aware facts formatter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Confidence-aware facts formatter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 /**
  * formatFactsBlock(facts)
  * Formats the facts object into a prompt-ready string with confidence annotations.
  *
  * Confidence rules:
- *   high   â†’ state as fact (no annotation)
- *   medium â†’ annotate with [confidence: medium â€” use hedged language]
- *   low    â†’ replace value with [INSERT] and annotate
- *   null   â†’ [INSERT] regardless of confidence
+ *   high   â†' state as fact (no annotation)
+ *   medium â†' annotate with [confidence: medium â€" use hedged language]
+ *   low    â†' replace value with [INSERT] and annotate
+ *   null   â†' [INSERT] regardless of confidence
  */
 function formatFactsBlock(facts) {
   if (!facts || !Object.keys(facts).length) return '';
@@ -110,14 +110,14 @@ function formatFactsBlock(facts) {
         Object.entries(item).forEach(([k, fobj]) => {
           if (k === 'number') return;
           const v = fobj?.value ?? fobj;
-          const conf = fobj?.confidence || 'low';
+          const conf = fobj?.confidence || (typeof fobj === 'string' || typeof fobj === 'number' ? 'high' : 'low');
           if (v == null || v === '') return;
           if (conf === 'high') {
             lines.push(`    ${k}: ${v}`);
           } else if (conf === 'medium') {
-            lines.push(`    ${k}: ${v} [confidence: medium â€” use hedged language]`);
+            lines.push(`    ${k}: ${v} [confidence: medium â€" use hedged language]`);
           } else {
-            lines.push(`    ${k}: [INSERT] [confidence: low â€” do not state as fact]`);
+            lines.push(`    ${k}: [INSERT] [confidence: low â€" do not state as fact]`);
           }
         });
       });
@@ -131,13 +131,14 @@ function formatFactsBlock(facts) {
       lines.push(`\n${section.toUpperCase()}:`);
       vals.forEach(([k, fobj]) => {
         const v = fobj?.value ?? fobj;
-        const conf = fobj?.confidence || 'low';
+        // If no confidence annotation, trust the value (default high)
+        const conf = fobj?.confidence || (typeof fobj === 'string' || typeof fobj === 'number' ? 'high' : 'low');
         if (conf === 'high') {
           lines.push(`  ${k}: ${v}`);
         } else if (conf === 'medium') {
-          lines.push(`  ${k}: ${v} [confidence: medium â€” use hedged language]`);
+          lines.push(`  ${k}: ${v} [confidence: medium â€" use hedged language]`);
         } else {
-          lines.push(`  ${k}: [INSERT] [confidence: low â€” do not state as fact]`);
+          lines.push(`  ${k}: [INSERT] [confidence: low â€" do not state as fact]`);
         }
       });
     }
@@ -146,7 +147,7 @@ function formatFactsBlock(facts) {
   return lines.join('\n');
 }
 
-// â”€â”€ buildAssignmentContextBlock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ buildAssignmentContextBlock â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 /**
  * buildAssignmentContextBlock(assignmentMeta)
  *
@@ -154,8 +155,8 @@ function formatFactsBlock(facts) {
  * Includes loan-program-specific and condition-mode-specific guidance
  * that affects compliance language and narrative framing.
  *
- * @param {object} assignmentMeta â€” compact meta object from buildAssignmentMetaBlock()
- * @returns {string|null} â€” formatted system block, or null if nothing useful
+ * @param {object} assignmentMeta â€" compact meta object from buildAssignmentMetaBlock()
+ * @returns {string|null} â€" formatted system block, or null if nothing useful
  */
 function buildAssignmentContextBlock(assignmentMeta) {
   if (!assignmentMeta || typeof assignmentMeta !== 'object') return null;
@@ -176,7 +177,7 @@ function buildAssignmentContextBlock(assignmentMeta) {
   // Only add the header if we have at least one field
   if (lines.length === 1) return null;
 
-  // â”€â”€ Loan program guidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Loan program guidance â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   const guidance = [];
 
   switch (assignmentMeta.loanProgram) {
@@ -198,7 +199,7 @@ function buildAssignmentContextBlock(assignmentMeta) {
       break;
   }
 
-  // â”€â”€ Report condition mode guidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Report condition mode guidance â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   switch (assignmentMeta.reportConditionMode) {
     case 'Subject To Completion':
       guidance.push('SUBJECT TO COMPLETION: This appraisal is made subject to completion per plans and specifications. Frame improvements description in proposed/future tense. Note the hypothetical condition that the improvements are complete as of the effective date.');
@@ -211,12 +212,12 @@ function buildAssignmentContextBlock(assignmentMeta) {
       break;
   }
 
-  // â”€â”€ Assignment purpose guidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Assignment purpose guidance â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   if (assignmentMeta.assignmentPurpose === 'Refinance') {
     guidance.push('REFINANCE: Avoid sale-centric commentary. Do not reference a purchase contract or buyer/seller dynamics unless explicitly in the facts. Focus on current market value support.');
   }
 
-  // â”€â”€ Subject condition guidance (UAD C1â€“C6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Subject condition guidance (UAD C1â€"C6) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // Primary: load from 1004Narratives.json UAD templates.
   // Fallback: inline guidance if template file not available.
   if (assignmentMeta.subjectCondition) {
@@ -229,10 +230,10 @@ function buildAssignmentContextBlock(assignmentMeta) {
       const CONDITION_FALLBACK = {
         C1: 'SUBJECT CONDITION C1: The subject is newly constructed with no prior occupancy. All components are new. No physical depreciation. Use new construction language throughout.',
         C2: 'SUBJECT CONDITION C2: The subject is near-new or recently fully renovated. No deferred maintenance. All components updated to current standards. Minimal physical depreciation.',
-        C3: 'SUBJECT CONDITION C3: The subject is well maintained with limited physical depreciation from normal wear and tear. Some components may be updated. Do not overstate condition issues â€” this is average-to-good condition.',
+        C3: 'SUBJECT CONDITION C3: The subject is well maintained with limited physical depreciation from normal wear and tear. Some components may be updated. Do not overstate condition issues â€" this is average-to-good condition.',
         C4: 'SUBJECT CONDITION C4: The subject has some deferred maintenance and physical deterioration from normal wear and tear. Adequately maintained. Minimal repairs needed. All major components are functionally adequate. Use measured, factual language.',
         C5: 'SUBJECT CONDITION C5: The subject has obvious deferred maintenance requiring significant repairs. Some building components need repair, rehabilitation, or updating. Functional utility is somewhat diminished but the dwelling remains useable.',
-        C6: 'SUBJECT CONDITION C6: The subject has substantial damage or deferred maintenance affecting safety, soundness, or structural integrity. Substantial repairs and rehabilitation needed. Use careful, factual language â€” do not speculate beyond the facts.',
+        C6: 'SUBJECT CONDITION C6: The subject has substantial damage or deferred maintenance affecting safety, soundness, or structural integrity. Substantial repairs and rehabilitation needed. Use careful, factual language â€" do not speculate beyond the facts.',
       };
       if (CONDITION_FALLBACK[condKey]) {
         guidance.push(CONDITION_FALLBACK[condKey]);
@@ -249,7 +250,7 @@ function buildAssignmentContextBlock(assignmentMeta) {
   return lines.join('\n');
 }
 
-// â”€â”€ Main export: buildPromptMessages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Main export: buildPromptMessages â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 /**
  * buildPromptMessages(params)
@@ -284,10 +285,10 @@ export function buildPromptMessages({
   facts = {},
   voiceExamples = [],      // Block 3a: appraiser's own approved narratives (highest priority)
   examples = [],           // Block 3b: other examples (approved_edits, curated, imported)
-  locationContext = null,  // string from formatLocationContextBlock() â€” injected for neighborhood fields
-  assignmentMeta = null,   // object from buildAssignmentMetaBlock() â€” assignment context
-  systemHint    = null,    // string from generator profile â€” additional system instruction
-  extraContext  = null,    // string â€” pre-computed analysis artifacts + prior section context
+  locationContext = null,  // string from formatLocationContextBlock() â€" injected for neighborhood fields
+  assignmentMeta = null,   // object from buildAssignmentMetaBlock() â€" assignment context
+  systemHint    = null,    // string from generator profile â€" additional system instruction
+  extraContext  = null,    // string â€" pre-computed analysis artifacts + prior section context
 }) {
   const messages = [];
 
@@ -311,17 +312,17 @@ export function buildPromptMessages({
     locationContext = resolvedLocationContext;
   }
 
-  // â”€â”€ Block 1: Appraisal Agent system instructions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 1: Appraisal Agent system instructions â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   if (SYSTEM_CACC) {
     messages.push({ role: 'system', content: SYSTEM_CACC });
   }
 
-  // â”€â”€ Block 2: Cresci style guide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 2: Cresci style guide â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   if (STYLE_CRESCI) {
     messages.push({ role: 'system', content: STYLE_CRESCI });
   }
 
-  // â”€â”€ Block 3a: Voice examples â€” appraiser's own approved narratives â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 3a: Voice examples â€" appraiser's own approved narratives â"€â"€â"€â"€â"€â"€â"€â"€
   // PRIMARY style reference. Labeled distinctly so the AI prioritizes these.
   // Source: knowledge_base/approvedNarratives/ via getRelevantExamplesWithVoice()
   const voiceBlock = formatVoiceExamplesBlock(voiceExamples);
@@ -329,7 +330,7 @@ export function buildPromptMessages({
     messages.push({ role: 'system', content: voiceBlock });
   }
 
-  // â”€â”€ Block 3b: Other examples â€” approved_edits, curated, imported â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 3b: Other examples â€" approved_edits, curated, imported â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // Supplemental style reference. Lower priority than voice examples.
   // Source: knowledge_base/approved_edits/ + curated_examples/ + imported
   const examplesBlock = formatExamplesBlock(examples);
@@ -337,7 +338,7 @@ export function buildPromptMessages({
     messages.push({ role: 'system', content: examplesBlock });
   }
 
-  // â”€â”€ Block 4: Relevant phrase bank entries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 4: Relevant phrase bank entries â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // Registry-first: resolvePhraseTags() tries fieldRegistry.js, falls back to FIELD_PHRASE_TAGS
   const phraseTags = resolvePhraseTags(formType, fieldId);
   const relevantPhrases = phraseTags.flatMap(tag => getPhrases(tag));
@@ -350,20 +351,20 @@ export function buildPromptMessages({
     messages.push({ role: 'system', content: phraseLines.join('\n') });
   }
 
-  // â”€â”€ Block 5: Facts context (confidence-aware) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 5: Facts context (confidence-aware) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   const factsBlock = formatFactsBlock(facts);
   if (factsBlock) {
     messages.push({ role: 'system', content: factsBlock });
   }
 
-  // â”€â”€ Block 5.5: Location context (neighborhood/boundary fields only) â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 5.5: Location context (neighborhood/boundary fields only) â"€â"€â"€â"€â"€â"€â"€
   // Injected when the field benefits from geographic data (roads, land use, water features).
   // locationContext is a pre-formatted string from formatLocationContextBlock().
   if (locationContext && LOCATION_CONTEXT_FIELDS.has(fieldId)) {
     messages.push({ role: 'system', content: locationContext });
   }
 
-  // â”€â”€ Block 5.7: Assignment context (purpose, loan program, condition mode) â”€
+  // â"€â"€ Block 5.7: Assignment context (purpose, loan program, condition mode) â"€
   // Injected when assignmentMeta is provided. Affects compliance language,
   // condition mode framing, and loan-program-specific requirements.
   if (assignmentMeta && typeof assignmentMeta === 'object') {
@@ -373,21 +374,21 @@ export function buildPromptMessages({
     }
   }
 
-  // â”€â”€ Block 5.8: Generator profile system hint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 5.8: Generator profile system hint â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // Additional system-level instruction from the generator profile.
   // Injected after assignment context so it takes precedence over generic guidance.
   if (systemHint) {
     messages.push({ role: 'system', content: `GENERATION PROFILE GUIDANCE:\n${systemHint}` });
   }
 
-  // â”€â”€ Block 5.9: Extra context (analysis artifacts + prior sections) â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 5.9: Extra context (analysis artifacts + prior sections) â"€â"€â"€â"€â"€â"€â"€â"€
   // Pre-computed analysis results and prior section text for synthesis sections.
   // Injected just before form-specific instructions so it's close to the user request.
   if (extraContext) {
     messages.push({ role: 'system', content: `ANALYSIS CONTEXT (pre-computed for this section):\n${extraContext}` });
   }
 
-  // â”€â”€ Block 3.5: Form-specific field instructions (from form config tpl) â”€â”€â”€â”€
+  // â"€â"€ Block 3.5: Form-specific field instructions (from form config tpl) â"€â"€â"€â"€
   // Numbered 3.5 but placed after facts so the AI sees instructions last before the request
   try {
     const formConfig = getFormConfig(formType);
@@ -400,9 +401,9 @@ export function buildPromptMessages({
         });
       }
     }
-  } catch { /* non-fatal â€” form config lookup failure should not break generation */ }
+  } catch { /* non-fatal â€" form config lookup failure should not break generation */ }
 
-  // â”€â”€ Block 6: User request â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Block 6: User request â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // Registry-first: resolveFieldLabel() tries fieldRegistry.js, falls back to FIELD_LABELS
   const fieldLabel = resolveFieldLabel(formType, fieldId);
   const userLines = [
@@ -418,7 +419,7 @@ export function buildPromptMessages({
   userLines.push('- Use ONLY facts provided in the facts block above. Write [INSERT fieldname] for any missing data.');
   userLines.push('- Never fabricate statistics, market data, comparable sales, zoning, flood zones, or measurements.');
   userLines.push('- Prefer language from the Common Narratives library and phrase bank entries provided above.');
-  userLines.push('- AI generation fills contextual connections only â€” do not invent facts or conclusions.');
+  userLines.push('- AI generation fills contextual connections only â€" do not invent facts or conclusions.');
   userLines.push('');
   userLines.push('TONE AND STYLE:');
   userLines.push('- Professional lender-ready tone: concise, formal, objective, analytical, neutral.');
@@ -443,7 +444,7 @@ export function buildPromptMessages({
   return messages;
 }
 
-// â”€â”€ buildReviewMessages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ buildReviewMessages â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 /**
  * buildReviewMessages(params)
@@ -469,7 +470,7 @@ export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formT
   if (REVIEW_PASS) {
     messages.push({ role: 'system', content: REVIEW_PASS });
   } else {
-    // Inline fallback if review_pass.txt not found â€” mirrors the full review_pass.txt checklist
+    // Inline fallback if review_pass.txt not found â€" mirrors the full review_pass.txt checklist
     messages.push({
       role: 'system',
       content: `You are a senior appraisal reviewer for Appraisal Agent, assisting Charles Cresci of Cresci Appraisal & Consulting Company in Illinois.
@@ -477,21 +478,21 @@ export function buildReviewMessages({ draftText, facts = {}, fieldId = '', formT
 Review the draft appraisal narrative for ALL of the following issues. This output will be submitted in a real lender appraisal report.
 
 REVIEW CHECKLIST:
-1. UNSUPPORTED CLAIMS (critical) â€” any fact stated as certain not in the SUPPORTED FACTS list. Replace with [INSERT fieldname].
-2. CONFIDENCE VIOLATIONS (critical) â€” facts marked [confidence: low] stated as certain. Replace with [INSERT] or hedged language.
-3. PLACEHOLDER COMPLETENESS (major) â€” verify [INSERT] placeholders are appropriate; flag any that should be filled from facts.
-4. TONE AND STYLE (minor-major) â€” flag and correct: speculation, chatbot phrasing, first-person ("I believe/found/think"), future tense where present is appropriate, conversational language, exaggerated market claims.
-5. USPAP COMPLIANCE (critical) â€” flag: unsupported conclusions stated as fact, predetermined value language, advocacy language, claims of analyses not performed. WRONG: "Extensive analysis confirmsâ€¦" RIGHT: "The available data suggestsâ€¦"
-6. LANGUAGE SAFETY (critical) â€” flag and correct engineering conclusions ("The structure is sound"), environmental conclusions ("No environmental hazards exist"), legal conclusions ("The property complies with all codes"). Replace with: "No adverse conditions were observedâ€¦" or "The appraiser is not qualified to determineâ€¦"
-7. ILLINOIS STANDARDS (major) â€” ensure consistency with Illinois appraisal practice and IDPFR requirements.
-8. INTERNAL CONTRADICTIONS (major) â€” flag statements contradicting each other or the supported facts.
-9. SECTION PURPOSE (major) â€” verify the narrative answers the intended question for this section.
+1. UNSUPPORTED CLAIMS (critical) â€" any fact stated as certain not in the SUPPORTED FACTS list. Replace with [INSERT fieldname].
+2. CONFIDENCE VIOLATIONS (critical) â€" facts marked [confidence: low] stated as certain. Replace with [INSERT] or hedged language.
+3. PLACEHOLDER COMPLETENESS (major) â€" verify [INSERT] placeholders are appropriate; flag any that should be filled from facts.
+4. TONE AND STYLE (minor-major) â€" flag and correct: speculation, chatbot phrasing, first-person ("I believe/found/think"), future tense where present is appropriate, conversational language, exaggerated market claims.
+5. USPAP COMPLIANCE (critical) â€" flag: unsupported conclusions stated as fact, predetermined value language, advocacy language, claims of analyses not performed. WRONG: "Extensive analysis confirmsâ€¦" RIGHT: "The available data suggestsâ€¦"
+6. LANGUAGE SAFETY (critical) â€" flag and correct engineering conclusions ("The structure is sound"), environmental conclusions ("No environmental hazards exist"), legal conclusions ("The property complies with all codes"). Replace with: "No adverse conditions were observedâ€¦" or "The appraiser is not qualified to determineâ€¦"
+7. ILLINOIS STANDARDS (major) â€" ensure consistency with Illinois appraisal practice and IDPFR requirements.
+8. INTERNAL CONTRADICTIONS (major) â€" flag statements contradicting each other or the supported facts.
+9. SECTION PURPOSE (major) â€" verify the narrative answers the intended question for this section.
 
 QUALITY TARGET: The revisedText must pass lender underwriting review, appraisal quality control review, and peer appraisal review.
 
 Return JSON only:
 {
-  "revisedText": "<the corrected narrative â€” same field, same purpose, improved accuracy and tone>",
+  "revisedText": "<the corrected narrative â€" same field, same purpose, improved accuracy and tone>",
   "issues": [{"type": "unsupported_claim|missing_fact|confidence_violation|tone|uspap|language_safety|illinois_standards|contradiction|placeholder|section_purpose", "description": "...", "severity": "critical|major|minor"}],
   "confidence": "high|medium|low",
   "changesMade": true|false
@@ -506,7 +507,7 @@ Return JSON only:
     if (Array.isArray(data)) continue;
     const vals = Object.entries(data).filter(([, fobj]) => {
       const v = fobj?.value ?? fobj;
-      const conf = fobj?.confidence || 'low';
+      const conf = fobj?.confidence || (typeof fobj === 'string' || typeof fobj === 'number' ? 'high' : 'low');
       return v != null && v !== '' && conf !== 'low';
     });
     if (!vals.length) continue;
@@ -519,7 +520,7 @@ Return JSON only:
   if (supportedFacts.length > 0) {
     messages.push({
       role: 'system',
-      content: 'SUPPORTED FACTS (only these facts are confirmed in this report â€” anything else is unsupported):\n\n' + supportedFacts.join('\n'),
+      content: 'SUPPORTED FACTS (only these facts are confirmed in this report â€" anything else is unsupported):\n\n' + supportedFacts.join('\n'),
     });
   }
 
@@ -546,7 +547,7 @@ Return JSON only:
   return messages;
 }
 
-// â”€â”€ buildApproveEditPrompt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ buildApproveEditPrompt â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 /**
  * buildApproveEditPrompt(original, edited)
