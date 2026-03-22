@@ -1,249 +1,244 @@
 /**
  * server/api/exportRoutes.js
- * ----------------------------
- * Phase 14 — Export Layer REST Endpoints
- *
- * Mounted at: /api  (in cacc-writer-server.js)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Export API routes: MISMO XML, UAD 3.6, PDF, ZIP bundle.
+ * 
+ * Routes:
+ *   POST /cases/:caseId/export/mismo    — MISMO 2.6/3.4 XML export
+ *   POST /cases/:caseId/export/uad36    — UAD 3.6 / MISMO 3.6 XML export
+ *   POST /cases/:caseId/export/pdf      — PDF export
+ *   POST /cases/:caseId/export/bundle   — ZIP bundle (XML + PDF + photos)
+ *   GET  /cases/:caseId/export/preview  — Preview export metadata
  */
 
 import { Router } from 'express';
+import { generateMismo, validateMismoOutput } from '../export/mismoExportService.js';
+import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.js';
+import { renderPdf } from '../export/pdfRenderer.js';
+import { dbGet, dbAll } from '../db/database.js';
 import log from '../logger.js';
-
-import { generatePdf, getPdfPageManifest, estimatePageCount } from '../export/pdfExportService.js';
-import { generateMismo, getMismoFieldMapping, validateMismoOutput } from '../export/mismoExportService.js';
-import {
-  createBundle, getBundleContents, getExportJob, listExportJobs,
-  cancelExportJob, createDeliveryRecord, getDeliveryRecord, listDeliveries,
-  confirmDelivery, getExportSummary, getTemplate, listTemplates,
-  createTemplate, updateTemplate,
-} from '../export/bundleService.js';
-
-import { z } from 'zod';
-import { parsePayload } from '../utils/routeUtils.js';
-
-// ── Schemas ─────────────────────────────────────────────────────────────────
-
-const pdfExportSchema = z.object({
-  formType: z.string().max(40).optional(),
-  templateId: z.string().max(80).optional(),
-  options: z.record(z.unknown()).optional(),
-}).passthrough();
-
-const mismoExportSchema = z.object({
-  formType: z.string().max(40).optional(),
-  version: z.string().max(20).optional(),
-}).passthrough();
-
-const bundleSchema = z.object({
-  formats: z.array(z.string().max(20)).optional(),
-  templateId: z.string().max(80).optional(),
-}).passthrough();
-
-const deliverSchema = z.object({
-  exportJobId: z.string().min(1).max(80),
-  method: z.string().max(40).optional(),
-  recipient: z.string().max(200).optional(),
-}).passthrough();
-
-const confirmDeliverySchema = z.object({
-  method: z.string().max(40).optional(),
-}).passthrough();
-
-const createTemplateSchema = z.object({
-  name: z.string().min(1).max(200),
-  formType: z.string().max(40).optional(),
-}).passthrough();
-
-const updateTemplateSchema = z.object({}).passthrough();
+import archiver from 'archiver';
+import { PassThrough } from 'stream';
 
 const router = Router();
 
-// ── PDF Export ──────────────────────────────────────────────────────────────
+/**
+ * Helper to load case facts.
+ */
+function loadCaseForExport(caseId) {
+  const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
+  if (!caseRecord) return null;
 
-router.post('/cases/:caseId/export/pdf', (req, res) => {
-  try {
-    const body = parsePayload(pdfExportSchema, req.body || {}, res);
-    if (!body) return;
-    const result = generatePdf(req.params.caseId, body);
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('api:export-pdf', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
+  const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [caseId]);
+  const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
+
+  const sections = dbAll(
+    `SELECT * FROM generated_sections
+     WHERE case_id = ? AND (final_text IS NOT NULL OR reviewed_text IS NOT NULL OR draft_text IS NOT NULL)
+     ORDER BY section_id, created_at DESC`,
+    [caseId]
+  );
+  const sectionMap = {};
+  for (const s of sections) {
+    if (!sectionMap[s.section_id]) sectionMap[s.section_id] = s;
   }
-});
 
-router.get('/cases/:caseId/export/pdf/estimate', (req, res) => {
+  let comps = [];
   try {
-    const estimate = estimatePageCount(req.params.caseId);
-    res.json({ ok: true, estimate });
+    comps = dbAll(
+      'SELECT * FROM comp_candidates WHERE case_id = ? AND is_active = 1 ORDER BY created_at LIMIT 6',
+      [caseId]
+    );
+  } catch { /* ok */ }
+
+  let adjustments = [];
+  try {
+    adjustments = dbAll('SELECT * FROM adjustment_support_records WHERE case_id = ?', [caseId]);
+  } catch { /* ok */ }
+
+  let reconciliation = null;
+  try {
+    reconciliation = dbGet('SELECT * FROM reconciliation_support_records WHERE case_id = ?', [caseId]);
+  } catch { /* ok */ }
+
+  return { caseRecord, facts, sections: sectionMap, comps, adjustments, reconciliation };
+}
+
+// ── POST /cases/:caseId/export/mismo ─────────────────────────────────────────
+
+router.post('/cases/:caseId/export/mismo', async (req, res) => {
+  try {
+    const { version } = req.body || {};
+    const result = generateMismo(req.params.caseId, { version: version || 'mismo_3_4' });
+
+    res.set('Content-Type', 'application/xml');
+    res.set('Content-Disposition', `attachment; filename="${result.job.fileName}"`);
+    res.send(result.xml);
   } catch (err) {
-    log.error('api:export-pdf-estimate', { error: err.message });
+    log.error('export:mismo-failed', { caseId: req.params.caseId, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// ── MISMO XML Export ────────────────────────────────────────────────────────
+// ── POST /cases/:caseId/export/uad36 ────────────────────────────────────────
 
-router.post('/cases/:caseId/export/mismo', (req, res) => {
+router.post('/cases/:caseId/export/uad36', async (req, res) => {
   try {
-    const body = parsePayload(mismoExportSchema, req.body || {}, res);
-    if (!body) return;
-    const result = generateMismo(req.params.caseId, body);
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('api:export-mismo', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
+    const caseData = loadCaseForExport(req.params.caseId);
+    if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-router.get('/export/mismo/mapping/:formType', (req, res) => {
-  try {
-    const mapping = getMismoFieldMapping(req.params.formType);
-    res.json({ ok: true, mapping });
+    const xml = buildUad36Document(caseData);
+    const validation = validateUad36(xml);
+
+    const fileName = `${req.params.caseId}_uad36_${Date.now()}.xml`;
+
+    if (req.body?.validateOnly) {
+      return res.json({ ok: true, validation, fileName });
+    }
+
+    res.set('Content-Type', 'application/xml');
+    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(xml);
   } catch (err) {
-    log.error('api:export-mismo-mapping', { error: err.message });
+    log.error('export:uad36-failed', { caseId: req.params.caseId, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// ── Bundle ──────────────────────────────────────────────────────────────────
+// ── POST /cases/:caseId/export/pdf ──────────────────────────────────────────
 
-router.post('/cases/:caseId/export/bundle', (req, res) => {
+router.post('/cases/:caseId/export/pdf', async (req, res) => {
   try {
-    const body = parsePayload(bundleSchema, req.body || {}, res);
-    if (!body) return;
-    const bundle = createBundle(req.params.caseId, body);
-    res.json({ ok: true, bundle });
-  } catch (err) {
-    log.error('api:export-bundle', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
+    const { includePhotos, includeComps } = req.body || {};
+    const pdfBuffer = await renderPdf(req.params.caseId, { includePhotos, includeComps });
 
-// ── Export Jobs ──────────────────────────────────────────────────────────────
-
-router.get('/cases/:caseId/export/jobs', (req, res) => {
-  try {
-    const jobs = listExportJobs(req.params.caseId, req.query);
-    res.json({ ok: true, jobs });
+    const fileName = `${req.params.caseId}_appraisal_${Date.now()}.pdf`;
+    res.set('Content-Type', 'application/pdf');
+    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
   } catch (err) {
-    log.error('api:export-jobs-list', { error: err.message });
+    log.error('export:pdf-failed', { caseId: req.params.caseId, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-router.get('/cases/:caseId/export/jobs/:jobId', (req, res) => {
+// ── POST /cases/:caseId/export/bundle ────────────────────────────────────────
+// UAD 3.6 delivery format: ZIP containing XML + PDF + photos
+
+router.post('/cases/:caseId/export/bundle', async (req, res) => {
   try {
-    const job = getExportJob(req.params.jobId);
-    if (!job) return res.status(404).json({ ok: false, error: 'Export job not found' });
-    res.json({ ok: true, job });
+    const caseId = req.params.caseId;
+    const { format, includePhotos } = req.body || {};
+    const isUad36 = format === 'uad36';
+
+    const caseData = loadCaseForExport(caseId);
+    if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    // Generate XML
+    let xml, xmlFileName;
+    if (isUad36) {
+      xml = buildUad36Document(caseData);
+      xmlFileName = `${caseId}_uad36.xml`;
+    } else {
+      const result = generateMismo(caseId, { version: 'mismo_3_4' });
+      xml = result.xml;
+      xmlFileName = result.job.fileName;
+    }
+
+    // Generate PDF
+    const pdfBuffer = await renderPdf(caseId);
+    const pdfFileName = `${caseId}_appraisal.pdf`;
+
+    // Create ZIP
+    const fileName = `${caseId}_export_${Date.now()}.zip`;
+    res.set('Content-Type', 'application/zip');
+    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.pipe(res);
+
+    // Add XML
+    archive.append(xml, { name: xmlFileName });
+
+    // Add PDF
+    archive.append(pdfBuffer, { name: pdfFileName });
+
+    // Add photos if available and requested
+    if (includePhotos !== false) {
+      let photos = [];
+      try {
+        photos = dbAll('SELECT * FROM inspection_photos WHERE case_id = ? ORDER BY sort_order', [caseId]);
+      } catch { /* ok */ }
+
+      for (const photo of photos) {
+        if (photo.file_path) {
+          try {
+            const fs = await import('fs');
+            if (fs.existsSync(photo.file_path)) {
+              const ext = photo.file_path.split('.').pop() || 'jpg';
+              archive.file(photo.file_path, { name: `photos/${photo.label || photo.id}.${ext}` });
+            }
+          } catch { /* skip missing photos */ }
+        }
+      }
+    }
+
+    // Add validation report
+    const validation = isUad36 ? validateUad36(xml) : validateMismoOutput(xml);
+    archive.append(JSON.stringify(validation, null, 2), { name: 'validation_report.json' });
+
+    await archive.finalize();
+
+    log.info('export:bundle-completed', { caseId, format: isUad36 ? 'uad36' : 'mismo34', fileName });
   } catch (err) {
-    log.error('api:export-job-get', { error: err.message });
+    log.error('export:bundle-failed', { caseId: req.params.caseId, error: err.message });
+    if (!res.headersSent) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  }
+});
+
+// ── GET /cases/:caseId/export/preview ────────────────────────────────────────
+
+router.get('/cases/:caseId/export/preview', async (req, res) => {
+  try {
+    const caseData = loadCaseForExport(req.params.caseId);
+    if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const subject = caseData.facts.subject || {};
+    const sectionCount = Object.keys(caseData.sections).length;
+    const compCount = caseData.comps.length;
+
+    // Check what data is available
+    const readiness = {
+      subject: Boolean(subject.address),
+      facts: Object.keys(caseData.facts).length > 0,
+      sections: sectionCount > 0,
+      comps: compCount > 0,
+      reconciliation: Boolean(caseData.reconciliation),
+    };
+
+    const formats = [
+      { id: 'mismo_26', label: 'MISMO 2.6 (Legacy)', available: true },
+      { id: 'mismo_34', label: 'MISMO 3.4 (Current)', available: true },
+      { id: 'uad36', label: 'UAD 3.6 / MISMO 3.6 (New Standard)', available: true, recommended: true },
+      { id: 'pdf', label: 'PDF Report', available: true },
+      { id: 'bundle', label: 'ZIP Bundle (XML + PDF + Photos)', available: true },
+    ];
+
+    res.json({
+      ok: true,
+      caseId: req.params.caseId,
+      address: subject.address || 'Not available',
+      formType: caseData.caseRecord.form_type || '1004',
+      sectionCount,
+      compCount,
+      readiness,
+      formats,
+      note: 'UAD 3.6 becomes mandatory November 2, 2026. UAD 2.6 retires May 2027.',
+    });
+  } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-router.post('/cases/:caseId/export/jobs/:jobId/cancel', (req, res) => {
-  try {
-    const job = cancelExportJob(req.params.jobId);
-    res.json({ ok: true, job });
-  } catch (err) {
-    log.error('api:export-job-cancel', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
-
-router.get('/cases/:caseId/export/jobs/:jobId/manifest', (req, res) => {
-  try {
-    const manifest = getPdfPageManifest(req.params.caseId, req.query.formType || '1004');
-    res.json({ ok: true, manifest });
-  } catch (err) {
-    log.error('api:export-manifest', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── Delivery ────────────────────────────────────────────────────────────────
-
-router.post('/cases/:caseId/export/deliver', (req, res) => {
-  try {
-    const body = parsePayload(deliverSchema, req.body || {}, res);
-    if (!body) return;
-    const delivery = createDeliveryRecord(body.exportJobId, body);
-    res.json({ ok: true, delivery });
-  } catch (err) {
-    log.error('api:export-deliver', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
-
-router.get('/cases/:caseId/export/deliveries', (req, res) => {
-  try {
-    const deliveries = listDeliveries(req.params.caseId);
-    res.json({ ok: true, deliveries });
-  } catch (err) {
-    log.error('api:export-deliveries', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-router.post('/cases/:caseId/export/deliveries/:deliveryId/confirm', (req, res) => {
-  try {
-    const body = parsePayload(confirmDeliverySchema, req.body || {}, res);
-    if (!body) return;
-    const delivery = confirmDelivery(req.params.deliveryId, body.method);
-    res.json({ ok: true, delivery });
-  } catch (err) {
-    log.error('api:export-delivery-confirm', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
-
-// ── Export Summary ──────────────────────────────────────────────────────────
-
-router.get('/cases/:caseId/export/summary', (req, res) => {
-  try {
-    const summary = getExportSummary(req.params.caseId);
-    res.json({ ok: true, summary });
-  } catch (err) {
-    log.error('api:export-summary', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── Templates ───────────────────────────────────────────────────────────────
-
-router.get('/export/templates', (req, res) => {
-  try {
-    const templates = listTemplates(req.query);
-    res.json({ ok: true, templates });
-  } catch (err) {
-    log.error('api:export-templates-list', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-router.post('/export/templates', (req, res) => {
-  try {
-    const body = parsePayload(createTemplateSchema, req.body || {}, res);
-    if (!body) return;
-    const template = createTemplate(body);
-    res.json({ ok: true, template });
-  } catch (err) {
-    log.error('api:export-template-create', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
-  }
-});
-
-router.put('/export/templates/:templateId', (req, res) => {
-  try {
-    const body = parsePayload(updateTemplateSchema, req.body || {}, res);
-    if (!body) return;
-    const template = updateTemplate(req.params.templateId, body);
-    res.json({ ok: true, template });
-  } catch (err) {
-    log.error('api:export-template-update', { error: err.message });
-    res.status(400).json({ ok: false, error: err.message });
   }
 });
 

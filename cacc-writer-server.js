@@ -53,6 +53,7 @@ import intakeRouter from './server/api/intakeRoutes.js';
 import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
 import sseRouter from './server/api/sseRoutes.js';
+import exportRouter from './server/api/exportRoutes.js';
 import authRouter from './server/auth/authRoutes.js';
 import billingRouter from './server/billing/billingRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
@@ -125,6 +126,7 @@ try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.mess
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', healthRouter);
+app.use('/api', exportRouter);
 app.use('/api', sseRouter);
 app.use('/api/cases', casesRouter);
 app.use('/api/cases', caseCompatRouter);
