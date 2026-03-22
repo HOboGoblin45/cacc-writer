@@ -84,6 +84,7 @@ import mobileRouter, { ensureMobileSchema } from './server/mobile/mobileApiRoute
 import businessIntelRouter from './server/api/businessIntelRoutes.js';
 import { ensureMarketTrendSchema } from './server/intelligence/marketTrendEngine.js';
 import aiRouter from './server/api/aiRoutes.js';
+import aiAdvancedRouter from './server/api/aiAdvancedRoutes.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
 import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
 import invoiceRouter from './server/api/invoiceRoutes.js';
@@ -197,6 +198,7 @@ app.use('/api', mobileRouter);
 app.use('/api', businessIntelRouter);
 app.use('/api', deliveryRouter);
 app.use('/api', aiRouter);
+app.use('/api', aiAdvancedRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
