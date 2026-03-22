@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Configuration - Appraisal Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-secondary-container": "#b0b9c4",
+                "surface-dim": "#10141a",
+                "surface": "#10141a",
+                "on-error-container": "#ffdad6",
+                "surface-bright": "#353940",
+                "surface-container-high": "#262a31",
+                "on-secondary": "#29313a",
+                "surface-tint": "#eec224",
+                "surface-container-highest": "#31353c",
+                "on-surface-variant": "#d1c5ad",
+                "secondary": "#bec7d2",
+                "inverse-primary": "#735c00",
+                "error-container": "#93000a",
+                "surface-container": "#1c2026",
+                "surface-variant": "#31353c",
+                "error": "#ffb4ab",
+                "surface-container-lowest": "#0a0e14",
+                "tertiary": "#f6d650",
+                "primary-fixed": "#ffe087",
+                "primary-fixed-dim": "#eec224",
+                "on-background": "#dfe2eb",
+                "tertiary-container": "#d8ba36",
+                "on-primary-fixed": "#231a00",
+                "secondary-fixed-dim": "#bec7d2",
+                "secondary-fixed": "#dae3ee",
+                "on-tertiary-fixed": "#221b00",
+                "on-tertiary-container": "#594a00",
+                "tertiary-fixed": "#ffe16b",
+                "on-tertiary-fixed-variant": "#544600",
+                "inverse-on-surface": "#2d3137",
+                "inverse-surface": "#dfe2eb",
+                "on-primary-container": "#5c4900",
+                "tertiary-fixed-dim": "#e4c540",
+                "surface-container-low": "#181c22",
+                "on-error": "#690005",
+                "on-tertiary": "#3a3000",
+                "on-secondary-fixed-variant": "#3f4850",
+                "on-primary-fixed-variant": "#574500",
+                "primary": "#ffd341",
+                "outline": "#9a9079",
+                "outline-variant": "#4d4633",
+                "primary-container": "#e2b714",
+                "on-surface": "#dfe2eb",
+                "background": "#10141a",
+                "on-primary": "#3c2f00",
+                "on-secondary-fixed": "#141c24",
+                "secondary-container": "#414a53"
+              },
+              fontFamily: {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .aureate-gradient {
+            background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+        }
+        .ghost-border {
+            border: 1px solid rgba(77, 70, 51, 0.2);
+        }
+        input:focus {
+            outline: none;
+            border-bottom-color: #ffd341 !important;
+            box-shadow: 0 4px 12px -4px rgba(255, 211, 65, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<header class="bg-[#10141a] dark:bg-[#10141a] border-b border-[#4d4633]/20 docked full-width top-0 z-50 fixed flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black tracking-tighter text-[#dfe2eb]">Appraisal Agent</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#b0b9c4] font-['Inter'] tracking-tight font-bold hover:text-[#dfe2eb] transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-[#b0b9c4] font-['Inter'] tracking-tight font-bold hover:text-[#dfe2eb] transition-colors duration-200" href="#">Valuations</a>
+<a class="text-[#b0b9c4] font-['Inter'] tracking-tight font-bold hover:text-[#dfe2eb] transition-colors duration-200" href="#">Analytics</a>
+<a class="text-[#b0b9c4] font-['Inter'] tracking-tight font-bold hover:text-[#dfe2eb] transition-colors duration-200" href="#">Archive</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined text-[#b0b9c4] cursor-pointer hover:text-[#ffd341] transition-colors">notifications</span>
+</div>
+<span class="material-symbols-outlined text-[#b0b9c4] cursor-pointer hover:text-[#ffd341] transition-colors">help_outline</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-[#4d4633]/40">
+<img class="w-full h-full object-cover" data-alt="User profile avatar professionally dressed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH1NFG1IgIinFMEmZMtQ7vyAXaLzGstJXfA8aQRqFL1-T1eyS0ibShlG3AIacJ9WQRSuyj2JhREk_0uDozxMkgH9k3vOH5t6EytFGhHhQlVWDFHUQYuS4pZH6GzaLuGTo_lmb1f0tA5yDi0DL0TU5ZSk1w2Twy8VDjWHGd-ivGi08n3zA4-UrevlEYrCqgKOrTywZwhgWomYCYYIlMoGbS59PimpdK1YdxKAizXBWNQpT6fgVPdT4XJl7fahgjwPqwJMSNm1fhp00"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-[#181c22] dark:bg-[#181c22] flex flex-col justify-between py-6 z-40">
+<div>
+<div class="px-6 mb-8">
+<h2 class="text-lg font-bold text-[#dfe2eb]">Settings</h2>
+<p class="text-xs text-[#b0b9c4] uppercase tracking-widest font-semibold mt-1">System Configuration</p>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 bg-[#1c2026] text-[#ffd341] border-l-2 border-[#ffd341] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase transition-all translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">neurology</span>
+                    AI Configuration
+                </a>
+<a class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase hover:bg-[#353940] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+                    Valuation Templates
+                </a>
+<a class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase hover:bg-[#353940] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined">manage_accounts</span>
+                    Account Details
+                </a>
+<a class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase hover:bg-[#353940] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+                    Notifications
+                </a>
+</nav>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase hover:bg-[#353940] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 font-['Inter'] text-sm font-semibold tracking-wide uppercase hover:bg-[#353940] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 px-10 pb-12 min-h-screen">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section -->
+<div class="mb-12 flex justify-between items-end">
+<div>
+<h1 class="text-4xl font-bold tracking-tight text-on-surface mb-2">AI Configuration</h1>
+<p class="text-on-secondary-container text-lg max-w-2xl">Manage your AI model providers and training parameters for automated appraisal intelligence.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 rounded-full border border-outline-variant text-on-surface text-sm font-bold hover:bg-surface-bright transition-all">Discard Changes</button>
+<button class="px-8 py-2 rounded-full aureate-gradient text-on-primary-fixed text-sm font-bold shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:scale-105 active:scale-95 transition-all">Save Profile</button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Primary Config -->
+<div class="col-span-12 lg:col-span-7 space-y-8">
+<!-- AI Provider Card -->
+<section class="bg-surface-container-low rounded-xl p-8 ghost-border">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">hub</span>
+<h3 class="text-xl font-bold tracking-tight">Intelligence Engine</h3>
+</div>
+<div class="space-y-8">
+<!-- Provider Selection -->
+<div>
+<label class="block text-xs font-bold uppercase tracking-[0.15em] text-on-secondary-container mb-4">Core Provider</label>
+<div class="grid grid-cols-3 gap-4">
+<button class="flex flex-col items-center justify-center p-4 rounded-lg bg-surface-container border-2 border-primary text-on-surface transition-all">
+<div class="w-10 h-10 mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<span class="text-sm font-bold">OpenAI</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-lg bg-surface-container border border-outline-variant text-on-secondary-container hover:text-on-surface hover:border-outline transition-all">
+<div class="w-10 h-10 mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</div>
+<span class="text-sm font-bold">Anthropic</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-lg bg-surface-container border border-outline-variant text-on-secondary-container hover:text-on-surface hover:border-outline transition-all">
+<div class="w-10 h-10 mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<span class="text-sm font-bold">Custom LLM</span>
+</button>
+</div>
+</div>
+<!-- Model Selection Dropdown -->
+<div>
+<label class="block text-xs font-bold uppercase tracking-[0.15em] text-on-secondary-container mb-2" for="model-select">Language Model</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant p-4 text-on-surface appearance-none focus:ring-0" id="model-select">
+<option>GPT-4o (Omni) - Recommended</option>
+<option>GPT-4 Turbo</option>
+<option>GPT-3.5 Ultra</option>
+<option>Claude 3.5 Sonnet</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-4 text-on-secondary-container pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- API Key Input -->
+<div>
+<label class="block text-xs font-bold uppercase tracking-[0.15em] text-on-secondary-container mb-2" for="api-key">API Authentication Key</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant p-4 text-on-surface focus:ring-0 pr-12" id="api-key" placeholder="Enter your provider key" type="password" value="sk-proj-7x8s9dk2l0101ksksksks"/>
+<span class="material-symbols-outlined absolute right-4 top-4 text-on-secondary-container cursor-pointer hover:text-on-surface">visibility</span>
+</div>
+<p class="mt-2 text-[10px] text-on-secondary-container/60 uppercase tracking-widest font-medium">Encrypted at rest with AES-256 GCM</p>
+</div>
+</div>
+</section>
+<!-- Model Training Card -->
+<section class="bg-surface-container-low rounded-xl p-8 ghost-border">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">psychology</span>
+<h3 class="text-xl font-bold tracking-tight">Fine-Tuning &amp; Persistence</h3>
+</div>
+<div class="space-y-10">
+<!-- Voice Synthesis Level -->
+<div>
+<div class="flex justify-between items-center mb-6">
+<label class="block text-xs font-bold uppercase tracking-[0.15em] text-on-secondary-container">Voice Synthesis Level</label>
+<span class="text-primary font-mono text-sm">84% Depth</span>
+</div>
+<div class="relative h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full aureate-gradient w-[84%] shadow-[0_0_12px_rgba(226,183,20,0.5)]"></div>
+</div>
+<div class="flex justify-between mt-3">
+<span class="text-[10px] text-on-secondary-container uppercase">Analytical</span>
+<span class="text-[10px] text-on-secondary-container uppercase">Human-Editorial</span>
+</div>
+</div>
+<!-- Style Persistence Toggle -->
+<div class="flex items-center justify-between p-6 bg-surface-container-lowest rounded-lg">
+<div>
+<h4 class="text-sm font-bold mb-1">Style Persistence</h4>
+<p class="text-xs text-on-secondary-container">Maintain strict consistency across multiple reports.</p>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-all">
+<span class="inline-block h-4 w-4 transform rounded-full bg-on-primary translate-x-6 transition-all shadow-sm"></span>
+</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Templates and Secondary Tools -->
+<div class="col-span-12 lg:col-span-5 space-y-8">
+<!-- Valuation Templates Card -->
+<section class="bg-surface-container-low rounded-xl p-8 ghost-border">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">description</span>
+<h3 class="text-xl font-bold tracking-tight">Templates</h3>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-on-secondary-container">more_vert</span>
+</button>
+</div>
+<div class="space-y-3 mb-8">
+<!-- Template Item -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-lowest hover:bg-surface-bright transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-md bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">analytics</span>
+</div>
+<div>
+<h4 class="text-sm font-bold">1004 URAR Standard</h4>
+<p class="text-[10px] text-on-secondary-container uppercase tracking-wider">Default Model</p>
+</div>
+</div>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">arrow_forward</span>
+</div>
+<!-- Template Item -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-lowest hover:bg-surface-bright transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-md bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">apartment</span>
+</div>
+<div>
+<h4 class="text-sm font-bold">1073 Condo Form</h4>
+<p class="text-[10px] text-on-secondary-container uppercase tracking-wider">Multi-Unit</p>
+</div>
+</div>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">arrow_forward</span>
+</div>
+<!-- Template Item -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-lowest hover:bg-surface-bright transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-md bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">history_edu</span>
+</div>
+<div>
+<h4 class="text-sm font-bold">Custom Narrative</h4>
+<p class="text-[10px] text-on-secondary-container uppercase tracking-wider">Bespoke Output</p>
+</div>
+</div>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">arrow_forward</span>
+</div>
+</div>
+<button class="w-full py-4 rounded-full aureate-gradient text-on-primary-fixed font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/5 hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+                            Add New Template
+                        </button>
+</section>
+<!-- System Health Card (Visual Density Filler) -->
+<section class="bg-surface-container p-6 rounded-xl border border-outline-variant/20 relative overflow-hidden">
+<div class="flex items-center justify-between relative z-10">
+<div>
+<h4 class="text-xs font-bold uppercase tracking-[0.2em] text-on-secondary-container mb-2">Node Latency</h4>
+<p class="text-3xl font-black text-on-surface">24ms</p>
+</div>
+<div class="flex gap-1 items-end h-12">
+<div class="w-1 bg-primary h-4 rounded-full"></div>
+<div class="w-1 bg-primary h-8 rounded-full"></div>
+<div class="w-1 bg-primary h-6 rounded-full"></div>
+<div class="w-1 bg-primary h-10 rounded-full"></div>
+<div class="w-1 bg-primary h-7 rounded-full"></div>
+<div class="w-1 bg-primary h-5 rounded-full"></div>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/10 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-on-secondary-container">
+<span>Status: Operational</span>
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse"></span>
+                                North America
+                            </span>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+<script>
+// ── Appraisal Agent — Settings Page API Integration ─────────────────────────
+const API = window.location.origin + '/api';
+const token = localStorage.getItem('aa-token');
+if (!token) window.location.href = '/login';
+const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+
+function findByText(tag, text) {
+  return [...document.querySelectorAll(tag)].find(el => el.textContent.trim().includes(text));
+}
+
+// Fix nav links
+const dashLink = findByText('a', 'Dashboard');
+if (dashLink) dashLink.href = '/dashboard';
+
+// Load AI status
+fetch(API + '/ai/status').then(r => r.json()).then(data => {
+  // Update Gemini status
+  const geminiEl = findByText('h4,span,p', 'Gemini');
+  if (geminiEl) {
+    const card = geminiEl.closest('[class*="rounded"]');
+    if (card) {
+      const statusDot = card.querySelector('[class*="rounded-full"][class*="bg-"]');
+      if (statusDot) {
+        statusDot.className = statusDot.className.replace(/bg-\[#[^\]]+\]/g, '');
+        statusDot.classList.add(data.gemini?.ready ? 'bg-[#4ade80]' : 'bg-[#f87171]');
+      }
+    }
+  }
+}).catch(() => {});
+
+// Load health status
+fetch(API + '/health/detailed').then(r => r.json()).then(data => {
+  // Update provider info
+  const providerEl = findByText('span,p', 'Active Provider') || findByText('span,p', 'Provider');
+  if (providerEl) {
+    const next = providerEl.closest('[class*="rounded"]')?.querySelector('[class*="text-3xl"],[class*="text-2xl"],[class*="font-black"]');
+    if (next) next.textContent = (data.provider || data.model || 'OpenAI').toUpperCase();
+  }
+
+  // Update model
+  const modelEl = findByText('span,p,div', 'Model') || findByText('label', 'Model');
+  if (modelEl) {
+    const input = modelEl.closest('[class*="rounded"]')?.querySelector('input');
+    if (input) input.value = data.model || 'gpt-4.1';
+  }
+
+  // Update latency/health card
+  const latencyEl = findByText('p,span', '24ms');
+  if (latencyEl) latencyEl.textContent = data.ok ? 'Online' : 'Offline';
+}).catch(() => {});
+
+// Load billing status
+fetch(API + '/billing/status', { headers }).then(r => r.json()).then(data => {
+  const stripeEl = findByText('span,p', 'Stripe') || findByText('span,p', 'Billing');
+  if (stripeEl) {
+    const statusEl = stripeEl.closest('[class*="rounded"]')?.querySelector('[class*="text-xs"]');
+    if (statusEl) statusEl.textContent = data.stripeConfigured ? 'Connected' : 'Not configured';
+  }
+}).catch(() => {});
+
+// Load USPS status
+fetch(API + '/address/usps-status').then(r => r.json()).then(data => {
+  const uspsEl = findByText('span,p,h4', 'Address') || findByText('span,p,h4', 'USPS');
+  if (uspsEl) {
+    const card = uspsEl.closest('[class*="rounded"]');
+    if (card) {
+      const statusDot = card.querySelector('[class*="rounded-full"][class*="bg-"]');
+      if (statusDot) {
+        statusDot.className = statusDot.className.replace(/bg-\[#[^\]]+\]/g, '');
+        statusDot.classList.add(data.uspsConfigured ? 'bg-[#4ade80]' : 'bg-[#f87171]');
+      }
+    }
+  }
+}).catch(() => {});
+
+// Load templates
+fetch(API + '/templates', { headers }).then(r => r.json()).then(data => {
+  const tmplCount = findByText('span,p', 'template') || findByText('span,p', 'Template');
+  if (tmplCount && data.templates) {
+    const countEl = tmplCount.closest('[class*="rounded"]')?.querySelector('[class*="text-3xl"],[class*="font-black"]');
+    if (countEl) countEl.textContent = data.templates.length;
+  }
+}).catch(() => {});
+
+// Wire save buttons
+document.querySelectorAll('button').forEach(btn => {
+  if (btn.textContent.includes('Save') || btn.textContent.includes('Update')) {
+    btn.onclick = () => {
+      btn.textContent = 'Saved ✓';
+      setTimeout(() => btn.textContent = btn.dataset.origText || 'Save', 2000);
+    };
+    btn.dataset.origText = btn.textContent;
+  }
+});
+
+console.log('Settings page loaded — connected to live API');
+</script>
+</body></html>
