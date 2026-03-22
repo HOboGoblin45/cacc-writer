@@ -81,6 +81,8 @@ import collaborationRouter from './server/api/collaborationRoutes.js';
 import { ensureCollabSchema } from './server/realtime/collaborationService.js';
 import dataEnrichRouter from './server/api/dataRoutes.js';
 import mobileRouter, { ensureMobileSchema } from './server/mobile/mobileApiRoutes.js';
+import businessIntelRouter from './server/api/businessIntelRoutes.js';
+import { ensureMarketTrendSchema } from './server/intelligence/marketTrendEngine.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -162,6 +164,7 @@ try { ensurePhotoSchema(); } catch (e) { console.warn('Photo schema init:', e.me
 try { ensureApiKeySchema(); } catch (e) { console.warn('API key schema init:', e.message); }
 try { ensureCollabSchema(); } catch (e) { console.warn('Collab schema init:', e.message); }
 try { ensureMobileSchema(); } catch (e) { console.warn('Mobile schema init:', e.message); }
+try { ensureMarketTrendSchema(); } catch (e) { console.warn('Market trend schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -180,6 +183,7 @@ app.use('/api', publicApiRouter);
 app.use('/api', collaborationRouter);
 app.use('/api', dataEnrichRouter);
 app.use('/api', mobileRouter);
+app.use('/api', businessIntelRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
