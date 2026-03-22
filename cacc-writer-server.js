@@ -77,6 +77,7 @@ import complianceRouter from './server/api/complianceRoutes.js';
 import { ensureComplianceSchema } from './server/compliance/workfileCompliance.js';
 import { ensurePhotoSchema } from './server/photos/photoManager.js';
 import valuationEngineRouter from './server/api/valuationEngineRoutes.js';
+import publicApiRouter, { ensureApiKeySchema } from './server/api/publicApiRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -155,6 +156,7 @@ try { ensureSchedulingSchema(); } catch (e) { console.warn('Scheduling schema in
 try { ensurePortalSchema(); } catch (e) { console.warn('Portal schema init:', e.message); }
 try { ensureComplianceSchema(); } catch (e) { console.warn('Compliance schema init:', e.message); }
 try { ensurePhotoSchema(); } catch (e) { console.warn('Photo schema init:', e.message); }
+try { ensureApiKeySchema(); } catch (e) { console.warn('API key schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -169,6 +171,7 @@ app.use('/api', schedulingRouter);
 app.use('/api', portalRouter);
 app.use('/api', complianceRouter);
 app.use('/api', valuationEngineRouter);
+app.use('/api', publicApiRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
