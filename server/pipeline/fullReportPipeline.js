@@ -87,7 +87,7 @@ export async function runFullPipeline(input) {
         const now = new Date().toISOString();
         const formType = parsed.facts.order?.formType || input.options?.formType || '1004';
 
-        dbRun('INSERT INTO case_records (case_id, form_type, case_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        dbRun('INSERT INTO case_records (case_id, form_type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
           [caseId, formType, 'pipeline', now, now]);
 
         // Build internal facts
@@ -268,7 +268,7 @@ export async function runFullPipeline(input) {
   // Update case status
   try {
     const newStatus = allOk ? 'complete' : someOk ? 'review' : 'draft';
-    dbRun('UPDATE case_records SET case_status = ?, updated_at = datetime("now") WHERE case_id = ?', [newStatus, caseId]);
+    dbRun('UPDATE case_records SET status = ?, updated_at = datetime("now") WHERE case_id = ?', [newStatus, caseId]);
   } catch { /* ok */ }
 
   results.totalDurationMs = totalDuration;

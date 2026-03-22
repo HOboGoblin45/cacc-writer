@@ -22,34 +22,29 @@ import crypto from 'crypto';
 
 export function ensureSchedulingSchema() {
   const db = getDb();
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS inspections (
-      id              TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(8)))),
-      case_id         TEXT NOT NULL,
-      user_id         TEXT NOT NULL,
-      scheduled_date  TEXT,
-      scheduled_time  TEXT,
-      status          TEXT DEFAULT 'pending',
-      inspection_type TEXT DEFAULT 'interior',
-      address         TEXT,
-      city            TEXT,
-      state           TEXT,
-      zip             TEXT,
-      latitude        REAL,
-      longitude       REAL,
-      contact_name    TEXT,
-      contact_phone   TEXT,
-      access_notes    TEXT,
-      duration_minutes INTEGER DEFAULT 45,
-      drive_minutes   INTEGER,
-      notes           TEXT,
-      completed_at    TEXT,
-      created_at      TEXT DEFAULT (datetime('now')),
-      updated_at      TEXT DEFAULT (datetime('now'))
-    );
-    CREATE INDEX IF NOT EXISTS idx_inspections_user_date ON inspections(user_id, scheduled_date);
-    CREATE INDEX IF NOT EXISTS idx_inspections_case ON inspections(case_id);
-  `);
+
+  // Add columns to existing inspections table if they're missing
+  const cols = db.prepare('PRAGMA table_info(inspections)').all().map(c => c.name);
+
+  const addIfMissing = (col, def) => {
+    if (!cols.includes(col)) {
+      try { db.exec(`ALTER TABLE inspections ADD COLUMN ${col} ${def}`); } catch { /* ok */ }
+    }
+  };
+
+  addIfMissing('user_id', "TEXT DEFAULT 'default'");
+  addIfMissing('address', 'TEXT');
+  addIfMissing('city', 'TEXT');
+  addIfMissing('state', 'TEXT');
+  addIfMissing('zip', 'TEXT');
+  addIfMissing('latitude', 'REAL');
+  addIfMissing('longitude', 'REAL');
+  addIfMissing('access_notes', 'TEXT');
+  addIfMissing('drive_minutes', 'INTEGER');
+  addIfMissing('completed_at', 'TEXT');
+
+  try { db.exec('CREATE INDEX IF NOT EXISTS idx_inspections_user_date ON inspections(user_id, scheduled_date)'); } catch { /* ok */ }
+  try { db.exec('CREATE INDEX IF NOT EXISTS idx_inspections_case ON inspections(case_id)'); } catch { /* ok */ }
 }
 
 /**
@@ -102,7 +97,7 @@ export function scheduleInspection(userId, caseId, details) {
 export function getDaySchedule(userId, date) {
   const db = getDb();
   return db.prepare(`
-    SELECT i.*, r.form_type, r.case_status
+    SELECT i.*, r.form_type, r.status
     FROM inspections i
     LEFT JOIN case_records r ON r.case_id = i.case_id
     WHERE i.user_id = ? AND i.scheduled_date = ?
@@ -119,7 +114,7 @@ export function getUpcomingInspections(userId, days = 7) {
     SELECT i.*, r.form_type
     FROM inspections i
     LEFT JOIN case_records r ON r.case_id = i.case_id
-    WHERE i.user_id = ? AND i.status = 'pending'
+    WHERE i.user_id = ? AND COALESCE(i.inspection_status, 'pending') = 'pending'
       AND i.scheduled_date >= date('now')
       AND i.scheduled_date <= date('now', '+' || ? || ' days')
     ORDER BY i.scheduled_date, i.scheduled_time
@@ -147,7 +142,7 @@ export async function suggestInspectionGroups(userId) {
     FROM case_records r
     JOIN case_facts f ON f.case_id = r.case_id
     LEFT JOIN inspections i ON i.case_id = r.case_id
-    WHERE r.case_status IN ('draft', 'received', 'pipeline')
+    WHERE r.status IN ('draft', 'received', 'pipeline')
       AND i.id IS NULL
       AND json_extract(f.facts_json, '$.subject.address') IS NOT NULL
     ORDER BY json_extract(f.facts_json, '$.order.dueDate')
@@ -227,7 +222,7 @@ export function completeInspection(inspectionId, { notes, photos }) {
   const now = new Date().toISOString();
 
   db.prepare(`
-    UPDATE inspections SET status = 'completed', notes = COALESCE(?, notes),
+    UPDATE inspections SET inspection_status = 'completed', notes = COALESCE(?, notes),
       completed_at = ?, updated_at = ?
     WHERE id = ?
   `).run(notes || null, now, now, inspectionId);

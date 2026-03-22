@@ -211,7 +211,7 @@ export async function parseAndCreateCase(rawText, userId, options = {}) {
   const address = facts.subject?.address || 'Imported Order';
 
   dbRun(
-    `INSERT INTO case_records (case_id, form_type, case_status, created_at, updated_at)
+    `INSERT INTO case_records (case_id, form_type, status, created_at, updated_at)
      VALUES (?, ?, 'draft', ?, ?)`,
     [caseId, formType, now, now]
   );

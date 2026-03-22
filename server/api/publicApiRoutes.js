@@ -123,7 +123,7 @@ router.post('/v1/orders', validateApiKey, async (req, res) => {
       const now = new Date().toISOString();
       const ft = parsed.facts.order?.formType || formType || '1004';
 
-      dbRun('INSERT INTO case_records (case_id, form_type, case_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+      dbRun('INSERT INTO case_records (case_id, form_type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
         [caseId, ft, 'received', now, now]);
       dbRun('INSERT INTO case_facts (case_id, facts_json, created_at, updated_at) VALUES (?, ?, ?, ?)',
         [caseId, JSON.stringify(parsed.facts), now, now]);
@@ -148,7 +148,7 @@ router.get('/v1/orders/:caseId', validateApiKey, (req, res) => {
     ok: true,
     caseId: caseRecord.case_id,
     formType: caseRecord.form_type,
-    status: caseRecord.case_status,
+    status: caseRecord.status,
     address: facts.subject?.address,
     createdAt: caseRecord.created_at,
     updatedAt: caseRecord.updated_at,

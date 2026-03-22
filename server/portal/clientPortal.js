@@ -73,7 +73,7 @@ export function createPortalLink(userId, caseId, { recipientName, recipientEmail
 export function validatePortalAccess(token) {
   const db = getDb();
   const link = db.prepare(`
-    SELECT pl.*, cr.form_type, cr.case_status
+    SELECT pl.*, cr.form_type, cr.status
     FROM portal_links pl
     JOIN case_records cr ON cr.case_id = pl.case_id
     WHERE pl.token = ? AND pl.is_active = 1
@@ -91,7 +91,7 @@ export function validatePortalAccess(token) {
     valid: true,
     caseId: link.case_id,
     formType: link.form_type,
-    caseStatus: link.case_status,
+    caseStatus: link.status,
     permissions: link.permissions,
     recipientName: link.recipient_name,
   };
@@ -103,7 +103,7 @@ export function validatePortalAccess(token) {
 export function getPortalCaseData(caseId) {
   const db = getDb();
 
-  const caseRecord = db.prepare('SELECT case_id, form_type, case_status, created_at, updated_at FROM case_records WHERE case_id = ?').get(caseId);
+  const caseRecord = db.prepare('SELECT case_id, form_type, status, created_at, updated_at FROM case_records WHERE case_id = ?').get(caseId);
   if (!caseRecord) return null;
 
   const caseFacts = db.prepare('SELECT facts_json FROM case_facts WHERE case_id = ?').get(caseId);
@@ -133,7 +133,7 @@ export function getPortalCaseData(caseId) {
     'revision': { step: 5, label: 'Revision In Progress' },
   };
 
-  const currentStatus = statusMap[caseRecord.case_status] || { step: 1, label: caseRecord.case_status };
+  const currentStatus = statusMap[caseRecord.status] || { step: 1, label: caseRecord.status };
 
   // Check for exports
   let exports = [];
@@ -165,7 +165,7 @@ export function getPortalCaseData(caseId) {
     caseId: caseRecord.case_id,
     formType: caseRecord.form_type,
     status: currentStatus,
-    rawStatus: caseRecord.case_status,
+    rawStatus: caseRecord.status,
     subject,
     createdAt: caseRecord.created_at,
     updatedAt: caseRecord.updated_at,
@@ -185,7 +185,7 @@ export function getPortalCaseData(caseId) {
 export function getPortalLinks(userId) {
   const db = getDb();
   return db.prepare(`
-    SELECT pl.*, cr.case_status,
+    SELECT pl.*, cr.status,
            json_extract(f.facts_json, '$.subject.address') as address
     FROM portal_links pl
     JOIN case_records cr ON cr.case_id = pl.case_id

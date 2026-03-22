@@ -42,8 +42,8 @@ export function getProductivityStats(userId, filters = {}) {
   try {
     const reports = db.prepare(`
       SELECT COUNT(*) as total,
-             SUM(CASE WHEN case_status IN ('complete','exported','delivered') THEN 1 ELSE 0 END) as completed,
-             AVG(CASE WHEN case_status IN ('complete','exported','delivered')
+             SUM(CASE WHEN status IN ('complete','exported','delivered') THEN 1 ELSE 0 END) as completed,
+             AVG(CASE WHEN status IN ('complete','exported','delivered')
                THEN (julianday(updated_at) - julianday(created_at)) * 24
                ELSE NULL END) as avg_turnaround_hours
       FROM case_records

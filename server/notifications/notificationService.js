@@ -85,7 +85,7 @@ export function checkDueDateAlerts(userId) {
              json_extract(f.facts_json, '$.subject.address') as address
       FROM case_records r
       JOIN case_facts f ON f.case_id = r.case_id
-      WHERE r.case_status NOT IN ('complete', 'exported', 'delivered', 'cancelled')
+      WHERE r.status NOT IN ('complete', 'exported', 'delivered', 'cancelled')
         AND json_extract(f.facts_json, '$.order.dueDate') IS NOT NULL
         AND date(json_extract(f.facts_json, '$.order.dueDate')) <= date('now', '+1 day')
         AND date(json_extract(f.facts_json, '$.order.dueDate')) >= date('now')
@@ -116,7 +116,7 @@ export function checkDueDateAlerts(userId) {
              json_extract(f.facts_json, '$.subject.address') as address
       FROM case_records r
       JOIN case_facts f ON f.case_id = r.case_id
-      WHERE r.case_status NOT IN ('complete', 'exported', 'delivered', 'cancelled')
+      WHERE r.status NOT IN ('complete', 'exported', 'delivered', 'cancelled')
         AND json_extract(f.facts_json, '$.order.dueDate') IS NOT NULL
         AND date(json_extract(f.facts_json, '$.order.dueDate')) < date('now')
     `).all();
