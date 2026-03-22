@@ -108,6 +108,9 @@ import securityAdvRouter from './server/api/securityAdvancedRoutes.js';
 import mlsRouter from './server/api/mlsRoutes.js';
 import { ensureMlsSchema } from './server/integrations/mlsConnector.js';
 import copilotRouter from './server/api/copilotRoutes.js';
+import signatureRouter from './server/api/signatureRoutes.js';
+import { ensureSignatureSchema } from './server/integrations/eSignature.js';
+import complianceAdvRouter from './server/api/complianceAdvancedRoutes.js';
 import { ensureWebhookSchema } from './server/integrations/webhookNotifier.js';
 import { ensureWhitelabelSchema } from './server/whitelabel/whitelabelService.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
@@ -209,6 +212,7 @@ try { ensureReferralSchema(); } catch (e) { console.warn('Referral schema init:'
 try { ensureLearningSchema(); } catch (e) { console.warn('Learning schema init:', e.message); }
 try { ensureSecurityAuditSchema(); } catch (e) { console.warn('Security audit schema init:', e.message); }
 try { ensureMlsSchema(); } catch (e) { console.warn('MLS schema init:', e.message); }
+try { ensureSignatureSchema(); } catch (e) { console.warn('Signature schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
@@ -249,6 +253,8 @@ app.use('/api', educationRouter);
 app.use('/api', securityAdvRouter);
 app.use('/api', mlsRouter);
 app.use('/api', copilotRouter);
+app.use('/api', signatureRouter);
+app.use('/api', complianceAdvRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
