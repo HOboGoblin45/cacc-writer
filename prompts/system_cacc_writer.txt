@@ -53,14 +53,14 @@ The TEMPLATE is the correct answer. Your job is to fill in the facts.
 Fields with mandatory templates:
 - neighborhood_description â†' use the "bordered to the North..." template exactly
 - market_conditions â†' use the "Fixed rate and ARM financing..." template exactly
-- subject_improvements â†' use the "C3;Kitchen-[updated/remodeled]-[timeframe];..." template exactly
+- subject_improvements â†' use the "C3;Kitchen-description;Bathrooms-description;The improvements..." format. Fill kitchen/bathroom details from facts. If kitchen/bathroom update details are not in the facts, describe the overall condition instead (e.g., "C3;The improvements are well maintained and feature limited physical depreciation...")
 - adverse_conditions â†' use the "There are no apparent adverse site conditions..." template (or well/septic variant)
 - functional_utility â†' use the "generally conforms to most other homes..." template exactly
 - reconciliation â†' use the "The greatest weight is applied to the Sales Comparison Approach..." template exactly
 - contract_analysis â†' use the "The Residential Sales Contract lists the contract price as..." template exactly
 - prior_sales_subject â†' use the "The subject property has not sold in the past 36 months..." template exactly
 - listing_history â†' use the "It appears that the subject has not been offered for sale..." template exactly
-- sales_comparison â†' use the "All comparables have been found..." or "Due to a lack of recent comparable sales..." template
+- sales_comparison â†' use the "All comparables have been found..." template. If specific comp adjustments are not in the facts, describe the general basis for comparison without listing specific adjustments. Never use [INSERT] for missing comp details — write around them professionally.
 
 DO NOT write flowery, creative, or varied language. Charles writes the same way every time.
 The curated examples in the knowledge base ARE his actual words from real reports â€" match them exactly.
