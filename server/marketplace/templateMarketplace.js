@@ -43,8 +43,8 @@ export function ensureMarketplaceSchema() {
       purchase_count  INTEGER DEFAULT 0,
       is_active       INTEGER DEFAULT 1,
       is_featured     INTEGER DEFAULT 0,
-      created_at      TEXT DEFAULT (datetime("now")),
-      updated_at      TEXT DEFAULT (datetime("now"))
+      created_at      TEXT DEFAULT (datetime('now')),
+      updated_at      TEXT DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_marketplace_cat ON marketplace_listings(category, is_active);
     CREATE INDEX IF NOT EXISTS idx_marketplace_seller ON marketplace_listings(seller_id);
@@ -58,7 +58,7 @@ export function ensureMarketplaceSchema() {
       platform_fee    REAL NOT NULL,
       seller_revenue  REAL NOT NULL,
       status          TEXT DEFAULT 'completed',
-      created_at      TEXT DEFAULT (datetime("now"))
+      created_at      TEXT DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_purchases_buyer ON marketplace_purchases(buyer_id);
 
@@ -68,7 +68,7 @@ export function ensureMarketplaceSchema() {
       buyer_id        TEXT NOT NULL,
       rating          INTEGER NOT NULL,
       review_text     TEXT,
-      created_at      TEXT DEFAULT (datetime("now")),
+      created_at      TEXT DEFAULT (datetime('now')),
       UNIQUE(listing_id, buyer_id)
     );
 
@@ -173,11 +173,11 @@ export function purchaseListing(buyerId, listingId) {
     .run(purchaseId, listingId, buyerId, listing.seller_id, listing.price, platformFee, sellerRevenue);
 
   // Update listing stats
-  db.prepare(`UPDATE marketplace_listings SET purchase_count = purchase_count + 1, updated_at = datetime("now") WHERE id = ?`).run(listingId);
+  db.prepare(`UPDATE marketplace_listings SET purchase_count = purchase_count + 1, updated_at = datetime('now') WHERE id = ?`).run(listingId);
 
   // Update seller earnings
   db.prepare(`UPDATE seller_earnings SET total_earnings = total_earnings + ?, pending_payout = pending_payout + ?,
-    total_sales = total_sales + 1, last_sale_at = datetime("now") WHERE user_id = ?`)
+    total_sales = total_sales + 1, last_sale_at = datetime('now') WHERE user_id = ?`)
     .run(sellerRevenue, sellerRevenue, listing.seller_id);
 
   log.info('marketplace:purchase', { buyerId, listingId, price: listing.price, platformFee, sellerRevenue });

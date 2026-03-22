@@ -36,7 +36,7 @@ export function ensureAutomationSchema() {
       is_active   INTEGER DEFAULT 1,
       run_count   INTEGER DEFAULT 0,
       last_run    TEXT,
-      created_at  TEXT DEFAULT (datetime("now"))
+      created_at  TEXT DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS automation_log (
@@ -47,7 +47,7 @@ export function ensureAutomationSchema() {
       action_type TEXT,
       status      TEXT DEFAULT 'success',
       details     TEXT,
-      created_at  TEXT DEFAULT (datetime("now"))
+      created_at  TEXT DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_auto_log ON automation_log(rule_id, created_at DESC);
   `);
@@ -125,7 +125,7 @@ export async function fireTrigger(triggerType, context) {
     try {
       await executeAction(rule.action_type, JSON.parse(rule.action_config || '{}'), context);
 
-      db.prepare(`UPDATE automation_rules SET run_count = run_count + 1, last_run = datetime("now") WHERE id = ?`).run(rule.id);
+      db.prepare(`UPDATE automation_rules SET run_count = run_count + 1, last_run = datetime('now') WHERE id = ?`).run(rule.id);
       db.prepare('INSERT INTO automation_log (rule_id, case_id, trigger_type, action_type, status, details) VALUES (?, ?, ?, ?, ?, ?)')
         .run(rule.id, context.caseId || null, triggerType, rule.action_type, 'success', rule.name);
 

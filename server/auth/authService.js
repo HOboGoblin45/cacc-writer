@@ -25,8 +25,8 @@ export function ensureAuthSchema() {
     CREATE TABLE IF NOT EXISTS auth_credentials (
       user_id       TEXT PRIMARY KEY REFERENCES users(id),
       password_hash TEXT NOT NULL,
-      created_at    TEXT DEFAULT (datetime("now")),
-      updated_at    TEXT DEFAULT (datetime("now"))
+      created_at    TEXT DEFAULT (datetime('now')),
+      updated_at    TEXT DEFAULT (datetime('now'))
     );
 
     -- Subscription / billing info
@@ -41,8 +41,8 @@ export function ensureAuthSchema() {
       reports_limit         INTEGER DEFAULT 5,
       current_period_start  TEXT,
       current_period_end    TEXT,
-      created_at      TEXT DEFAULT (datetime("now")),
-      updated_at      TEXT DEFAULT (datetime("now"))
+      created_at      TEXT DEFAULT (datetime('now')),
+      updated_at      TEXT DEFAULT (datetime('now'))
     );
 
     -- Per-user KB isolation tracking
@@ -52,7 +52,7 @@ export function ensureAuthSchema() {
       voice_model     TEXT,
       lora_adapter    TEXT,
       examples_count  INTEGER DEFAULT 0,
-      created_at      TEXT DEFAULT (datetime("now"))
+      created_at      TEXT DEFAULT (datetime('now'))
     );
   `);
 
@@ -221,7 +221,7 @@ export function checkReportQuota(userId) {
 
 export function incrementReportCount(userId) {
   const db = getDb();
-  db.prepare(`UPDATE subscriptions SET reports_this_month = reports_this_month + 1, updated_at = datetime("now") WHERE user_id = ?`)
+  db.prepare(`UPDATE subscriptions SET reports_this_month = reports_this_month + 1, updated_at = datetime('now') WHERE user_id = ?`)
     .run(userId);
 }
 

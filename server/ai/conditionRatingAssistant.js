@@ -148,13 +148,13 @@ ${evidence.length > 0 ? evidence.join('\n') : 'No additional evidence available.
 
   dbGet.__db || (() => {
     const { getDb } = require('../db/database.js');
-    getDb().prepare(`UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?`)
+    getDb().prepare(`UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?`)
       .run(JSON.stringify(facts), caseId);
   })();
 
   try {
     const { getDb } = await import('../db/database.js');
-    getDb().prepare(`UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?`)
+    getDb().prepare(`UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?`)
       .run(JSON.stringify(facts), caseId);
   } catch { /* ok */ }
 
