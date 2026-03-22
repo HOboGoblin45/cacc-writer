@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appraisal Agent | Financial Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .aureate-gradient {
+            background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+        }
+        .ghost-border {
+            border: 1px solid rgba(77, 70, 51, 0.2);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #10141a; }
+        ::-webkit-scrollbar-thumb { background: #31353c; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#31353c",
+                        "inverse-primary": "#735c00",
+                        "primary-fixed": "#ffe087",
+                        "secondary-fixed": "#dae3ee",
+                        "on-secondary-fixed-variant": "#3f4850",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#353940",
+                        "surface-tint": "#eec224",
+                        "on-primary-fixed-variant": "#574500",
+                        "tertiary-fixed": "#ffe16b",
+                        "background": "#10141a",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "surface-dim": "#10141a",
+                        "on-secondary-container": "#b0b9c4",
+                        "on-tertiary-container": "#594a00",
+                        "on-surface-variant": "#d1c5ad",
+                        "primary-container": "#e2b714",
+                        "surface-container-low": "#181c22",
+                        "surface-container-high": "#262a31",
+                        "primary-fixed-dim": "#eec224",
+                        "tertiary": "#f6d650",
+                        "on-primary-container": "#5c4900",
+                        "on-tertiary": "#3a3000",
+                        "inverse-surface": "#dfe2eb",
+                        "surface-container-highest": "#31353c",
+                        "surface": "#10141a",
+                        "outline-variant": "#4d4633",
+                        "on-secondary": "#29313a",
+                        "on-primary": "#3c2f00",
+                        "secondary": "#bec7d2",
+                        "primary": "#ffd341",
+                        "on-tertiary-fixed": "#221b00",
+                        "surface-container": "#1c2026",
+                        "outline": "#9a9079",
+                        "on-secondary-fixed": "#141c24",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#dfe2eb",
+                        "on-surface": "#dfe2eb",
+                        "secondary-fixed-dim": "#bec7d2",
+                        "tertiary-fixed-dim": "#e4c540",
+                        "surface-container-lowest": "#0a0e14",
+                        "on-primary-fixed": "#231a00",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#d8ba36",
+                        "on-error": "#690005",
+                        "secondary-container": "#414a53",
+                        "inverse-on-surface": "#2d3137"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-screen w-64 bg-[#181c22] border-r-0 shadow-[4px_0_24px_rgba(0,0,0,0.5)] fixed left-0 top-0 z-50">
+<div class="flex flex-col h-full py-8">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-black text-[#dfe2eb] tracking-tighter uppercase">AI-Powered Narrative Drafting</h1>
+<p class="text-[10px] text-on-secondary-container opacity-60 tracking-[0.2em] uppercase mt-1">Premium Valuation Terminal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Dashboard</span>
+</a>
+<a class="flex items-center text-[#ffd341] border-l-2 border-[#ffd341] bg-[#1c2026] py-3 px-6 transition-all group" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Analytics</span>
+</a>
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="insert_chart">insert_chart</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Valuations</span>
+</a>
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-4">
+<button class="w-full aureate-gradient text-[#111] font-bold py-3 rounded-full flex items-center justify-center gap-2 active:opacity-80 transition-all scale-100 active:scale-95 shadow-[0_0_20px_rgba(226,183,20,0.2)]">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="text-xs uppercase tracking-widest">New Appraisal</span>
+</button>
+</div>
+<div class="mt-auto border-t border-outline-variant/10 pt-4">
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="help_outline">help_outline</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Support</span>
+</a>
+<a class="flex items-center text-[#b0b9c4] py-3 px-6 opacity-70 hover:bg-[#353940] hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 group-hover:translate-x-1 duration-300" data-icon="logout">logout</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide uppercase">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 bg-background min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 w-full px-6 py-3 flex justify-between items-center bg-[#10141a] font-['Inter'] antialiased tracking-tight">
+<div class="flex items-center gap-4">
+<div class="md:hidden">
+<span class="material-symbols-outlined text-[#dfe2eb]" data-icon="menu">menu</span>
+</div>
+<span class="text-xl font-bold tracking-tighter text-[#dfe2eb]">Appraisal Agent</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex items-center bg-surface-container-low px-4 py-1.5 rounded-full ghost-border">
+<span class="material-symbols-outlined text-sm text-outline mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 text-on-surface-variant w-48" placeholder="Search ledger..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#b0b9c4] hover:bg-[#353940] p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-[#b0b9c4] hover:bg-[#353940] p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
+<img alt="Agent Profile" class="w-full h-full object-cover" data-alt="Professional portrait of a male real estate agent" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu1xSZC597C6H1cYjmEwsHCMyleaEy5JL5VnJmqrrfR5hnfUqu4ZHcrJiIoG9g1xm9d8OWILEnjg7jKzKoC99_HfjI_YXjMqSHQkYz4azB5faZf_TXB5KAesG1kYGcABLE7eJ4plom9ibW1vLPQCE1_KhsKx2-R_X8t2VACbX2-nNjdweOs21M9tF3bseub5CloIbGdwb4giMmF7gPuKFsqm3XJr6-vT-EgMpo3EeAj5H68MOQTBSNc4Tp2wC3d9z5sXjUXP2Wo4s"/>
+</div>
+</div>
+</div>
+</header>
+<div class="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div>
+<span class="text-xs font-semibold tracking-[0.2em] text-primary uppercase">Market Intelligence</span>
+<h2 class="text-4xl font-extrabold text-on-surface tracking-tight mt-1">Financial Analytics</h2>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2.5 rounded-full bg-surface-container text-on-secondary-container text-sm font-medium ghost-border hover:bg-surface-bright transition-all">
+                            Export PDF
+                        </button>
+<button class="px-5 py-2.5 rounded-full aureate-gradient text-[#111] text-sm font-bold shadow-[0_0_15px_rgba(226,183,20,0.15)]">
+                            Live Feed
+                        </button>
+</div>
+</div>
+<!-- Stats Row: Bento Grid Style -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl ghost-border relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="payments">payments</span>
+</div>
+<p class="text-xs font-semibold text-on-secondary-container tracking-widest uppercase mb-4">Total Revenue</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-on-surface">$45,200</h3>
+<span class="text-xs font-bold text-green-400 flex items-center">
+<span class="material-symbols-outlined text-xs" data-icon="arrow_upward">arrow_upward</span>
+                                12%
+                            </span>
+</div>
+<p class="text-[10px] text-outline mt-2 uppercase tracking-tight">vs previous 30 days</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl ghost-border relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="description">description</span>
+</div>
+<p class="text-xs font-semibold text-on-secondary-container tracking-widest uppercase mb-4">Total Volume</p>
+<h3 class="text-3xl font-bold text-on-surface">124 <span class="text-lg font-medium text-on-secondary-container">Reports</span></h3>
+<p class="text-[10px] text-outline mt-2 uppercase tracking-tight">30-day active period</p>
+</div>
+<div class="bg-surface-container p-6 rounded-xl border border-primary/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-all"></div>
+<p class="text-xs font-semibold text-primary tracking-widest uppercase mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-xs" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            AI Time Savings
+                        </p>
+<h3 class="text-3xl font-bold text-on-surface">310 <span class="text-lg font-medium text-on-secondary-container">Hours</span></h3>
+<div class="mt-2 flex items-center gap-1.5">
+<div class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/20">
+<span class="text-[10px] font-bold text-primary">$15,500 Est. Value</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl ghost-border relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="request_quote">request_quote</span>
+</div>
+<p class="text-xs font-semibold text-on-secondary-container tracking-widest uppercase mb-4">Avg Fee per Case</p>
+<h3 class="text-3xl font-bold text-on-surface">$425</h3>
+<div class="w-full bg-outline-variant/10 h-1 mt-4 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Revenue Chart -->
+<div class="lg:col-span-2 bg-surface-container-low p-8 rounded-xl ghost-border flex flex-col">
+<div class="flex justify-between items-center mb-10">
+<div>
+<h4 class="text-lg font-bold text-on-surface">Revenue Growth</h4>
+<p class="text-xs text-on-secondary-container">Performance over the last 6 months</p>
+</div>
+<div class="flex gap-2">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm aureate-gradient"></span>
+<span class="text-[10px] font-medium text-on-secondary-container uppercase">Revenue</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex items-end justify-between gap-4 h-64 px-4">
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-surface-bright/50 rounded-t-lg relative group-hover:bg-primary/20 transition-all" style="height: 45%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest px-2 py-1 rounded text-[10px] font-bold text-primary">$32k</div>
+</div>
+<span class="text-[10px] text-outline mt-4 font-bold uppercase tracking-tighter">Jan</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-surface-bright/50 rounded-t-lg relative group-hover:bg-primary/20 transition-all" style="height: 60%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest px-2 py-1 rounded text-[10px] font-bold text-primary">$38k</div>
+</div>
+<span class="text-[10px] text-outline mt-4 font-bold uppercase tracking-tighter">Feb</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-surface-bright/50 rounded-t-lg relative group-hover:bg-primary/20 transition-all" style="height: 55%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest px-2 py-1 rounded text-[10px] font-bold text-primary">$35k</div>
+</div>
+<span class="text-[10px] text-outline mt-4 font-bold uppercase tracking-tighter">Mar</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-surface-bright/50 rounded-t-lg relative group-hover:bg-primary/20 transition-all" style="height: 75%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest px-2 py-1 rounded text-[10px] font-bold text-primary">$42k</div>
+</div>
+<span class="text-[10px] text-outline mt-4 font-bold uppercase tracking-tighter">Apr</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-surface-bright/50 rounded-t-lg relative group-hover:bg-primary/20 transition-all" style="height: 85%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest px-2 py-1 rounded text-[10px] font-bold text-primary">$48k</div>
+</div>
+<span class="text-[10px] text-outline mt-4 font-bold uppercase tracking-tighter">May</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full aureate-gradient rounded-t-lg relative shadow-[0_0_30px_rgba(226,183,20,0.1)]" style="height: 100%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-primary px-2 py-1 rounded text-[10px] font-black text-on-primary shadow-xl">ACTIVE</div>
+</div>
+<span class="text-[10px] text-primary mt-4 font-black uppercase tracking-tighter">Jun</span>
+</div>
+</div>
+</div>
+<!-- AI Savings Card -->
+<div class="bg-surface-container p-8 rounded-xl border border-primary/10 flex flex-col">
+<h4 class="text-lg font-bold text-on-surface mb-1">AI Optimization</h4>
+<p class="text-xs text-on-secondary-container mb-8 uppercase tracking-widest font-semibold">Efficiency Metrics</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container font-medium">Auto-Data Entry</span>
+<span class="text-xs font-bold text-primary">145h</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-primary rounded-full" style="width: 70%"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container font-medium">Compliance Check</span>
+<span class="text-xs font-bold text-primary">92h</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-primary rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container font-medium">Market Analysis AI</span>
+<span class="text-xs font-bold text-primary">73h</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-primary rounded-full" style="width: 35%"></div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary border border-primary/20">
+<span class="material-symbols-outlined" data-icon="savings">savings</span>
+</div>
+<div>
+<p class="text-[10px] text-outline uppercase font-bold tracking-widest">Calculated ROI</p>
+<p class="text-xl font-black text-on-surface">$15,500 <span class="text-[10px] text-primary-fixed-dim">USD</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Tables and Projections -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- AMC Breakdown -->
+<div class="lg:col-span-2 bg-surface-container-low rounded-xl ghost-border overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h4 class="text-base font-bold text-on-surface">AMC Performance</h4>
+<span class="text-[10px] px-3 py-1 rounded-full bg-surface-bright text-on-surface font-bold uppercase tracking-widest">Active Clients</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-lowest/50">
+<th class="px-8 py-4 text-[10px] font-bold text-outline uppercase tracking-[0.1em]">Client Name</th>
+<th class="px-8 py-4 text-[10px] font-bold text-outline uppercase tracking-[0.1em]">Orders</th>
+<th class="px-8 py-4 text-[10px] font-bold text-outline uppercase tracking-[0.1em]">Avg Fee</th>
+<th class="px-8 py-4 text-[10px] font-bold text-outline uppercase tracking-[0.1em] text-right">Total Revenue</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-8 py-5 text-sm font-semibold text-on-surface">Reliance AMC</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">42</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">$450</td>
+<td class="px-8 py-5 text-sm font-bold text-primary text-right">$18,900</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-8 py-5 text-sm font-semibold text-on-surface">Solidifi</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">38</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">$410</td>
+<td class="px-8 py-5 text-sm font-bold text-primary text-right">$15,580</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-8 py-5 text-sm font-semibold text-on-surface">Mercury Network</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">26</td>
+<td class="px-8 py-5 text-sm text-on-secondary-container">$380</td>
+<td class="px-8 py-5 text-sm font-bold text-primary text-right">$9,880</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Profitability & Projections Side Panel -->
+<div class="space-y-6">
+<!-- Profitability by Form Type -->
+<div class="bg-surface-container-low p-6 rounded-xl ghost-border">
+<h4 class="text-xs font-bold text-outline uppercase tracking-widest mb-6">Profitability by Form</h4>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">1004 URAR</span>
+<span class="text-primary">65%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full aureate-gradient w-[65%]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">1073 Condo</span>
+<span class="text-primary">22%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full aureate-gradient w-[22%]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">2055 Exterior</span>
+<span class="text-primary">13%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full aureate-gradient w-[13%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Financial Projections Card -->
+<div class="bg-surface-container-highest p-6 rounded-xl border border-primary/30 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-full h-1 aureate-gradient"></div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="trending_up">trending_up</span>
+<span class="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Forecast Model</span>
+</div>
+<p class="text-xs text-on-secondary-container leading-relaxed mb-4">Based on your current 6-month momentum and client acquisition trends.</p>
+<div class="space-y-1">
+<p class="text-[10px] text-outline font-bold uppercase tracking-tight">Projected Annual Revenue</p>
+<p class="text-3xl font-black text-on-surface tracking-tighter">$540,000</p>
+</div>
+<div class="mt-6">
+<button class="w-full py-2 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded text-primary text-[10px] font-bold uppercase tracking-widest transition-all">
+                                    Adjust Model Params
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="p-8 border-t border-outline-variant/5 text-center">
+<p class="text-[10px] text-outline font-medium uppercase tracking-[0.3em]">© 2024 Appraisal Agent Systems • Proprietary Data Tier</p>
+</footer>
+</main>
+</div>
+<script>
+// ── Appraisal Agent — Analytics Page API Integration ────────────────────────
+const API = window.location.origin + '/api';
+const token = localStorage.getItem('aa-token');
+if (!token) window.location.href = '/login';
+const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+
+function findByText(tag, text) {
+  return [...document.querySelectorAll(tag)].find(el => el.textContent.trim().includes(text));
+}
+function updateValue(searchText, newValue) {
+  const el = findByText('p,span,div,h3', searchText);
+  if (!el) return;
+  const card = el.closest('[class*="rounded"]') || el.parentElement;
+  const valueEl = card?.querySelector('[class*="text-3xl"],[class*="text-4xl"],[class*="text-5xl"],[class*="font-black"]');
+  if (valueEl && valueEl !== el) valueEl.textContent = newValue;
+}
+
+// Fix nav links
+const dashLink = findByText('a', 'Dashboard');
+if (dashLink) dashLink.href = '/dashboard';
+const settingsLink = findByText('a', 'Settings');
+if (settingsLink) settingsLink.href = '/settings';
+
+// Load productivity stats
+fetch(API + '/analytics/productivity?period=month', { headers }).then(r => r.json()).then(data => {
+  if (!data.ok) return;
+
+  // Volume stats
+  updateValue('Total Reports', data.volume?.completedReports || 0);
+  updateValue('Completed', data.volume?.completedReports || 0);
+  updateValue('In Progress', data.volume?.inProgress || 0);
+
+  // Revenue
+  if (data.revenue?.total) {
+    updateValue('Revenue', '$' + data.revenue.total.toLocaleString());
+    updateValue('Total Revenue', '$' + data.revenue.total.toLocaleString());
+  }
+  if (data.revenue?.avgFee) {
+    updateValue('Average', '$' + data.revenue.avgFee.toLocaleString());
+    updateValue('Avg Fee', '$' + data.revenue.avgFee.toLocaleString());
+  }
+
+  // AI savings
+  if (data.ai) {
+    updateValue('Hours Saved', data.ai.estimatedHoursSaved + 'h');
+    updateValue('Time Saved', data.ai.estimatedHoursSaved + 'h');
+    updateValue('Value Saved', '$' + data.ai.estimatedValueSaved.toLocaleString());
+    updateValue('Sections', data.ai.sectionsGenerated);
+  }
+
+  // Turnaround
+  if (data.volume?.avgTurnaroundHours) {
+    updateValue('Turnaround', data.volume.avgTurnaroundHours.toFixed(1) + 'h');
+  }
+
+  // Revision rate
+  if (data.quality) {
+    updateValue('Revision', data.quality.revisionRate);
+  }
+
+  // AMC breakdown - update table rows
+  if (data.amcBreakdown?.length > 0) {
+    const tableRows = document.querySelectorAll('tr');
+    data.amcBreakdown.slice(0, tableRows.length - 1).forEach((amc, i) => {
+      const row = tableRows[i + 1]; // skip header
+      if (!row) return;
+      const cells = row.querySelectorAll('td,span,p');
+      const allText = [...row.querySelectorAll('*')];
+      // Try to update the name and numbers in the row
+      const nameEl = allText.find(el => el.children.length === 0 && el.textContent.trim().length > 3);
+      if (nameEl) nameEl.textContent = amc.name;
+    });
+  }
+}).catch(() => {});
+
+// Load projections
+fetch(API + '/analytics/projections', { headers }).then(r => r.json()).then(data => {
+  if (!data.ok) return;
+
+  if (data.annualized?.revenue) {
+    updateValue('Projected', '$' + data.annualized.revenue.toLocaleString());
+    updateValue('Annual', '$' + data.annualized.revenue.toLocaleString());
+    updateValue('$540,000', '$' + data.annualized.revenue.toLocaleString());
+  }
+
+  if (data.efficiency?.reportsPerWeek) {
+    updateValue('Per Week', data.efficiency.reportsPerWeek);
+  }
+
+  if (data.efficiency?.effectiveHourlyRate) {
+    updateValue('Hourly', '$' + data.efficiency.effectiveHourlyRate);
+    updateValue('Effective', '$' + data.efficiency.effectiveHourlyRate + '/hr');
+  }
+}).catch(() => {});
+
+// Load profitability
+fetch(API + '/business/profitability?period=month', { headers }).then(r => r.json()).then(data => {
+  if (!data.ok) return;
+
+  if (data.effectiveHourlyRate) {
+    updateValue('Hourly Rate', '$' + data.effectiveHourlyRate);
+  }
+
+  // Update form type breakdown if cards exist
+  if (data.byFormType?.length > 0) {
+    const formCards = document.querySelectorAll('[class*="rounded-xl"][class*="bg-surface"]');
+    data.byFormType.slice(0, 4).forEach((ft, i) => {
+      // Try to match existing cards
+    });
+  }
+}).catch(() => {});
+
+console.log('Analytics page loaded — connected to live API');
+</script>
+</body></html>

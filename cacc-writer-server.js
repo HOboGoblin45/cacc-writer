@@ -142,6 +142,7 @@ app.get('/admin', (_q, r) => r.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/case', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
 app.get('/case/:id', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
 app.get('/settings', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'settings', 'code.html')));
+app.get('/analytics', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'analytics', 'code.html')));
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
