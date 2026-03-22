@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../auth/authService.js';
 import { isStripeConfigured, createCheckoutSession, createPortalSession, handleWebhook } from './stripeService.js';
 import express from 'express';
+import log from '../logger.js';
 
 const router = Router();
 
@@ -28,12 +29,14 @@ router.get('/billing/status', (_req, res) => {
 router.post('/billing/checkout', authMiddleware, async (req, res) => {
   try {
     const { plan } = req.body || {};
+    log.info('billing:checkout-attempt', { plan, userId: req.user?.userId, userKeys: Object.keys(req.user || {}) });
     if (!plan || !['starter', 'professional', 'enterprise'].includes(plan)) {
       return res.status(400).json({ ok: false, error: 'Invalid plan' });
     }
     const result = await createCheckoutSession(req.user.userId, plan);
     res.json({ ok: true, ...result });
   } catch (err) {
+    log.error('billing:checkout-error', { error: err.message, stack: err.stack?.split('\n').slice(0, 3).join(' | ') });
     res.status(500).json({ ok: false, error: err.message });
   }
 });
