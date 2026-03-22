@@ -364,25 +364,6 @@
   </div>
 
   <script src="app.js"></script>
-  <script>
-    // Debug: verify JS is running
-    window.addEventListener('load', function() {
-      console.log('[DEBUG] Page loaded, app.js executed');
-      console.log('[DEBUG] API_BASE:', typeof API_BASE !== 'undefined' ? API_BASE : 'UNDEFINED');
-      console.log('[DEBUG] S.cases:', typeof S !== 'undefined' ? S.cases?.length : 'S undefined');
-      // Show a visible indicator
-      var dbg = document.createElement('div');
-      dbg.id = 'js-debug';
-      dbg.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#e2b714;color:#000;padding:8px 12px;border-radius:6px;font-size:12px;z-index:99999;font-family:monospace;';
-      dbg.textContent = 'JS OK | API: ' + (typeof API_BASE !== 'undefined' ? API_BASE : 'MISSING') + ' | Cases: ' + (typeof S !== 'undefined' ? (S.cases?.length || 0) : '?');
-      document.body.appendChild(dbg);
-      // Update after cases load
-      setTimeout(function() {
-        if (document.getElementById('js-debug') && typeof S !== 'undefined') {
-          document.getElementById('js-debug').textContent = 'JS OK | Cases: ' + (S.cases?.length || 0) + ' | Connected: ' + (S.connected ? 'YES' : 'NO');
-        }
-      }, 3000);
-    });
-  </script>
+
 </body>
 </html>
