@@ -80,6 +80,7 @@ import publicApiRouter, { ensureApiKeySchema } from './server/api/publicApiRoute
 import collaborationRouter from './server/api/collaborationRoutes.js';
 import { ensureCollabSchema } from './server/realtime/collaborationService.js';
 import dataEnrichRouter from './server/api/dataRoutes.js';
+import mobileRouter, { ensureMobileSchema } from './server/mobile/mobileApiRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -160,6 +161,7 @@ try { ensureComplianceSchema(); } catch (e) { console.warn('Compliance schema in
 try { ensurePhotoSchema(); } catch (e) { console.warn('Photo schema init:', e.message); }
 try { ensureApiKeySchema(); } catch (e) { console.warn('API key schema init:', e.message); }
 try { ensureCollabSchema(); } catch (e) { console.warn('Collab schema init:', e.message); }
+try { ensureMobileSchema(); } catch (e) { console.warn('Mobile schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
 app.use('/api', adminRouter);
@@ -177,6 +179,7 @@ app.use('/api', valuationEngineRouter);
 app.use('/api', publicApiRouter);
 app.use('/api', collaborationRouter);
 app.use('/api', dataEnrichRouter);
+app.use('/api', mobileRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
