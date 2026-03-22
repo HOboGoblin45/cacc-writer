@@ -1,0 +1,31 @@
+{
+  "totalExtractions": 5,
+  "withNarratives": 5,
+  "totalTrainingExamples": 17,
+  "sectionCounts": {
+    "market_conditions": 1,
+    "highest_and_best_use": 5,
+    "comments_on_sales_comparison": 1,
+    "condition_of_the_property": 3,
+    "conditions_of_appraisal": 1,
+    "legal_description": 1,
+    "neighborhood_market_conditions": 2,
+    "site_comments": 1,
+    "additional_features": 2
+  },
+  "outputFiles": {
+    "jsonl": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\training_output\\training_data.jsonl",
+    "modelfile": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\training_output\\Modelfile",
+    "voiceCorpus": [
+      "voice_corpus_market_conditions.json",
+      "voice_corpus_highest_and_best_use.json",
+      "voice_corpus_comments_on_sales_comparison.json",
+      "voice_corpus_condition_of_the_property.json",
+      "voice_corpus_conditions_of_appraisal.json",
+      "voice_corpus_legal_description.json",
+      "voice_corpus_neighborhood_market_conditions.json",
+      "voice_corpus_site_comments.json",
+      "voice_corpus_additional_features.json"
+    ]
+  }
+}
