@@ -1,0 +1,64 @@
+{
+  "scan": {
+    "aciFiles": 0,
+    "xmlFiles": 395,
+    "pdfFiles": 0,
+    "totalFiles": 396,
+    "directories": 0
+  },
+  "extraction": {
+    "xmlParsed": 395,
+    "aciParsed": 0,
+    "errors": 0
+  },
+  "training": {
+    "totalExtractions": 395,
+    "withNarratives": 168,
+    "totalTrainingExamples": 517,
+    "sectionCounts": {
+      "neighborhood_market_conditions": 167,
+      "highest_and_best_use": 167,
+      "conditions_of_appraisal": 18,
+      "neighborhood_description": 18,
+      "contract_data_source": 24,
+      "condition_of_the_property": 16,
+      "comments_on_sales_comparison": 37,
+      "extra_comments": 1,
+      "project_occupancy": 1,
+      "additional_features": 36,
+      "additional_comments": 3,
+      "neighborhood_boundaries": 1,
+      "financial_assistance": 3,
+      "physical_deficiencies_or_adverse_conditions": 10,
+      "legal_description": 10,
+      "twelve_month_listing_history_of_subject_property": 1,
+      "site_comments": 3,
+      "market_conditions": 1
+    },
+    "outputFiles": {
+      "jsonl": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\training_output\\training_data.jsonl",
+      "modelfile": "C:\\Users\\ccres\\OneDrive\\Desktop\\cacc-writer\\training_output\\Modelfile",
+      "voiceCorpus": [
+        "voice_corpus_neighborhood_market_conditions.json",
+        "voice_corpus_highest_and_best_use.json",
+        "voice_corpus_conditions_of_appraisal.json",
+        "voice_corpus_neighborhood_description.json",
+        "voice_corpus_contract_data_source.json",
+        "voice_corpus_condition_of_the_property.json",
+        "voice_corpus_comments_on_sales_comparison.json",
+        "voice_corpus_extra_comments.json",
+        "voice_corpus_project_occupancy.json",
+        "voice_corpus_additional_features.json",
+        "voice_corpus_additional_comments.json",
+        "voice_corpus_neighborhood_boundaries.json",
+        "voice_corpus_financial_assistance.json",
+        "voice_corpus_physical_deficiencies_or_adverse_conditions.json",
+        "voice_corpus_legal_description.json",
+        "voice_corpus_twelve_month_listing_history_of_subject_property.json",
+        "voice_corpus_site_comments.json",
+        "voice_corpus_market_conditions.json"
+      ]
+    }
+  },
+  "errors": []
+}

@@ -286,12 +286,36 @@ export function buildUad36Document(caseData, options = {}) {
   lines.push('                <RATINGS>');
   const condOverall = improvements.condition || improvements.conditionOverall || '';
   const qualOverall = improvements.quality || improvements.qualityOverall || '';
-  if (condOverall) lines.push(`                  ${el('OverallConditionRating', condOverall)}`);
-  if (improvements.conditionExterior) lines.push(`                  ${el('ExteriorConditionRating', improvements.conditionExterior)}`);
-  if (improvements.conditionInterior) lines.push(`                  ${el('InteriorConditionRating', improvements.conditionInterior)}`);
-  if (qualOverall) lines.push(`                  ${el('OverallQualityRating', qualOverall)}`);
-  if (improvements.qualityExterior) lines.push(`                  ${el('ExteriorQualityRating', improvements.qualityExterior)}`);
-  if (improvements.qualityInterior) lines.push(`                  ${el('InteriorQualityRating', improvements.qualityInterior)}`);
+  if (condOverall) {
+    lines.push(`                  ${el('OverallConditionRating', condOverall)}`);
+    const condDesc = CQ_RATINGS_36.condition[condOverall];
+    if (condDesc) lines.push(`                  ${el('OverallConditionRatingDescription', condDesc)}`);
+  }
+  if (improvements.conditionExterior) {
+    lines.push(`                  ${el('ExteriorConditionRating', improvements.conditionExterior)}`);
+    const desc = CQ_RATINGS_36.condition[improvements.conditionExterior];
+    if (desc) lines.push(`                  ${el('ExteriorConditionRatingDescription', desc)}`);
+  }
+  if (improvements.conditionInterior) {
+    lines.push(`                  ${el('InteriorConditionRating', improvements.conditionInterior)}`);
+    const desc = CQ_RATINGS_36.condition[improvements.conditionInterior];
+    if (desc) lines.push(`                  ${el('InteriorConditionRatingDescription', desc)}`);
+  }
+  if (qualOverall) {
+    lines.push(`                  ${el('OverallQualityRating', qualOverall)}`);
+    const qualDesc = CQ_RATINGS_36.quality[qualOverall];
+    if (qualDesc) lines.push(`                  ${el('OverallQualityRatingDescription', qualDesc)}`);
+  }
+  if (improvements.qualityExterior) {
+    lines.push(`                  ${el('ExteriorQualityRating', improvements.qualityExterior)}`);
+    const desc = CQ_RATINGS_36.quality[improvements.qualityExterior];
+    if (desc) lines.push(`                  ${el('ExteriorQualityRatingDescription', desc)}`);
+  }
+  if (improvements.qualityInterior) {
+    lines.push(`                  ${el('InteriorQualityRating', improvements.qualityInterior)}`);
+    const desc = CQ_RATINGS_36.quality[improvements.qualityInterior];
+    if (desc) lines.push(`                  ${el('InteriorQualityRatingDescription', desc)}`);
+  }
   lines.push('                </RATINGS>');
 
   // Site
@@ -332,6 +356,22 @@ export function buildUad36Document(caseData, options = {}) {
     if (disaster.mitigationType) lines.push(`                  ${el('MitigationType', disaster.mitigationType)}`);
     if (disaster.description) lines.push(`                  ${el('MitigationDescription', disaster.description)}`);
     lines.push('                </DISASTER_MITIGATION>');
+  }
+
+  // Accessory Dwelling Unit (ADU) — new in UAD 3.6
+  const adu = facts.adu || facts.accessoryDwelling || {};
+  if (adu.present || adu.type) {
+    lines.push('                <ACCESSORY_DWELLING_UNIT>');
+    lines.push(`                  ${el('ADUIndicator', String(adu.present ?? true))}`);
+    if (adu.type) lines.push(`                  ${el('ADUType', adu.type)}`);
+    if (adu.gla) lines.push(`                  ${el('ADUGrossLivingAreaSquareFeet', adu.gla)}`);
+    if (adu.bedrooms) lines.push(`                  ${el('ADUBedroomCount', adu.bedrooms)}`);
+    if (adu.bathrooms) lines.push(`                  ${el('ADUBathroomCount', adu.bathrooms)}`);
+    if (adu.condition) lines.push(`                  ${el('ADUConditionRating', adu.condition)}`);
+    if (adu.quality) lines.push(`                  ${el('ADUQualityRating', adu.quality)}`);
+    if (adu.yearBuilt) lines.push(`                  ${el('ADUYearBuilt', adu.yearBuilt)}`);
+    if (adu.rentAmount) lines.push(`                  ${el('ADURentAmount', adu.rentAmount)}`);
+    lines.push('                </ACCESSORY_DWELLING_UNIT>');
   }
 
   lines.push('              </SUBJECT_PROPERTY>');
