@@ -97,6 +97,10 @@ import intelAdvancedRouter from './server/api/intelligenceAdvancedRoutes.js';
 import ratingRouter from './server/api/ratingRoutes.js';
 import ucdpRouter from './server/api/ucdpRoutes.js';
 import { ensureUcdpSchema } from './server/integrations/ucdpSubmission.js';
+import marketplaceRouter from './server/api/marketplaceRoutes.js';
+import { ensureMarketplaceSchema } from './server/marketplace/templateMarketplace.js';
+import growthRouter from './server/api/growthRoutes.js';
+import { ensureReferralSchema } from './server/growth/referralSystem.js';
 import { ensureWebhookSchema } from './server/integrations/webhookNotifier.js';
 import { ensureWhitelabelSchema } from './server/whitelabel/whitelabelService.js';
 import deliveryRouter from './server/api/deliveryRoutes.js';
@@ -193,6 +197,8 @@ try { ensureAutomationSchema(); } catch (e) { console.warn('Automation schema in
 try { ensureWebhookSchema(); } catch (e) { console.warn('Webhook schema init:', e.message); }
 try { ensureWhitelabelSchema(); } catch (e) { console.warn('Whitelabel schema init:', e.message); }
 try { ensureUcdpSchema(); } catch (e) { console.warn('UCDP schema init:', e.message); }
+try { ensureMarketplaceSchema(); } catch (e) { console.warn('Marketplace schema init:', e.message); }
+try { ensureReferralSchema(); } catch (e) { console.warn('Referral schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 app.use('/api', authRouter);
@@ -227,6 +233,8 @@ app.use('/api', webhookRouter);
 app.use('/api', intelAdvancedRouter);
 app.use('/api', ratingRouter);
 app.use('/api', ucdpRouter);
+app.use('/api', marketplaceRouter);
+app.use('/api', growthRouter);
 app.use('/api', invoiceRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
