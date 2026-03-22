@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server/billing/stripeService.js
  * ─────────────────────────────────────────────────────────────────────────────
  * Stripe integration for subscription billing.
@@ -50,7 +50,7 @@ export async function createCheckoutSession(userId, plan) {
       metadata: { userId, username: user.username },
     });
     customerId = customer.id;
-    db.prepare('UPDATE subscriptions SET stripe_customer_id = ?, updated_at = datetime('now') WHERE user_id = ?')
+    db.prepare('UPDATE subscriptions SET stripe_customer_id = ?, updated_at = datetime("now") WHERE user_id = ?')
       .run(customerId, userId);
   }
 
@@ -138,9 +138,9 @@ function activateSubscription(userId, plan, stripeSubscriptionId) {
     UPDATE subscriptions
     SET plan = ?, status = 'active', stripe_subscription_id = ?,
         reports_limit = ?, reports_this_month = 0,
-        current_period_start = datetime('now'),
+        current_period_start = datetime("now"),
         current_period_end = datetime('now', '+30 days'),
-        updated_at = datetime('now')
+        updated_at = datetime("now")
     WHERE user_id = ?
   `).run(plan, stripeSubscriptionId, planConfig.reports === Infinity ? 999999 : planConfig.reports, userId);
 
@@ -151,7 +151,7 @@ function updateSubscriptionStatus(subscription) {
   const db = getDb();
   db.prepare(`
     UPDATE subscriptions
-    SET status = ?, updated_at = datetime('now')
+    SET status = ?, updated_at = datetime("now")
     WHERE stripe_subscription_id = ?
   `).run(subscription.status === 'active' ? 'active' : 'past_due', subscription.id);
 }
@@ -161,7 +161,7 @@ function cancelSubscription(subscription) {
   db.prepare(`
     UPDATE subscriptions
     SET plan = 'free', status = 'active', stripe_subscription_id = NULL,
-        reports_limit = 5, updated_at = datetime('now')
+        reports_limit = 5, updated_at = datetime("now")
     WHERE stripe_subscription_id = ?
   `).run(subscription.id);
 
@@ -173,9 +173,9 @@ function resetMonthlyQuota(stripeCustomerId) {
   db.prepare(`
     UPDATE subscriptions
     SET reports_this_month = 0,
-        current_period_start = datetime('now'),
+        current_period_start = datetime("now"),
         current_period_end = datetime('now', '+30 days'),
-        updated_at = datetime('now')
+        updated_at = datetime("now")
     WHERE stripe_customer_id = ?
   `).run(stripeCustomerId);
 }

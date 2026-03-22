@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server/ai/photoAnalyzer.js
  * ─────────────────────────────────────────────────────────────────────────────
  * AI-powered inspection photo analyzer using Gemini Vision.
@@ -209,7 +209,7 @@ export async function analyzeCasePhotos(caseId) {
   if (!facts.improvements.condition && predominantCondition) facts.improvements.condition = predominantCondition;
   if (!facts.improvements.quality && predominantQuality) facts.improvements.quality = predominantQuality;
 
-  db.prepare('UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?')
+  db.prepare('UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?')
     .run(JSON.stringify(facts), caseId);
 
   log.info('photo-ai:case-complete', { caseId, analyzed: results.filter(r => r.ok).length, condition: predominantCondition, quality: predominantQuality });

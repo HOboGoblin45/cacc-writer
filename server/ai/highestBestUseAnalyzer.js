@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server/ai/highestBestUseAnalyzer.js
  * ─────────────────────────────────────────────────────────────────────────────
  * AI-powered Highest and Best Use (HBU) analysis.
@@ -85,7 +85,7 @@ Land Use: ${neighborhood.landUse ? JSON.stringify(neighborhood.landUse) : 'Predo
 
   // Save to facts
   facts.highestBestUse = { ...hbu, analyzedAt: new Date().toISOString() };
-  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime('now') WHERE case_id = ?', [JSON.stringify(facts), caseId]);
+  dbRun('UPDATE case_facts SET facts_json = ?, updated_at = datetime("now") WHERE case_id = ?', [JSON.stringify(facts), caseId]);
 
   log.info('hbu:analyzed', { caseId });
   return hbu;

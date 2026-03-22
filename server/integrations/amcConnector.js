@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server/integrations/amcConnector.js
  * ─────────────────────────────────────────────────────────────────────────────
  * AMC (Appraisal Management Company) Integration Hub
@@ -43,8 +43,8 @@ export function ensureAmcSchema() {
       config_json     TEXT DEFAULT '{}',
       last_order_at   TEXT,
       total_orders    INTEGER DEFAULT 0,
-      created_at      TEXT DEFAULT (datetime('now')),
-      updated_at      TEXT DEFAULT (datetime('now'))
+      created_at      TEXT DEFAULT (datetime("now")),
+      updated_at      TEXT DEFAULT (datetime("now"))
     );
 
     CREATE TABLE IF NOT EXISTS amc_orders (
@@ -57,9 +57,9 @@ export function ensureAmcSchema() {
       parsed_facts    TEXT,
       delivery_status TEXT,
       delivery_url    TEXT,
-      received_at     TEXT DEFAULT (datetime('now')),
+      received_at     TEXT DEFAULT (datetime("now")),
       completed_at    TEXT,
-      created_at      TEXT DEFAULT (datetime('now'))
+      created_at      TEXT DEFAULT (datetime("now"))
     );
     CREATE INDEX IF NOT EXISTS idx_amc_orders_connection ON amc_orders(connection_id);
     CREATE INDEX IF NOT EXISTS idx_amc_orders_case ON amc_orders(case_id);
@@ -166,7 +166,7 @@ export async function processWebhookOrder(connectionId, payload, signature) {
       .run(caseId, JSON.stringify(parsed.facts), 'parsed', orderId);
 
     // Update connection stats
-    db.prepare('UPDATE amc_connections SET last_order_at = datetime('now'), total_orders = total_orders + 1 WHERE id = ?')
+    db.prepare('UPDATE amc_connections SET last_order_at = datetime("now"), total_orders = total_orders + 1 WHERE id = ?')
       .run(connectionId);
 
     log.info('amc:order-processed', { connectionId, platform, orderId, caseId, fieldCount: parsed.meta.fieldCount });
