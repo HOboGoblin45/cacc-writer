@@ -121,6 +121,7 @@ import { ensureWhitelabelSchema } from './server/whitelabel/whitelabelService.js
 import deliveryRouter from './server/api/deliveryRoutes.js';
 import { ensureDeliverySchema } from './server/integrations/emailDelivery.js';
 import invoiceRouter from './server/api/invoiceRoutes.js';
+import demoRouter from './server/api/demoRoutes.js';
 import { ensureInvoiceSchema } from './server/billing/invoiceGenerator.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
@@ -293,6 +294,7 @@ app.use('/api', dataPipelineRouter);
 app.use('/api', intakeRouter);
 app.use('/api', compsRouter);
 app.use('/api', gmailRouter);
+app.use('/api', demoRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
