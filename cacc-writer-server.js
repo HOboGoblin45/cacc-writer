@@ -154,6 +154,15 @@ const genLimiter = rateLimit({
 });
 app.use('/api/generate', genLimiter);
 
+// Rate limit demo endpoint: 5 requests per hour per IP (prevents abuse)
+const demoLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { ok: false, error: 'Demo limit reached. Sign up for unlimited access!', upgrade: true },
+  keyGenerator: (req) => req.ip,
+});
+app.use('/api/demo', demoLimiter);
+
 app.use(express.json({ limit: '10mb' }));
 
 log.info('server:start', { model: MODEL, port: PORT });
@@ -184,6 +193,8 @@ app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/demo.html', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
+app.get('/pricing', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));
+app.get('/pricing.html', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
 app.get('/workspace.js', (_q, r) => r.sendFile(path.join(__dirname, 'workspace.js')));
 app.get('/styles.css', (_q, r) => r.sendFile(path.join(__dirname, 'styles.css')));

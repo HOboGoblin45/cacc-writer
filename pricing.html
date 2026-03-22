@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pricing — Appraisal Agent | AI Appraisal Report Software</title>
+
+<!-- SEO Meta Tags -->
+<meta name="description" content="Simple, transparent pricing for AI appraisal report writing. From free to enterprise — choose the plan that fits your volume. No contracts, cancel anytime."/>
+<meta name="keywords" content="appraisal software pricing, AI appraisal report pricing, appraisal narrative generator cost, URAR writing software price, appraisal AI subscription"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://appraisal-agent.com/pricing"/>
+
+<!-- Open Graph -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Pricing — Appraisal Agent | AI Appraisal Report Software"/>
+<meta property="og:description" content="Simple, transparent pricing for AI appraisal report writing. From free to enterprise — no contracts, cancel anytime."/>
+<meta property="og:url" content="https://appraisal-agent.com/pricing"/>
+<meta property="og:image" content="https://appraisal-agent.com/og-landing.png"/>
+<meta property="og:site_name" content="Appraisal Agent"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Pricing — AI Appraisal Report Software"/>
+<meta name="twitter:description" content="Simple, transparent pricing for AI appraisal report writing. Cancel anytime."/>
+<meta name="twitter:image" content="https://appraisal-agent.com/og-landing.png"/>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "error": "#ffb4ab",
+                "primary-container": "#e2b714",
+                "background": "#0d1117",
+                "tertiary-fixed-dim": "#e4c540",
+                "on-tertiary-container": "#594a00",
+                "tertiary-fixed": "#ffe16b",
+                "surface-bright": "#353940",
+                "secondary-fixed-dim": "#bec7d2",
+                "secondary-container": "#414a53",
+                "on-error": "#690005",
+                "on-surface-variant": "#d1c5ad",
+                "on-secondary-fixed-variant": "#3f4850",
+                "on-background": "#dfe2eb",
+                "inverse-surface": "#dfe2eb",
+                "surface-dim": "#0d1117",
+                "on-primary-container": "#5c4900",
+                "on-tertiary-fixed-variant": "#544600",
+                "inverse-primary": "#735c00",
+                "on-error-container": "#ffdad6",
+                "surface-container-low": "#161b22",
+                "outline-variant": "#30363d",
+                "on-secondary-container": "#b0b9c4",
+                "on-tertiary": "#3a3000",
+                "secondary": "#bec7d2",
+                "tertiary": "#f6d650",
+                "on-tertiary-fixed": "#221b00",
+                "secondary-fixed": "#dae3ee",
+                "on-primary-fixed-variant": "#574500",
+                "primary-fixed": "#ffe087",
+                "on-primary": "#3c2f00",
+                "surface-container-lowest": "#010409",
+                "surface-container": "#21262d",
+                "surface-container-high": "#30363d",
+                "on-secondary-fixed": "#141c24",
+                "tertiary-container": "#d8ba36",
+                "surface-variant": "#31353c",
+                "surface-container-highest": "#31353c",
+                "on-surface": "#f0f6fc",
+                "on-primary-fixed": "#231a00",
+                "surface-tint": "#eec224",
+                "primary": "#ffd341",
+                "surface": "#0d1117",
+                "primary-fixed-dim": "#eec224",
+                "on-secondary": "#29313a",
+                "outline": "#484f58",
+                "inverse-on-surface": "#2d3137",
+                "error-container": "#93000a",
+                "muted-text": "#8b949e"
+            },
+            fontFamily: {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+        },
+    },
+}
+</script>
+<style>
+    html { scroll-behavior: smooth; }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .aureate-gradient {
+        background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+    }
+    body {
+        background-color: #0d1117;
+        color: #f0f6fc;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
+    .nav-blur {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(240, 246, 252, 0.1);
+    }
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+    .delay-400 { transition-delay: 400ms; }
+
+    .card-pro {
+        border: 2px solid #e2b714;
+        box-shadow: 0 0 40px rgba(226, 183, 20, 0.15);
+    }
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.35s ease;
+    }
+    .faq-answer.open {
+        max-height: 200px;
+    }
+    .faq-icon {
+        transition: transform 0.3s ease;
+    }
+    .faq-icon.open {
+        transform: rotate(180deg);
+    }
+</style>
+</head>
+<body class="selection:bg-primary/30">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-[#0d1117]/70 nav-blur">
+    <div class="flex justify-between items-center max-w-7xl mx-auto px-6 h-16">
+        <a href="/" class="text-xl font-bold tracking-tight text-on-surface flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#111] text-xs font-black">AA</span>
+            Appraisal Agent
+        </a>
+        <div class="hidden md:flex items-center space-x-8 font-['Inter'] font-medium text-sm">
+            <a class="text-muted-text hover:text-on-surface transition-colors" href="/">Home</a>
+            <a class="text-muted-text hover:text-on-surface transition-colors" href="/demo">Demo</a>
+            <a class="text-primary font-bold" href="/pricing">Pricing</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="/login.html" class="px-5 py-2 text-muted-text font-medium text-sm hover:text-on-surface transition-colors">Login</a>
+            <a href="/login.html" class="px-5 py-2 bg-on-surface text-[#0d1117] font-bold text-sm rounded-full hover:bg-opacity-90 transition-all inline-block">Start Free</a>
+        </div>
+    </div>
+</nav>
+
+<main class="pt-16">
+    <!-- Hero -->
+    <section class="relative px-6 pt-24 pb-16 text-center reveal">
+        <div class="max-w-3xl mx-auto">
+            <span class="inline-block py-1 px-4 rounded-full bg-surface-container-high border border-outline-variant text-primary text-xs font-bold tracking-[0.1em] uppercase mb-6">
+                Transparent Pricing
+            </span>
+            <h1 class="text-5xl md:text-6xl font-black tracking-tighter text-on-surface mb-6 leading-tight">
+                Simple Plans.<br/><span class="text-primary">No Surprises.</span>
+            </h1>
+            <p class="text-muted-text text-lg md:text-xl font-medium leading-relaxed max-w-xl mx-auto">
+                Start free, scale when you're ready. Every plan includes USPAP-aligned narratives and voice matching built for real appraisers.
+            </p>
+        </div>
+    </section>
+
+    <!-- Pricing Cards -->
+    <section class="py-16 px-6 reveal">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
+
+                <!-- Free -->
+                <div class="p-8 bg-surface-container-low rounded-xl border border-outline-variant flex flex-col hover:border-primary/30 transition-all duration-300 delay-100 reveal">
+                    <div class="mb-6">
+                        <h2 class="font-bold text-lg text-on-surface mb-1">Free</h2>
+                        <div class="text-4xl font-black text-on-surface mt-2">$0<span class="text-sm font-medium text-muted-text">/mo</span></div>
+                        <p class="text-muted-text text-sm mt-2">Get started at no cost</p>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-grow">
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            5 reports/month
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Basic AI generation
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Single form type (1004)
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            Voice training
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            ACI / RQ insertion
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            Priority support
+                        </li>
+                    </ul>
+                    <a href="/login.html" class="w-full py-3 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-container-highest transition-all text-center text-sm block">
+                        Get Started
+                    </a>
+                </div>
+
+                <!-- Starter -->
+                <div class="p-8 bg-surface-container-low rounded-xl border border-outline-variant flex flex-col hover:border-primary/30 transition-all duration-300 delay-200 reveal">
+                    <div class="mb-6">
+                        <h2 class="font-bold text-lg text-on-surface mb-1">Starter</h2>
+                        <div class="text-4xl font-black text-on-surface mt-2">$49<span class="text-sm font-medium text-muted-text">/mo</span></div>
+                        <p class="text-muted-text text-sm mt-2">For solo appraisers scaling up</p>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-grow">
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            30 reports/month
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            All form types
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Voice training
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Priority generation
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            Custom voice model
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            ACI / RQ insertion
+                        </li>
+                    </ul>
+                    <a href="/login.html?plan=starter" class="w-full py-3 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-container-highest transition-all text-center text-sm block">
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Professional (Most Popular) -->
+                <div class="p-8 card-pro bg-surface-container rounded-xl flex flex-col relative delay-300 reveal">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <span class="bg-[#e2b714] text-[#111] text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full whitespace-nowrap">Most Popular</span>
+                    </div>
+                    <div class="mb-6">
+                        <h2 class="font-bold text-lg text-on-surface mb-1">Professional</h2>
+                        <div class="text-4xl font-black text-on-surface mt-2">$149<span class="text-sm font-medium text-muted-text">/mo</span></div>
+                        <p class="text-muted-text text-sm mt-2">For busy full-time appraisers</p>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-grow">
+                        <li class="flex items-start gap-2 text-sm text-on-surface font-medium">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            100 reports/month
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-on-surface font-medium">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            All form types
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-on-surface font-medium">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Custom voice model
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-on-surface font-medium">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            ACI + RQ insertion
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-on-surface font-medium">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Priority support
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-[#484f58]">
+                            <span class="material-symbols-outlined text-[#484f58] text-base mt-0.5 flex-shrink-0">remove</span>
+                            API access
+                        </li>
+                    </ul>
+                    <a href="/login.html?plan=professional" class="w-full py-3 aureate-gradient text-[#111] font-bold rounded-lg hover:opacity-90 transition-all text-center text-sm block">
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="p-8 bg-surface-container-low rounded-xl border border-outline-variant flex flex-col hover:border-primary/30 transition-all duration-300 delay-400 reveal">
+                    <div class="mb-6">
+                        <h2 class="font-bold text-lg text-on-surface mb-1">Enterprise</h2>
+                        <div class="text-4xl font-black text-on-surface mt-2">$299<span class="text-sm font-medium text-muted-text">/mo</span></div>
+                        <p class="text-muted-text text-sm mt-2">For teams and high-volume firms</p>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-grow">
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Unlimited reports
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            All features included
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Custom fine-tuned model
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            API access
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            White-label option
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-muted-text">
+                            <span class="material-symbols-outlined text-primary text-base mt-0.5 flex-shrink-0">check_circle</span>
+                            Dedicated support
+                        </li>
+                    </ul>
+                    <a href="mailto:charles@cresciappraisal.com?subject=Appraisal Agent Enterprise Inquiry" class="w-full py-3 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-container-highest transition-all text-center text-sm block">
+                        Contact Sales
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Trust line -->
+            <p class="text-center text-muted-text text-sm mt-10">
+                No credit card required for free trial &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; USPAP-compliant narratives
+            </p>
+        </div>
+    </section>
+
+    <!-- Feature comparison callout -->
+    <section class="py-16 px-6 reveal">
+        <div class="max-w-4xl mx-auto bg-surface-container-low rounded-xl border border-outline-variant p-10 grid md:grid-cols-3 gap-8 text-center">
+            <div>
+                <div class="text-3xl font-black text-primary mb-2">517</div>
+                <p class="text-sm text-muted-text font-medium">Real appraisal examples used for style training</p>
+            </div>
+            <div class="md:border-x border-outline-variant">
+                <div class="text-3xl font-black text-primary mb-2">15s</div>
+                <p class="text-sm text-muted-text font-medium">Average narrative generation time</p>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-primary mb-2">UAD 3.6</div>
+                <p class="text-sm text-muted-text font-medium">Ready for the November 2026 transition</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-24 px-6 bg-surface-container-lowest reveal">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-4xl font-black tracking-tight text-on-surface text-center mb-4">Frequently Asked Questions</h2>
+            <p class="text-muted-text text-center mb-14 text-sm">Everything you need to know before you commit to a plan.</p>
+
+            <div class="space-y-3" id="faq-list">
+
+                <div class="faq-item bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+                    <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer hover:bg-surface-container-high transition-colors" onclick="toggleFaq(this)">
+                        <span class="font-bold text-on-surface text-sm md:text-base">Is this USPAP compliant?</span>
+                        <span class="material-symbols-outlined text-muted-text faq-icon flex-shrink-0 ml-4">expand_more</span>
+                    </button>
+                    <div class="faq-answer px-6 pb-0 text-sm text-muted-text leading-relaxed">
+                        <p class="pb-5">Yes, our narratives follow USPAP standards. The appraiser maintains responsibility for the final content — Appraisal Agent is a writing tool, not a replacement for your professional judgment.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+                    <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer hover:bg-surface-container-high transition-colors" onclick="toggleFaq(this)">
+                        <span class="font-bold text-on-surface text-sm md:text-base">Can I cancel anytime?</span>
+                        <span class="material-symbols-outlined text-muted-text faq-icon flex-shrink-0 ml-4">expand_more</span>
+                    </button>
+                    <div class="faq-answer px-6 pb-0 text-sm text-muted-text leading-relaxed">
+                        <p class="pb-5">Yes, cancel anytime from your dashboard. No contracts, no hidden fees. Your data remains accessible for 30 days after cancellation.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+                    <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer hover:bg-surface-container-high transition-colors" onclick="toggleFaq(this)">
+                        <span class="font-bold text-on-surface text-sm md:text-base">What AI model do you use?</span>
+                        <span class="material-symbols-outlined text-muted-text faq-icon flex-shrink-0 ml-4">expand_more</span>
+                    </button>
+                    <div class="faq-answer px-6 pb-0 text-sm text-muted-text leading-relaxed">
+                        <p class="pb-5">GPT-4.1 for cloud generation, fine-tuned with 517 real appraisal examples for precise style matching. Your writing patterns are layered on top via our voice training system.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+                    <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer hover:bg-surface-container-high transition-colors" onclick="toggleFaq(this)">
+                        <span class="font-bold text-on-surface text-sm md:text-base">Does it support UAD 3.6?</span>
+                        <span class="material-symbols-outlined text-muted-text faq-icon flex-shrink-0 ml-4">expand_more</span>
+                    </button>
+                    <div class="faq-answer px-6 pb-0 text-sm text-muted-text leading-relaxed">
+                        <p class="pb-5">Yes, built for the November 2026 UAD 3.6 transition. MISMO XML export is included on all plans, so you're covered when the deadline hits.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+                    <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left cursor-pointer hover:bg-surface-container-high transition-colors" onclick="toggleFaq(this)">
+                        <span class="font-bold text-on-surface text-sm md:text-base">Can I use my own writing style?</span>
+                        <span class="material-symbols-outlined text-muted-text faq-icon flex-shrink-0 ml-4">expand_more</span>
+                    </button>
+                    <div class="faq-answer px-6 pb-0 text-sm text-muted-text leading-relaxed">
+                        <p class="pb-5">Yes. Our voice training feature learns your writing patterns from your past reports. Upload a handful of your completed appraisals and the AI adapts to sound like you — available on Starter and above.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-32 px-6 relative overflow-hidden reveal">
+        <div class="absolute inset-0 bg-primary/5"></div>
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-black text-on-surface mb-6 tracking-tighter leading-tight">Ready to write faster?</h2>
+            <p class="text-lg text-muted-text mb-10 font-medium">Start free today — no credit card required.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/login.html" class="px-10 py-4 aureate-gradient text-[#111] font-black text-lg rounded-full shadow-[0_0_40px_rgba(226,183,20,0.3)] hover:opacity-90 transition-all inline-block">
+                    Get Started Free
+                </a>
+                <a href="mailto:charles@cresciappraisal.com?subject=Appraisal Agent Enterprise Inquiry" class="px-10 py-4 bg-surface-container-high text-on-surface font-bold text-lg rounded-full hover:bg-surface-container-highest transition-all inline-block">
+                    Talk to Sales
+                </a>
+            </div>
+            <p class="mt-8 text-xs font-bold text-muted-text opacity-60 uppercase tracking-widest">No credit card · Cancel anytime · USPAP-aligned</p>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-[#0d1117] border-t border-outline-variant/30 py-20 px-6">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
+        <div class="md:col-span-4">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded bg-primary flex items-center justify-center text-[#111] text-sm font-black">AA</div>
+                <span class="text-xl font-bold tracking-tight text-on-surface">Appraisal Agent</span>
+            </div>
+            <p class="text-sm text-muted-text leading-relaxed max-w-xs">
+                The next generation digital ledger for real estate professionals. Built to automate narratives while preserving the appraiser's unique voice.
+            </p>
+        </div>
+        <div class="md:col-span-2 md:col-start-6">
+            <h5 class="text-on-surface font-bold text-sm mb-6 uppercase tracking-wider">Product</h5>
+            <ul class="space-y-4">
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="/#features">Features</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="/pricing">Pricing</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="/#how-it-works">How It Works</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-2">
+            <h5 class="text-on-surface font-bold text-sm mb-6 uppercase tracking-wider">Resources</h5>
+            <ul class="space-y-4">
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">API Docs</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">Support</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">Status</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3">
+            <h5 class="text-on-surface font-bold text-sm mb-6 uppercase tracking-wider">Legal</h5>
+            <ul class="space-y-4">
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+                <li><a class="text-sm text-muted-text hover:text-primary transition-colors" href="#">Security</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto pt-8 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-xs text-muted-text">
+            © 2026 Appraisal Agent. All rights reserved. A Cresci Appraisal &amp; Consulting Company.
+        </p>
+        <div class="flex items-center gap-6">
+            <a class="text-muted-text hover:text-primary transition-colors" href="#">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98-3.56-.18-6.73-1.89-8.84-4.48-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21-.36.1-.74.15-1.13.15-.27 0-.54-.03-.8-.08.54 1.68 2.11 2.9 3.98 2.93-1.46 1.14-3.3 1.82-5.31 1.82-.34 0-.68-.02-1.02-.06C2.15 19.33 4.28 20 6.56 20 13.24 20 16.89 14.47 16.89 9.66c0-.15 0-.31-.01-.46.72-.51 1.33-1.14 1.83-1.88l-.25.1z"></path></svg>
+            </a>
+            <a class="text-muted-text hover:text-primary transition-colors" href="#">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+    var item = btn.closest('.faq-item');
+    var answer = item.querySelector('.faq-answer');
+    var icon = btn.querySelector('.faq-icon');
+    var isOpen = answer.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+    document.querySelectorAll('.faq-icon').forEach(function(i) { i.classList.remove('open'); });
+
+    // Open clicked if it was closed
+    if (!isOpen) {
+        answer.classList.add('open');
+        icon.classList.add('open');
+    }
+}
+
+// Reveal animation
+var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(function(el) {
+    observer.observe(el);
+});
+</script>
+</body>
+</html>
