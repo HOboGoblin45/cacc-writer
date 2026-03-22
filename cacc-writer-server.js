@@ -139,7 +139,7 @@ runStartupChecks({
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:5178', 'http://127.0.0.1:5178'],
+  origin: ['http://localhost:5178', 'http://127.0.0.1:5178', 'https://appraisal-agent.com', 'https://www.appraisal-agent.com'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
 }));

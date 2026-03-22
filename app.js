@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5178';
+const API_BASE = window.location.origin;
 const API_KEY = 'cacc-local-key-2026';
 const APP_NAME = 'Appraisal Agent';
 
