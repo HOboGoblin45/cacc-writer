@@ -76,6 +76,7 @@ import { ensurePortalSchema } from './server/portal/clientPortal.js';
 import complianceRouter from './server/api/complianceRoutes.js';
 import { ensureComplianceSchema } from './server/compliance/workfileCompliance.js';
 import { ensurePhotoSchema } from './server/photos/photoManager.js';
+import valuationEngineRouter from './server/api/valuationEngineRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -167,6 +168,7 @@ app.use('/api', notificationRouter);
 app.use('/api', schedulingRouter);
 app.use('/api', portalRouter);
 app.use('/api', complianceRouter);
+app.use('/api', valuationEngineRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);
