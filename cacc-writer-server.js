@@ -125,6 +125,9 @@ import invoiceRouter from './server/api/invoiceRoutes.js';
 import demoRouter from './server/api/demoRoutes.js';
 import { ensureInvoiceSchema } from './server/billing/invoiceGenerator.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
+import compAnalyzerRouter from './server/api/compAnalyzerRoutes.js';
+import aiQcRouter from './server/api/aiQcRoutes.js';
+import recordsRouter from './server/api/recordsRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -312,6 +315,9 @@ app.use('/api', importRouter);
 app.use('/api', compsRouter);
 app.use('/api', gmailRouter);
 app.use('/api', demoRouter);
+app.use('/api', compAnalyzerRouter);
+app.use('/api', aiQcRouter);
+app.use('/api', recordsRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
