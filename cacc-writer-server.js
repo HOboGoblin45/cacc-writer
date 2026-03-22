@@ -56,6 +56,7 @@ import sseRouter from './server/api/sseRoutes.js';
 import exportRouter from './server/api/exportRoutes.js';
 import authRouter from './server/auth/authRoutes.js';
 import billingRouter from './server/billing/billingRoutes.js';
+import adminRouter from './server/api/adminRoutes.js';
 import { ensureAuthSchema } from './server/auth/authService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -105,6 +106,8 @@ app.use((req, res, next) => {
 app.get('/', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
+app.get('/dashboard', (_q, r) => r.sendFile(path.join(__dirname, 'dashboard.html')));
+app.get('/admin', (_q, r) => r.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
@@ -125,6 +128,7 @@ app.use(requireAuth);
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
 app.use('/api', authRouter);
 app.use('/api', billingRouter);
+app.use('/api', adminRouter);
 app.use('/api', healthRouter);
 app.use('/api', exportRouter);
 app.use('/api', sseRouter);

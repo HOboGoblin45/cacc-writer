@@ -1,0 +1,15 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node cacc-writer-server.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 10
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+numReplicas = 1
+
+[[mounts]]
+mountPath = "/app/data"
+name = "sqlite-data"

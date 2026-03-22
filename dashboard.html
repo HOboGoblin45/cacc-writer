@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Appraisal Agent — Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23e2b714'/><text x='50' y='68' text-anchor='middle' font-size='52' font-weight='900' fill='%23111' font-family='system-ui'>AA</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117; --bg2: #11161d; --bg3: #161b22;
+      --line: rgba(230,237,243,0.09); --line2: rgba(230,237,243,0.16);
+      --text: #e6edf3; --muted: #8b949e; --dim: #484f58;
+      --accent: #e2b714; --accent-soft: rgba(226,183,20,0.14);
+      --success: #3fb950; --success-soft: rgba(63,185,80,0.12);
+      --danger: #f85149; --info: #58a6ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Top bar */
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+    .topbar-brand { display: flex; align-items: center; gap: 12px; }
+    .topbar-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: #111; font-weight: 900; font-size: 0.8rem; background: linear-gradient(135deg, #e2b714, #f5d54f); }
+    .topbar h1 { font-size: 1.05rem; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-user { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.88rem; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; color: var(--accent); font-weight: 700; font-size: 0.8rem; }
+    .btn-sm { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line2); background: transparent; color: var(--text); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.18s; }
+    .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-accent { background: linear-gradient(135deg,#e2b714,#f5d54f); color: #111; border: 0; }
+    .btn-danger { border-color: rgba(248,81,73,0.3); color: var(--danger); }
+    .btn-danger:hover { background: rgba(248,81,73,0.1); }
+
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    /* Welcome */
+    .welcome { margin-bottom: 32px; }
+    .welcome h2 { font-size: 1.6rem; margin-bottom: 4px; }
+    .welcome p { color: var(--muted); }
+
+    /* Stats row */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); }
+    .stat-label { color: var(--muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; }
+    .stat-sub { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+    .stat-accent { color: var(--accent); }
+    .stat-success { color: var(--success); }
+
+    /* Voice training card */
+    .voice-card { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); margin-bottom: 32px; }
+    .voice-card h3 { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .voice-bar-wrap { background: var(--bg3); border-radius: 999px; height: 12px; overflow: hidden; margin-bottom: 8px; }
+    .voice-bar { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+    .voice-bar.starting { width: 10%; background: var(--dim); }
+    .voice-bar.learning { width: 35%; background: var(--info); }
+    .voice-bar.good { width: 65%; background: var(--accent); }
+    .voice-bar.excellent { width: 100%; background: var(--success); }
+    .voice-sections { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .voice-tag { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: var(--bg3); color: var(--muted); border: 1px solid var(--line); }
+
+    /* Recent cases */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-header h3 { font-size: 1.1rem; }
+    .cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .case-card { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); cursor: pointer; transition: border-color 0.18s, transform 0.18s; }
+    .case-card:hover { border-color: rgba(226,183,20,0.3); transform: translateY(-2px); }
+    .case-addr { font-weight: 700; margin-bottom: 4px; }
+    .case-meta { color: var(--muted); font-size: 0.82rem; display: flex; gap: 12px; flex-wrap: wrap; }
+    .case-status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .case-status.draft { background: rgba(139,148,158,0.15); color: var(--muted); }
+    .case-status.generating { background: var(--accent-soft); color: var(--accent); }
+    .case-status.review { background: rgba(88,166,255,0.12); color: var(--info); }
+    .case-status.complete { background: var(--success-soft); color: var(--success); }
+
+    /* Quick actions */
+    .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .action-card { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); cursor: pointer; transition: border-color 0.18s, transform 0.18s; display: flex; align-items: center; gap: 14px; }
+    .action-card:hover { border-color: rgba(226,183,20,0.3); transform: translateY(-2px); }
+    .action-icon { font-size: 1.6rem; }
+    .action-card h4 { font-size: 0.95rem; margin-bottom: 2px; }
+    .action-card p { color: var(--muted); font-size: 0.82rem; }
+
+    /* Export formats */
+    .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .export-card { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg2); text-align: center; cursor: pointer; transition: all 0.18s; }
+    .export-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .export-card .icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .export-card .label { font-weight: 700; font-size: 0.88rem; }
+    .export-card .desc { color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
+    .export-card.recommended { border-color: rgba(63,185,80,0.4); }
+    .export-badge { display: inline-block; padding: 2px 6px; border-radius: 999px; background: var(--success); color: #111; font-size: 0.65rem; font-weight: 700; margin-left: 4px; }
+
+    .empty { text-align: center; padding: 48px; color: var(--muted); }
+    .loading { text-align: center; padding: 48px; color: var(--dim); }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 12px 16px; }
+      .container { padding: 16px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-mark">AA</div>
+      <h1>Appraisal Agent</h1>
+    </div>
+    <div class="topbar-right">
+      <a href="/" class="btn-sm">Open Writer</a>
+      <div class="topbar-user">
+        <div class="avatar" id="user-avatar"></div>
+        <span id="user-name"></span>
+      </div>
+      <button class="btn-sm btn-danger" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="welcome">
+      <h2 id="welcome-msg">Welcome back</h2>
+      <p id="welcome-sub">Here's your appraisal workspace overview.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Reports This Month</div>
+        <div class="stat-value" id="stat-reports">—</div>
+        <div class="stat-sub" id="stat-limit"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Plan</div>
+        <div class="stat-value stat-accent" id="stat-plan">—</div>
+        <div class="stat-sub"><a href="#" onclick="upgradePlan()" style="color:var(--accent)">Manage plan →</a></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Cases</div>
+        <div class="stat-value" id="stat-cases">—</div>
+        <div class="stat-sub" id="stat-cases-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Voice Training</div>
+        <div class="stat-value stat-success" id="stat-voice">—</div>
+        <div class="stat-sub" id="stat-voice-sub"></div>
+      </div>
+    </div>
+
+    <!-- Voice Training Progress -->
+    <div class="voice-card" id="voice-card">
+      <h3>🧠 AI Voice Training Progress</h3>
+      <div class="voice-bar-wrap"><div class="voice-bar" id="voice-bar"></div></div>
+      <div id="voice-msg" style="color:var(--muted);font-size:0.88rem;"></div>
+      <div class="voice-sections" id="voice-sections"></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-header"><h3>Quick Actions</h3></div>
+    <div class="actions">
+      <div class="action-card" onclick="location.href='/'">
+        <div class="action-icon">📝</div>
+        <div><h4>New Report</h4><p>Start a new appraisal case</p></div>
+      </div>
+      <div class="action-card" onclick="location.href='/'">
+        <div class="action-icon">📄</div>
+        <div><h4>Import Order</h4><p>Upload PDF order form</p></div>
+      </div>
+      <div class="action-card" onclick="showExports()">
+        <div class="action-icon">📦</div>
+        <div><h4>Export Reports</h4><p>MISMO XML, PDF, ZIP bundle</p></div>
+      </div>
+      <div class="action-card" onclick="location.href='/'">
+        <div class="action-icon">⚙️</div>
+        <div><h4>Settings</h4><p>AI provider, voice model, preferences</p></div>
+      </div>
+    </div>
+
+    <!-- Export Formats -->
+    <div id="export-section" style="display:none; margin-bottom:32px;">
+      <div class="section-header"><h3>Export Formats</h3></div>
+      <div class="export-grid">
+        <div class="export-card recommended">
+          <div class="icon">🆕</div>
+          <div class="label">UAD 3.6 <span class="export-badge">Recommended</span></div>
+          <div class="desc">New MISMO 3.6 standard • Mandatory Nov 2026</div>
+        </div>
+        <div class="export-card">
+          <div class="icon">📋</div>
+          <div class="label">MISMO 3.4</div>
+          <div class="desc">Current XML standard</div>
+        </div>
+        <div class="export-card">
+          <div class="icon">📋</div>
+          <div class="label">MISMO 2.6</div>
+          <div class="desc">Legacy format • Retires May 2027</div>
+        </div>
+        <div class="export-card">
+          <div class="icon">📄</div>
+          <div class="label">PDF Report</div>
+          <div class="desc">Print-ready appraisal document</div>
+        </div>
+        <div class="export-card">
+          <div class="icon">📦</div>
+          <div class="label">ZIP Bundle</div>
+          <div class="desc">XML + PDF + Photos • UCDP ready</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Cases -->
+    <div class="section-header">
+      <h3>Recent Cases</h3>
+      <a href="/" class="btn-sm">View all →</a>
+    </div>
+    <div class="cases-grid" id="cases-grid">
+      <div class="loading">Loading cases…</div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    const token = localStorage.getItem('aa-token');
+    const user = JSON.parse(localStorage.getItem('aa-user') || '{}');
+
+    if (!token) { window.location.href = '/login'; }
+
+    const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+
+    // Set user info
+    document.getElementById('user-avatar').textContent = (user.displayName || user.username || '?')[0].toUpperCase();
+    document.getElementById('user-name').textContent = user.displayName || user.username || '';
+    document.getElementById('welcome-msg').textContent = `Welcome back, ${(user.displayName || user.username || '').split(' ')[0]}`;
+
+    function logout() {
+      localStorage.removeItem('aa-token');
+      localStorage.removeItem('aa-user');
+      window.location.href = '/login';
+    }
+
+    function showExports() {
+      const el = document.getElementById('export-section');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function upgradePlan() {
+      try {
+        const res = await fetch(API + '/billing/portal', { method: 'POST', headers });
+        const data = await res.json();
+        if (data.url) window.open(data.url, '_blank');
+        else alert('Billing portal not configured yet. Add Stripe keys to enable.');
+      } catch { alert('Billing not configured'); }
+    }
+
+    // Load profile + subscription
+    fetch(API + '/auth/me', { headers }).then(r => r.json()).then(data => {
+      if (data.subscription) {
+        const sub = data.subscription;
+        document.getElementById('stat-reports').textContent = sub.reportsUsed || 0;
+        document.getElementById('stat-limit').textContent = `of ${sub.reportsLimit === 999999 ? '∞' : sub.reportsLimit} this month`;
+        document.getElementById('stat-plan').textContent = (sub.plan || 'free').charAt(0).toUpperCase() + (sub.plan || 'free').slice(1);
+      }
+    }).catch(() => {});
+
+    // Load voice stats
+    fetch(API + '/auth/voice-stats', { headers }).then(r => r.json()).then(data => {
+      if (!data.ok) return;
+      document.getElementById('stat-voice').textContent = data.totalExamples;
+      document.getElementById('stat-voice-sub').textContent = data.readiness;
+
+      const bar = document.getElementById('voice-bar');
+      bar.className = 'voice-bar ' + data.readiness;
+      document.getElementById('voice-msg').textContent = data.message;
+
+      const sectionsEl = document.getElementById('voice-sections');
+      for (const [field, count] of Object.entries(data.byField || {})) {
+        const tag = document.createElement('span');
+        tag.className = 'voice-tag';
+        tag.textContent = `${field.replace(/_/g, ' ')}: ${count}`;
+        sectionsEl.appendChild(tag);
+      }
+    }).catch(() => {});
+
+    // Load recent cases
+    fetch(API + '/cases?limit=6&sort=updated', { headers }).then(r => r.json()).then(data => {
+      const grid = document.getElementById('cases-grid');
+      const cases = data.cases || data.data || [];
+
+      if (cases.length === 0) {
+        grid.innerHTML = '<div class="empty">No cases yet. <a href="/" style="color:var(--accent)">Create your first report →</a></div>';
+        document.getElementById('stat-cases').textContent = '0';
+        return;
+      }
+
+      document.getElementById('stat-cases').textContent = cases.length;
+      grid.innerHTML = '';
+
+      for (const c of cases.slice(0, 6)) {
+        const facts = typeof c.facts === 'string' ? JSON.parse(c.facts || '{}') : (c.facts || {});
+        const subject = facts.subject || {};
+        const addr = subject.address || subject.streetAddress || c.case_id || 'No address';
+        const city = subject.city || '';
+        const state = subject.state || '';
+        const status = c.status || c.case_status || 'draft';
+
+        const card = document.createElement('div');
+        card.className = 'case-card';
+        card.onclick = () => location.href = '/?case=' + (c.case_id || c.id);
+        card.innerHTML = `
+          <div class="case-addr">${addr}</div>
+          <div class="case-meta">
+            <span>${city}${city && state ? ', ' : ''}${state}</span>
+            <span>${c.form_type || '1004'}</span>
+            <span class="case-status ${status}">${status}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }).catch(() => {
+      document.getElementById('cases-grid').innerHTML = '<div class="empty">Could not load cases</div>';
+    });
+  </script>
+</body>
+</html>

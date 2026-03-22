@@ -1,0 +1,33 @@
+# Render.com deployment config
+services:
+  - type: web
+    name: appraisal-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5178"
+      - key: CACC_AUTH_ENABLED
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: appraisal-agent
+          property: host
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+    disk:
+      name: sqlite-data
+      mountPath: /app/data
+      sizeGB: 1
+    healthCheckPath: /api/health
+    autoDeploy: true

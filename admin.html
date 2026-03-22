@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Appraisal Agent — Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23e2b714'/><text x='50' y='68' text-anchor='middle' font-size='52' font-weight='900' fill='%23111' font-family='system-ui'>AA</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117; --bg2: #11161d; --bg3: #161b22;
+      --line: rgba(230,237,243,0.09); --line2: rgba(230,237,243,0.16);
+      --text: #e6edf3; --muted: #8b949e; --dim: #484f58;
+      --accent: #e2b714; --accent-soft: rgba(226,183,20,0.14);
+      --success: #3fb950; --danger: #f85149; --info: #58a6ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: #111; font-weight: 900; font-size: 0.8rem; background: linear-gradient(135deg, #e2b714, #f5d54f); }
+    .topbar h1 { font-size: 1.05rem; }
+    .admin-badge { padding: 4px 10px; border-radius: 999px; background: rgba(248,81,73,0.15); color: var(--danger); font-size: 0.72rem; font-weight: 700; }
+    .btn-sm { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line2); background: transparent; color: var(--text); font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border: 1px solid var(--line); border-radius: 14px; padding: 4px; background: rgba(255,255,255,0.02); width: fit-content; }
+    .tab { padding: 10px 20px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: all 0.18s; }
+    .tab.active { background: var(--accent-soft); color: var(--text); border: 1px solid rgba(226,183,20,0.35); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* System stats */
+    .sys-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .sys-card { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); }
+    .sys-label { color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .sys-value { font-size: 1.4rem; font-weight: 800; }
+    .sys-ok { color: var(--success); }
+    .sys-warn { color: var(--accent); }
+    .sys-err { color: var(--danger); }
+
+    /* Users table */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--bg2); }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--line); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .plan-badge { padding: 3px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .plan-free { background: rgba(139,148,158,0.15); color: var(--muted); }
+    .plan-starter { background: rgba(88,166,255,0.12); color: var(--info); }
+    .plan-professional { background: var(--accent-soft); color: var(--accent); }
+    .plan-enterprise { background: var(--success-soft); color: var(--success); }
+
+    .empty { text-align: center; padding: 48px; color: var(--muted); }
+
+    @media (max-width: 768px) { .container { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-mark">AA</div>
+      <h1>Appraisal Agent</h1>
+      <span class="admin-badge">ADMIN</span>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="/dashboard" class="btn-sm">Dashboard</a>
+      <a href="/" class="btn-sm">Writer</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-panel="system">System</button>
+      <button class="tab" data-panel="users">Users</button>
+      <button class="tab" data-panel="billing">Billing</button>
+      <button class="tab" data-panel="ai">AI Config</button>
+    </div>
+
+    <!-- System Panel -->
+    <div class="panel active" id="panel-system">
+      <div class="sys-grid" id="sys-grid"></div>
+    </div>
+
+    <!-- Users Panel -->
+    <div class="panel" id="panel-users">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>User</th><th>Email</th><th>Plan</th><th>Reports</th><th>Voice KB</th><th>Joined</th><th>Last Login</th></tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="7" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Billing Panel -->
+    <div class="panel" id="panel-billing">
+      <div class="sys-grid" id="billing-grid"></div>
+    </div>
+
+    <!-- AI Config Panel -->
+    <div class="panel" id="panel-ai">
+      <div class="sys-grid" id="ai-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    const token = localStorage.getItem('aa-token');
+    if (!token) window.location.href = '/login';
+    const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+      });
+    });
+
+    function sysCard(label, value, cls = '') {
+      return `<div class="sys-card"><div class="sys-label">${label}</div><div class="sys-value ${cls}">${value}</div></div>`;
+    }
+
+    // System health
+    fetch(API + '/health/detailed', { headers }).then(r => r.json()).then(data => {
+      const grid = document.getElementById('sys-grid');
+      grid.innerHTML = [
+        sysCard('Server', data.ok ? 'Online' : 'Error', data.ok ? 'sys-ok' : 'sys-err'),
+        sysCard('AI Provider', data.provider || 'N/A', data.aiReady ? 'sys-ok' : 'sys-warn'),
+        sysCard('AI Model', data.model || 'N/A'),
+        sysCard('AI Status', data.aiReady ? 'Ready' : (data.aiReason || 'Not ready'), data.aiReady ? 'sys-ok' : 'sys-err'),
+        sysCard('Database', data.dbSizeMb ? data.dbSizeMb + ' MB' : 'OK', 'sys-ok'),
+        sysCard('Uptime', data.uptimeHours ? data.uptimeHours.toFixed(1) + 'h' : 'N/A'),
+      ].join('');
+    }).catch(() => {
+      document.getElementById('sys-grid').innerHTML = sysCard('Status', 'Error loading', 'sys-err');
+    });
+
+    // Billing status
+    fetch(API + '/billing/status', { headers }).then(r => r.json()).then(data => {
+      const grid = document.getElementById('billing-grid');
+      grid.innerHTML = [
+        sysCard('Stripe', data.stripeConfigured ? 'Configured' : 'Not configured', data.stripeConfigured ? 'sys-ok' : 'sys-warn'),
+        sysCard('Note', data.message || ''),
+      ].join('');
+    }).catch(() => {});
+
+    // AI config
+    fetch(API + '/health/detailed', { headers }).then(r => r.json()).then(data => {
+      const grid = document.getElementById('ai-grid');
+      grid.innerHTML = [
+        sysCard('Provider', data.provider || 'openai'),
+        sysCard('Model', data.model || 'gpt-4.1'),
+        sysCard('Status', data.aiReady ? 'Ready' : 'Not ready', data.aiReady ? 'sys-ok' : 'sys-err'),
+        sysCard('Local AI', data.provider === 'ollama' ? 'Active (Ollama)' : 'Not active', data.provider === 'ollama' ? 'sys-ok' : ''),
+      ].join('');
+    }).catch(() => {});
+
+    // Users list (admin endpoint)
+    fetch(API + '/admin/users', { headers }).then(r => r.json()).then(data => {
+      const tbody = document.getElementById('users-tbody');
+      const users = data.users || [];
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">No users found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td><strong>${u.display_name || u.username}</strong><br><span style="color:var(--muted);font-size:0.8rem">@${u.username}</span></td>
+          <td>${u.email || '—'}</td>
+          <td><span class="plan-badge plan-${u.plan || 'free'}">${(u.plan || 'free').toUpperCase()}</span></td>
+          <td>${u.reports_this_month || 0} / ${u.reports_limit === 999999 ? '∞' : (u.reports_limit || 5)}</td>
+          <td>${u.examples_count || 0} examples</td>
+          <td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+          <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}</td>
+        </tr>
+      `).join('');
+    }).catch(() => {
+      document.getElementById('users-tbody').innerHTML = '<tr><td colspan="7" class="empty">Admin API not available</td></tr>';
+    });
+  </script>
+</body>
+</html>
