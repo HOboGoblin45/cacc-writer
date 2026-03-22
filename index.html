@@ -78,6 +78,9 @@
             <span>Commands</span>
             <kbd>Ctrl K</kbd>
           </button>
+          <button id="generate-all-btn" class="btn btn-primary hidden" type="button" title="Generate all narrative sections with real-time progress">
+            ✦ Generate Full Report
+          </button>
           <button class="btn btn-ghost hidden" id="delete-case-btn" type="button" title="Delete this case">Delete case</button>
           <button class="btn btn-secondary" id="header-refresh" type="button">Refresh cases</button>
           <div class="connection-pill" id="connection-badge">
@@ -351,6 +354,27 @@
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- Generate Full Report modal -->
+  <div class="modal-overlay hidden" id="generate-report-modal" role="dialog" aria-modal="true" aria-labelledby="gen-modal-title">
+    <div class="modal-card gen-modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="gen-modal-title">Generate Full Report</h2>
+          <p id="gen-modal-subtitle">Generating all narrative sections sequentially…</p>
+        </div>
+        <button class="btn btn-ghost" id="gen-modal-stop" type="button">Stop</button>
+      </div>
+      <div class="gen-modal-progress-bar">
+        <div class="gen-modal-progress-fill" id="gen-modal-progress-fill"></div>
+      </div>
+      <div class="gen-modal-section-list" id="gen-modal-section-list"></div>
+      <div class="gen-modal-footer hidden" id="gen-modal-footer">
+        <span id="gen-modal-time"></span>
+        <button class="btn btn-primary" id="gen-modal-done" type="button">Review sections →</button>
+      </div>
     </div>
   </div>
 

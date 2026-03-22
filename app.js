@@ -304,6 +304,16 @@ function cacheRefs() {
   refs.toastRegion = document.getElementById('toast-region');
   refs.globalLoading = document.getElementById('global-loading');
   refs.globalLoadingText = document.getElementById('global-loading-text');
+
+  refs.generateAllBtn = document.getElementById('generate-all-btn');
+  refs.generateReportModal = document.getElementById('generate-report-modal');
+  refs.genModalSubtitle = document.getElementById('gen-modal-subtitle');
+  refs.genModalProgressFill = document.getElementById('gen-modal-progress-fill');
+  refs.genModalSectionList = document.getElementById('gen-modal-section-list');
+  refs.genModalFooter = document.getElementById('gen-modal-footer');
+  refs.genModalTime = document.getElementById('gen-modal-time');
+  refs.genModalStop = document.getElementById('gen-modal-stop');
+  refs.genModalDone = document.getElementById('gen-modal-done');
 }
 
 function restoreUiPrefs() {
@@ -452,6 +462,12 @@ function bindActionButtons() {
   refs.generateButton.addEventListener('click', generateAll);
   refs.approveAll.addEventListener('click', approveAllSections);
   refs.insertButton.addEventListener('click', insertAll);
+  refs.generateAllBtn.addEventListener('click', generateFullReport);
+  refs.genModalStop.addEventListener('click', stopFullReportGeneration);
+  refs.genModalDone.addEventListener('click', function() {
+    closeGenerateReportModal();
+    gotoStep(4);
+  });
 }
 
 function bindDelegatedInputs() {
@@ -767,9 +783,11 @@ function renderCaseHeader() {
     refs.heroSectionCount.textContent = '0';
     refs.heroApprovedCount.textContent = '0 approved';
     if (deleteCaseBtn) deleteCaseBtn.classList.add('hidden');
+    if (refs.generateAllBtn) refs.generateAllBtn.classList.add('hidden');
     return;
   }
   if (deleteCaseBtn) deleteCaseBtn.classList.remove('hidden');
+  if (refs.generateAllBtn) refs.generateAllBtn.classList.remove('hidden');
 
   const address = getCaseAddress(S.caseMeta) || 'Untitled case';
   const borrower = getCaseBorrower(S.caseMeta) || 'Unknown borrower';
@@ -1280,6 +1298,202 @@ async function generateAll() {
     showToast(`Generation failed: ${detail}`, 'error');
   } finally {
     setButtonBusy(refs.generateButton, false);
+  }
+}
+
+// ── Generate Full Report (modal with per-section progress) ─────────────────
+
+var _fullReportAbortController = null;
+
+var FULL_REPORT_SECTIONS_1004 = [
+  { id: 'neighborhood_description', title: 'Neighborhood Description' },
+  { id: 'site_description', title: 'Site Description' },
+  { id: 'improvements_description', title: 'Improvements Description' },
+  { id: 'highest_best_use', title: 'Highest & Best Use' },
+  { id: 'sales_comparison', title: 'Sales Comparison' },
+  { id: 'reconciliation_narrative', title: 'Reconciliation Narrative' },
+  { id: 'scope_of_work', title: 'Scope of Work' },
+  { id: 'conditions_of_appraisal', title: 'Conditions of Appraisal' },
+  { id: 'market_conditions', title: 'Market Conditions' },
+  { id: 'functional_utility', title: 'Functional Utility' },
+  { id: 'contract_analysis', title: 'Contract Analysis' },
+  { id: 'prior_sales_subject', title: 'Prior Sales of Subject' },
+];
+
+function openGenerateReportModal(sections) {
+  var list = refs.genModalSectionList;
+  list.innerHTML = '';
+  sections.forEach(function(sec) {
+    var row = document.createElement('div');
+    row.className = 'gen-section-row status-pending';
+    row.id = 'gen-row-' + sec.id;
+    row.innerHTML = '<div class="gen-section-icon">·</div>' +
+      '<span class="gen-section-name">' + escapeHtml(sec.title) + '</span>' +
+      '<span class="gen-section-meta gen-section-meta-' + sec.id + '">Pending</span>';
+    list.appendChild(row);
+  });
+  refs.genModalProgressFill.style.width = '0%';
+  refs.genModalSubtitle.textContent = 'Generating all narrative sections sequentially…';
+  refs.genModalFooter.classList.add('hidden');
+  refs.genModalStop.disabled = false;
+  refs.genModalStop.textContent = 'Stop';
+  refs.generateReportModal.classList.remove('hidden');
+}
+
+function closeGenerateReportModal() {
+  refs.generateReportModal.classList.add('hidden');
+  if (_fullReportAbortController) {
+    _fullReportAbortController.abort();
+    _fullReportAbortController = null;
+  }
+}
+
+function stopFullReportGeneration() {
+  if (_fullReportAbortController) {
+    _fullReportAbortController.abort();
+    _fullReportAbortController = null;
+  }
+  refs.genModalStop.disabled = true;
+  refs.genModalStop.textContent = 'Stopping…';
+  refs.genModalSubtitle.textContent = 'Generation stopped.';
+  refs.genModalFooter.classList.remove('hidden');
+  refs.genModalTime.textContent = '';
+  refs.genModalDone.textContent = 'Close';
+}
+
+function updateGenSectionRow(sectionId, status, meta) {
+  var row = document.getElementById('gen-row-' + sectionId);
+  if (!row) return;
+  row.className = 'gen-section-row status-' + status;
+  var iconEl = row.querySelector('.gen-section-icon');
+  var metaEl = row.querySelector('.gen-section-meta');
+  if (status === 'generating') {
+    iconEl.innerHTML = '<div class="spinner spinner-small"></div>';
+    if (metaEl) metaEl.textContent = 'Generating…';
+  } else if (status === 'done') {
+    iconEl.textContent = '✓';
+    if (metaEl) metaEl.textContent = meta || 'Done';
+  } else if (status === 'error') {
+    iconEl.textContent = '✗';
+    if (metaEl) metaEl.textContent = meta || 'Error';
+  } else {
+    iconEl.textContent = '·';
+    if (metaEl) metaEl.textContent = 'Pending';
+  }
+}
+
+async function generateFullReport() {
+  if (!S.caseId) {
+    showToast('Select a case first.', 'warning');
+    return;
+  }
+
+  var sections = FULL_REPORT_SECTIONS_1004;
+  openGenerateReportModal(sections);
+
+  var startedAt = Date.now();
+  var abortCtrl = new AbortController();
+  _fullReportAbortController = abortCtrl;
+
+  // Connect SSE for per-section progress updates
+  var sseSource = null;
+  var sectionStatuses = {};
+  sections.forEach(function(s) { sectionStatuses[s.id] = 'pending'; });
+
+  function handleFullReportSSE(data) {
+    if (!data || !data.type) return;
+    var total = sections.length;
+    var done = Object.values(sectionStatuses).filter(function(v) { return v === 'done' || v === 'error'; }).length;
+
+    if (data.type === 'section-start' && data.fieldId) {
+      sectionStatuses[data.fieldId] = 'generating';
+      updateGenSectionRow(data.fieldId, 'generating', null);
+      var pct = Math.round((done / total) * 100);
+      refs.genModalProgressFill.style.width = pct + '%';
+      refs.genModalSubtitle.textContent = 'Generating: ' + (data.title || data.fieldId) + ' (' + (done + 1) + '/' + total + ')';
+    } else if (data.type === 'section-complete' && data.fieldId) {
+      sectionStatuses[data.fieldId] = 'done';
+      var chars = data.charCount ? data.charCount + ' chars' : 'Done';
+      updateGenSectionRow(data.fieldId, 'done', chars);
+      done = Object.values(sectionStatuses).filter(function(v) { return v === 'done' || v === 'error'; }).length;
+      var pct2 = Math.round((done / total) * 100);
+      refs.genModalProgressFill.style.width = pct2 + '%';
+    } else if (data.type === 'section-error' && data.fieldId) {
+      sectionStatuses[data.fieldId] = 'error';
+      updateGenSectionRow(data.fieldId, 'error', data.error || 'Failed');
+      done = Object.values(sectionStatuses).filter(function(v) { return v === 'done' || v === 'error'; }).length;
+      var pct3 = Math.round((done / total) * 100);
+      refs.genModalProgressFill.style.width = pct3 + '%';
+    } else if (data.type === 'completed') {
+      refs.genModalProgressFill.style.width = '100%';
+    }
+  }
+
+  try {
+    sseSource = new EventSource(API_BASE + '/api/events/' + S.caseId);
+    sseSource.onmessage = function(event) {
+      try {
+        var data = JSON.parse(event.data);
+        handleFullReportSSE(data);
+      } catch (_) {}
+    };
+  } catch (_) {
+    // SSE unavailable, modal will still work via response
+  }
+
+  try {
+    var result = await api('/api/cases/' + S.caseId + '/generate-all', {
+      method: 'POST',
+      body: { forceGateBypass: true },
+      signal: abortCtrl.signal
+    });
+
+    if (sseSource) { sseSource.close(); sseSource = null; }
+
+    // Mark any remaining sections based on result
+    var resultSections = result.results || {};
+    var errorSections = result.errors || {};
+    sections.forEach(function(sec) {
+      if (resultSections[sec.id]) {
+        updateGenSectionRow(sec.id, 'done', resultSections[sec.id].text ? (resultSections[sec.id].text.length + ' chars') : 'Done');
+      } else if (errorSections[sec.id]) {
+        updateGenSectionRow(sec.id, 'error', errorSections[sec.id]);
+      }
+    });
+
+    refs.genModalProgressFill.style.width = '100%';
+    var elapsed = Math.round((Date.now() - startedAt) / 1000);
+    var mins = Math.floor(elapsed / 60);
+    var secs = elapsed % 60;
+    var timeStr = mins > 0 ? (mins + 'm ' + secs + 's') : (secs + 's');
+    var count = Object.keys(resultSections).length;
+    var errCount = Object.keys(errorSections).length;
+
+    refs.genModalSubtitle.textContent = 'Complete! ' + count + ' section' + (count === 1 ? '' : 's') + ' generated' + (errCount ? ', ' + errCount + ' errors' : '') + '.';
+    refs.genModalTime.textContent = 'Total time: ' + timeStr;
+    refs.genModalStop.disabled = true;
+    refs.genModalStop.classList.add('hidden');
+    refs.genModalDone.textContent = 'Review sections →';
+    refs.genModalFooter.classList.remove('hidden');
+
+    // Reload case so sections show up in review step
+    await loadCase(S.caseId, { silent: true });
+    showToast('Full report generated! ' + count + ' sections ready for review.', 'success');
+  } catch (err) {
+    if (sseSource) { sseSource.close(); sseSource = null; }
+    if (err && err.name === 'AbortError') return; // user stopped it
+    console.error('[generateFullReport]', err);
+    var detail = (err && err.data && err.data.gate && err.data.gate.blockers)
+      ? err.data.gate.blockers.map(function(b) { return b.message; }).join('; ')
+      : (err && err.message) || 'Unknown error';
+    refs.genModalSubtitle.textContent = 'Generation failed: ' + detail;
+    refs.genModalStop.disabled = true;
+    refs.genModalFooter.classList.remove('hidden');
+    refs.genModalTime.textContent = '';
+    refs.genModalDone.textContent = 'Close';
+    showToast('Generation failed: ' + detail, 'error');
+  } finally {
+    _fullReportAbortController = null;
   }
 }
 
