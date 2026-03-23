@@ -526,6 +526,193 @@ export async function fillForm1004(caseIdOrData) {
   setText('Depreciated Cost of Improvements', outputs.depreciated_cost || '');
   setText('Indicated Value by Cost Approach', outputs.cost_approach_value || '');
 
+  // ── EXACT PDF FIELD NAME ADDITIONS ──────────────────────────────────────
+  // Maps to the precise field names in Form 1004, including official typos.
+
+  // Subject — extra exact names
+  setText('Date of Inspection',   caseMeta.inspection_date || caseMeta.effective_date || '');
+
+  // Improvements — exterior material fields (missing from above)
+  setText('Exterior Description Gutters & Downspouts',  improvements.guttersDownspouts || '');
+  setText('Exterior Description Window Type',           improvements.windowType        || '');
+  setText('Exterior Description Storm Sash Insulated',  improvements.stormSash         || '');
+  setText('Exterior Description Screens',               improvements.screens           || '');
+  setText('Exterior Description Foundation Walls',      improvements.foundationWalls   || improvements.foundation || '');
+
+  // Improvements — interior material fields
+  setText('Interior Floors',        improvements.floors        || '');
+  setText('Interior Walls',         improvements.interiorWalls || '');
+  setText('Interior Bath Floor',    improvements.bathFloor     || '');
+  setText('Interior Tirm Finish',   improvements.trimFinish    || '');  // "Tirm" is the PDF typo
+  setText('Interior Bath Wainscot', improvements.bathWainscot  || '');
+
+  // Improvements — heating fuel, car storage, driveway
+  setText('Foundation Fuel',    improvements.heatingFuel     || improvements.fuel           || '');
+  setText('Car Storage',        improvements.carStorage      || improvements.garageType     || '');
+  setText('Driveway Surface',   improvements.drivewaySurface || '');
+
+  // Condition narrative — full 34 lines (PDF has many line fields)
+  const conditionTextFull = sectionText(sections['improvements_condition'])
+    || sectionText(sections['condition'])
+    || outputs.improvements_condition || '';
+  setMultiLine('Describe the condition of the property Line', conditionTextFull, 34);
+
+  // Subject columns — exact field names for sales comparison grid header
+  const subjSP  = subject.salePrice || caseMeta.sale_price || '';
+  const subjGLA = String(improvements.gla || subject.gla || '');
+  setText('Subject Sale Price', subjSP);
+  if (subjSP && subjGLA) {
+    const spNum2  = parseFloat(String(subjSP).replace(/[^0-9.]/g, ''));
+    const glaNum2 = parseFloat(String(subjGLA).replace(/[^0-9.]/g, ''));
+    if (spNum2 && glaNum2) setText('Subject Sale Price/Gross Liv.Area $', String(Math.round(spNum2 / glaNum2)));
+  }
+  setText('Feature and Subject', improvements.condition || subject.condition || '');
+
+  // Above Grade Room Count — subject (exact field names)
+  setText('Above Grade Room Count Gross Living Area Total',      String(improvements.rooms     || subject.rooms     || ''));
+  setText('Above Grade Room Count Gross Living Area Bedrooms',   String(improvements.bedrooms  || subject.bedrooms  || ''));
+  setText('Above Grade Room Count Gross Living Area Bath rooms', String(improvements.bathrooms || subject.bathrooms || ''));
+
+  // Sales comparison — exact comp field names + above-grade counts per comp
+  for (let ci = 0; ci < Math.min(comps.length, 3); ci++) {
+    const comp2 = comps[ci];
+    const n2    = ci + 1;   // 1, 2, 3
+    let cdata   = {};
+    try { cdata = JSON.parse(comp2.candidate_json || '{}'); } catch { /* ok */ }
+
+    const cAddr   = cdata.address   || comp2.address    || '';
+    const cSP     = cdata.salePrice || comp2.sale_price  || '';
+    const cGLA    = cdata.gla       || comp2.gla         || '';
+    const cProx   = cdata.proximity || comp2.proximity   || '';
+    const cSource = cdata.dataSource || comp2.source     || 'MLS';
+
+    setText(`Comparable Sale ${n2}`,                          cAddr);
+    setText(`Comparable Sale ${n2} Proximity to Subject`,     cProx);
+    setText(`Comparable Sale ${n2} Sale price $`,             cSP);
+    if (cSP && cGLA) {
+      const sp3 = parseFloat(String(cSP).replace(/[^0-9.]/g, ''));
+      const gl3 = parseFloat(String(cGLA).replace(/[^0-9.]/g, ''));
+      if (sp3 && gl3) setText(`Comparable Sale ${n2} Sale Price/Gross Liv.Area $`, String(Math.round(sp3 / gl3)));
+    }
+    setText(`Comparable Sale ${n2} Data Sources`,         cSource);
+    setText(`Comparable Sale ${n2} Verification Sources`, cSource);
+
+    // Above Grade Room Count — comp suffixes _1, _2, _3
+    setText(`Above Grade Room Count Gross Living Area Total_${n2}`,      String(cdata.rooms     || comp2.rooms     || ''));
+    setText(`Above Grade Room Count Gross Living Area Bedrooms_${n2}`,   String(cdata.bedrooms  || comp2.bedrooms  || ''));
+    setText(`Above Grade Room Count Gross Living Area Bath rooms_${n2}`, String(cdata.bathrooms || comp2.bathrooms || ''));
+  }
+
+  // Adjustment grid — description columns and adjustment amount columns
+  // Subject description: "Description {Category}"
+  // Comp n description:  "Description {Category}_n"   (n = 1, 2, 3)
+  // Comp 1 adjustment:   "Adjustment {Category}"       (no suffix)
+  // Comp 2 adjustment:   "Adjustment {Category}_1"
+  // Comp 3 adjustment:   "Adjustment {Category}_2"
+  const gridCategories = [
+    { key: 'sale_financing', base: 'Sale or Financing Concessions', subjectVal: '' },
+    { key: 'date_of_sale',   base: 'Date of Sale/Time',             subjectVal: '' },
+    { key: 'location',       base: 'Location',                      subjectVal: neighborhood.locationType || subject.location || '' },
+    { key: 'leasehold',      base: 'Leasehold/Fee Simple',          subjectVal: subject.propertyRights || 'Fee Simple' },
+    { key: 'site',           base: 'Site',                          subjectVal: String(site.lotSize || '') },
+    { key: 'view',           base: 'View',                          subjectVal: site.view || '' },
+    { key: 'design',         base: 'Design (style)',                subjectVal: improvements.design || improvements.style || '' },
+    { key: 'quality',        base: 'Quality of Construction',       subjectVal: improvements.quality || '' },
+    { key: 'age',            base: 'Actual Age',                    subjectVal: String(improvements.yearBuilt || '') },
+    { key: 'condition',      base: 'Condition',                     subjectVal: improvements.condition || '' },
+  ];
+
+  for (const cat of gridCategories) {
+    setText(`Description ${cat.base}`, cat.subjectVal);
+
+    for (let ci = 0; ci < Math.min(comps.length, 3); ci++) {
+      const comp3 = comps[ci];
+      const n3    = ci + 1;
+      let cdata3  = {};
+      try { cdata3 = JSON.parse(comp3.candidate_json || '{}'); } catch { /* ok */ }
+
+      const compDescVals = {
+        sale_financing: '',
+        date_of_sale:   '',
+        location:       cdata3.locationRating || cdata3.location || '',
+        leasehold:      cdata3.propertyRights || 'Fee Simple',
+        site:           String(cdata3.lotSize || comp3.lot_size || ''),
+        view:           cdata3.view      || '',
+        design:         cdata3.design    || cdata3.style || '',
+        quality:        cdata3.quality   || '',
+        age:            String(cdata3.yearBuilt || comp3.year_built || ''),
+        condition:      cdata3.condition || '',
+      };
+      setText(`Description ${cat.base}_${n3}`, compDescVals[cat.key] || '');
+
+      // Adjustment amounts: comp1 = no suffix, comp2 = _1, comp3 = _2
+      const adjSuffix3 = n3 === 1 ? '' : `_${n3 - 1}`;
+      const adjRec3 = adjustments.find(a =>
+        (a.grid_slot === n3 || a.grid_slot === String(n3)) &&
+        (a.adjustment_category === cat.key || a.adjustment_category === cat.base)
+      );
+      const adjAmt3 = adjRec3?.adjustment_amount || adjRec3?.net_adjustment || '';
+      if (adjAmt3) setText(`Adjustment ${cat.base}${adjSuffix3}`, String(adjAmt3));
+    }
+  }
+
+  // Summary of Sales Comparison — up to 7 lines (exact field names)
+  const scTextFull = sectionText(sections['sales_comparison'])
+    || sectionText(sections['comp_analysis'])
+    || outputs.sales_comparison_comments || '';
+  setMultiLine('Summary of Sales Comparison Approach Line', scTextFull, 7);
+
+  // Reconciliation — exact field names
+  setText('Sales Comparison Approach',      recon.indicated_value_sales  || outputs.indicated_value_sales  || '');
+  setText('Cost Approach (if developed)',   recon.indicated_value_cost   || outputs.indicated_value_cost   || '');
+  setText('Income Approach (if developed)', recon.indicated_value_income || outputs.indicated_value_income || '');
+  setText('Appraised value of subject property', finalValue);
+
+  // Appraiser info — exact PDF field names
+  setText('Name_1',   caseMeta.appraiser_name || 'Charles Cresci');
+  setText('Company Name',
+    caseMeta.company_name || 'Cresci Appraisal & Consulting Company');
+  {
+    const coAddr  = caseMeta.company_address || '';
+    const coLines = splitLines(coAddr, CHARS_PER_LINE);
+    setText('Company Address Line_1', coLines[0] || '');
+    setText('Company Address Line_2', coLines[1] || '');
+  }
+  setText('Date of Signature and Report',
+    caseMeta.signature_date || caseMeta.effective_date || '');
+  setText('Expiration date of Certification or License',
+    caseMeta.license_expiration || '');
+
+  // Analysis of prior sale or transfer history — lines 1–5
+  const priorSaleText = sectionText(sections['prior_sale_analysis'])
+    || sectionText(sections['prior_transfers'])
+    || outputs.prior_sale_analysis || '';
+  {
+    const psLines = splitLines(priorSaleText);
+    for (let i = 0; i < Math.min(psLines.length, 5); i++) {
+      setText(`Analysis of prior sale or transfer history of the subject property Line_${i + 1}`, psLines[i]);
+    }
+  }
+
+  // Contract analysis narrative
+  const contractAnalysisText = sectionText(sections['contract_analysis'])
+    || outputs.contract_analysis || '';
+  if (contractAnalysisText) {
+    const caLines = splitLines(contractAnalysisText);
+    // First line goes into the main field; additional lines would need Line_2 etc. if they exist
+    setText('analyze the contract for sale', caLines[0] || '');
+  }
+
+  // Comments on Cost Approach — fields 1 through 7
+  const costCommentFull = sectionText(sections['cost_approach'])
+    || outputs.cost_approach_comments || '';
+  {
+    const ccLines = splitLines(costCommentFull);
+    for (let i = 0; i < Math.min(ccLines.length, 7); i++) {
+      setText(`Comments on Cost Approach${i + 1}`, ccLines[i]);
+    }
+  }
+
   log.info('pdf-filler:fields-set', { count: _setCount });
 
   // ── FINALIZE ──────────────────────────────────────────────────────────────
