@@ -450,21 +450,49 @@ export function buildUad36Document(caseData, options = {}) {
   if (recon.finalOpinionOfValue) lines.push(`                  ${el('FinalAppraisedValueAmount', recon.finalOpinionOfValue)}`);
   lines.push('                </RECONCILIATION>');
 
-  // Structured commentary sections (UAD 3.6 style — per-section fields)
+  // Structured commentary sections (UAD 3.6 — all narrative section types)
+  // Supports both sections map (from generationOrchestrator) and outputs map (from outputs.json)
   lines.push('                <COMMENTARY>');
-  const commentarySections = [
-    'neighborhood_description', 'site_description', 'improvements_description',
-    'cost_approach', 'sales_comparison', 'reconciliation_narrative',
-    'highest_best_use', 'scope_of_work',
+  const uad36CommentarySectionIds = [
+    'contract_analysis',
+    'neighborhood_description',
+    'market_conditions',
+    'site_description',
+    'improvements_description',
+    'condition_description',
+    'energy_features',
+    'adu_description',
+    'highest_best_use',
+    'sales_comparison_narrative',
+    'cost_approach',
+    'income_approach',
+    'reconciliation',
+    'scope_of_work',
+    'prior_sales',
+    'conditions_assumptions',
+    'extraordinary_assumptions',
+    'hypothetical_conditions',
+    // Legacy section IDs (backward compat)
+    'improvements_condition',
+    'sca_summary',
+    'sales_comparison_commentary',
+    'conditions_of_appraisal',
+    'prior_sales_subject',
+    'functional_utility',
+    'adverse_conditions',
   ];
-  for (const sectionId of commentarySections) {
-    const section = sections?.[sectionId];
+  const seenCommentaryIds = new Set();
+  for (const sectionId of uad36CommentarySectionIds) {
+    if (seenCommentaryIds.has(sectionId)) continue;
+    // Try sections map first (orchestrator output), then outputs map (file-based)
+    const section = sections?.[sectionId] || caseData.outputs?.[sectionId];
     if (section) {
-      const text = section.final_text || section.reviewed_text || section.draft_text || '';
+      const text = section.final_text || section.reviewed_text || section.draft_text || section.text || '';
       if (text.trim()) {
-        lines.push(`                  <SECTION SectionType="${sectionId}">`);
+        lines.push(`                  <SECTION SectionType="${escapeXml(sectionId)}">`);
         lines.push(`                    ${el('CommentaryText', text)}`);
         lines.push(`                  </SECTION>`);
+        seenCommentaryIds.add(sectionId);
       }
     }
   }
@@ -484,23 +512,26 @@ export function buildUad36Document(caseData, options = {}) {
 }
 
 /**
- * Validate UAD 3.6 output against basic compliance rules.
+ * Validate UAD 3.6 output against MISMO 3.6 compliance rules.
+ * Returns structured validation result with errors (blocking) and warnings (non-blocking).
  */
 export function validateUad36(xmlString) {
   const errors = [];
   const warnings = [];
 
+  // ── Required structural fields ────────────────────────────────────────────
   const required = [
-    ['AddressLineText', 'Subject address'],
-    ['CityName', 'City'],
-    ['StateCode', 'State'],
-    ['PostalCode', 'ZIP code'],
-    ['YearBuiltDate', 'Year built'],
-    ['GrossLivingAreaSquareFeet', 'Gross living area'],
-    ['OverallConditionRating', 'Condition rating'],
-    ['OverallQualityRating', 'Quality rating'],
-    ['ReportFormType', 'Report form type (URAR)'],
-    ['FinalAppraisedValueAmount', 'Final appraised value'],
+    ['AddressLineText',            'Subject address'],
+    ['CityName',                   'City'],
+    ['StateCode',                  'State'],
+    ['PostalCode',                 'ZIP code'],
+    ['YearBuiltDate',              'Year built'],
+    ['GrossLivingAreaSquareFeet',  'Gross living area'],
+    ['OverallConditionRating',     'Condition rating (C1–C6)'],
+    ['OverallQualityRating',       'Quality rating (Q1–Q6)'],
+    ['ReportFormType',             'Report form type (URAR)'],
+    ['FinalAppraisedValueAmount',  'Final appraised value'],
+    ['EffectiveDate',              'Effective date of appraisal'],
   ];
 
   for (const [tag, label] of required) {
@@ -509,12 +540,87 @@ export function validateUad36(xmlString) {
     }
   }
 
-  // UAD 3.6 specific checks
-  if (!xmlString.includes('AboutVersionIdentifier')) warnings.push('Missing version identifier');
-  if (!xmlString.includes('COMPARABLE_SALE>')) warnings.push('No comparable sales');
-  if (!xmlString.includes('COMMENTARY')) warnings.push('No commentary sections');
+  // ── UAD 3.6 specific required elements ───────────────────────────────────
+  if (!xmlString.includes('AboutVersionIdentifier')) {
+    errors.push('Missing MISMO version identifier (AboutVersionIdentifier)');
+  }
 
-  return { valid: errors.length === 0, errors, warnings };
+  // Energy features section is required in UAD 3.6 (even if "none present")
+  if (!xmlString.includes('GREEN_FEATURES') && !xmlString.includes('SectionType="energy_features"')) {
+    warnings.push('UAD 3.6: GREEN_FEATURES or energy_features commentary section not present');
+  }
+
+  // ADU section required (even if no ADU)
+  if (!xmlString.includes('ACCESSORY_DWELLING_UNIT') && !xmlString.includes('SectionType="adu_description"')) {
+    warnings.push('UAD 3.6: ADU section not present (required even if no ADU exists)');
+  }
+
+  // ── Comparable sales ──────────────────────────────────────────────────────
+  if (!xmlString.includes('<COMPARABLE_SALE>')) {
+    warnings.push('No comparable sales in XML');
+  } else {
+    // Count comparables
+    const compCount = (xmlString.match(/<COMPARABLE_SALE>/g) || []).length;
+    if (compCount < 3) {
+      warnings.push(`Only ${compCount} comparable sale(s) — UAD 3.6 typically requires at least 3`);
+    }
+  }
+
+  // ── Commentary sections ───────────────────────────────────────────────────
+  if (!xmlString.includes('<COMMENTARY>')) {
+    errors.push('Missing COMMENTARY section — all narrative content must be present');
+  } else {
+    const requiredCommentary = [
+      ['neighborhood_description', 'Neighborhood Description'],
+      ['market_conditions',        'Market Conditions Analysis'],
+      ['site_description',         'Site Description'],
+      ['improvements_description', 'Description of Improvements'],
+      ['condition_description',    'Condition of Improvements'],
+      ['highest_best_use',         'Highest & Best Use'],
+      ['sales_comparison_narrative','Sales Comparison Analysis'],
+      ['reconciliation',           'Reconciliation'],
+      ['scope_of_work',            'Scope of Work'],
+    ];
+    for (const [sectionId, label] of requiredCommentary) {
+      if (!xmlString.includes(`SectionType="${sectionId}"`)) {
+        // Also check legacy IDs
+        const legacyChecks = {
+          condition_description: 'improvements_condition',
+          sales_comparison_narrative: 'sca_summary',
+        };
+        const legacyId = legacyChecks[sectionId];
+        if (!legacyId || !xmlString.includes(`SectionType="${legacyId}"`)) {
+          warnings.push(`Missing commentary section: ${label} (${sectionId})`);
+        }
+      }
+    }
+  }
+
+  // ── Condition & Quality rating format ────────────────────────────────────
+  const conditionRatingMatch = xmlString.match(/<OverallConditionRating>([^<]+)<\/OverallConditionRating>/);
+  if (conditionRatingMatch) {
+    const rating = conditionRatingMatch[1].trim();
+    if (!/^C[1-6]$/.test(rating)) {
+      errors.push(`Invalid condition rating format: "${rating}" — must be C1 through C6`);
+    }
+  }
+
+  const qualityRatingMatch = xmlString.match(/<OverallQualityRating>([^<]+)<\/OverallQualityRating>/);
+  if (qualityRatingMatch) {
+    const rating = qualityRatingMatch[1].trim();
+    if (!/^Q[1-6]$/.test(rating)) {
+      errors.push(`Invalid quality rating format: "${rating}" — must be Q1 through Q6`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    summary: errors.length === 0
+      ? `Valid UAD 3.6 document${warnings.length ? ` (${warnings.length} warning${warnings.length > 1 ? 's' : ''})` : ''}`
+      : `${errors.length} compliance error${errors.length > 1 ? 's' : ''}, ${warnings.length} warning${warnings.length > 1 ? 's' : ''}`,
+  };
 }
 
 export default { buildUad36Document, validateUad36, getUad36FieldMapping, CQ_RATINGS_36 };

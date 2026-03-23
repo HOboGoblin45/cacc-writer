@@ -129,6 +129,7 @@ import compAnalyzerRouter from './server/api/compAnalyzerRoutes.js';
 import aiQcRouter from './server/api/aiQcRoutes.js';
 import recordsRouter from './server/api/recordsRoutes.js';
 import sketchRouter from './server/api/sketchRoutes.js';
+import uad36Router from './server/api/uad36Routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -323,6 +324,7 @@ app.use('/api', compAnalyzerRouter);
 app.use('/api', aiQcRouter);
 app.use('/api', recordsRouter);
 app.use('/api', sketchRouter);
+app.use('/api', uad36Router);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
