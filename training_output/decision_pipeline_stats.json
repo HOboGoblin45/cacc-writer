@@ -1,0 +1,17 @@
+{
+  "filesProcessed": 395,
+  "totalExamples": 0,
+  "examplesByType": {},
+  "adjustmentStats": {
+    "totalComps": 2092,
+    "avgNetPercent": 0,
+    "avgGrossPercent": 0
+  },
+  "valueStats": null,
+  "conditionDistribution": {
+    "C3": 279,
+    "C4": 49,
+    "C1": 18,
+    "C2": 2
+  }
+}

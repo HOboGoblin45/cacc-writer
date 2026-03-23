@@ -286,7 +286,9 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
 
     const address = (facts.subject?.address || caseId).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
 
-    const pdfBuffer = await fillForm1004({ facts, outputs: rawOutputs, sections, meta, caseId });
+    // Pass comps from facts and any comp analysis data
+    const comps = facts.comps || [];
+    const pdfBuffer = await fillForm1004({ facts, outputs: rawOutputs, sections, meta, caseId, comps });
 
     const fileName = `1004_report_${address}.pdf`;
     res.set('Content-Type', 'application/pdf');

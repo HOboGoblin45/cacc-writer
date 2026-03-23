@@ -1,0 +1,505 @@
+﻿Text|Ciy
+Text|Zip Code
+Text|Property Address
+Text|Owner of Public Record
+Text|County
+Text|Legal Description
+Text|Tax Year
+Text|Borrower
+Text|R.E. Taxes
+Text|Assessors Parcel
+Text|Map Reference
+CheckBox|Check Box1
+Text|Special Assessments
+RadioGroup|Group_4
+Text|Other describe_1
+Text|Other describe
+Text|Lender Client
+RadioGroup|Group_5
+Text|Address
+RadioGroup|Group_6
+Text|Report data sources used offering prices and dates
+Text|analyze the contract for sale for the subject purchase transaction. Explain the results of the analysis of the contract for sale or why the analysis was not performed
+Text|Census Tract
+Text|Contract Price
+RadioGroup|Group_7
+Text|Date of Contract
+RadioGroup|Group_8
+Text|If Yes report the total dollar amount and describe the items to be paid Line_1
+Text|If Yes report the total dollar amount and describe the items to be paid Line_2
+RadioGroup|Group_9
+RadioGroup|Group_10
+RadioGroup|Group_11
+RadioGroup|Group_12
+RadioGroup|Group_13
+RadioGroup|Group_14
+Text|Neighborhood Name
+Text|Neighborhood Boundaries
+Text|Present Land Use 2-4 Unit
+Text|Present Land Use One - Unit
+Text|Present Land Use Multi-Family
+Text|Present Land Use Commercial
+Text|Neighborhood Description Line_2
+Text|Neighborhood Description Line_1
+Text|Market Conditions including support for the above conclusions Line_1
+Text|Market Conditions including support for the above conclusions Line_2
+Text|Dimesions
+Text|Shape
+Text|View
+Text|Specific Zoning Classification
+Text|Present Land Use Other
+RadioGroup|Group_15
+RadioGroup|Group_17
+Text|Zoning Description
+RadioGroup|Group_18
+RadioGroup|Group_19
+RadioGroup|Group_20
+RadioGroup|Group_21
+RadioGroup|Group_22
+RadioGroup|Group_23
+RadioGroup|Group_24
+Text|Area
+Text|FEMA Map
+Text|FEMA Map Date
+RadioGroup|Group_25
+Text|If no Describe
+RadioGroup|Group_26
+Text|If no Describe_1
+Text|If no Describe Line_1
+Text|If no Describe Line_2
+Text|If no Describe Line_3
+RadioGroup|Group_27
+Text|FEMA Flood Zone
+RadioGroup|Group_28
+Text|Of Stories
+Text|Year Built
+Text|Design Style
+Text|Effective Age Yrs
+RadioGroup|Group_31
+Text|Basement Area
+RadioGroup|Group_35
+Text|Basement Finish
+RadioGroup|Group_36
+Text|Exterior Description Exterior Walls
+Text|Exterior Description Roof Surface
+Text|Exterior Description Gutters & Downspouts
+Text|Exterior Description Window Type
+Text|Exterior Description Storm Sash Insulated
+Text|Exterior Description Screens
+Text|Exterior Description Foundation Walls
+Text|Interior Floors
+Text|Interior Walls
+Text|Interior Bath Floor
+Text|Interior Tirm Finish
+RadioGroup|Group_38
+RadioGroup|Group_39
+Text|Foundation Fuel
+Text|Bedrooms
+Text|Baths
+Text|Rooms
+Text|Additional features
+Text|Describe the condition of the property Line_2
+Text|Describe the condition of the property Line_3
+Text|Describe the condition of the property Line_34
+RadioGroup|Group_41
+Text|Describe the condition of the property Line_1
+Text|If Yes, Describe Line_2
+Text|If Yes, Describe Line_3
+RadioGroup|Group_42
+Text|If Yes, Describe Line_1
+Text|If Yes, Describe_1 Line_2
+Text|Interior Bath Wainscot
+Text|Car Storage
+Text|Driveway Surface
+Text|Driveway Surface Carport
+Text|Square Feet of Gross Living Area above grade
+Text|There are
+Text|comparable properties currently offered for sale in the subject neighborhood ranging in proce from
+Text|to $
+Text|There are_1
+Text|comparable properties currently offered for sale in the subject neighborhood ranging in price from $
+Text|to $ _1
+Text|Feature and Subject
+Text|Comparable Sale 2 Proximity to Subject
+Text|Comparable Sale 1 Proximity to Subject
+Text|Comparable Sale 3 Proximity to Subject
+Text|Comparable Sale 1 Sale price $
+Text|Comparable Sale 2
+Text|Comparable Sale 2 sale price $
+Text|Comparable Sale 3
+Text|Comparable Sale 3 Sale Price $
+Text|Subject Sale Price
+Text|Subject Sale Price/Gross Liv.Area $
+Text|Comparable Sale 1 Sale Price/Gross Liv.Area $
+Text|Comparable Sale 2 Sale Price/Gross Liv.Area $
+Text|Comparable Sale 3 Sale Price/Gross Liv.Area $
+Text|Comparable Sale 1 Data Sources
+Text|Comparable Sale 1 Verification Sources
+Text|Comparable Sale 2 Data Sources
+Text|Comparable Sale 2 verification Sources
+Text|Comparable Sale 3 Data Sources
+Text|Comparable Sale 3 Verification Sources
+Text|Description Sale or Financing Concessions_1
+Text|Adjustment Sale or Financing Concessions_2
+Text|Adjustment Sale or Financing Concessions
+Text|Description Sale or Financing Concessions_2
+Text|Adjustment Sale or Financing Concessions_1
+Text|Description Sale or Financing Concessions_3
+Text|Description Date of Sale/Time_1
+Text|Adjustment Date of Sale/Time
+Text|Description Date of Sale/Time_2
+Text|Adjustment Date of Sale/Time_1
+Text|Description Date of Sale/Time_3
+Text|Adjustment Date of Sale/Time_2
+Text|Description Location
+Text|Adjustment Location_2
+Text|Description Location_1
+Text|Adjustment Location
+Text|Description Location_2
+Text|Adjustment Location_1
+Text|Description Location_3
+Text|Description Leasehold/Fee Simple
+Text|Description Leasehold/Fee Simple_1
+Text|Adjustment Leasehold/Fee Simple
+Text|Description Leasehold/Fee Simple_2
+Text|Adjustment Leasehold/Fee Simple_1
+Text|Description View
+Text|Description View_1
+Text|Adjustment View
+Text|Description View_2
+Text|Adjustment View_1
+Text|Description View_3
+Text|Adjustment View_2
+Text|Description Site
+Text|Description Site_1
+Text|Adjustment Site
+Text|Description Site_2
+Text|Adjustment Site_1
+Text|Description Site_3
+Text|Adjustment Site_2
+Text|Description Design (style)
+Text|Description Design (style)_1
+Text|Adjustment Design (style)
+Text|Description Design (style)_2
+Text|Adjustment Design (style)_1
+Text|Description Design (style)_3
+Text|Adjustment Design (style)_2
+Text|Description Quality of Construction
+Text|Description Quality of Construction_1
+Text|Adjustment Quality of Construction
+Text|Description Quality of Construction_2
+Text|Adjustment Quality of Construction_1
+Text|Description Quality of Construction_3
+Text|Adjustment Quality of Construction_2
+Text|Description Actual Age
+Text|Description Actual Age_1
+Text|Adjustment Actual Age
+Text|Description Actual Age_2
+Text|Adjustment Actual Age_1
+Text|Description Actual Age_3
+Text|Adjustment Actual Age_2
+Text|Description Condition_1
+Text|Description Condition_2
+Text|Adjustment Condition_1
+Text|Description Condition_3
+Text|Adjustment Condition_2
+Text|Above Grade Room Count Gross Living Area Total
+Text|Above Grade Room Count Gross Living Area Bedrooms
+Text|Above Grade Room Count Gross Living Area Bath rooms
+Text|Adjustment Condition
+Text|Comparable Sale 1
+Text|Above Grade Room Count Gross Living Area Total_1
+Text|Above Grade Room Count Gross Living Area Bath rooms_1
+Text|Above Grade Room Count Gross Living Area Bedrooms_1
+Text|Above Grade Room Count Gross Living Area Total_2
+Text|Above Grade Room Count Gross Living Area Bath rooms_2
+Text|Above Grade Room Count Gross Living Area Bedrooms_2
+Text|Above Grade Room Count Gross Living Area Total_3
+Text|Above Grade Room Count Gross Living Area Bedrooms_3
+Text|Above Grade Room Count Gross Living Area Bath rooms_3
+Text|Description Condition
+RadioGroup|Group_43
+Text|If Yes, Describe_1 Line_1
+Text|If not, Explain_1 Line_1
+Text|If not, Explain_1 Line_2
+Text|Data Sources
+Text|Data Sources_1
+Text|Data Sources_2
+RadioGroup|Group_44
+RadioGroup|Group_45
+RadioGroup|Group_46
+RadioGroup|Group_48
+RadioGroup|Group_49
+RadioGroup|Group_50
+RadioGroup|Group_51
+RadioGroup|Group_52
+RadioGroup|Group_53
+CheckBox|Check Box3
+CheckBox|Check Box4
+CheckBox|Check Box5
+CheckBox|Check Box6
+Text|Subject Date of Prior Sale/Transfer
+Text|Comparable Sale 1 Subject Date of Prior Sale/Transfer
+Text|Comparable Sale 2 Subject Date of Prior Sale/Transfer
+Text|Comparable Sale 3 Subject Date of Prior Sale/Transfer
+Text|Subject Date of Prior Sale/Transfer_1
+Text|Comparable Sale 1 Subject Date of Prior Sale/Transfer_1
+Text|Comparable Sale 2 Subject Date of Prior Sale/Transfer_1
+Text|Comparable Sale 3 Subject Date of Prior Sale/Transfer_1
+Text|Subject Date of Prior Sale/Transfer_2
+Text|Comparable Sale 1 Subject Date of Prior Sale/Transfer_2
+Text|Comparable Sale 1 Subject Date of Prior Sale/Transfer_3
+Text|Comparable Sale 2 Subject Date of Prior Sale/Transfer_2
+Text|Comparable Sale 2 Subject Date of Prior Sale/Transfer_3
+Text|Comparable Sale 3 Subject Date of Prior Sale/Transfer_2
+Text|Comparable Sale 3 Subject Date of Prior Sale/Transfer_3
+Text|Subject Date of Prior Sale/Transfer_3
+Text|Analysis of prior sale or transfer history of the subject property and comparable sales Line_1
+Text|Analysis of prior sale or transfer history of the subject property and comparable sales Line_2
+Text|Analysis of prior sale or transfer history of the subject property and comparable sales Line_3
+Text|Analysis of prior sale or transfer history of the subject property and comparable sales Line_4
+Text|Analysis of prior sale or transfer history of the subject property and comparable sales Line_5
+Text|Summary of Sales Comparison Approach Line_1
+Text|Summary of Sales Comparison Approach Line_2
+Text|Summary of Sales Comparison Approach Line_3
+Text|Summary of Sales Comparison Approach Line_4
+Text|Summary of Sales Comparison Approach Line_5
+Text|Summary of Sales Comparison Approach Line_6
+Text|Summary of Sales Comparison Approach Line_7
+Signature|Signature1
+Text|Name_1
+Text|Company Name
+Text|Company Address Line_1
+Text|Company Address Line_2
+Text|Telephone Number
+Text|Email Address
+Text|Date of Signature and Report
+Text|Effective date of Appraisal
+Text|State Certification
+Text|State License
+Text|Other
+Text|State
+Text|State_1
+Text|Expiration date of Certification or License
+Text|Address of property Appraised Line_1
+Text|Address of property Appraised Line_2
+Text|Appraised value of subject property
+Text|Lender Client Name
+Text|Lender Company Name
+Text|Text1
+RadioGroup|Group_1
+RadioGroup|Group_2
+RadioGroup|Group_3
+Text|Text3
+Text|Text4
+Text|Text5
+RadioGroup|Group_29
+CheckBox|Check Box2
+CheckBox|Check Box8
+CheckBox|Check Box7
+CheckBox|Check Box9
+CheckBox|Check Box10
+CheckBox|Check Box11
+CheckBox|Check Box13
+CheckBox|Check Box14
+CheckBox|15
+CheckBox|16
+CheckBox|17
+CheckBox|18
+CheckBox|19
+CheckBox|20
+CheckBox|21
+CheckBox|32
+CheckBox|33
+CheckBox|34
+CheckBox|35
+CheckBox|36
+CheckBox|37
+CheckBox|38
+Text|Data Sources_3
+Text|State 11
+Text|Data Sources_223
+Text|Data Sources_2213
+Text|154
+Text|2646
+Text|4
+Text|5
+Text|6
+Text|7
+Text|8
+Text|9
+Text|10
+Text|11
+Text|12
+Text|13
+Text|14
+Text|1232
+Text|1516565
+Text|561561
+Text|156165
+Text|1561655
+Text|1561
+Text|15616
+Text|256165
+Text|1561651
+Text|27
+Text|28
+Text|29
+Text|30
+Text|31
+Text|1655
+Text|15615
+Text|156161
+Text|655645645
+Text|1561156545
+Text|656446648
+Text|355
+Text|366
+Text|377
+Text|388
+Text|454648988
+Text|4949898
+Text|1564489
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 2
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 3
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 4
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 5
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 6
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 1
+Text|Comments on Cost Approach (gross living area calculations, depreciation, etc.) 7
+Text|101
+Text|102
+Text|103
+Text|105
+Text|106
+Text|107
+Text|Support for the opinion of site value (summary of comparable land sales or other methods for estimating site value) Line 3
+Text|1115
+Text|111
+Text|151151
+Text|156448
+Text|161545
+Text|15448
+Text|16446551
+Text|121568485
+Text|12454564
+Text|11548
+Text|15165484848
+Text|1516548488
+Text|1564545448
+Text|154548848848
+Text|15648848488
+RadioGroup|Group_4222
+Text|Total number of phases
+Text|Total number of units
+Text|Total number of units sold
+Text|Total number of units rented
+Text|Total number of units for sale
+Text|Data Sources_32232
+Text|If yes, date of conversion
+Text|Data Sources_45824
+Text|Data Sources_454564654
+Text|Data Sources Line 2
+Text|If yes, describe the rental terms and options
+Text|Describe common elements and recreational facilities
+Text|Lender Client Company Address Line_1
+Text|Lender Client Company Address Line 2
+Text|Lender Client Email Address
+Signature|Supervisory Appraiser Signature
+Text|Supervisory Appraiser Name
+Text|Supervisory Appraiser Company Name
+Text|Supervisory Appraiser Company Address Line 1
+Text|Supervisory Appraiser Company Address Line 2
+Text|Supervisory Appraiser Telephone Number
+Text|Supervisory Appraiser Email Address
+Text|Supervisory Appraiser Date of Signature
+Text|Supervisory Appraiser State Certification
+Text|Supervisory Appraiser or State License
+Text|Supervisory Appraiser State
+Text|Supervisory Appraiser Expiration Date of Certification or License
+Text|Date of Inspection exterior of subject property from street
+Text|Date of Inspection interior of subject property
+Text|Date of Inspection exterior of comparable sales from street
+Text|Data Sources_212316
+Text|Sales Comparison Approach
+Text|Cost Approach (if developed)
+Text|Income Approach (if developed)
+Text|Market Value
+Text|Effective Date of Appraisal
+Text|Date of Inspection
+Text|Description Condition151
+Text|Date of Inspection:124
+Text|Description Condition123
+Text|Description Condition231
+Text|Description Condition521
+Text|Description Condition625
+Text|Description Condition526
+Text|Description Condition725
+Text|Description Condition527
+Text|Description Condition623
+Text|Description Condition654
+Text|Description Condition4546
+Text|Description Condition4566
+Text|Description Condition789
+Text|Description Condition987
+Text|Description Condition879
+Text|Description Condition978
+Text|Description Condition652
+Text|Description Condition125
+Text|Description Condition126
+Text|Description Condition912
+Text|Description Condition925
+Text|Description Condition823
+Text|Description Condition559
+Text|Description Condition556
+Text|Description Condition777
+Text|Description Condition752
+Text|Description Condition425
+Text|Description Condition642
+Text|Description Condition300
+Text|Description Condition601
+Text|Description Condition458
+Text|Description Condition6459
+Text|Description Condition945
+Text|Description Condition745
+Text|Description Condition451
+Text|Description Condition4871
+Text|Description Condition45465
+Text|Description Condition437
+Text|Description Condition129
+Text|Description Condition154
+Text|Description Condition579
+Text|Description Condition854
+Text|Description Condition983
+Text|Description Condition846
+Text|Description Condition746
+Text|Description Condition786
+Text|Description Condition452
+Text|Description Condition635
+Text|Description Condition876
+Text|Description Condition678
+Text|Description Condition784654
+Text|Description Condition78411
+Text|Description Condition422
+Text|Description Condition388
+Text|Description Condition988
+Text|Description Condition45123
+Text|Description Condition12345
+Text|Description Condition641253
+Text|Description Condition94267
+Text|Description Condition562348
+Text|Description Condition4512368
+Text|Description Condition12346
+Text|Description Condition945623
+Text|Support for the opinion of site value (summary of comparable land sales or other methods for estimating site value) Line2
+Text|Support for the opinion of site value (summary of comparable land sales or other methods for estimating site value)Line1
+Text|Description Location_44444
+Text|Adjustment Location_211111
+Text|Text2
+Text|156545
+Text|Text21
+Text|Text2_12
+Text|Text2_152
+Text|254648
+Text|Text2111
+RadioGroup|Group_40

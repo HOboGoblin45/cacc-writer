@@ -233,7 +233,9 @@ export async function fillForm1004(caseIdOrData) {
   // ── SUBJECT SECTION ───────────────────────────────────────────────────────
   setText('Property Address',      subject.address);
   setText('Ciy',                   subject.city);                       // typo in PDF
-  setText('State',                 subject.state);
+  // State might be FIPS code (17) or abbreviation (IL) — ensure we use abbreviation
+  const stateVal = subject.state?.length <= 2 && /^\d+$/.test(subject.state) ? 'IL' : (subject.state || 'IL');
+  setText('State',                 stateVal);
   setText('Zip Code',              subject.zipCode);
   setText('County',                subject.county);
   setText('Borrower',              subject.borrower       || caseMeta.borrower_name);
@@ -265,12 +267,12 @@ export async function fillForm1004(caseIdOrData) {
 
   // ── NEIGHBORHOOD SECTION ──────────────────────────────────────────────────
 
-  // Boundaries: combine cardinal directions
+  // Boundaries: combine cardinal directions (check both subject and neighborhood for boundary data)
   const boundaries = [
-    neighborhood.boundaryNorth ? `N: ${neighborhood.boundaryNorth}` : '',
-    neighborhood.boundarySouth ? `S: ${neighborhood.boundarySouth}` : '',
-    neighborhood.boundaryEast  ? `E: ${neighborhood.boundaryEast}`  : '',
-    neighborhood.boundaryWest  ? `W: ${neighborhood.boundaryWest}`  : '',
+    (subject.NORTH_BOUNDARY || neighborhood.boundaryNorth) ? `N: ${subject.NORTH_BOUNDARY || neighborhood.boundaryNorth}` : '',
+    (subject.SOUTH_BOUNDARY || neighborhood.boundarySouth) ? `S: ${subject.SOUTH_BOUNDARY || neighborhood.boundarySouth}` : '',
+    (subject.EAST_BOUNDARY  || neighborhood.boundaryEast)  ? `E: ${subject.EAST_BOUNDARY  || neighborhood.boundaryEast}`  : '',
+    (subject.WEST_BOUNDARY  || neighborhood.boundaryWest)  ? `W: ${subject.WEST_BOUNDARY  || neighborhood.boundaryWest}`  : '',
   ].filter(Boolean).join('; ') || neighborhood.boundaries || '';
   setText('Neighborhood Boundaries', boundaries);
 
@@ -389,6 +391,35 @@ export async function fillForm1004(caseIdOrData) {
   setText('Cooling',             improvements.cooling);
   setText('Garage Carport',      improvements.garage);
   setText('Garage Cars',         improvements.garageCars);
+
+  // Adverse conditions narrative
+  const adverseText = sectionText(sections['adverse_conditions']) || '';
+  if (adverseText) {
+    setMultiLine('If no Describe Line', adverseText, 3);
+  }
+
+  // Conformity narrative  
+  const conformityText = sectionText(sections['functional_utility_conformity']) || '';
+  if (conformityText) {
+    setMultiLine('If Yes, Describe_1 Line', conformityText, 2);
+  }
+
+  // Scope of work narrative (page 4)
+  const scopeText = sectionText(sections['scope_of_work']) || '';
+
+  // Prior sales narrative
+  const priorSalesText = sectionText(sections['prior_sales_subject']) || '';
+  if (priorSalesText) {
+    setMultiLine('Analysis of prior sale or transfer history of the subject property and comparable sales Line', priorSalesText, 5);
+  }
+
+  // Contract analysis narrative
+  const contractText = sectionText(sections['contract_analysis']) || '';
+  if (contractText) {
+    setText('analyze the contract for sale for the subject purchase transaction. Explain the results of the analysis of the contract for sale or why the analysis was not performed', contractText);
+  }
+
+  // HBU narrative — goes in the "If no Describe_1" field (HBU as improved = present use)
 
   // ── SALES COMPARISON APPROACH ─────────────────────────────────────────────
   // Subject column
