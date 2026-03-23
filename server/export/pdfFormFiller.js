@@ -18,6 +18,8 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dbGet, dbAll } from '../db/database.js';
+import { readJSON } from '../utils/fileUtils.js';
+import { casePath } from '../utils/caseUtils.js';
 import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -66,27 +68,61 @@ function sectionText(section) {
  * @returns {Object}
  */
 function loadCaseForForm(caseId) {
-  const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
+  const caseRecord = dbGet('SELECT * FROM case_records WHERE caseId = ?', [caseId])
+                  || dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
   if (!caseRecord) throw new Error(`Case not found: ${caseId}`);
 
-  const caseFacts  = dbGet('SELECT * FROM case_facts   WHERE case_id = ?', [caseId]);
-  const caseOutputs = dbGet('SELECT * FROM case_outputs WHERE case_id = ?', [caseId]);
-
-  const facts   = caseFacts   ? JSON.parse(caseFacts.facts_json   || '{}') : {};
-  const outputs = caseOutputs ? JSON.parse(caseOutputs.outputs_json || '{}') : {};
-
-  // Sections map: section_id → latest row
-  const sections = dbAll(
-    `SELECT * FROM generated_sections
-     WHERE case_id = ?
-       AND (final_text IS NOT NULL OR reviewed_text IS NOT NULL OR draft_text IS NOT NULL)
-     ORDER BY section_id, created_at DESC`,
-    [caseId]
-  );
-  const sectionMap = {};
-  for (const s of sections) {
-    if (!sectionMap[s.section_id]) sectionMap[s.section_id] = s;
+  // Try multiple sources for facts
+  let facts = {};
+  try {
+    const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [caseId]);
+    if (caseFacts?.facts_json) facts = JSON.parse(caseFacts.facts_json);
+  } catch {}
+  // Also check file system
+  try {
+    const cDir = casePath(caseId);
+    const fileFacts = readJSON(path.join(cDir, 'facts.json'), null);
+    if (fileFacts) facts = { ...facts, ...fileFacts };
+  } catch {}
+  // Also check case_records.facts column
+  if (Object.keys(facts).length === 0 && caseRecord.facts) {
+    try { facts = typeof caseRecord.facts === 'string' ? JSON.parse(caseRecord.facts) : caseRecord.facts; } catch {}
   }
+
+  // Try multiple sources for outputs
+  let outputs = {};
+  try {
+    const caseOutputs = dbGet('SELECT * FROM case_outputs WHERE case_id = ?', [caseId]);
+    if (caseOutputs?.outputs_json) outputs = JSON.parse(caseOutputs.outputs_json);
+  } catch {}
+  // Also check file system
+  try {
+    const cDir = casePath(caseId);
+    const fileOutputs = readJSON(path.join(cDir, 'outputs.json'), null);
+    if (fileOutputs) outputs = { ...outputs, ...fileOutputs };
+  } catch {}
+  // Also check case_records.outputs column
+  if (Object.keys(outputs).filter(k => k !== 'updatedAt').length === 0 && caseRecord.outputs) {
+    try { outputs = typeof caseRecord.outputs === 'string' ? JSON.parse(caseRecord.outputs) : caseRecord.outputs; } catch {}
+  }
+
+  // Build sections map from outputs (our generate-all saves text directly to outputs)
+  const sectionMap = {};
+  for (const [key, val] of Object.entries(outputs)) {
+    if (key === 'updatedAt') continue;
+    const text = typeof val === 'string' ? val : (val?.text || val?.draft_text || '');
+    if (text) sectionMap[key] = { section_id: key, draft_text: text, final_text: text };
+  }
+  // Also try generated_sections table
+  try {
+    const sections = dbAll(
+      `SELECT * FROM generated_sections WHERE case_id = ? AND (final_text IS NOT NULL OR reviewed_text IS NOT NULL OR draft_text IS NOT NULL) ORDER BY section_id, created_at DESC`,
+      [caseId]
+    );
+    for (const s of sections) {
+      if (!sectionMap[s.section_id]) sectionMap[s.section_id] = s;
+    }
+  } catch {}
 
   // Comps (up to 6)
   let comps = [];
