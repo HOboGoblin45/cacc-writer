@@ -219,7 +219,7 @@ export async function fillForm1004(caseIdOrData) {
   const site           = facts.site           || {};
   const improvements   = facts.improvements   || {};
   const publicRecords  = facts.publicRecords  || {};
-  const meta           = caseRecord           || {};
+  const caseMeta       = { ...meta, ...caseRecord };
 
   // ── SUBJECT SECTION ───────────────────────────────────────────────────────
   setText('Property Address',      subject.address);
@@ -227,7 +227,7 @@ export async function fillForm1004(caseIdOrData) {
   setText('State',                 subject.state);
   setText('Zip Code',              subject.zipCode);
   setText('County',                subject.county);
-  setText('Borrower',              subject.borrower       || meta.borrower_name);
+  setText('Borrower',              subject.borrower       || caseMeta.borrower_name);
   setText('Owner of Public Record', subject.ownerOfRecord);
   setText('Legal Description',     subject.legalDescription);
   setText('Tax Year',              subject.taxYear);
@@ -236,14 +236,14 @@ export async function fillForm1004(caseIdOrData) {
   setText('Map Reference',         subject.mapReference);
   setText('Census Tract',          subject.censusTract   || publicRecords.censusTract);
   setText('Neighborhood Name',     subject.subdivision   || subject.neighborhoodName);
-  setText('Lender Client',         meta.lender_name      || meta.client_name);
-  setText('Address',               meta.lender_address   || meta.client_address);
+  setText('Lender Client',         caseMeta.lender_name      || caseMeta.client_name);
+  setText('Address',               caseMeta.lender_address   || caseMeta.client_address);
   setText('Special Assessments',   subject.specialAssessments);
   setText('Contract Price',        subject.salePrice);
   setText('Date of Contract',      subject.saleDate);
 
   // Effective date / inspection date
-  setText('Effective Date',        meta.effective_date   || meta.inspection_date);
+  setText('Effective Date',        caseMeta.effective_date   || caseMeta.inspection_date);
 
   // Property rights (Fee Simple / Leasehold)
   setText('Property Rights Appraised', subject.propertyRights || 'Fee Simple');
@@ -476,15 +476,15 @@ export async function fillForm1004(caseIdOrData) {
     || recon.reconciled_value
     || reconOutputs.finalValue
     || outputs.final_value
-    || meta.opinion_of_value
+    || caseMeta.opinion_of_value
     || '';
   setText('Market Value', finalValue);
   setText('Final Reconciled Value', finalValue);
 
   // Effective date
   const effDate = recon.effective_date
-    || meta.effective_date
-    || meta.inspection_date
+    || caseMeta.effective_date
+    || caseMeta.inspection_date
     || '';
   setText('Effective Date of Appraisal', effDate);
 
@@ -495,16 +495,16 @@ export async function fillForm1004(caseIdOrData) {
   setMultiLine('Reconciliation comments Line', reconText, 5);
 
   // ── APPRAISER INFO ────────────────────────────────────────────────────────
-  setText('Appraiser Name',       meta.appraiser_name);
-  setText('Company Name',         meta.company_name    || 'Cresci Appraisal & Consulting Company');
-  setText('Company Address',      meta.company_address);
-  setText('Telephone Number',     meta.appraiser_phone);
-  setText('Email Address',        meta.appraiser_email);
-  setText('State Certification',  meta.license_number);
-  setText('State',                meta.license_state   || meta.state);
-  setText('Expiration Date of Certification or License', meta.license_expiration);
-  setText('Supervisory Appraiser Name', meta.supervisory_appraiser);
-  setText('Supervisory Appraiser State', meta.supervisory_state);
+  setText('Appraiser Name',       caseMeta.appraiser_name);
+  setText('Company Name',         caseMeta.company_name    || 'Cresci Appraisal & Consulting Company');
+  setText('Company Address',      caseMeta.company_address);
+  setText('Telephone Number',     caseMeta.appraiser_phone);
+  setText('Email Address',        caseMeta.appraiser_email);
+  setText('State Certification',  caseMeta.license_number);
+  setText('State',                caseMeta.license_state   || caseMeta.state);
+  setText('Expiration Date of Certification or License', caseMeta.license_expiration);
+  setText('Supervisory Appraiser Name', caseMeta.supervisory_appraiser);
+  setText('Supervisory Appraiser State', caseMeta.supervisory_state);
 
   // ── COST APPROACH (if applicable) ─────────────────────────────────────────
   const costText = sectionText(sections['cost_approach'])
@@ -528,7 +528,7 @@ export async function fillForm1004(caseIdOrData) {
 
   const filledBytes = await pdf.save();
   log.info('pdf-form-filler:filled', {
-    caseId: meta.case_id,
+    caseId: caseMeta.case_id,
     address: subject.address,
     compsUsed: Math.min(comps.length, 3),
   });
