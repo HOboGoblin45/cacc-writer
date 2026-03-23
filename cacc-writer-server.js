@@ -130,6 +130,8 @@ import aiQcRouter from './server/api/aiQcRoutes.js';
 import recordsRouter from './server/api/recordsRoutes.js';
 import sketchRouter from './server/api/sketchRoutes.js';
 import uad36Router from './server/api/uad36Routes.js';
+import formDataRouter from './server/api/formDataRoutes.js';
+import photoAddendumRouter from './server/api/photoAddendumRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -325,6 +327,8 @@ app.use('/api', aiQcRouter);
 app.use('/api', recordsRouter);
 app.use('/api', sketchRouter);
 app.use('/api', uad36Router);
+app.use('/api', formDataRouter);
+app.use('/api', photoAddendumRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
