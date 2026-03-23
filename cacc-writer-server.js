@@ -128,6 +128,7 @@ import { ensureAuthSchema } from './server/auth/authService.js';
 import compAnalyzerRouter from './server/api/compAnalyzerRoutes.js';
 import aiQcRouter from './server/api/aiQcRoutes.js';
 import recordsRouter from './server/api/recordsRoutes.js';
+import sketchRouter from './server/api/sketchRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -196,6 +197,7 @@ app.get('/analytics', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'an
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/inspection', (_q, r) => r.sendFile(path.join(__dirname, 'inspection.html')));
+app.get('/sketch', (_q, r) => r.sendFile(path.join(__dirname, 'sketch.html')));
 app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/demo.html', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/pricing', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));
@@ -320,6 +322,7 @@ app.use('/api', demoRouter);
 app.use('/api', compAnalyzerRouter);
 app.use('/api', aiQcRouter);
 app.use('/api', recordsRouter);
+app.use('/api', sketchRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
