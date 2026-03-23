@@ -195,6 +195,7 @@ app.get('/settings', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'set
 app.get('/analytics', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'analytics', 'code.html')));
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
+app.get('/inspection', (_q, r) => r.sendFile(path.join(__dirname, 'inspection.html')));
 app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/demo.html', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/pricing', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));

@@ -583,4 +583,176 @@ router.delete('/cases/:caseId/conditions/:conditionId', (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mobile PWA Inspection Routes
+// Simple endpoints used by inspection.html (no inspectionId required)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
+import { CASES_DIR, resolveCaseDir } from '../utils/caseUtils.js';
+import { readJSON, writeJSON } from '../utils/fileUtils.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Disk-based multer for photo uploads
+const photoUpload = multer({
+  storage: multer.diskStorage({
+    destination(req, _file, cb) {
+      const caseId = req.params.caseId;
+      const caseDir = resolveCaseDir(caseId);
+      if (!caseDir) return cb(new Error('Invalid case ID'));
+      const photosDir = path.join(caseDir, 'photos');
+      try {
+        fs.mkdirSync(photosDir, { recursive: true });
+        cb(null, photosDir);
+      } catch (err) {
+        cb(err);
+      }
+    },
+    filename(_req, file, cb) {
+      const ext  = path.extname(file.originalname || '').toLowerCase() || '.jpg';
+      const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+      cb(null, name);
+    },
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+});
+
+/**
+ * POST /api/cases/:caseId/photos/upload
+ * Accept multipart image upload from mobile inspection PWA.
+ * Saves to cases/:caseId/photos/, stores metadata in photos/manifest.json.
+ */
+router.post('/cases/:caseId/photos/upload', photoUpload.single('photo'), (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const caseDir = resolveCaseDir(caseId);
+    if (!caseDir) return res.status(404).json({ ok: false, error: 'Case not found' });
+    if (!req.file) return res.status(400).json({ ok: false, error: 'No file uploaded' });
+
+    const category  = String(req.body?.category || 'additional').slice(0, 60);
+    const photoId   = 'mpwa_' + randomUUID().slice(0, 12);
+    const filename  = req.file.filename;
+    const thumbUrl  = `/api/cases/${caseId}/photos/file/${filename}`;
+
+    // Persist metadata to manifest
+    const manifestPath = path.join(caseDir, 'photos', 'manifest.json');
+    const manifest     = readJSON(manifestPath, { photos: [] });
+    manifest.photos.push({
+      photoId,
+      category,
+      filename,
+      thumbUrl,
+      timestamp: new Date().toISOString(),
+      size: req.file.size,
+    });
+    writeJSON(manifestPath, manifest);
+
+    log.info('mobile-photo-upload', { caseId, photoId, category, filename });
+    res.status(201).json({ ok: true, photoId, thumbnailUrl: thumbUrl });
+  } catch (err) {
+    log.error('mobile-photo-upload-error', { caseId: req.params.caseId, error: err.message });
+    return sendErrorResponse(res, err);
+  }
+});
+
+/**
+ * GET /api/cases/:caseId/photos/file/:filename
+ * Serve a stored inspection photo.
+ */
+router.get('/cases/:caseId/photos/file/:filename', (req, res) => {
+  try {
+    const { caseId, filename } = req.params;
+    // Prevent path traversal
+    if (!/^[\w.\-]+$/.test(filename)) return res.status(400).json({ ok: false, error: 'Invalid filename' });
+    const caseDir  = resolveCaseDir(caseId);
+    if (!caseDir) return res.status(404).json({ ok: false, error: 'Case not found' });
+    const filePath = path.join(caseDir, 'photos', filename);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ ok: false, error: 'File not found' });
+    res.sendFile(filePath);
+  } catch (err) {
+    return sendErrorResponse(res, err);
+  }
+});
+
+/**
+ * POST /api/cases/:caseId/inspection-notes
+ * Save mobile inspection notes and ratings into case facts.
+ * Body: { notes, condition, quality, observations: [] }
+ */
+router.post('/cases/:caseId/inspection-notes', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const caseDir    = resolveCaseDir(caseId);
+    if (!caseDir) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const { notes = '', condition = '', quality = '', observations = [] } = req.body || {};
+
+    const factsPath = path.join(caseDir, 'facts.json');
+    const facts     = readJSON(factsPath, {});
+
+    // Merge inspection notes into facts
+    facts.inspectionNotes     = String(notes).slice(0, 8000);
+    facts.subjectCondition    = condition ? String(condition).slice(0, 20)  : facts.subjectCondition;
+    facts.overallQuality      = quality   ? String(quality).slice(0, 20)   : facts.overallQuality;
+    facts.inspectionObservations = Array.isArray(observations)
+      ? observations.map(function(o) { return String(o).slice(0, 200); }).slice(0, 50)
+      : facts.inspectionObservations;
+    facts.inspectionNotesAt   = new Date().toISOString();
+
+    writeJSON(factsPath, facts);
+
+    log.info('mobile-inspection-notes', { caseId, condition, quality });
+    res.json({ ok: true });
+  } catch (err) {
+    log.error('mobile-inspection-notes-error', { caseId: req.params.caseId, error: err.message });
+    return sendErrorResponse(res, err);
+  }
+});
+
+/**
+ * POST /api/cases/:caseId/measurements
+ * Save room measurements from mobile PWA.
+ * Body: { rooms: [{ name, length, width }] }
+ * Calculates total GLA and saves to case facts.
+ */
+router.post('/cases/:caseId/measurements', (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const caseDir    = resolveCaseDir(caseId);
+    if (!caseDir) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const { rooms = [] } = req.body || {};
+    if (!Array.isArray(rooms)) return res.status(400).json({ ok: false, error: 'rooms must be an array' });
+
+    const validated = rooms.map(function(r) {
+      return {
+        name:   String(r.name   || '').slice(0, 100),
+        length: parseFloat(r.length) || 0,
+        width:  parseFloat(r.width)  || 0,
+        area:   (parseFloat(r.length) || 0) * (parseFloat(r.width) || 0),
+      };
+    }).filter(function(r) { return r.length > 0 && r.width > 0; });
+
+    const gla = validated.reduce(function(sum, r) { return sum + r.area; }, 0);
+
+    const factsPath = path.join(caseDir, 'facts.json');
+    const facts     = readJSON(factsPath, {});
+    facts.rooms             = validated;
+    facts.grossLivingArea   = Math.round(gla);
+    facts.measurementsAt    = new Date().toISOString();
+    writeJSON(factsPath, facts);
+
+    log.info('mobile-measurements', { caseId, roomCount: validated.length, gla: Math.round(gla) });
+    res.json({ ok: true, gla: Math.round(gla), rooms: validated });
+  } catch (err) {
+    log.error('mobile-measurements-error', { caseId: req.params.caseId, error: err.message });
+    return sendErrorResponse(res, err);
+  }
+});
+
 export default router;

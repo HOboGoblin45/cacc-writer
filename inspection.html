@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CACC Inspect">
+  <meta name="theme-color" content="#0f172a">
+  <title>Appraisal Agent — Inspection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#6366f1', dark: '#4f46e5', light: '#818cf8' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .nav-btn { min-height: 56px; transition: color 0.15s, border-color 0.15s; }
+    .nav-btn.active { color: #818cf8; border-top: 2px solid #818cf8; }
+    .photo-card { cursor: pointer; transition: background 0.15s, transform 0.1s; }
+    .photo-card:active { transform: scale(0.97); }
+    .chip-btn { min-height: 40px; min-width: 40px; transition: background 0.15s; user-select: none; }
+    .chip-btn.selected { background: #6366f1; color: #fff; }
+    input[type=file] { display: none; }
+    .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
+    .thumb-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-dot.online { background: #22c55e; }
+    .status-dot.offline { background: #f59e0b; }
+    .fade-in { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .measurement-row { display: grid; grid-template-columns: 1fr 80px 80px 80px 40px; gap: 6px; align-items: center; }
+    .save-flash { animation: flash 0.5s; }
+    @keyframes flash { 0% { background: rgba(99,102,241,0.3); } 100% { background: transparent; } }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 bg-slate-900 border-b border-slate-700 px-4 py-3">
+    <div class="flex items-center justify-between max-w-2xl mx-auto">
+      <div>
+        <p class="text-xs text-slate-400 font-medium tracking-wide uppercase">Appraisal Agent</p>
+        <h1 id="caseAddress" class="text-base font-bold text-white leading-tight">Loading case…</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="onlineIndicator" class="status-dot offline" title="Offline — photos queued"></span>
+        <span id="queueBadge" class="hidden bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"></span>
+        <span class="text-xs text-slate-400" id="caseIdLabel"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-2xl mx-auto px-3 pt-4">
+
+    <!-- ░░ PHOTOS TAB ░░ -->
+    <section id="tab-photos" class="tab-panel active fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Photo Capture</h2>
+        <span id="totalPhotos" class="text-xs text-slate-400">0 photos</span>
+      </div>
+      <div id="photoGrid" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <!-- Cards injected by JS -->
+      </div>
+    </section>
+
+    <!-- ░░ NOTES TAB ░░ -->
+    <section id="tab-notes" class="tab-panel fade-in">
+      <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Quick Notes</h2>
+
+      <!-- Condition rating -->
+      <div class="bg-slate-800 rounded-xl p-4 mb-3">
+        <p class="text-xs text-slate-400 mb-2 font-medium">Condition Rating</p>
+        <div class="flex gap-2 flex-wrap" id="conditionBtns">
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C1">C1</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C2">C2</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C3">C3</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C4">C4</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C5">C5</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="condition" data-val="C6">C6</button>
+        </div>
+      </div>
+
+      <!-- Quality rating -->
+      <div class="bg-slate-800 rounded-xl p-4 mb-3">
+        <p class="text-xs text-slate-400 mb-2 font-medium">Quality Rating</p>
+        <div class="flex gap-2 flex-wrap">
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q1">Q1</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q2">Q2</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q3">Q3</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q4">Q4</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q5">Q5</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold" data-group="quality" data-val="Q6">Q6</button>
+        </div>
+      </div>
+
+      <!-- Observations -->
+      <div class="bg-slate-800 rounded-xl p-4 mb-3">
+        <p class="text-xs text-slate-400 mb-2 font-medium">Observations</p>
+        <div class="flex gap-2 flex-wrap">
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="observations" data-val="Deferred maintenance observed">⚠️ Deferred maint.</button>
+        </div>
+        <p class="text-xs text-slate-400 mt-3 mb-2 font-medium">Recent Updates</p>
+        <div class="flex gap-2 flex-wrap">
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="Kitchen">Kitchen</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="Bath">Bath</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="Flooring">Flooring</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="Roof">Roof</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="HVAC">HVAC</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="updates" data-val="Windows">Windows</button>
+        </div>
+        <p class="text-xs text-slate-400 mt-3 mb-2 font-medium">Adverse Conditions</p>
+        <div class="flex gap-2 flex-wrap">
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="adverse" data-val="None">None</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="adverse" data-val="Environmental">Environmental</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="adverse" data-val="Structural">Structural</button>
+          <button class="chip-btn bg-slate-700 text-slate-200 rounded-lg px-3 py-2 text-xs" data-group="adverse" data-val="Other">Other</button>
+        </div>
+      </div>
+
+      <!-- Notes textarea -->
+      <div class="bg-slate-800 rounded-xl p-4 mb-3">
+        <p class="text-xs text-slate-400 mb-2 font-medium">General Notes</p>
+        <textarea
+          id="notesTextarea"
+          class="w-full bg-slate-900 text-slate-100 rounded-lg p-3 text-sm resize-none border border-slate-700 focus:border-brand focus:outline-none min-h-32"
+          placeholder="Enter inspection notes…"
+          rows="5"
+        ></textarea>
+      </div>
+
+      <button id="saveNotesBtn"
+        class="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+        Save Notes
+      </button>
+      <p id="notesSaveStatus" class="text-center text-xs text-slate-400 mt-2 min-h-4"></p>
+    </section>
+
+    <!-- ░░ MEASUREMENTS TAB ░░ -->
+    <section id="tab-measure" class="tab-panel fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Measurements</h2>
+        <div class="text-right">
+          <p class="text-xs text-slate-400">Total GLA</p>
+          <p id="glaTotal" class="text-lg font-bold text-brand">0 sf</p>
+        </div>
+      </div>
+
+      <!-- Room list -->
+      <div id="measurementList" class="space-y-2 mb-4">
+        <!-- Rows injected by JS -->
+      </div>
+
+      <!-- Add room form -->
+      <div class="bg-slate-800 rounded-xl p-4 mb-3">
+        <p class="text-xs text-slate-400 mb-3 font-medium">Add Room</p>
+        <div class="space-y-2">
+          <input id="roomName" type="text"
+            class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-3 text-sm border border-slate-700 focus:border-brand focus:outline-none"
+            placeholder="Room name (e.g. Living Room)" />
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Length (ft)</label>
+              <input id="roomLength" type="number" inputmode="decimal" step="0.1"
+                class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-3 text-sm border border-slate-700 focus:border-brand focus:outline-none"
+                placeholder="0.0" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Width (ft)</label>
+              <input id="roomWidth" type="number" inputmode="decimal" step="0.1"
+                class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-3 text-sm border border-slate-700 focus:border-brand focus:outline-none"
+                placeholder="0.0" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Area</label>
+              <input id="roomArea" type="text" readonly
+                class="w-full bg-slate-900 text-slate-400 rounded-lg px-3 py-3 text-sm border border-slate-700"
+                placeholder="— sf" />
+            </div>
+          </div>
+        </div>
+        <button id="addRoomBtn"
+          class="w-full mt-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+          + Add Room
+        </button>
+      </div>
+
+      <button id="saveMeasurementsBtn"
+        class="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+        Save Measurements
+      </button>
+      <p id="measureSaveStatus" class="text-center text-xs text-slate-400 mt-2 min-h-4"></p>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-50">
+    <div class="max-w-2xl mx-auto grid grid-cols-3">
+      <button class="nav-btn active flex flex-col items-center justify-center gap-1 py-2 text-slate-400" data-tab="photos">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="text-xs font-medium">Photos</span>
+      </button>
+      <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 text-slate-400" data-tab="notes">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span class="text-xs font-medium">Notes</span>
+      </button>
+      <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 text-slate-400" data-tab="measure">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <span class="text-xs font-medium">Measure</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hidden file inputs — one per category -->
+  <div id="fileInputs"></div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-sm px-4 py-2 rounded-full shadow-lg z-50 whitespace-nowrap">
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Config ──────────────────────────────────────────────────────────────
+  var PHOTO_CATEGORIES = [
+    { id: 'front',      label: 'Front',       icon: '🏠' },
+    { id: 'rear',       label: 'Rear',        icon: '🔙' },
+    { id: 'street',     label: 'Street',      icon: '🛣️' },
+    { id: 'kitchen',    label: 'Kitchen',     icon: '🍳' },
+    { id: 'bath1',      label: 'Bath 1',      icon: '🚿' },
+    { id: 'bath2',      label: 'Bath 2',      icon: '🛁' },
+    { id: 'living',     label: 'Living Room', icon: '🛋️' },
+    { id: 'bed1',       label: 'Bedroom 1',   icon: '🛏️' },
+    { id: 'bed2',       label: 'Bedroom 2',   icon: '🛏️' },
+    { id: 'bed3',       label: 'Bedroom 3',   icon: '🛏️' },
+    { id: 'basement',   label: 'Basement',    icon: '⬇️' },
+    { id: 'garage',     label: 'Garage',      icon: '🚗' },
+    { id: 'utility',    label: 'Utility',     icon: '🔧' },
+    { id: 'additional', label: 'Additional',  icon: '📷' },
+  ];
+
+  // ─── State ───────────────────────────────────────────────────────────────
+  var caseId = null;
+  var caseData = {};
+  var photoState = {};       // { categoryId: [{ file, dataUrl, uploaded }] }
+  var uploadQueue = [];      // localStorage-backed queue
+  var noteState = { condition: '', quality: '', observations: [], updates: [], adverse: [], notes: '' };
+  var rooms = [];
+  var saveNotesTimer = null;
+  var isOnline = navigator.onLine;
+
+  PHOTO_CATEGORIES.forEach(function (c) { photoState[c.id] = []; });
+
+  // ─── Init ────────────────────────────────────────────────────────────────
+  function init() {
+    var params = new URLSearchParams(window.location.search);
+    caseId = params.get('case');
+    if (!caseId) {
+      document.getElementById('caseAddress').textContent = 'No case selected';
+      document.getElementById('caseIdLabel').textContent = '';
+      showToast('No case ID in URL — use ?case=CASEID', 4000);
+    } else {
+      document.getElementById('caseIdLabel').textContent = '#' + caseId.slice(0, 8);
+      loadCase();
+    }
+    loadQueueFromStorage();
+    buildPhotoGrid();
+    buildFileInputs();
+    setupNav();
+    setupChips();
+    setupNotes();
+    setupMeasurements();
+    updateOnlineStatus();
+    window.addEventListener('online',  function () { isOnline = true;  updateOnlineStatus(); flushQueue(); });
+    window.addEventListener('offline', function () { isOnline = false; updateOnlineStatus(); });
+  }
+
+  // ─── Case loading ─────────────────────────────────────────────────────────
+  function loadCase() {
+    fetch('/api/cases/' + caseId)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (data) {
+        caseData = data.case || data;
+        var addr = caseData.address || caseData.facts && caseData.facts.address || 'Unknown address';
+        document.getElementById('caseAddress').textContent = addr;
+      })
+      .catch(function () {
+        document.getElementById('caseAddress').textContent = 'Case ' + caseId.slice(0, 8);
+      });
+  }
+
+  // ─── Photo grid ───────────────────────────────────────────────────────────
+  function buildPhotoGrid() {
+    var grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    PHOTO_CATEGORIES.forEach(function (cat) {
+      var card = document.createElement('div');
+      card.className = 'photo-card bg-slate-800 rounded-xl p-3 border border-slate-700';
+      card.id = 'card-' + cat.id;
+      card.innerHTML =
+        '<div class="text-center mb-2">' +
+          '<span class="text-2xl">' + cat.icon + '</span>' +
+          '<p class="text-xs font-semibold text-slate-200 mt-1 leading-tight">' + cat.label + '</p>' +
+        '</div>' +
+        '<div id="thumbs-' + cat.id + '" class="thumb-grid hidden"></div>' +
+        '<div class="flex items-center justify-between mt-2">' +
+          '<span id="count-' + cat.id + '" class="text-xs text-slate-400">0 photos</span>' +
+          '<button class="bg-brand text-white text-xs font-semibold px-3 py-2 rounded-lg" style="min-height:36px" onclick="triggerCapture(\'' + cat.id + '\')">' +
+            '📷 Capture' +
+          '</button>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function buildFileInputs() {
+    var container = document.getElementById('fileInputs');
+    PHOTO_CATEGORIES.forEach(function (cat) {
+      var inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.setAttribute('capture', 'environment');
+      inp.multiple = true;
+      inp.id = 'file-' + cat.id;
+      inp.addEventListener('change', function (e) { handleFiles(cat.id, e.target.files); inp.value = ''; });
+      container.appendChild(inp);
+    });
+  }
+
+  window.triggerCapture = function (catId) {
+    document.getElementById('file-' + catId).click();
+  };
+
+  function handleFiles(catId, files) {
+    Array.from(files).forEach(function (file) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var entry = { file: file, dataUrl: e.target.result, uploaded: false, catId: catId };
+        photoState[catId].push(entry);
+        renderCategory(catId);
+        queueUpload(entry);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderCategory(catId) {
+    var photos = photoState[catId];
+    var thumbDiv = document.getElementById('thumbs-' + catId);
+    var countSpan = document.getElementById('count-' + catId);
+    thumbDiv.innerHTML = '';
+    photos.forEach(function (p, i) {
+      var img = document.createElement('img');
+      img.src = p.dataUrl;
+      img.title = p.uploaded ? 'Uploaded ✓' : 'Pending upload…';
+      img.style.opacity = p.uploaded ? '1' : '0.6';
+      thumbDiv.appendChild(img);
+    });
+    thumbDiv.classList.toggle('hidden', photos.length === 0);
+    countSpan.textContent = photos.length + (photos.length === 1 ? ' photo' : ' photos');
+    var total = Object.values(photoState).reduce(function (s, arr) { return s + arr.length; }, 0);
+    document.getElementById('totalPhotos').textContent = total + (total === 1 ? ' photo' : ' photos');
+  }
+
+  // ─── Upload queue ─────────────────────────────────────────────────────────
+  var QUEUE_KEY = 'cacc_photo_queue';
+
+  function loadQueueFromStorage() {
+    try {
+      var raw = localStorage.getItem(QUEUE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        uploadQueue = saved.filter(function (q) { return q.caseId === caseId; });
+        if (uploadQueue.length) {
+          showBadge(uploadQueue.length);
+          showToast(uploadQueue.length + ' photos queued — will upload when online', 3000);
+        }
+      }
+    } catch (e) {}
+  }
+
+  function saveQueueToStorage() {
+    try {
+      var existing = [];
+      try { existing = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch (e) {}
+      var filtered = existing.filter(function (q) { return q.caseId !== caseId; });
+      var merged = filtered.concat(uploadQueue);
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(merged));
+    } catch (e) {}
+  }
+
+  function queueUpload(entry) {
+    if (isOnline && caseId) {
+      uploadPhoto(entry);
+    } else {
+      var qEntry = {
+        caseId: caseId,
+        catId: entry.catId,
+        dataUrl: entry.dataUrl,
+        fileName: entry.file ? entry.file.name : ('photo_' + Date.now() + '.jpg'),
+        ts: Date.now()
+      };
+      uploadQueue.push(qEntry);
+      showBadge(uploadQueue.length);
+      saveQueueToStorage();
+    }
+  }
+
+  function flushQueue() {
+    if (!isOnline || !caseId || uploadQueue.length === 0) return;
+    var toFlush = uploadQueue.slice();
+    uploadQueue = [];
+    saveQueueToStorage();
+    showBadge(0);
+    toFlush.forEach(function (q) {
+      uploadDataUrl(q.caseId, q.catId, q.dataUrl, q.fileName);
+    });
+    showToast('Uploading ' + toFlush.length + ' queued photos…', 2000);
+  }
+
+  function uploadPhoto(entry) {
+    if (!caseId) return;
+    var formData = new FormData();
+    formData.append('photo', entry.file);
+    formData.append('category', entry.catId);
+    fetch('/api/cases/' + caseId + '/photos/upload', { method: 'POST', body: formData })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.ok) {
+          entry.uploaded = true;
+          renderCategory(entry.catId);
+        }
+      })
+      .catch(function () {
+        // If upload fails, add to queue
+        var qEntry = {
+          caseId: caseId, catId: entry.catId,
+          dataUrl: entry.dataUrl,
+          fileName: entry.file ? entry.file.name : ('photo_' + Date.now() + '.jpg'),
+          ts: Date.now()
+        };
+        uploadQueue.push(qEntry);
+        showBadge(uploadQueue.length);
+        saveQueueToStorage();
+      });
+  }
+
+  function uploadDataUrl(cid, catId, dataUrl, fileName) {
+    var blob = dataURLtoBlob(dataUrl);
+    if (!blob) return;
+    var formData = new FormData();
+    formData.append('photo', blob, fileName);
+    formData.append('category', catId);
+    fetch('/api/cases/' + cid + '/photos/upload', { method: 'POST', body: formData })
+      .catch(function () {});
+  }
+
+  function dataURLtoBlob(dataUrl) {
+    try {
+      var parts = dataUrl.split(',');
+      var mime = parts[0].match(/:(.*?);/)[1];
+      var bStr = atob(parts[1]);
+      var n = bStr.length;
+      var u8 = new Uint8Array(n);
+      for (var i = 0; i < n; i++) u8[i] = bStr.charCodeAt(i);
+      return new Blob([u8], { type: mime });
+    } catch (e) { return null; }
+  }
+
+  function showBadge(count) {
+    var badge = document.getElementById('queueBadge');
+    if (count > 0) {
+      badge.textContent = count + ' queued';
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  // ─── Online status ────────────────────────────────────────────────────────
+  function updateOnlineStatus() {
+    var dot = document.getElementById('onlineIndicator');
+    dot.classList.toggle('online', isOnline);
+    dot.classList.toggle('offline', !isOnline);
+    dot.title = isOnline ? 'Online' : 'Offline — photos queued';
+  }
+
+  // ─── Navigation ──────────────────────────────────────────────────────────
+  function setupNav() {
+    var buttons = document.querySelectorAll('[data-tab]');
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tabId = btn.getAttribute('data-tab');
+        buttons.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+        var panel = document.getElementById('tab-' + tabId);
+        if (panel) {
+          panel.classList.add('active');
+          panel.classList.remove('fade-in');
+          void panel.offsetWidth;
+          panel.classList.add('fade-in');
+        }
+      });
+    });
+  }
+
+  // ─── Chip buttons ─────────────────────────────────────────────────────────
+  function setupChips() {
+    document.querySelectorAll('.chip-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var group = btn.getAttribute('data-group');
+        var val   = btn.getAttribute('data-val');
+        if (group === 'condition' || group === 'quality') {
+          // single select
+          document.querySelectorAll('[data-group="' + group + '"]').forEach(function (b) {
+            b.classList.remove('selected');
+          });
+          btn.classList.toggle('selected');
+          noteState[group] = btn.classList.contains('selected') ? val : '';
+        } else {
+          // multi select
+          btn.classList.toggle('selected');
+          var arr = noteState[group] || [];
+          if (btn.classList.contains('selected')) {
+            if (arr.indexOf(val) === -1) arr.push(val);
+          } else {
+            arr = arr.filter(function (v) { return v !== val; });
+          }
+          noteState[group] = arr;
+        }
+        scheduleAutoSave();
+      });
+    });
+  }
+
+  // ─── Notes ───────────────────────────────────────────────────────────────
+  function setupNotes() {
+    var textarea = document.getElementById('notesTextarea');
+    textarea.addEventListener('input', function () {
+      noteState.notes = textarea.value;
+      scheduleAutoSave();
+    });
+    document.getElementById('saveNotesBtn').addEventListener('click', saveNotes);
+  }
+
+  function scheduleAutoSave() {
+    clearTimeout(saveNotesTimer);
+    saveNotesTimer = setTimeout(saveNotes, 2000);
+  }
+
+  function saveNotes() {
+    if (!caseId) return;
+    var status = document.getElementById('notesSaveStatus');
+    var payload = {
+      notes: noteState.notes,
+      condition: noteState.condition,
+      quality: noteState.quality,
+      observations: (noteState.observations || [])
+        .concat((noteState.updates || []).map(function (u) { return 'Recent update: ' + u; }))
+        .concat((noteState.adverse || []).map(function (a) { return 'Adverse: ' + a; }))
+    };
+    fetch('/api/cases/' + caseId + '/inspection-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        status.textContent = d.ok ? '✓ Saved ' + new Date().toLocaleTimeString() : '⚠ Save failed';
+      })
+      .catch(function () {
+        status.textContent = '⚠ Save failed (offline)';
+        // Save to localStorage as fallback
+        try { localStorage.setItem('cacc_notes_' + caseId, JSON.stringify(payload)); } catch (e) {}
+      });
+  }
+
+  // ─── Measurements ─────────────────────────────────────────────────────────
+  function setupMeasurements() {
+    var lengthInp = document.getElementById('roomLength');
+    var widthInp  = document.getElementById('roomWidth');
+    var areaInp   = document.getElementById('roomArea');
+
+    function recalcPreview() {
+      var l = parseFloat(lengthInp.value) || 0;
+      var w = parseFloat(widthInp.value)  || 0;
+      areaInp.value = (l * w > 0) ? (l * w).toFixed(1) + ' sf' : '— sf';
+    }
+    lengthInp.addEventListener('input', recalcPreview);
+    widthInp.addEventListener('input',  recalcPreview);
+
+    document.getElementById('addRoomBtn').addEventListener('click', function () {
+      var name   = document.getElementById('roomName').value.trim();
+      var length = parseFloat(lengthInp.value) || 0;
+      var width  = parseFloat(widthInp.value)  || 0;
+      if (!name) { showToast('Enter a room name'); return; }
+      if (length <= 0 || width <= 0) { showToast('Enter length and width'); return; }
+      rooms.push({ name: name, length: length, width: width, area: length * width });
+      renderRooms();
+      document.getElementById('roomName').value  = '';
+      lengthInp.value = '';
+      widthInp.value  = '';
+      areaInp.value   = '— sf';
+    });
+
+    document.getElementById('saveMeasurementsBtn').addEventListener('click', saveMeasurements);
+  }
+
+  function renderRooms() {
+    var list = document.getElementById('measurementList');
+    list.innerHTML = '';
+    var total = 0;
+    rooms.forEach(function (r, i) {
+      total += r.area;
+      var row = document.createElement('div');
+      row.className = 'bg-slate-800 rounded-xl px-4 py-3 flex items-center justify-between';
+      row.innerHTML =
+        '<div>' +
+          '<p class="text-sm font-medium text-slate-200">' + escapeHtml(r.name) + '</p>' +
+          '<p class="text-xs text-slate-400">' + r.length + ' × ' + r.width + ' ft</p>' +
+        '</div>' +
+        '<div class="flex items-center gap-3">' +
+          '<span class="text-sm font-semibold text-brand">' + r.area.toFixed(1) + ' sf</span>' +
+          '<button class="text-slate-500 hover:text-red-400 text-lg leading-none" onclick="removeRoom(' + i + ')">✕</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    document.getElementById('glaTotal').textContent = total.toFixed(0) + ' sf';
+  }
+
+  window.removeRoom = function (i) {
+    rooms.splice(i, 1);
+    renderRooms();
+  };
+
+  function saveMeasurements() {
+    if (!caseId) return;
+    var status = document.getElementById('measureSaveStatus');
+    if (rooms.length === 0) { showToast('No rooms to save'); return; }
+    fetch('/api/cases/' + caseId + '/measurements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rooms: rooms })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        status.textContent = d.ok
+          ? '✓ Saved — GLA: ' + (d.gla || '—') + ' sf'
+          : '⚠ Save failed: ' + (d.error || '');
+      })
+      .catch(function () {
+        status.textContent = '⚠ Save failed (offline)';
+        try { localStorage.setItem('cacc_measurements_' + caseId, JSON.stringify({ rooms: rooms })); } catch (e) {}
+      });
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+  var toastTimer = null;
+  function showToast(msg, ms) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.add('hidden'); }, ms || 2500);
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
