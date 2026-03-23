@@ -161,7 +161,7 @@ function loadCaseForForm(caseId) {
 /**
  * Fill the official Fannie Mae Form 1004 PDF template with case data.
  *
- * @param {string|Object} caseIdOrData — case ID string OR pre-loaded case data object
+ * @param {string|Object} caseIdOrData - case ID string OR pre-loaded case data object
  * @returns {Promise<Buffer>} filled PDF bytes
  */
 export async function fillForm1004(caseIdOrData) {
@@ -187,7 +187,7 @@ export async function fillForm1004(caseIdOrData) {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   let _setCount = 0;
-  /** Safely set a text field — silently skip if field not found */
+  /** Safely set a text field - silently skip if field not found */
   function setText(fieldName, value) {
     try {
       if (value !== null && value !== undefined && value !== '') {
@@ -195,7 +195,7 @@ export async function fillForm1004(caseIdOrData) {
         _setCount++;
         field.setText(String(value));
       }
-    } catch { /* field not found or wrong type — skip */ }
+    } catch { /* field not found or wrong type - skip */ }
   }
 
   /** Safely check/uncheck a checkbox */
@@ -299,7 +299,7 @@ export async function fillForm1004(caseIdOrData) {
   // ── SUBJECT SECTION ───────────────────────────────────────────────────────
   setText('Property Address',      subject.address);
   setText('Ciy',                   subject.city);                       // typo in PDF
-  // State might be FIPS code (17) or abbreviation (IL) — ensure we use abbreviation
+  // State might be FIPS code (17) or abbreviation (IL) - ensure we use abbreviation
   const stateVal = subject.state?.length <= 2 && /^\d+$/.test(subject.state) ? 'IL' : (subject.state || 'IL');
   setText('State',                 stateVal);
   setText('Zip Code',              subject.zipCode);
@@ -337,7 +337,7 @@ export async function fillForm1004(caseIdOrData) {
   setCheck('Check Box3', occupantStr === 'Tenant');
   setCheck('Check Box4', occupantStr === 'Vacant');
 
-  // PUD — default No
+  // PUD - default No
   setCheck('Check Box5', false);
   setCheck('Check Box6', true);
 
@@ -531,7 +531,7 @@ export async function fillForm1004(caseIdOrData) {
     setMultiLine('If no Describe Line', adverseText, 3);
   }
 
-  // Conformity narrative  
+  // Conformity narrative
   const conformityText = sectionText(sections['functional_utility_conformity']) || '';
   if (conformityText) {
     setMultiLine('If Yes, Describe_1 Line', conformityText, 2);
@@ -557,7 +557,7 @@ export async function fillForm1004(caseIdOrData) {
     setText('analyze the contract for sale for the subject purchase transaction. Explain the results of the analysis of the contract for sale or why the analysis was not performed', contractText);
   }
 
-  // HBU narrative — goes in the "If no Describe_1" field (HBU as improved = present use)
+  // HBU narrative - goes in the "If no Describe_1" field (HBU as improved = present use)
 
   // ── SALES COMPARISON APPROACH ─────────────────────────────────────────────
   // Subject column
@@ -710,35 +710,35 @@ export async function fillForm1004(caseIdOrData) {
   // ── EXACT PDF FIELD NAME ADDITIONS ──────────────────────────────────────
   // Maps to the precise field names in Form 1004, including official typos.
 
-  // Subject — extra exact names
+  // Subject - extra exact names
   setText('Date of Inspection',   caseMeta.inspection_date || caseMeta.effective_date || '');
 
-  // Improvements — exterior material fields (missing from above)
+  // Improvements - exterior material fields (missing from above)
   setText('Exterior Description Gutters & Downspouts',  improvements.guttersDownspouts || '');
   setText('Exterior Description Window Type',           improvements.windowType        || '');
   setText('Exterior Description Storm Sash Insulated',  improvements.stormSash         || '');
   setText('Exterior Description Screens',               improvements.screens           || '');
   setText('Exterior Description Foundation Walls',      improvements.foundationWalls   || improvements.foundation || '');
 
-  // Improvements — interior material fields
+  // Improvements - interior material fields
   setText('Interior Floors',        interiorFloorsValue || '');
   setText('Interior Walls',         interiorWallsValue);
   setText('Interior Bath Floor',    interiorBathFloorValue);
   setText('Interior Tirm Finish',   interiorTrimValue);  // "Tirm" is the PDF typo
   setText('Interior Bath Wainscot', interiorBathWainscotValue);
 
-  // Improvements — heating fuel, car storage, driveway
+  // Improvements - heating fuel, car storage, driveway
   setText('Foundation Fuel',    heatingFuelValue);
   setText('Car Storage',        carStorageValue || improvements.garageType || '');
   setText('Driveway Surface',   drivewaySurfaceValue);
 
-  // Condition narrative — full 34 lines (PDF has many line fields)
+  // Condition narrative - full 34 lines (PDF has many line fields)
   const conditionTextFull = sectionText(sections['improvements_condition'])
     || sectionText(sections['condition'])
     || outputs.improvements_condition || '';
   setMultiLine('Describe the condition of the property Line', conditionTextFull, 34);
 
-  // Subject columns — exact field names for sales comparison grid header
+  // Subject columns - exact field names for sales comparison grid header
   const subjSP  = subject.salePrice || caseMeta.sale_price || '';
   const subjGLA = String(improvements.gla || subject.gla || '');
   setText('Subject Sale Price', subjSP);
@@ -749,12 +749,12 @@ export async function fillForm1004(caseIdOrData) {
   }
   setText('Feature and Subject', improvements.condition || subject.condition || '');
 
-  // Above Grade Room Count — subject (exact field names)
+  // Above Grade Room Count - subject (exact field names)
   setText('Above Grade Room Count Gross Living Area Total',      String(improvements.rooms     || subject.rooms     || ''));
   setText('Above Grade Room Count Gross Living Area Bedrooms',   String(improvements.bedrooms  || subject.bedrooms  || ''));
   setText('Above Grade Room Count Gross Living Area Bath rooms', String(improvements.bathrooms || subject.bathrooms || ''));
 
-  // Sales comparison — exact comp field names + above-grade counts per comp
+  // Sales comparison - exact comp field names + above-grade counts per comp
   for (let ci = 0; ci < Math.min(resolvedComps.length, 3); ci++) {
     const comp2 = resolvedComps[ci];
     const n2    = ci + 1;   // 1, 2, 3
@@ -772,7 +772,7 @@ export async function fillForm1004(caseIdOrData) {
     const cProx   = cdata.proximity || comp2.proximity   || '';
     const cSource = cdata.dataSource || comp2.source     || 'MLS';
 
-    // Address field — exact PDF name (no "Address" suffix)
+    // Address field - exact PDF name (no "Address" suffix)
     setText(`Comparable Sale ${n2}`,                          cAddr);
     setText(`Comparable Sale ${n2} Proximity to Subject`,     cProx);
 
@@ -789,7 +789,7 @@ export async function fillForm1004(caseIdOrData) {
     setText(`Comparable Sale ${n2} Data Sources`,         cSource);
     setText(`Comparable Sale ${n2} Verification Sources`, cSource);
 
-    // Above Grade Room Count — comp suffixes _1, _2, _3
+    // Above Grade Room Count - comp suffixes _1, _2, _3
     const compBedrooms2 = cdata.bedrooms ?? comp2.bedrooms;
     const compBathrooms2 = cdata.bathrooms ?? comp2.bathrooms;
     const compRoomsTotal2 = deriveRoomCount(cdata.rooms || comp2.rooms || '', compBedrooms2, compBathrooms2);
@@ -802,7 +802,7 @@ export async function fillForm1004(caseIdOrData) {
     setText(`Comparable Sale ${n2} Actual Age`,         String(cdata.yearBuilt || cdata.year_built || comp2.yearBuilt || comp2.year_built || ''));
   }
 
-  // Adjustment grid — description columns and adjustment amount columns
+  // Adjustment grid - description columns and adjustment amount columns
   // Subject description: "Description {Category}"
   // Comp n description:  "Description {Category}_n"   (n = 1, 2, 3)
   // Comp 1 adjustment:   "Adjustment {Category}"       (no suffix)
@@ -866,10 +866,10 @@ export async function fillForm1004(caseIdOrData) {
     }
   }
 
-  // Summary of Sales Comparison — up to 7 lines (exact field names)
+  // Summary of Sales Comparison - up to 7 lines (exact field names)
   setMultiLine('Summary of Sales Comparison Approach Line', salesComparisonSummaryText, 7);
 
-  // Reconciliation — exact field names
+  // Reconciliation - exact field names
   const scaIndicatedValue = recon.indicated_value_sales  || outputs.indicated_value_sales  || '';
   setText('Sales Comparison Approach',      scaIndicatedValue);
   setText('Cost Approach (if developed)',   recon.indicated_value_cost   || outputs.indicated_value_cost   || '');
@@ -879,7 +879,16 @@ export async function fillForm1004(caseIdOrData) {
   const effDate = facts.effectiveDate || subject.inspectionDate || new Date().toISOString().split('T')[0];
   setText('Effective Date of Appraisal',    effDate);
 
-  // Appraiser info — exact PDF field names
+  // Appraiser info - exact PDF field names
+  const lenderName2 = caseMeta.lender || caseMeta.lenderName || 'Client';
+  setText('Lender Client',          lenderName2);
+  setText('Lender Client Name',     lenderName2);
+  setText('Lender Company Name',    lenderName2);
+  setText('Address',                caseMeta.lenderAddress || '');
+  setText('Lender Client Company Address Line_1', caseMeta.lenderAddress || '');
+  setText('Lender Client Company Address Line 2', '');
+  setText('Lender Client Email Address', caseMeta.lenderEmail || '');
+
   setText('Name_1',   caseMeta.appraiser_name || 'Charles Cresci');
   setText('Company Name',
     caseMeta.company_name || 'Cresci Appraisal & Consulting Company');
@@ -903,7 +912,7 @@ export async function fillForm1004(caseIdOrData) {
     setText('analyze the contract for sale', caLines[0] || '');
   }
 
-  // Comments on Cost Approach — fields 1 through 7
+  // Comments on Cost Approach - fields 1 through 7
   const costCommentFull = sectionText(sections['cost_approach'])
     || outputs.cost_approach_comments || '';
   {
@@ -916,7 +925,7 @@ export async function fillForm1004(caseIdOrData) {
   log.info('pdf-filler:fields-set', { count: _setCount });
 
   // ── FINALIZE ──────────────────────────────────────────────────────────────
-  // Don't flatten — keep form editable so appraiser can make adjustments
+  // Don't flatten - keep form editable so appraiser can make adjustments
   // form.flatten();
 
   const filledBytes = await pdf.save();

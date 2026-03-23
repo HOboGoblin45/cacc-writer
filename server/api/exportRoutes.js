@@ -286,9 +286,17 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
 
     const address = (facts.subject?.address || caseId).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
 
+    // Load additional tables if needed
+    let adjustments = [];
+    let reconciliation = null;
+    try {
+      adjustments = dbAll('SELECT * FROM adjustment_support_records WHERE case_id = ?', [caseId]);
+      reconciliation = dbGet('SELECT * FROM reconciliation_support_records WHERE case_id = ?', [caseId]);
+    } catch { /* ok */ }
+
     // Pass comps from facts and any comp analysis data
     const comps = facts.comps || [];
-    const pdfBuffer = await fillForm1004({ facts, outputs: rawOutputs, sections, meta, caseId, comps });
+    const pdfBuffer = await fillForm1004({ facts, outputs: rawOutputs, sections, meta, caseId, comps, adjustments, reconciliation });
 
     const fileName = `1004_report_${address}.pdf`;
     res.set('Content-Type', 'application/pdf');
