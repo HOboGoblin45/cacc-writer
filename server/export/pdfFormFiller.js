@@ -232,6 +232,45 @@ export async function fillForm1004(caseIdOrData) {
     }
   }
 
+  function extractHeatingFuel(heating) {
+    if (!heating) return '';
+    const tokens = String(heating)
+      .split(/[,/]/)
+      .map(t => t.trim())
+      .filter(Boolean);
+    const fuels = ['gas', 'electric', 'oil', 'propane', 'geo', 'solar', 'wood'];
+    for (const token of tokens) {
+      const lower = token.toLowerCase();
+      const found = fuels.find(f => lower.includes(f));
+      if (found) {
+        return found.charAt(0).toUpperCase() + found.slice(1);
+      }
+    }
+    if (tokens.length > 1) return tokens[tokens.length - 1];
+    return tokens[0] || '';
+  }
+
+  function extractGarageCount(garageCars, garageText) {
+    if (garageCars !== undefined && garageCars !== null && garageCars !== '') {
+      return garageCars;
+    }
+    if (!garageText) return '';
+    const match = String(garageText).match(/(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  function deriveRoomCount(totalRooms, bedrooms, bathrooms) {
+    if (totalRooms) return totalRooms;
+    const bedNum = Number(bedrooms);
+    const bathNum = Number(bathrooms);
+    const hasBeds = !Number.isNaN(bedNum);
+    const hasBaths = !Number.isNaN(bathNum);
+    if (!hasBeds && !hasBaths) return '';
+    const safeBeds = hasBeds ? bedNum : 0;
+    const safeBaths = hasBaths ? bathNum : 0;
+    return String(safeBeds + safeBaths + (hasBeds || hasBaths ? 1 : 0));
+  }
+
   // ── Convenience shortcuts ─────────────────────────────────────────────────
   const subject        = facts.subject        || {};
   const neighborhood   = facts.neighborhood   || {};
@@ -239,6 +278,15 @@ export async function fillForm1004(caseIdOrData) {
   const improvements   = facts.improvements   || {};
   const publicRecords  = facts.publicRecords  || {};
   const caseMeta       = { ...meta, ...caseRecord };
+
+  const todayISO = new Date().toISOString().split('T')[0];
+  const effectiveDateForForm = caseMeta.effective_date || todayISO;
+  const inspectionDateForForm = caseMeta.inspection_date || todayISO;
+  const signatureDate = caseMeta.signature_date || todayISO;
+  const appraisalYear = Number(effectiveDateForForm?.slice?.(0, 4)) || 2026;
+  const propertyFullAddress = [subject.address, subject.city, subject.state, subject.zipCode]
+    .filter(Boolean)
+    .join(', ');
 
   // Resolve comps: prefer caseData.comps (DB rows), fall back to facts.comps (structured array)
   const resolvedComps = (comps && comps.length > 0) ? comps : (facts.comps || []);
@@ -267,7 +315,7 @@ export async function fillForm1004(caseIdOrData) {
   setText('Date of Contract',      subject.saleDate);
 
   // Effective date / inspection date
-  setText('Effective Date',        caseMeta.effective_date   || caseMeta.inspection_date);
+  setText('Effective Date',        effectiveDateForForm);
 
   // Property rights (Fee Simple / Leasehold)
   setText('Property Rights Appraised', subject.propertyRights || 'Fee Simple');
@@ -422,10 +470,21 @@ export async function fillForm1004(caseIdOrData) {
   setMultiLine('Site Comments Line', siteComments, 3);
 
   // ── IMPROVEMENTS SECTION ──────────────────────────────────────────────────
+  const heatingFuelValue = extractHeatingFuel(improvements.heating);
+  const carStorageValue  = extractGarageCount(improvements.garageCars, improvements.garage);
+  const drivewaySurfaceValue = improvements.drivewaySurface || 'Concrete';
+  const interiorFloorsValue = improvements.flooring || improvements.floors || '';
+  const interiorWallsValue = improvements.interiorWalls || 'Drywall';
+  const interiorBathFloorValue = improvements.bathFloor || 'Ceramic Tile';
+  const interiorTrimValue = improvements.trimFinish || 'Wood';
+  const interiorBathWainscotValue = improvements.bathWainscot || 'Tile';
+  const computedEffectiveAge = improvements.effectiveAge
+    || (improvements.yearBuilt ? Math.max(0, appraisalYear - Number(improvements.yearBuilt)) : '');
+
   setText('Of Stories',                                     improvements.stories);
   setText('Year Built',                                     improvements.yearBuilt);
   setText('Design Style',                                   improvements.design || improvements.style);
-  setText('Effective Age Yrs',                              improvements.effectiveAge);
+  setText('Effective Age Yrs',                              computedEffectiveAge);
   setText('Basement Area',                                  improvements.basementArea);
   setText('Basement Finish',                                improvements.basementFinishPercent);
   setText('Exterior Description Exterior Walls',            improvements.exteriorWalls);
@@ -451,7 +510,15 @@ export async function fillForm1004(caseIdOrData) {
   setText('Heating',             improvements.heating);
   setText('Cooling',             improvements.cooling);
   setText('Garage Carport',      improvements.garage);
-  setText('Garage Cars',         improvements.garageCars);
+  setText('Garage Cars',         carStorageValue);
+
+  const heatingLower = (improvements.heating || '').toLowerCase();
+  setCheck('15', /fwa|forced warm air|forced air/.test(heatingLower));
+  setCheck('16', /hwbb|hot water baseboard|baseboard/.test(heatingLower));
+  setCheck('17', /radiant/.test(heatingLower));
+
+  const coolingLower = (improvements.cooling || '').toLowerCase();
+  setCheck('20', /central/.test(coolingLower));
 
   // Adverse conditions narrative
   const adverseText = sectionText(sections['adverse_conditions']) || '';
@@ -469,10 +536,15 @@ export async function fillForm1004(caseIdOrData) {
   const scopeText = sectionText(sections['scope_of_work']) || '';
 
   // Prior sales narrative
-  const priorSalesText = sectionText(sections['prior_sales_subject']) || '';
-  if (priorSalesText) {
-    setMultiLine('Analysis of prior sale or transfer history of the subject property and comparable sales Line', priorSalesText, 5);
+  const priorSalesNarrative = sectionText(sections['prior_sales_subject'])
+    || sectionText(sections['prior_sale_analysis'])
+    || sectionText(sections['prior_transfers'])
+    || outputs.prior_sale_analysis
+    || '';
+  if (priorSalesNarrative) {
+    setMultiLine('Analysis of prior sale or transfer history of the subject property and comparable sales Line', priorSalesNarrative, 5);
   }
+  setText('Subject Date of Prior Sale/Transfer', subject.priorSaleDate || subject.lastSaleDate || 'N/A');
 
   // Contract analysis narrative
   const contractText = sectionText(sections['contract_analysis']) || '';
@@ -485,6 +557,7 @@ export async function fillForm1004(caseIdOrData) {
   // ── SALES COMPARISON APPROACH ─────────────────────────────────────────────
   // Subject column
   setText('Subject GLA',         improvements.gla);
+  setText('154',                 improvements.gla);
   setText('Subject Rooms',       improvements.rooms);
   setText('Subject Bedrooms',    improvements.bedrooms);
   setText('Subject Baths',       improvements.bathrooms);
@@ -529,9 +602,13 @@ export async function fillForm1004(caseIdOrData) {
     setText(`Comparable Sale ${n} Quality of Construction`, data.quality     || '');
     setText(`Comparable Sale ${n} Actual Age`,            data.yearBuilt     || comp.year_built    || '');
     setText(`Comparable Sale ${n} Condition`,             data.condition     || '');
-    setText(`Comparable Sale ${n} Above Grade Room Count Rooms`, data.rooms  || '');
-    setText(`Comparable Sale ${n} Above Grade Room Count Bedrooms`, data.bedrooms || comp.bedrooms || '');
-    setText(`Comparable Sale ${n} Above Grade Room Count Baths`, data.bathrooms  || comp.bathrooms || '');
+
+    const compBedrooms = data.bedrooms ?? comp.bedrooms;
+    const compBathrooms = data.bathrooms ?? comp.bathrooms;
+    const compRoomsTotal = deriveRoomCount(data.rooms || comp.rooms || '', compBedrooms, compBathrooms);
+    setText(`Comparable Sale ${n} Above Grade Room Count Rooms`, compRoomsTotal);
+    setText(`Comparable Sale ${n} Above Grade Room Count Bedrooms`, compBedrooms);
+    setText(`Comparable Sale ${n} Above Grade Room Count Baths`, compBathrooms);
     setText(`Comparable Sale ${n} Gross Living Area`,     data.gla           || comp.gla           || '');
     setText(`Comparable Sale ${n} Basement & Finished Rooms Below Grade`, data.basementArea || '');
     setText(`Comparable Sale ${n} Functional Utility`,    data.functionalUtility || '');
@@ -561,17 +638,23 @@ export async function fillForm1004(caseIdOrData) {
   }
 
   // Sales Comparison narrative comments
-  const scComments = sectionText(sections['sales_comparison'])
+  const salesComparisonSummaryText = sectionText(sections['sca_summary'])
+    || sectionText(sections['sales_comparison_commentary'])
+    || sectionText(sections['sales_comparison'])
     || sectionText(sections['comp_analysis'])
-    || outputs.sales_comparison_comments || '';
-  setMultiLine('Summary of Sales Comparison Approach Line', scComments, 7);
+    || outputs.sales_comparison_comments
+    || '';
+  setMultiLine('Summary of Sales Comparison Approach Line', salesComparisonSummaryText, 7);
 
   // ── RECONCILIATION ────────────────────────────────────────────────────────
   const recon = reconciliation || {};
   const reconOutputs = outputs.reconciliation || {};
 
-  setText('Indicated Value by Sales Comparison Approach',
-    recon.indicated_value_sales || reconOutputs.indicatedValueSales || outputs.indicated_value_sales || '');
+  const indicatedSalesValue = recon.indicated_value_sales
+    || reconOutputs.indicatedValueSales
+    || outputs.indicated_value_sales
+    || '';
+  setText('Indicated Value by Sales Comparison Approach', indicatedSalesValue);
   setText('Indicated Value by Cost Approach',
     recon.indicated_value_cost  || reconOutputs.indicatedValueCost  || outputs.indicated_value_cost  || '');
   setText('Indicated Value by Income Approach',
@@ -587,11 +670,8 @@ export async function fillForm1004(caseIdOrData) {
   setText('Final Reconciled Value', finalValue);
 
   // Effective date
-  const effDate = recon.effective_date
-    || caseMeta.effective_date
-    || caseMeta.inspection_date
-    || '';
-  setText('Effective Date of Appraisal', effDate);
+  const reconciliationEffectiveDate = recon.effective_date || effectiveDateForForm;
+  setText('Effective Date of Appraisal', reconciliationEffectiveDate);
 
   // Reconciliation narrative
   const reconText = sectionText(sections['reconciliation'])
@@ -636,16 +716,16 @@ export async function fillForm1004(caseIdOrData) {
   setText('Exterior Description Foundation Walls',      improvements.foundationWalls   || improvements.foundation || '');
 
   // Improvements — interior material fields
-  setText('Interior Floors',        improvements.floors        || '');
-  setText('Interior Walls',         improvements.interiorWalls || '');
-  setText('Interior Bath Floor',    improvements.bathFloor     || '');
-  setText('Interior Tirm Finish',   improvements.trimFinish    || '');  // "Tirm" is the PDF typo
-  setText('Interior Bath Wainscot', improvements.bathWainscot  || '');
+  setText('Interior Floors',        interiorFloorsValue || '');
+  setText('Interior Walls',         interiorWallsValue);
+  setText('Interior Bath Floor',    interiorBathFloorValue);
+  setText('Interior Tirm Finish',   interiorTrimValue);  // "Tirm" is the PDF typo
+  setText('Interior Bath Wainscot', interiorBathWainscotValue);
 
   // Improvements — heating fuel, car storage, driveway
-  setText('Foundation Fuel',    improvements.heatingFuel     || improvements.fuel           || '');
-  setText('Car Storage',        improvements.carStorage      || improvements.garageType     || '');
-  setText('Driveway Surface',   improvements.drivewaySurface || '');
+  setText('Foundation Fuel',    heatingFuelValue);
+  setText('Car Storage',        carStorageValue || improvements.garageType || '');
+  setText('Driveway Surface',   drivewaySurfaceValue);
 
   // Condition narrative — full 34 lines (PDF has many line fields)
   const conditionTextFull = sectionText(sections['improvements_condition'])
@@ -705,9 +785,12 @@ export async function fillForm1004(caseIdOrData) {
     setText(`Comparable Sale ${n2} Verification Sources`, cSource);
 
     // Above Grade Room Count — comp suffixes _1, _2, _3
-    setText(`Above Grade Room Count Gross Living Area Total_${n2}`,      String(cdata.rooms     || comp2.rooms     || ''));
-    setText(`Above Grade Room Count Gross Living Area Bedrooms_${n2}`,   String(cdata.bedrooms  || comp2.bedrooms  || ''));
-    setText(`Above Grade Room Count Gross Living Area Bath rooms_${n2}`, String(cdata.bathrooms || comp2.bathrooms || ''));
+    const compBedrooms2 = cdata.bedrooms ?? comp2.bedrooms;
+    const compBathrooms2 = cdata.bathrooms ?? comp2.bathrooms;
+    const compRoomsTotal2 = deriveRoomCount(cdata.rooms || comp2.rooms || '', compBedrooms2, compBathrooms2);
+    setText(`Above Grade Room Count Gross Living Area Total_${n2}`,      compRoomsTotal2);
+    setText(`Above Grade Room Count Gross Living Area Bedrooms_${n2}`,   compBedrooms2);
+    setText(`Above Grade Room Count Gross Living Area Bath rooms_${n2}`, compBathrooms2);
 
     // Also fill GLA, year built for facts.comps fields
     setText(`Comparable Sale ${n2} Gross Living Area`,  String(cGLA));
@@ -748,7 +831,7 @@ export async function fillForm1004(caseIdOrData) {
 
       const compDescVals = {
         sale_financing: '',
-        date_of_sale:   '',
+        date_of_sale:   cdata3.saleDate || cdata3.sale_date || comp3.sale_date || '',
         location:       cdata3.locationRating || cdata3.location || '',
         leasehold:      cdata3.propertyRights || 'Fee Simple',
         site:           String(cdata3.lotSize || comp3.lot_size || ''),
@@ -772,10 +855,7 @@ export async function fillForm1004(caseIdOrData) {
   }
 
   // Summary of Sales Comparison — up to 7 lines (exact field names)
-  const scTextFull = sectionText(sections['sales_comparison'])
-    || sectionText(sections['comp_analysis'])
-    || outputs.sales_comparison_comments || '';
-  setMultiLine('Summary of Sales Comparison Approach Line', scTextFull, 7);
+  setMultiLine('Summary of Sales Comparison Approach Line', salesComparisonSummaryText, 7);
 
   // Reconciliation — exact field names
   const scaIndicatedValue = recon.indicated_value_sales  || outputs.indicated_value_sales  || '';
@@ -800,17 +880,6 @@ export async function fillForm1004(caseIdOrData) {
     caseMeta.signature_date || caseMeta.effective_date || '');
   setText('Expiration date of Certification or License',
     caseMeta.license_expiration || '');
-
-  // Analysis of prior sale or transfer history — lines 1–5
-  const priorSaleText = sectionText(sections['prior_sale_analysis'])
-    || sectionText(sections['prior_transfers'])
-    || outputs.prior_sale_analysis || '';
-  {
-    const psLines = splitLines(priorSaleText);
-    for (let i = 0; i < Math.min(psLines.length, 5); i++) {
-      setText(`Analysis of prior sale or transfer history of the subject property Line_${i + 1}`, psLines[i]);
-    }
-  }
 
   // Contract analysis narrative
   const contractAnalysisText = sectionText(sections['contract_analysis'])
