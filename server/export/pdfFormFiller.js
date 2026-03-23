@@ -59,7 +59,8 @@ function splitLines(text, charsPerLine = CHARS_PER_LINE) {
  */
 function sectionText(section) {
   if (!section) return '';
-  return section.final_text || section.reviewed_text || section.draft_text || '';
+  if (typeof section === 'string') return section;
+  return section.text || section.final_text || section.reviewed_text || section.draft_text || '';
 }
 
 /**
