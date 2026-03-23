@@ -267,15 +267,37 @@ router.get('/cases/:caseId/export/download/:format', async (req, res) => {
 router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
   const { caseId } = req.params;
   try {
-    // Load case record to get the address for the filename
-    const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
-    if (!caseRecord) return res.status(404).json({ ok: false, error: 'Case not found' });
+    // Use the same data loading approach as the main case API
+    const { readJSON } = await import('../utils/fileUtils.js');
+    const { casePath: getCasePath } = await import('../utils/caseUtils.js');
+    const caseDir = getCasePath(caseId);
 
-    const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [caseId]);
-    const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
+    // Load facts from file
+    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    // Load outputs from file
+    let outputs = readJSON(path.join(caseDir, 'outputs.json'), {});
+    // Also try DB if file outputs empty
+    if (Object.keys(outputs).filter(k => k !== 'updatedAt').length === 0) {
+      try {
+        const row = dbGet('SELECT * FROM case_records WHERE caseId = ?', [caseId]);
+        if (row?.outputs) outputs = typeof row.outputs === 'string' ? JSON.parse(row.outputs) : row.outputs;
+      } catch {}
+    }
+    // Load meta
+    const meta = readJSON(path.join(caseDir, 'meta.json'), {});
+
+    // Extract text from outputs (handle {text: "..."} objects)
+    const sections = {};
+    for (const [k, v] of Object.entries(outputs)) {
+      if (k === 'updatedAt') continue;
+      const text = typeof v === 'string' ? v : (v?.text || '');
+      if (text) sections[k] = { section_id: k, draft_text: text, final_text: text, text };
+    }
+
     const address = (facts.subject?.address || caseId).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
 
-    const pdfBuffer = await fillForm1004(caseId);
+    // Fill the PDF using the loaded data
+    const pdfBuffer = await fillForm1004({ facts, outputs, sections, meta, caseId });
 
     const fileName = `1004_report_${address}.pdf`;
     res.set('Content-Type', 'application/pdf');
@@ -284,7 +306,7 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
 
     log.info('export:pdf-form-completed', { caseId, fileName });
   } catch (err) {
-    log.error('export:pdf-form-failed', { caseId, error: err.message });
+    log.error('export:pdf-form-failed', { caseId, error: err.message, stack: err.stack?.split('\n')[1] });
     if (!res.headersSent) res.status(500).json({ ok: false, error: err.message });
   }
 });
