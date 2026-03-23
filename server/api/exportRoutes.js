@@ -1,14 +1,14 @@
-/**
+﻿/**
  * server/api/exportRoutes.js
- * ─────────────────────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Export API routes: MISMO XML, UAD 3.6, PDF, ZIP bundle.
  * 
  * Routes:
- *   POST /cases/:caseId/export/mismo    — MISMO 2.6/3.4 XML export
- *   POST /cases/:caseId/export/uad36    — UAD 3.6 / MISMO 3.6 XML export
- *   POST /cases/:caseId/export/pdf      — PDF export
- *   POST /cases/:caseId/export/bundle   — ZIP bundle (XML + PDF + photos)
- *   GET  /cases/:caseId/export/preview  — Preview export metadata
+ *   POST /cases/:caseId/export/mismo    â€” MISMO 2.6/3.4 XML export
+ *   POST /cases/:caseId/export/uad36    â€” UAD 3.6 / MISMO 3.6 XML export
+ *   POST /cases/:caseId/export/pdf      â€” PDF export
+ *   POST /cases/:caseId/export/bundle   â€” ZIP bundle (XML + PDF + photos)
+ *   GET  /cases/:caseId/export/preview  â€” Preview export metadata
  */
 
 import { Router } from 'express';
@@ -71,7 +71,7 @@ function loadCaseForExport(caseId) {
   return { caseRecord, facts, sections: sectionMap, comps, adjustments, reconciliation };
 }
 
-// ── POST /cases/:caseId/export/mismo ─────────────────────────────────────────
+// â”€â”€ POST /cases/:caseId/export/mismo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 router.post('/cases/:caseId/export/mismo', async (req, res) => {
   try {
@@ -87,7 +87,7 @@ router.post('/cases/:caseId/export/mismo', async (req, res) => {
   }
 });
 
-// ── POST /cases/:caseId/export/uad36 ────────────────────────────────────────
+// â”€â”€ POST /cases/:caseId/export/uad36 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 router.post('/cases/:caseId/export/uad36', async (req, res) => {
   try {
@@ -112,7 +112,7 @@ router.post('/cases/:caseId/export/uad36', async (req, res) => {
   }
 });
 
-// ── POST /cases/:caseId/export/pdf ──────────────────────────────────────────
+// â”€â”€ POST /cases/:caseId/export/pdf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 router.post('/cases/:caseId/export/pdf', async (req, res) => {
   try {
@@ -129,7 +129,7 @@ router.post('/cases/:caseId/export/pdf', async (req, res) => {
   }
 });
 
-// ── POST /cases/:caseId/export/bundle ────────────────────────────────────────
+// â”€â”€ POST /cases/:caseId/export/bundle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // UAD 3.6 delivery format: ZIP containing XML + PDF + photos
 
 router.post('/cases/:caseId/export/bundle', async (req, res) => {
@@ -205,7 +205,7 @@ router.post('/cases/:caseId/export/bundle', async (req, res) => {
   }
 });
 
-// ── GET /cases/:caseId/export/download/:format ────────────────────────────────
+// â”€â”€ GET /cases/:caseId/export/download/:format â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Download a previously generated export or generate on the fly.
 // Formats: mismo, uad36, pdf, bundle
 
@@ -261,7 +261,7 @@ router.get('/cases/:caseId/export/download/:format', async (req, res) => {
   }
 });
 
-// ── GET /cases/:caseId/export/pdf-form ────────────────────────────────────────
+// â”€â”€ GET /cases/:caseId/export/pdf-form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Generate a filled Fannie Mae Form 1004 PDF using the official fillable template.
 
 router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
@@ -312,7 +312,7 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
   }
 });
 
-// ── GET /cases/:caseId/export/preview ────────────────────────────────────────
+// â”€â”€ GET /cases/:caseId/export/preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 router.get('/cases/:caseId/export/preview', async (req, res) => {
   try {
@@ -356,4 +356,29 @@ router.get('/cases/:caseId/export/preview', async (req, res) => {
   }
 });
 
+
+// DEBUG endpoint
+router.get('/cases/:caseId/export/pdf-debug', async (req, res) => {
+  const { caseId } = req.params;
+  try {
+    const { readJSON } = await import('../utils/fileUtils.js');
+    const { casePath: getCasePath } = await import('../utils/caseUtils.js');
+    const caseDir = getCasePath(caseId);
+    const facts = readJSON(path.join(caseDir, 'facts.json'), {});
+    let outputs = readJSON(path.join(caseDir, 'outputs.json'), {});
+    const meta = readJSON(path.join(caseDir, 'meta.json'), {});
+    let dbRow = null;
+    try { dbRow = dbGet('SELECT * FROM case_records WHERE caseId = ?', [caseId]); } catch(e) { dbRow = {err: e.message}; }
+    res.json({
+      caseDir,
+      factsSubject: facts?.subject?.address || 'NONE',
+      fileOutputKeys: Object.keys(outputs).filter(k => k !== 'updatedAt'),
+      fileOutputSample: outputs.neighborhood_description ? typeof outputs.neighborhood_description + ':' + String(outputs.neighborhood_description).substring(0,50) : 'EMPTY',
+      metaBorrower: meta?.borrower,
+      dbColumns: dbRow ? Object.keys(dbRow) : 'NO_ROW',
+      dbOutputsType: dbRow?.outputs ? typeof dbRow.outputs : 'NONE',
+      dbOutputsSample: dbRow?.outputs ? String(dbRow.outputs).substring(0,100) : 'NONE',
+    });
+  } catch(e) { res.status(500).json({error: e.message}); }
+});
 export default router;
