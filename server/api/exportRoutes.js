@@ -15,6 +15,7 @@ import { Router } from 'express';
 import { generateMismo, validateMismoOutput } from '../export/mismoExportService.js';
 import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.js';
 import { renderPdf } from '../export/pdfRenderer.js';
+import { fillForm1004 } from '../export/pdfFormFiller.js';
 import { dbGet, dbAll } from '../db/database.js';
 import log from '../logger.js';
 import archiver from 'archiver';
@@ -256,6 +257,34 @@ router.get('/cases/:caseId/export/download/:format', async (req, res) => {
     }
   } catch (err) {
     log.error('export:download-failed', { caseId, format, error: err.message });
+    if (!res.headersSent) res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── GET /cases/:caseId/export/pdf-form ────────────────────────────────────────
+// Generate a filled Fannie Mae Form 1004 PDF using the official fillable template.
+
+router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
+  const { caseId } = req.params;
+  try {
+    // Load case record to get the address for the filename
+    const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
+    if (!caseRecord) return res.status(404).json({ ok: false, error: 'Case not found' });
+
+    const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [caseId]);
+    const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
+    const address = (facts.subject?.address || caseId).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
+
+    const pdfBuffer = await fillForm1004(caseId);
+
+    const fileName = `1004_report_${address}.pdf`;
+    res.set('Content-Type', 'application/pdf');
+    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
+
+    log.info('export:pdf-form-completed', { caseId, fileName });
+  } catch (err) {
+    log.error('export:pdf-form-failed', { caseId, error: err.message });
     if (!res.headersSent) res.status(500).json({ ok: false, error: err.message });
   }
 });
