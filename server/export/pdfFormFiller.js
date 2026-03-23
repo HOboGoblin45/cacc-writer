@@ -287,6 +287,11 @@ export async function fillForm1004(caseIdOrData) {
   const propertyFullAddress = [subject.address, subject.city, subject.state, subject.zipCode]
     .filter(Boolean)
     .join(', ');
+  const lenderClientName = caseMeta.lender || caseMeta.lender_name || caseMeta.client_name || '';
+  const APPRAISER_NAME = 'Charles Cresci';
+  const APPRAISER_COMPANY = 'Cresci Appraisal & Consulting Company';
+  const APPRAISER_ADDRESS_LINE1 = 'Normal, IL 61761';
+  const APPRAISER_EMAIL = 'charles@cresciappraisal.com';
 
   // Resolve comps: prefer caseData.comps (DB rows), fall back to facts.comps (structured array)
   const resolvedComps = (comps && comps.length > 0) ? comps : (facts.comps || []);
@@ -680,13 +685,13 @@ export async function fillForm1004(caseIdOrData) {
   setMultiLine('Reconciliation comments Line', reconText, 5);
 
   // ── APPRAISER INFO ────────────────────────────────────────────────────────
-  setText('Appraiser Name',       caseMeta.appraiser_name);
-  setText('Company Name',         caseMeta.company_name    || 'Cresci Appraisal & Consulting Company');
-  setText('Company Address',      caseMeta.company_address);
-  setText('Telephone Number',     caseMeta.appraiser_phone);
-  setText('Email Address',        caseMeta.appraiser_email);
-  setText('State Certification',  caseMeta.license_number);
-  setText('State',                caseMeta.license_state   || caseMeta.state);
+  setText('Appraiser Name',       APPRAISER_NAME);
+  setText('Company Name',         APPRAISER_COMPANY);
+  setText('Company Address',      APPRAISER_ADDRESS_LINE1);
+  setText('Telephone Number',     '');
+  setText('Email Address',        APPRAISER_EMAIL);
+  setText('State Certification',  '');
+  setText('State',                'IL');
   setText('Expiration Date of Certification or License', caseMeta.license_expiration);
   setText('Supervisory Appraiser Name', caseMeta.supervisory_appraiser);
   setText('Supervisory Appraiser State', caseMeta.supervisory_state);
@@ -841,7 +846,14 @@ export async function fillForm1004(caseIdOrData) {
         age:            String(cdata3.yearBuilt || comp3.year_built || ''),
         condition:      cdata3.condition || '',
       };
-      setText(`Description ${cat.base}_${n3}`, compDescVals[cat.key] || '');
+      const descValue = compDescVals[cat.key] || '';
+      if (cat.key === 'condition') {
+        const conditionSuffixMap = ['_2', '_3', '_4'];
+        const conditionSuffix = conditionSuffixMap[n3 - 1] || `_${n3}`;
+        setText(`Description Condition${conditionSuffix}`, descValue);
+      } else {
+        setText(`Description ${cat.base}_${n3}`, descValue);
+      }
 
       // Adjustment amounts: comp1 = no suffix, comp2 = _1, comp3 = _2
       const adjSuffix3 = n3 === 1 ? '' : `_${n3 - 1}`;
@@ -864,6 +876,7 @@ export async function fillForm1004(caseIdOrData) {
   setText('Income Approach (if developed)', recon.indicated_value_income || outputs.indicated_value_income || '');
   setText('Appraised value of subject property', finalValue);
   setText('Market Value',                   finalValue);
+  const effDate = facts.effectiveDate || subject.inspectionDate || new Date().toISOString().split('T')[0];
   setText('Effective Date of Appraisal',    effDate);
 
   // Appraiser info — exact PDF field names
