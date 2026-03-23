@@ -889,6 +889,29 @@ export async function fillForm1004(caseIdOrData) {
   setText('Lender Client Company Address Line 2', '');
   setText('Lender Client Email Address', caseMeta.lenderEmail || '');
 
+  // Add all the other standard Radio Groups
+  const tType = String(caseMeta.formType || caseMeta.transactionType).toLowerCase();
+  setRadio('Group_4', tType.includes('refi') ? 'Refinance Transaction' : 'Purchase Transaction');
+  setRadio('Group_5', 'No'); // Property currently offered for sale (default No unless specified)
+  setRadio('Group_6', contractText ? 'did' : 'did not'); // Analyze contract
+  setRadio('Group_15', 'Legal'); // Zoning compliance
+  setRadio('Group_17', 'Yes'); // Highest and best use as improved
+  setRadio('Group_18', 'Public'); // Water
+  setRadio('Group_19', 'Public'); // Sewer
+  setRadio('Group_20', 'Public'); // Gas
+  setRadio('Group_21', 'Public'); // Electric
+  setRadio('Group_24', 'Yes'); // Is the property located in a FEMA Special Flood Hazard Area?
+  setRadio('Group_25', 'No'); // Are there any adverse site conditions?
+  setRadio('Group_26', 'No'); // Are there any adverse environmental conditions?
+  setRadio('Group_27', 'One'); // One unit vs accessory
+  setRadio('Group_28', String(improvements.design).toLowerCase().includes('attached') ? 'Attached' : 'Detached'); // Attached/Detached
+  setRadio('Group_31', String(improvements.foundation).includes('Slab') ? 'Concrete Slab' : String(improvements.foundation).includes('Crawl') ? 'Crawl Space' : 'Full Basement');
+  setRadio('Group_35', String(improvements.heating).includes('HWBB') ? 'HWBB' : 'FWA');
+  setRadio('Group_36', String(improvements.cooling).includes('Central') ? 'Central Air Conditioning' : 'Other');
+  setRadio('Group_38', 'Driveway'); // Driveway surface
+  setRadio('Group_39', String(improvements.garage).toLowerCase().includes('detach') ? 'Detached' : 'Attached'); // Garage style
+  setRadio('Group_41', 'No'); // Are there any physical deficiencies?
+
   setText('Name_1',   caseMeta.appraiser_name || 'Charles Cresci');
   setText('Company Name',
     caseMeta.company_name || 'Cresci Appraisal & Consulting Company');
