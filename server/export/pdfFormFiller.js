@@ -170,7 +170,7 @@ export async function fillForm1004(caseIdOrData) {
     ? loadCaseForForm(caseIdOrData)
     : caseIdOrData;
 
-  const { caseRecord, facts, outputs, sections, comps, adjustments, reconciliation } = caseData;
+  const { caseRecord = {}, facts = {}, outputs = {}, sections = {}, comps = [], adjustments = [], reconciliation = null, meta = {} } = caseData;
 
   // Load template
   const templateBytes = readFileSync(TEMPLATE_PATH);

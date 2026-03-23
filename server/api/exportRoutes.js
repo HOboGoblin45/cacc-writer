@@ -279,7 +279,8 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
     // Also try DB if file outputs empty
     if (Object.keys(outputs).filter(k => k !== 'updatedAt').length === 0) {
       try {
-        const row = dbGet('SELECT * FROM case_records WHERE caseId = ?', [caseId]);
+        const row = dbGet('SELECT * FROM case_records WHERE caseId = ?', [caseId])
+                 || dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
         if (row?.outputs) outputs = typeof row.outputs === 'string' ? JSON.parse(row.outputs) : row.outputs;
       } catch {}
     }
