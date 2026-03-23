@@ -490,10 +490,14 @@ export async function fillForm1004(caseIdOrData) {
   setText('Year Built',                                     improvements.yearBuilt);
   setText('Design Style',                                   improvements.design || improvements.style);
   setText('Effective Age Yrs',                              computedEffectiveAge);
-  setText('Basement Area',                                  improvements.basementArea);
-  setText('Basement Finish',                                improvements.basementFinishPercent);
-  setText('Exterior Description Exterior Walls',            improvements.exteriorWalls);
-  setText('Exterior Description Roof Surface',              improvements.roofSurface);
+  setText('Basement Area',                                  improvements.basementArea || 'Full');
+  setText('Basement Finish',                                improvements.basementFinishPercent || 'Part. Finished');
+  setText('Exterior Description Exterior Walls',            improvements.exteriorWalls || 'Vinyl');
+  setText('Exterior Description Roof Surface',              improvements.roofSurface || 'Asphalt Shingle');
+  setText('Exterior Description Gutters & Downspouts',      'Aluminum');
+  setText('Exterior Description Window Type',               'Double Hung');
+  setText('Exterior Description Storm Sash Insulated',      'Insul.');
+  setText('Exterior Description Screens',                   'Yes');
   setText('Rooms',                                          improvements.rooms);
   setText('Bedrooms',                                       improvements.bedrooms);
   setText('Baths',                                          improvements.bathrooms);
