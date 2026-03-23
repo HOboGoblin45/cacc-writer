@@ -10,7 +10,7 @@
     "start:electron": "electron .",
     "package:electron": "electron-forge package --config desktop/forge.config.cjs",
     "make": "electron-forge make --config desktop/forge.config.cjs",
-    "test": "node _test_smoke.mjs",
+    "test": "node --test tests/*.test.mjs",
     "test:smoke": "node _test_smoke.mjs",
     "test:upload": "node _test_upload.mjs",
     "test:desktop": "node _test_desktop_endpoints.mjs",
