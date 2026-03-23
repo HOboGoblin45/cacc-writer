@@ -751,7 +751,7 @@ export async function fillForm1004(caseIdOrData) {
     const glaNum2 = parseFloat(String(subjGLA).replace(/[^0-9.]/g, ''));
     if (spNum2 && glaNum2) setText('Subject Sale Price/Gross Liv.Area $', String(Math.round(spNum2 / glaNum2)));
   }
-  setText('Feature and Subject', improvements.condition || subject.condition || '');
+  setText('Feature and Subject', subject.address || '');
 
   // Above Grade Room Count - subject (exact field names)
   setText('Above Grade Room Count Gross Living Area Total',      String(improvements.rooms     || subject.rooms     || ''));
