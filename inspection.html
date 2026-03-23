@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CACC Inspect">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#001A0F">
   <title>Appraisal Agent — Inspection</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -15,7 +15,7 @@
       theme: {
         extend: {
           colors: {
-            brand: { DEFAULT: '#6366f1', dark: '#4f46e5', light: '#818cf8' }
+            brand: { DEFAULT: '#004526', dark: '#003520', light: '#00A86B' }
           }
         }
       }
@@ -23,29 +23,29 @@
   </script>
   <style>
     * { -webkit-tap-highlight-color: transparent; }
-    body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #001A0F; color: #F5F5F7; font-family: system-ui, -apple-system, sans-serif; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
     .nav-btn { min-height: 56px; transition: color 0.15s, border-color 0.15s; }
-    .nav-btn.active { color: #818cf8; border-top: 2px solid #818cf8; }
+    .nav-btn.active { color: #00A86B; border-top: 2px solid #00A86B; }
     .photo-card { cursor: pointer; transition: background 0.15s, transform 0.1s; }
     .photo-card:active { transform: scale(0.97); }
     .chip-btn { min-height: 40px; min-width: 40px; transition: background 0.15s; user-select: none; }
-    .chip-btn.selected { background: #6366f1; color: #fff; }
+    .chip-btn.selected { background: #004526; color: #fff; }
     input[type=file] { display: none; }
     .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
     .thumb-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .status-dot.online { background: #22c55e; }
-    .status-dot.offline { background: #f59e0b; }
+    .status-dot.online { background: #00A86B; }
+    .status-dot.offline { background: #E3B341; }
     .fade-in { animation: fadeIn 0.2s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .measurement-row { display: grid; grid-template-columns: 1fr 80px 80px 80px 40px; gap: 6px; align-items: center; }
     .save-flash { animation: flash 0.5s; }
     @keyframes flash { 0% { background: rgba(99,102,241,0.3); } 100% { background: transparent; } }
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #1e293b; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    ::-webkit-scrollbar-track { background: #002916; }
+    ::-webkit-scrollbar-thumb { background: #1A4D33; border-radius: 2px; }
   </style>
 </head>
 <body class="min-h-screen pb-20">

@@ -35,10 +35,10 @@
       theme: {
         extend: {
           colors: {
-            "background": "#0d1117",
-            "surface": "#0d1117",
+            "background": "#001A0F",
+            "surface": "#001A0F",
             "surface-container": "#21262d",
-            "surface-container-low": "#161b22",
+            "surface-container-low": "#002916",
             "surface-container-high": "#30363d",
             "surface-container-highest": "#31353c",
             "on-surface": "#f0f6fc",
@@ -46,9 +46,9 @@
             "outline": "#484f58",
             "outline-variant": "#30363d",
             "primary": "#ffd341",
-            "primary-container": "#e2b714",
+            "primary-container": "#00A86B",
             "on-primary": "#3c2f00",
-            "muted-text": "#8b949e",
+            "muted-text": "#8B9F94",
             "tertiary": "#f6d650",
           },
           fontFamily: {
@@ -62,7 +62,7 @@
 
   <style>
     body {
-      background-color: #0d1117;
+      background-color: #001A0F;
       color: #f0f6fc;
       font-family: 'Inter', sans-serif;
     }
@@ -70,7 +70,7 @@
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
     .aureate-gradient {
-      background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+      background: linear-gradient(135deg, #00A86B 0%, #ffd341 100%);
     }
     .nav-blur {
       backdrop-filter: blur(12px);
@@ -78,13 +78,13 @@
       border-bottom: 1px solid rgba(240, 246, 252, 0.08);
     }
     .demo-card {
-      background: #161b22;
+      background: #002916;
       border: 1px solid #30363d;
       border-radius: 12px;
       transition: border-color 0.2s;
     }
     .demo-card:hover {
-      border-color: rgba(226, 183, 20, 0.3);
+      border-color: rgba(0, 168, 107, 0.3);
     }
     .spinner {
       border: 3px solid rgba(255, 211, 65, 0.15);
@@ -99,7 +99,7 @@
       to { transform: rotate(360deg); }
     }
     .result-card {
-      background: #161b22;
+      background: #002916;
       border: 1px solid #30363d;
       border-radius: 12px;
       padding: 1.5rem;
@@ -113,7 +113,7 @@
       font-size: 0.65rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #8b949e;
+      color: #8B9F94;
       font-weight: 700;
     }
     input, select {
@@ -127,7 +127,7 @@
       outline: none !important;
     }
     input::placeholder {
-      color: #8b949e !important;
+      color: #8B9F94 !important;
     }
     .locked-badge {
       background: rgba(255,211,65,0.12);
@@ -139,14 +139,14 @@
       font-weight: 600;
     }
     .cta-banner {
-      background: linear-gradient(135deg, rgba(226,183,20,0.12) 0%, rgba(255,211,65,0.06) 100%);
-      border: 1px solid rgba(226,183,20,0.25);
+      background: linear-gradient(135deg, rgba(0, 168, 107, 0.12) 0%, rgba(255,211,65,0.06) 100%);
+      border: 1px solid rgba(0, 168, 107, 0.25);
       border-radius: 16px;
     }
     .copy-btn {
       background: rgba(255,255,255,0.05);
       border: 1px solid #30363d;
-      color: #8b949e;
+      color: #8B9F94;
       font-size: 0.75rem;
       padding: 4px 10px;
       border-radius: 6px;
@@ -165,7 +165,7 @@
       color: #4ade80;
     }
     .generate-btn {
-      background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%);
+      background: linear-gradient(135deg, #00A86B 0%, #ffd341 100%);
       color: #111;
       font-weight: 900;
       font-size: 1.1rem;
@@ -174,10 +174,10 @@
       border: none;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 0 0 rgba(226,183,20,0);
+      box-shadow: 0 0 0 rgba(0, 168, 107, 0);
     }
     .generate-btn:hover:not(:disabled) {
-      box-shadow: 0 0 30px rgba(226,183,20,0.3);
+      box-shadow: 0 0 30px rgba(0, 168, 107, 0.3);
       transform: translateY(-1px);
     }
     .generate-btn:disabled {
@@ -190,15 +190,15 @@
 <body>
 
 <!-- Nav -->
-<nav class="fixed top-0 w-full z-50 bg-[#0d1117]/70 nav-blur">
+<nav class="fixed top-0 w-full z-50 bg-[#001A0F]/70 nav-blur">
   <div class="flex justify-between items-center max-w-6xl mx-auto px-6 h-16">
     <a href="/" class="text-xl font-bold tracking-tight text-on-surface flex items-center gap-2">
-      <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#111] text-xs font-black">AA</span>
+      <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#F5F5F7] text-xs font-black">AA</span>
       Appraisal Agent
     </a>
     <div class="flex items-center gap-3">
       <a href="/login.html" class="px-4 py-2 text-muted-text text-sm font-medium hover:text-on-surface transition-colors">Login</a>
-      <a href="/login.html" class="px-5 py-2 aureate-gradient text-[#111] font-bold text-sm rounded-full hover:opacity-90 transition-all">Start Free Trial</a>
+      <a href="/login.html" class="px-5 py-2 aureate-gradient text-[#F5F5F7] font-bold text-sm rounded-full hover:opacity-90 transition-all">Start Free Trial</a>
     </div>
   </div>
 </nav>
@@ -392,7 +392,7 @@
             </div>
             <div class="flex flex-col gap-3 shrink-0">
               <a href="/login.html"
-                class="aureate-gradient text-[#111] font-black text-base px-8 py-3.5 rounded-full hover:opacity-90 transition-all text-center whitespace-nowrap shadow-lg">
+                class="aureate-gradient text-[#F5F5F7] font-black text-base px-8 py-3.5 rounded-full hover:opacity-90 transition-all text-center whitespace-nowrap shadow-lg">
                 Start Your Free Trial →
               </a>
               <a href="/login.html" class="text-center text-xs text-muted-text hover:text-on-surface transition-colors">
@@ -450,7 +450,7 @@
         Ready to <span class="text-primary">stop writing</span> and start appraising?
       </h2>
       <p class="text-muted-text mb-8">Join appraisers already saving hours per week.</p>
-      <a href="/login.html" class="aureate-gradient text-[#111] font-black text-lg px-10 py-4 rounded-full hover:opacity-90 transition-all inline-block shadow-lg">
+      <a href="/login.html" class="aureate-gradient text-[#F5F5F7] font-black text-lg px-10 py-4 rounded-full hover:opacity-90 transition-all inline-block shadow-lg">
         Start Free — 5 Reports/Month
       </a>
       <p class="text-xs text-muted-text mt-4">No credit card required · Cancel anytime</p>

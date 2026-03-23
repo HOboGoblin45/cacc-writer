@@ -54,7 +54,7 @@
                         "surface-tint": "#eec224",
                         "on-tertiary-fixed": "#221b00",
                         "on-tertiary-fixed-variant": "#544600",
-                        "primary-container": "#e2b714",
+                        "primary-container": "#00A86B",
                         "primary-fixed-dim": "#eec224",
                         "surface-container-low": "#181c22",
                         "surface": "#10141a",
@@ -74,7 +74,7 @@
     </script>
 <style>
         body { font-family: 'Inter', sans-serif; background-color: #10141a; color: #dfe2eb; }
-        .aureate-gradient { background: linear-gradient(135deg, #e2b714 0%, #ffd341 100%); }
+        .aureate-gradient { background: linear-gradient(135deg, #00A86B 0%, #ffd341 100%); }
         .ghost-border { border: 1px solid rgba(77, 70, 51, 0.2); }
         .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .hover-lift:hover { transform: translateY(-2px); }
@@ -83,16 +83,16 @@
 </head>
 <body class="antialiased overflow-x-hidden">
 <!-- Top Navigation Shell -->
-<header class="bg-[#10141a] dark:bg-[#10141a] docked full-width top-0 sticky z-50 bg-[#181c22] border-b border-[#4d4633]/20 shadow-[0_0_20px_rgba(226,183,20,0.05)] flex justify-between items-center w-full px-6 py-3 h-16 font-['Inter'] antialiased text-sm font-medium tracking-tight">
+<header class="bg-[#10141a] dark:bg-[#10141a] docked full-width top-0 sticky z-50 bg-[#181c22] border-b border-[#4d4633]/20 shadow-[0_0_20px_rgba(0, 168, 107, 0.05)] flex justify-between items-center w-full px-6 py-3 h-16 font-['Inter'] antialiased text-sm font-medium tracking-tight">
 <div class="flex items-center gap-8">
 <div class="flex items-center gap-2">
 <div class="w-9 h-9 aureate-gradient rounded-lg flex items-center justify-center shadow-lg shadow-primary/10">
 <span class="text-on-primary-container font-black text-xl">AA</span>
 </div>
-<span class="text-xl font-bold bg-gradient-to-br from-[#e2b714] to-[#ffd341] bg-clip-text text-transparent px-2 py-1 rounded-lg">Appraisal Agent</span>
+<span class="text-xl font-bold bg-gradient-to-br from-[#00A86B] to-[#ffd341] bg-clip-text text-transparent px-2 py-1 rounded-lg">Appraisal Agent</span>
 </div>
 <nav class="hidden md:flex items-center gap-6">
-<a class="text-[#ffd341] border-b-2 border-[#e2b714] pb-1" href="/dashboard">Dashboard</a>
+<a class="text-[#ffd341] border-b-2 border-[#00A86B] pb-1" href="/dashboard">Dashboard</a>
 <a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/">Cases</a>
 <a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/analytics">Analytics</a>
 <a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/settings">Settings</a>
@@ -105,12 +105,12 @@
 </div>
 <button id="notif-bell" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full relative" onclick="window.location.href='/dashboard'">
 <span class="material-symbols-outlined">notifications</span>
-<span id="notif-count" class="hidden absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold bg-[#ffd341] text-[#111] rounded-full flex items-center justify-center"></span>
+<span id="notif-count" class="hidden absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold bg-[#ffd341] text-[#F5F5F7] rounded-full flex items-center justify-center"></span>
 </button>
 <a href="/settings" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full">
 <span class="material-symbols-outlined">settings</span>
 </a>
-<button id="user-avatar" onclick="window.location.href='/settings'" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 bg-[#e2b714] flex items-center justify-center text-[#111] font-black text-sm">?</button>
+<button id="user-avatar" onclick="window.location.href='/settings'" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 bg-[#00A86B] flex items-center justify-center text-[#F5F5F7] font-black text-sm">?</button>
 <button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full" title="Sign Out">
 <span class="material-symbols-outlined">logout</span>
 </button>
@@ -220,7 +220,7 @@
 <p class="text-on-secondary-container text-sm mb-6">Your AI voice model is well-trained. Generation quality closely matches your professional narrative style.</p>
 <div class="space-y-4">
 <div class="w-full bg-surface-container-lowest h-3 rounded-full overflow-hidden">
-<div class="h-full aureate-gradient w-[85%] rounded-full shadow-[0_0_15px_rgba(226,183,20,0.3)]"></div>
+<div class="h-full aureate-gradient w-[85%] rounded-full shadow-[0_0_15px_rgba(0, 168, 107, 0.3)]"></div>
 </div>
 <div class="flex justify-between text-[11px] font-bold text-[#b0b9c4] uppercase tracking-widest">
 <span>Training Saturation</span>
