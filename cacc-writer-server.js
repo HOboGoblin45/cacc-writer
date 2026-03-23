@@ -199,6 +199,7 @@ app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/demo.html', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
 app.get('/pricing', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));
 app.get('/pricing.html', (_q, r) => r.sendFile(path.join(__dirname, 'pricing.html')));
+app.get('/shared/:token', (_q, r) => r.sendFile(path.join(__dirname, 'shared.html')));
 app.get('/app.js', (_q, r) => r.sendFile(path.join(__dirname, 'app.js')));
 app.get('/workspace.js', (_q, r) => r.sendFile(path.join(__dirname, 'workspace.js')));
 app.get('/styles.css', (_q, r) => r.sendFile(path.join(__dirname, 'styles.css')));

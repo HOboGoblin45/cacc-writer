@@ -39,6 +39,16 @@ router.post('/cases/:caseId/revisions/:revisionId/ai-respond', authMiddleware, a
   }
 });
 
+// POST /cases/:caseId/revisions/:revId/respond — alias for ai-respond (underwriter condition response)
+router.post('/cases/:caseId/revisions/:revId/respond', authMiddleware, async (req, res) => {
+  try {
+    const result = await generateStipulationResponses(req.params.caseId, req.params.revId);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // PATCH /stipulations/:stipId/resolve — mark stipulation as resolved
 router.patch('/stipulations/:stipId/resolve', authMiddleware, (req, res) => {
   try {

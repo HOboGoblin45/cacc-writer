@@ -19,6 +19,12 @@ import { dbGet, dbAll } from '../db/database.js';
 import log from '../logger.js';
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { CASES_DIR } from '../utils/caseUtils.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
@@ -195,6 +201,62 @@ router.post('/cases/:caseId/export/bundle', async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ ok: false, error: err.message });
     }
+  }
+});
+
+// ── GET /cases/:caseId/export/download/:format ────────────────────────────────
+// Download a previously generated export or generate on the fly.
+// Formats: mismo, uad36, pdf, bundle
+
+router.get('/cases/:caseId/export/download/:format', async (req, res) => {
+  const { caseId, format } = req.params;
+  try {
+    switch (format) {
+      case 'mismo': {
+        const result = generateMismo(caseId, { version: 'mismo_3_4' });
+        res.set('Content-Type', 'application/xml');
+        res.set('Content-Disposition', `attachment; filename="${result.job.fileName}"`);
+        return res.send(result.xml);
+      }
+      case 'uad36': {
+        const caseData = loadCaseForExport(caseId);
+        if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
+        const xml = buildUad36Document(caseData);
+        const fileName = `${caseId}_uad36_${Date.now()}.xml`;
+        res.set('Content-Type', 'application/xml');
+        res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+        return res.send(xml);
+      }
+      case 'pdf': {
+        const pdfBuffer = await renderPdf(caseId);
+        const fileName = `${caseId}_appraisal_${Date.now()}.pdf`;
+        res.set('Content-Type', 'application/pdf');
+        res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+        return res.send(pdfBuffer);
+      }
+      case 'bundle': {
+        const caseData = loadCaseForExport(caseId);
+        if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
+        const mismoResult = generateMismo(caseId, { version: 'mismo_3_4' });
+        const pdfBuffer = await renderPdf(caseId);
+        const fileName = `${caseId}_export_bundle_${Date.now()}.zip`;
+        res.set('Content-Type', 'application/zip');
+        res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        archive.pipe(res);
+        archive.append(mismoResult.xml, { name: mismoResult.job.fileName });
+        archive.append(pdfBuffer, { name: `${caseId}_appraisal.pdf` });
+        const validation = validateMismoOutput(mismoResult.xml);
+        archive.append(JSON.stringify(validation, null, 2), { name: 'validation_report.json' });
+        await archive.finalize();
+        return;
+      }
+      default:
+        return res.status(400).json({ ok: false, error: `Unknown format: ${format}. Use mismo, uad36, pdf, or bundle.` });
+    }
+  } catch (err) {
+    log.error('export:download-failed', { caseId, format, error: err.message });
+    if (!res.headersSent) res.status(500).json({ ok: false, error: err.message });
   }
 });
 

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appraisal Agent — Shared Report</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b1020;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #0d1428 0%, #111827 100%);
+      border-bottom: 1px solid #1e2d4a;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px; height: 36px;
+      background: #0b1020;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: #d7b35a;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 1.1rem; font-weight: 600; color: #f0e6c8; }
+    .header-sub { font-size: 0.8rem; color: #6b7a99; margin-top: 2px; }
+    .badge {
+      margin-left: auto;
+      background: #1a2744;
+      border: 1px solid #2a3f6b;
+      color: #8ab4f8;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    .loading {
+      text-align: center;
+      padding: 80px 0;
+      color: #5a6a8a;
+      font-size: 1rem;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #1e2d4a;
+      border-top-color: #d7b35a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-card {
+      background: #1a0d0d;
+      border: 1px solid #4a1a1a;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      color: #f08080;
+    }
+    .error-card h2 { font-size: 1.1rem; margin-bottom: 8px; }
+    .error-card p { font-size: 0.9rem; color: #9a6060; }
+    .property-card {
+      background: #111827;
+      border: 1px solid #1e2d4a;
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+    .property-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7a99;
+      margin-bottom: 6px;
+    }
+    .property-card .address {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f0e6c8;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .meta-row {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      margin-top: 12px;
+    }
+    .meta-chip {
+      background: #1a2744;
+      border: 1px solid #2a3f6b;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      color: #8ab4f8;
+    }
+    .section-card {
+      background: #111827;
+      border: 1px solid #1e2d4a;
+      border-radius: 12px;
+      padding: 22px 28px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #d7b35a;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1e2d4a;
+    }
+    .section-text {
+      font-size: 0.93rem;
+      line-height: 1.75;
+      color: #c8d4e8;
+      white-space: pre-wrap;
+    }
+    .comps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .comp-card {
+      background: #0d1428;
+      border: 1px solid #1e2d4a;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .comp-card .comp-addr { font-size: 0.83rem; font-weight: 600; color: #e0e8f8; margin-bottom: 6px; }
+    .comp-card .comp-detail { font-size: 0.78rem; color: #6b7a99; line-height: 1.6; }
+    .comp-card .comp-price { font-size: 1rem; font-weight: 700; color: #4ade80; margin-top: 6px; }
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: #3a4a6a;
+      font-size: 0.78rem;
+      border-top: 1px solid #111827;
+    }
+    .footer a { color: #5a7aaa; text-decoration: none; }
+    .no-sections { color: #4a5a7a; font-size: 0.9rem; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">C</div>
+    <div>
+      <div class="header-title">Appraisal Agent</div>
+      <div class="header-sub">Cresci Appraisal &amp; Consulting Company</div>
+    </div>
+    <div class="badge">Shared Report · Read Only</div>
+  </div>
+
+  <main id="app">
+    <div class="loading">
+      <div class="spinner"></div>
+      Loading report…
+    </div>
+  </main>
+
+  <div class="footer">
+    Powered by <a href="https://appraisal-agent.com" target="_blank">Appraisal Agent</a> &mdash;
+    This report is read-only and for review purposes only.
+    Report access may expire.
+  </div>
+
+  <script>
+    (async () => {
+      const app = document.getElementById('app');
+      const token = location.pathname.split('/shared/')[1]?.split('/')[0];
+
+      if (!token) {
+        app.innerHTML = `<div class="error-card"><h2>Invalid Link</h2><p>This link does not appear to be valid.</p></div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/shared/${token}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+          app.innerHTML = `<div class="error-card">
+            <h2>${res.status === 403 ? 'Link Expired or Invalid' : 'Report Not Found'}</h2>
+            <p>${err.error || 'This shared link is no longer available.'}</p>
+          </div>`;
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.ok) {
+          app.innerHTML = `<div class="error-card"><h2>Error</h2><p>${data.error}</p></div>`;
+          return;
+        }
+
+        // Build report view
+        let html = '';
+
+        // Property card
+        html += `<div class="property-card">
+          <div class="label">Subject Property</div>
+          <div class="address">${data.address || 'Address not available'}</div>
+          <div class="meta-row">
+            ${data.formType ? `<div class="meta-chip">Form: ${data.formType}</div>` : ''}
+            ${data.status ? `<div class="meta-chip">Status: ${data.status}</div>` : ''}
+            ${data.generatedAt ? `<div class="meta-chip">Generated: ${new Date(data.generatedAt).toLocaleDateString()}</div>` : ''}
+          </div>
+        </div>`;
+
+        // Sections
+        const sections = data.sections || {};
+        const sectionKeys = Object.keys(sections);
+
+        if (sectionKeys.length === 0) {
+          html += `<div class="section-card"><p class="no-sections">No report sections available yet.</p></div>`;
+        } else {
+          // Format section names
+          const formatTitle = (key) => key
+            .replace(/_/g, ' ')
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/\b\w/g, c => c.toUpperCase());
+
+          for (const key of sectionKeys) {
+            const sec = sections[key];
+            const text = typeof sec === 'string' ? sec
+              : (sec?.final_text || sec?.reviewed_text || sec?.draft_text || sec?.content || '');
+            if (!text) continue;
+            html += `<div class="section-card">
+              <div class="section-title">${formatTitle(key)}</div>
+              <div class="section-text">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            </div>`;
+          }
+        }
+
+        // Comps
+        const comps = data.comps || [];
+        if (comps.length > 0) {
+          html += `<div class="section-card">
+            <div class="section-title">Comparable Sales (${comps.length})</div>
+            <div class="comps-grid">`;
+          for (const comp of comps.slice(0, 6)) {
+            const addr = comp.address || comp.comp_address || comp.Address || 'N/A';
+            const price = comp.close_price || comp.ClosePrice || comp.sale_price || null;
+            const gla = comp.gla || comp.LivingArea || comp.gross_living_area || null;
+            const date = comp.close_date || comp.CloseDate || comp.sale_date || null;
+            html += `<div class="comp-card">
+              <div class="comp-addr">${addr}</div>
+              <div class="comp-detail">
+                ${gla ? `GLA: ${Number(gla).toLocaleString()} sq ft<br>` : ''}
+                ${date ? `Closed: ${new Date(date).toLocaleDateString()}<br>` : ''}
+              </div>
+              ${price ? `<div class="comp-price">$${Number(price).toLocaleString()}</div>` : ''}
+            </div>`;
+          }
+          html += `</div></div>`;
+        }
+
+        app.innerHTML = html;
+      } catch (err) {
+        app.innerHTML = `<div class="error-card">
+          <h2>Failed to Load Report</h2>
+          <p>${err.message}</p>
+        </div>`;
+      }
+    })();
+  </script>
+</body>
+</html>
