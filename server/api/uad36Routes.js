@@ -35,10 +35,28 @@ const router = Router();
 /**
  * Load case data from disk.
  */
-function loadCase(caseDir) {
+function loadCase(caseDir, dbCaseId) {
   const facts   = readJSON(path.join(caseDir, 'facts.json'), {});
   const meta    = readJSON(path.join(caseDir, 'meta.json'), {});
-  const outputs = readJSON(path.join(caseDir, 'outputs.json'), {});
+  let outputs = readJSON(path.join(caseDir, 'outputs.json'), {});
+  // Also check DB for outputs (generate-all saves to DB, not always to file)
+  if (dbCaseId && Object.keys(outputs).filter(k => k !== 'updatedAt').length === 0) {
+    try {
+      const db = getDb();
+      const row = db.prepare('SELECT outputs FROM case_records WHERE caseId = ?').get(dbCaseId);
+      if (row?.outputs) {
+        const dbOut = typeof row.outputs === 'string' ? JSON.parse(row.outputs) : row.outputs;
+        outputs = { ...outputs, ...dbOut };
+      }
+    } catch { /* ok */ }
+  }
+  // Also map legacy section IDs to UAD 3.6 IDs in the outputs
+  for (const [legacyId, uad36Id] of Object.entries(LEGACY_TO_UAD36_MAP)) {
+    if (outputs[legacyId] && !outputs[uad36Id]) {
+      const val = outputs[legacyId];
+      outputs[uad36Id] = typeof val === 'string' ? val : val?.text || val;
+    }
+  }
   return { facts, meta, outputs };
 }
 
@@ -89,7 +107,7 @@ router.get('/cases/:caseId/uad36-status', (req, res) => {
   }
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir);
+    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
 
     // Check each UAD 3.6 section
     const sectionStatus = {};
@@ -177,7 +195,7 @@ router.post('/cases/:caseId/convert-to-uad36', (req, res) => {
   }
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir);
+    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
 
     const converted = {};    // sectionId → carried-over text
     const alreadyPresent = []; // sectionIds that already have UAD 3.6 content
@@ -282,7 +300,7 @@ router.post('/cases/:caseId/generate-uad36', async (req, res) => {
   } = req.body || {};
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir);
+    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
     const propertyContext = buildPropertyContext(facts);
     const now = new Date().toISOString();
 
