@@ -207,6 +207,16 @@ export async function fillForm1004(caseIdOrData) {
     } catch { /* skip */ }
   }
 
+  /** Safely select a radio group option */
+  function setRadio(groupName, optionValue) {
+    try {
+      const field = form.getRadioGroup(groupName);
+      if (optionValue !== undefined && optionValue !== null && optionValue !== '') {
+        field.select(String(optionValue));
+      }
+    } catch { /* skip */ }
+  }
+
   /**
    * Fill a multi-line narrative into sequential "Line_1", "Line_2", … fields.
    * @param {string} baseFieldName  e.g. "Neighborhood Description Line"
@@ -229,6 +239,9 @@ export async function fillForm1004(caseIdOrData) {
   const improvements   = facts.improvements   || {};
   const publicRecords  = facts.publicRecords  || {};
   const caseMeta       = { ...meta, ...caseRecord };
+
+  // Resolve comps: prefer caseData.comps (DB rows), fall back to facts.comps (structured array)
+  const resolvedComps = (comps && comps.length > 0) ? comps : (facts.comps || []);
 
   // ── SUBJECT SECTION ───────────────────────────────────────────────────────
   setText('Property Address',      subject.address);
@@ -259,11 +272,32 @@ export async function fillForm1004(caseIdOrData) {
   // Property rights (Fee Simple / Leasehold)
   setText('Property Rights Appraised', subject.propertyRights || 'Fee Simple');
 
-  // Occupancy checkboxes
-  const occupancy = (subject.occupancy || '').toLowerCase();
+  // Occupancy checkboxes (named labels)
+  const occupancy = (subject.occupancy || subject.occupant || '').toLowerCase();
   setCheck('Owner',               occupancy === 'owner');
   setCheck('Tenant',              occupancy === 'tenant');
   setCheck('Vacant',              occupancy === 'vacant');
+
+  // Occupancy checkboxes (Check Box numbered variants)
+  const occupantStr = subject.occupant || subject.occupancy || '';
+  setCheck('Check Box1', occupantStr === 'Owner');
+  setCheck('Check Box3', occupantStr === 'Tenant');
+  setCheck('Check Box4', occupantStr === 'Vacant');
+
+  // PUD — default No
+  setCheck('Check Box5', false);
+  setCheck('Check Box6', true);
+
+  // Foundation checkboxes
+  setCheck('Check Box7',  improvements.foundation?.includes('Slab'));
+  setCheck('Check Box8',  improvements.foundation?.includes('Crawl'));
+  setCheck('Check Box9',  improvements.foundation?.includes('Full Basement'));
+  setCheck('Check Box10', improvements.foundation?.includes('Partial'));
+
+  // Appliances (assume standard appliances present)
+  setCheck('Check Box11', true); // Range/Oven
+  setCheck('Check Box13', true); // Dishwasher
+  setCheck('Check Box14', true); // Disposal
 
   // ── NEIGHBORHOOD SECTION ──────────────────────────────────────────────────
 
@@ -329,6 +363,33 @@ export async function fillForm1004(caseIdOrData) {
   setCheck('Under 3 Months', mktTime === 'under 3 months');
   setCheck('3-6 Months',     mktTime === '3-6 months' || (!mktTime));
   setCheck('Over 6 Months',  mktTime === 'over 6 months');
+
+  // Radio group mappings for neighborhood characteristics
+  // These mirror the named checkboxes above but via radio groups (PDF may use either)
+  try {
+    const locationStr = neighborhood.locationType || 'Suburban';
+    setRadio('Group_9', locationStr);
+  } catch { /* skip */ }
+  try {
+    const builtUpStr = neighborhood.builtUp || 'Over 75%';
+    setRadio('Group_10', builtUpStr);
+  } catch { /* skip */ }
+  try {
+    const growthStr = neighborhood.growth || 'Stable';
+    setRadio('Group_11', growthStr);
+  } catch { /* skip */ }
+  try {
+    const valueTrendStr = neighborhood.propertyValuesTrend || neighborhood.valueTrend || 'Stable';
+    setRadio('Group_12', valueTrendStr);
+  } catch { /* skip */ }
+  try {
+    const demandStr = neighborhood.demandSupply || 'In Balance';
+    setRadio('Group_13', demandStr);
+  } catch { /* skip */ }
+  try {
+    const mktTimeStr = neighborhood.marketingTime || '3-6 Months';
+    setRadio('Group_14', mktTimeStr);
+  } catch { /* skip */ }
 
   // Price range & predominant
   setText('Price',              neighborhood.priceRangeLow);
@@ -434,11 +495,15 @@ export async function fillForm1004(caseIdOrData) {
   setText('Subject Year Built',  improvements.yearBuilt);
 
   // Comp columns (up to 3 comps)
-  for (let i = 0; i < Math.min(comps.length, 3); i++) {
-    const comp = comps[i];
+  for (let i = 0; i < Math.min(resolvedComps.length, 3); i++) {
+    const comp = resolvedComps[i];
     const n = i + 1;
     let data = {};
-    try { data = JSON.parse(comp.candidate_json || '{}'); } catch { /* ok */ }
+    if (comp.candidate_json) {
+      try { data = JSON.parse(comp.candidate_json); } catch { /* ok */ }
+    } else {
+      data = comp; // facts.comps are already flat objects
+    }
 
     // Merge top-level comp row columns with parsed JSON
     const addr     = data.address     || comp.address     || '';
@@ -499,7 +564,7 @@ export async function fillForm1004(caseIdOrData) {
   const scComments = sectionText(sections['sales_comparison'])
     || sectionText(sections['comp_analysis'])
     || outputs.sales_comparison_comments || '';
-  setMultiLine('Summary of Sales Comparison Approach Line', scComments, 5);
+  setMultiLine('Summary of Sales Comparison Approach Line', scComments, 7);
 
   // ── RECONCILIATION ────────────────────────────────────────────────────────
   const recon = reconciliation || {};
@@ -605,21 +670,32 @@ export async function fillForm1004(caseIdOrData) {
   setText('Above Grade Room Count Gross Living Area Bath rooms', String(improvements.bathrooms || subject.bathrooms || ''));
 
   // Sales comparison — exact comp field names + above-grade counts per comp
-  for (let ci = 0; ci < Math.min(comps.length, 3); ci++) {
-    const comp2 = comps[ci];
+  for (let ci = 0; ci < Math.min(resolvedComps.length, 3); ci++) {
+    const comp2 = resolvedComps[ci];
     const n2    = ci + 1;   // 1, 2, 3
     let cdata   = {};
-    try { cdata = JSON.parse(comp2.candidate_json || '{}'); } catch { /* ok */ }
+    // DB rows have candidate_json; facts.comps entries are already plain objects
+    if (comp2.candidate_json) {
+      try { cdata = JSON.parse(comp2.candidate_json); } catch { /* ok */ }
+    } else {
+      cdata = comp2; // facts.comps objects are already flat
+    }
 
     const cAddr   = cdata.address   || comp2.address    || '';
-    const cSP     = cdata.salePrice || comp2.sale_price  || '';
+    const cSP     = cdata.salePrice || cdata.sale_price  || comp2.sale_price  || '';
     const cGLA    = cdata.gla       || comp2.gla         || '';
     const cProx   = cdata.proximity || comp2.proximity   || '';
     const cSource = cdata.dataSource || comp2.source     || 'MLS';
 
+    // Address field — exact PDF name (no "Address" suffix)
     setText(`Comparable Sale ${n2}`,                          cAddr);
     setText(`Comparable Sale ${n2} Proximity to Subject`,     cProx);
-    setText(`Comparable Sale ${n2} Sale price $`,             cSP);
+
+    // Sale price field names differ per comp due to official PDF inconsistencies
+    if (n2 === 1) setText('Comparable Sale 1 Sale price $',  cSP);
+    if (n2 === 2) setText('Comparable Sale 2 sale price $',  cSP); // lowercase 's'
+    if (n2 === 3) setText('Comparable Sale 3 Sale Price $',  cSP); // capital S, P
+
     if (cSP && cGLA) {
       const sp3 = parseFloat(String(cSP).replace(/[^0-9.]/g, ''));
       const gl3 = parseFloat(String(cGLA).replace(/[^0-9.]/g, ''));
@@ -632,6 +708,10 @@ export async function fillForm1004(caseIdOrData) {
     setText(`Above Grade Room Count Gross Living Area Total_${n2}`,      String(cdata.rooms     || comp2.rooms     || ''));
     setText(`Above Grade Room Count Gross Living Area Bedrooms_${n2}`,   String(cdata.bedrooms  || comp2.bedrooms  || ''));
     setText(`Above Grade Room Count Gross Living Area Bath rooms_${n2}`, String(cdata.bathrooms || comp2.bathrooms || ''));
+
+    // Also fill GLA, year built for facts.comps fields
+    setText(`Comparable Sale ${n2} Gross Living Area`,  String(cGLA));
+    setText(`Comparable Sale ${n2} Actual Age`,         String(cdata.yearBuilt || cdata.year_built || comp2.yearBuilt || comp2.year_built || ''));
   }
 
   // Adjustment grid — description columns and adjustment amount columns
@@ -656,11 +736,15 @@ export async function fillForm1004(caseIdOrData) {
   for (const cat of gridCategories) {
     setText(`Description ${cat.base}`, cat.subjectVal);
 
-    for (let ci = 0; ci < Math.min(comps.length, 3); ci++) {
-      const comp3 = comps[ci];
+    for (let ci = 0; ci < Math.min(resolvedComps.length, 3); ci++) {
+      const comp3 = resolvedComps[ci];
       const n3    = ci + 1;
       let cdata3  = {};
-      try { cdata3 = JSON.parse(comp3.candidate_json || '{}'); } catch { /* ok */ }
+      if (comp3.candidate_json) {
+        try { cdata3 = JSON.parse(comp3.candidate_json); } catch { /* ok */ }
+      } else {
+        cdata3 = comp3;
+      }
 
       const compDescVals = {
         sale_financing: '',
@@ -694,10 +778,13 @@ export async function fillForm1004(caseIdOrData) {
   setMultiLine('Summary of Sales Comparison Approach Line', scTextFull, 7);
 
   // Reconciliation — exact field names
-  setText('Sales Comparison Approach',      recon.indicated_value_sales  || outputs.indicated_value_sales  || '');
+  const scaIndicatedValue = recon.indicated_value_sales  || outputs.indicated_value_sales  || '';
+  setText('Sales Comparison Approach',      scaIndicatedValue);
   setText('Cost Approach (if developed)',   recon.indicated_value_cost   || outputs.indicated_value_cost   || '');
   setText('Income Approach (if developed)', recon.indicated_value_income || outputs.indicated_value_income || '');
   setText('Appraised value of subject property', finalValue);
+  setText('Market Value',                   finalValue);
+  setText('Effective Date of Appraisal',    effDate);
 
   // Appraiser info — exact PDF field names
   setText('Name_1',   caseMeta.appraiser_name || 'Charles Cresci');
