@@ -186,11 +186,13 @@ export async function fillForm1004(caseIdOrData) {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  let _setCount = 0;
   /** Safely set a text field — silently skip if field not found */
   function setText(fieldName, value) {
     try {
       if (value !== null && value !== undefined && value !== '') {
         const field = form.getTextField(fieldName);
+        _setCount++;
         field.setText(String(value));
       }
     } catch { /* field not found or wrong type — skip */ }
@@ -523,6 +525,8 @@ export async function fillForm1004(caseIdOrData) {
   setText('Depreciation',                 outputs.depreciation    || '');
   setText('Depreciated Cost of Improvements', outputs.depreciated_cost || '');
   setText('Indicated Value by Cost Approach', outputs.cost_approach_value || '');
+
+  log.info('pdf-filler:fields-set', { count: _setCount });
 
   // ── FINALIZE ──────────────────────────────────────────────────────────────
   // Don't flatten — keep form editable so appraiser can make adjustments
