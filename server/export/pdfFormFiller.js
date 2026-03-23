@@ -172,6 +172,13 @@ export async function fillForm1004(caseIdOrData) {
 
   const { caseRecord = {}, facts = {}, outputs = {}, sections = {}, comps = [], adjustments = [], reconciliation = null, meta = {} } = caseData;
 
+  log.info('pdf-filler:data-received', {
+    hasFactsSubject: !!facts?.subject?.address,
+    sectionsCount: Object.keys(sections).length,
+    outputsCount: Object.keys(outputs).filter(k => k !== 'updatedAt').length,
+    factKeys: Object.keys(facts),
+  });
+
   // Load template
   const templateBytes = readFileSync(TEMPLATE_PATH);
   const pdf = await PDFDocument.load(templateBytes);
@@ -518,13 +525,8 @@ export async function fillForm1004(caseIdOrData) {
   setText('Indicated Value by Cost Approach', outputs.cost_approach_value || '');
 
   // ── FINALIZE ──────────────────────────────────────────────────────────────
-  // Flatten makes the form non-editable but ensures all fonts embed properly
-  try {
-    form.flatten();
-  } catch (e) {
-    // Some fields (signatures) may resist flattening — that's OK
-    log.warn('pdf-form-filler:flatten-partial', { error: e.message });
-  }
+  // Don't flatten — keep form editable so appraiser can make adjustments
+  // form.flatten();
 
   const filledBytes = await pdf.save();
   log.info('pdf-form-filler:filled', {
