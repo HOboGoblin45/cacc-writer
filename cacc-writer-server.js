@@ -462,4 +462,10 @@ function gracefulShutdown(signal) {
 
   // Force exit if server hasn't closed in 10 seconds
   setTimeout(() => {
-    console.error('Fo
+    console.error('Forced exit after timeout.');
+    process.exit(1);
+  }, 10000).unref();
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
