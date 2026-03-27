@@ -134,11 +134,29 @@ import formDataRouter from './server/api/formDataRoutes.js';
 import photoAddendumRouter from './server/api/photoAddendumRoutes.js';
 import questionnaireRouter from './server/api/questionnaireRoutes.js';
 import brainRouter from './server/api/brainRoutes.js';
+import { applyPendingRestore } from './server/security/backupRestoreService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.PORT) || 5178;
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
+
+// ── SaaS production guards ──────────────────────────────────────────────────
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('[FATAL] JWT_SECRET is required in production. Exiting.');
+  process.exit(1);
+}
+
+// ── Apply pending restore before startup checks ─────────────────────────────
+try {
+  const restoreResult = applyPendingRestore();
+  if (restoreResult) {
+    console.log('[startup] Restore result:', restoreResult);
+  }
+} catch (err) {
+  console.error('[FATAL] Restore failed:', err.message);
+  process.exit(1);
+}
 
 runStartupChecks({
   port: PORT,

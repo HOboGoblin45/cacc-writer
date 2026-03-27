@@ -164,8 +164,12 @@ export function verifyToken(token) {
 // ── Auth Middleware ───────────────────────────────────────────────────────────
 
 export function authMiddleware(req, res, next) {
-  // When auth is disabled, still try to parse JWT if present (needed for billing/user-specific features)
+  // In production, auth MUST be enabled — no anonymous access allowed
   if (process.env.CACC_AUTH_ENABLED === 'false' || process.env.CACC_AUTH_ENABLED === '0') {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ ok: false, error: 'Auth required in production. Set CACC_AUTH_ENABLED=true.' });
+    }
+    // Development only: still try to parse JWT if present
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const decoded = verifyToken(authHeader.slice(7));
@@ -174,14 +178,14 @@ export function authMiddleware(req, res, next) {
         return next();
       }
     }
-    req.user = { userId: 'default', username: 'admin', role: 'admin' };
+    req.user = { userId: 'dev-local', username: 'dev-admin', role: 'admin' };
     return next();
   }
 
   // Check API key first (backward compat)
   const apiKey = req.headers['x-api-key'];
   if (apiKey && apiKey === process.env.CACC_API_KEY) {
-    req.user = { userId: 'default', username: 'admin', role: 'admin' };
+    req.user = { userId: 'api-key-user', username: 'api-user', role: 'admin' };
     return next();
   }
 
