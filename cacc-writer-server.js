@@ -22,7 +22,7 @@ import log, { setFileLogWriter } from './server/logger.js';
 import { runStartupChecks } from './server/config/startupChecks.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
-import { getDb, closeDb } from './server/db/database.js';
+import { getDb, closeDb, closeAllUserDbs } from './server/db/database.js';
 import { MODEL } from './server/openaiClient.js';
 import { requireAuth } from './server/middleware/authMiddleware.js';
 
@@ -450,8 +450,9 @@ function gracefulShutdown(signal) {
       if (db && db.open) {
         db.pragma('wal_checkpoint(TRUNCATE)');
       }
+      closeAllUserDbs();
       closeDb();
-      console.log('SQLite WAL checkpointed and connection closed.');
+      console.log('SQLite WAL checkpointed and all connections closed.');
     } catch (e) {
       console.warn('DB shutdown warning:', e.message);
     }

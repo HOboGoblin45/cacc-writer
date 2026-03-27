@@ -27,10 +27,10 @@ function toJSON(value, fallback) {
   return JSON.stringify(safe);
 }
 
-export function saveCaseAggregate({ caseId, meta = {}, facts = {}, outputs = {}, history = {}, provenance = {} }) {
+export function saveCaseAggregate({ caseId, meta = {}, facts = {}, outputs = {}, history = {}, provenance = {} }, opts = {}) {
   if (!caseId) throw new Error('caseId is required');
 
-  const db = getDb();
+  const db = opts.db || getDb();
   const now = new Date().toISOString();
 
   const safeMeta = {
@@ -120,10 +120,10 @@ export function saveCaseAggregate({ caseId, meta = {}, facts = {}, outputs = {},
   tx();
 }
 
-export function getCaseAggregate(caseId) {
+export function getCaseAggregate(caseId, opts = {}) {
   if (!caseId) return null;
 
-  const row = getDb().prepare(`
+  const row = (opts.db || getDb()).prepare(`
     SELECT
       r.case_id,
       r.meta_json,
@@ -154,8 +154,8 @@ export function getCaseAggregate(caseId) {
   };
 }
 
-export function listCaseAggregates(limit = 500) {
-  const rows = getDb().prepare(`
+export function listCaseAggregates(limit = 500, opts = {}) {
+  const rows = (opts.db || getDb()).prepare(`
     SELECT
       r.case_id,
       r.meta_json,
@@ -185,7 +185,7 @@ export function listCaseAggregates(limit = 500) {
   }));
 }
 
-export function deleteCaseAggregate(caseId) {
+export function deleteCaseAggregate(caseId, opts = {}) {
   if (!caseId) return;
-  getDb().prepare('DELETE FROM case_records WHERE case_id = ?').run(caseId);
+  (opts.db || getDb()).prepare('DELETE FROM case_records WHERE case_id = ?').run(caseId);
 }

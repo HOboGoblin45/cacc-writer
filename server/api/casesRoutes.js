@@ -109,6 +109,13 @@ import {
 } from '../insertion/insertionRepo.js';
 import { getInsertionReplayPackage } from '../insertion/insertionRunEngine.js';
 import log from '../logger.js';
+import { getUserDb } from '../db/database.js';
+
+// ── Per-user DB helper for SaaS tenant isolation ─────────────────────────────
+function dbOpts(req) {
+  const userId = req.user?.userId || req.user?.id;
+  return { db: getUserDb(userId) };
+}
 
 // ── Pipeline stages constant ──────────────────────────────────────────────────
 import { sendErrorResponse } from '../utils/errorResponse.js';
