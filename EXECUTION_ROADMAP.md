@@ -1,114 +1,63 @@
-﻿# Appraisal Agent Execution Roadmap
+# Appraisal Agent — SaaS Execution Roadmap
 
-Audit baseline date: March 13, 2026
+> Last updated: March 27, 2026
 
-This roadmap reflects live code, live tests, and the current business target: internal completion for one appraiser first.
+## Launch Model
 
-## Current baseline
+**Cloud SaaS (multi-tenant hosted product)**
 
-- Active production scope: `1004` and `commercial`
-- Deferred scope: `1025`, `1073`, `1004C`
-- Validation baseline:
-  - `npm run typecheck`
-  - `npm run test:unit` -> 287 passing
-  - `npm run test:smoke` -> 49 passing
-- Major realities:
-  - backend foundations are broad and real
-  - frontend operator surface is still concentrated in `index.html` and `app.js`
-  - golden-path preflight is working for both active lanes
-  - strict golden-path acceptance is still blocked by live destination readiness and verification
-  - existing cases are not yet fully backfilled into canonical case records
+Golden path: **Import → Facts → Generate → Review → Export (PDF/DOCX download)**
 
-## Delivery order
+Desktop insertion into ACI/Real Quantum is deferred to a future desktop companion app.
 
-### Phase 0: truth alignment
+## Active Production Scope
 
-- align README and scope docs with live code
-- define done and scope categories
-- remove dead runtime references
+| Form Type | Status | Notes |
+|-----------|--------|-------|
+| 1004 (Single-Family Residential) | **Active** | Proven golden-path end-to-end |
+| Commercial (Real Quantum) | **Active** | Proven golden-path end-to-end |
+| 1025 (Small Residential Income) | Deferred | No proven golden-path yet |
+| 1073 (Individual Condo Unit) | Deferred | No proven golden-path yet |
+| 1004C (Manufactured Home) | Deferred | Low usage frequency |
 
-### Phase 1: golden-path validation
+---
 
-- create golden `1004` and `commercial` fixtures
-- build an end-to-end harness covering intake through archive
-- fail loudly on broken steps
-- current state:
-  - preflight passes for both fixtures
-  - strict mode now fails early at `destination_probe` when agents cannot locate live fields
-  - remaining work is destination reliability, not generation/planning drift
+## Phase 1 — Tenant Isolation (Complete)
 
-### Phase 2: `1004` production hardening
+Per-user SQLite databases (`data/users/{userId}/cacc.db`). Case CRUD operations routed through `getUserDb(userId)`. Shared DB used only in development mode.
 
-- workspace-level section governance
-- readiness states
-- residential missing-fact severity
-- version compare and restore
-- measurable ACI insertion reliability
+## Phase 2 — Auth Hardening (Complete)
 
-### Phase 3: commercial production hardening
+Auth middleware blocks unauthenticated requests in production (`NODE_ENV=production`). JWT_SECRET required on startup. Development fallback uses `dev-local` userId (not `default`).
 
-- stronger commercial variants
-- structured support capture
-- deterministic Real Quantum replay workflow
-- exhibit/appendix packaging hooks
+## Phase 3 — Billing Integration (Complete)
 
-### Phase 4: unified valuation desk
+Stripe checkout, webhook (with signature verification), subscription status, and customer portal endpoints. All billing routes guarded by `requireStripe` middleware (503 when Stripe unconfigured).
 
-- sales comparison, income, cost, reconciliation in one surface
-- comp decision history
-- adjustment support notebook
-- reconciliation memo builder
+## Phase 4 — Frontend Auth + Export (Complete)
 
-### Phase 5: fact integrity and research completion
+Signup and login pages. Auth guard in `app.js` intercepts fetch() calls with JWT. Step 5 converted from "Insert" to "Export" with PDF/DOCX download and clipboard copy. ACI insertion preserved but gated behind `window.DESKTOP_MODE`.
 
-- verifier-facing fact cards
-- research source presets
-- duplicate detection and review queues
-- conflict routing before drafting
+## Phase 5 — Cloud Deployment
 
-### Phase 6: inspection workflow usability
+Docker containerization, managed hosting (AWS/GCP/Railway), HTTPS, production environment variables, health check endpoints.
 
-- mobile-friendly inspection mode
-- templates, tagged photos, voice-note capture
-- auditable merge back into canonical case facts
+## Phase 6 — Cloud File Storage
 
-### Phase 7: learning transparency and memory health
+Migrate from local filesystem case directories to S3-compatible object storage. User uploads stored per-tenant.
 
-- why-this-suggestion visibility
-- stale and duplicate memory management
-- report-family-aware retrieval tuning
-- phrase governance and metrics
+## Phase 7 — Shared Knowledge Base with Tenant Boundaries
 
-### Phase 8: business loop closure
+Cross-tenant knowledge base that improves generation quality over time. Tenant-specific voice models and approved narrative patterns. Privacy boundaries enforced at the data layer.
 
-- engagement or quote into case creation
-- due-date and risk visibility
-- business state in case health
+## Phase 8 — Additional Form Types
 
-### Phase 9: reliability, restore, and auditability
+Prove golden-path for 1025 and 1073 form types. Move from deferred to active only after end-to-end generation+export is verified.
 
-- backup scheduler UI
-- restore verification workflow
-- clean-machine migration and recovery runbook
+## Phase 9 — API Access for Integrations
 
-### Phase 10: deferred form expansion
+REST API with API key authentication for third-party integrations. Webhook notifications for case status changes.
 
-- `1025`
-- `1073`
-- `1004C`
+## Phase 10 — Desktop Companion App
 
-No deferred form should be activated before a full golden-path pass for that family.
-
-## Current highest-risk gaps
-
-- no strict end-to-end golden-path proof for live insertion
-- no operationally complete canonical backfill for live cases
-- no unified valuation surface
-- no finished inspection workflow
-- no restore drill confidence
-- frontend maintainability risk
-
-## Control rule
-
-If a task does not improve the one-appraiser operating loop for the active `1004` or `commercial` lanes, it is not on the critical path to 100%.
-
+Windows desktop app for ACI/Real Quantum field insertion. Communicates with cloud server via authenticated API. Enables the full loop: cloud generation → desktop insertion.

@@ -22,20 +22,21 @@
 
 ## What is this?
 
-Appraisal Agent automates the entire narrative writing process for real estate appraisals. Upload source documents, extract facts, generate USPAP-compliant narratives in your writing style, review & approve, then insert directly into ACI or Real Quantum software — all from one interface.
+Appraisal Agent automates the entire narrative writing process for real estate appraisals. Upload source documents, extract facts, generate USPAP-compliant narratives in your writing style, review & approve, then export as PDF or DOCX — all from one cloud-hosted interface.
 
 **Five-step workflow:**
 
 ```
-Import → Extract Facts → Generate Narratives → Review & Approve → Insert into Software
+Import → Extract Facts → Generate Narratives → Review & Approve → Export (PDF/DOCX)
 ```
 
 ## Key Features
 
 - **🤖 AI Generation** — GPT-4.1 drafts all narrative sections with two-pass review (hallucination cleanup)
 - **🎯 Voice Matching** — Knowledge base learns your writing style from approved edits and imported reports
-- **📋 5 Form Types** — 1004 URAR, 1025 Small Income, 1073 Condo, 1004C Manufactured, Commercial
-- **🖥️ Direct Insertion** — Automated text insertion into ACI (pywinauto) and Real Quantum (Playwright)
+- **📋 2 Active Form Types** — 1004 URAR + Commercial (1025, 1073, 1004C deferred)
+- **☁️ Cloud SaaS** — Multi-tenant hosted platform with per-user database isolation
+- **📥 Export** — Download as PDF or DOCX; desktop ACI/RQ insertion available via companion app
 - **📄 PDF Extraction** — 3-stage OCR pipeline extracts structured facts from uploaded documents
 - **🌍 Geospatial** — Auto-geocodes subject & comps, injects real location context (Nominatim + Overpass)
 - **⌨️ Command Palette** — Ctrl+K to search any command, keyboard shortcuts for everything
@@ -109,13 +110,13 @@ python real_quantum_agent\agent.py
 
 ## Form Types
 
-| Form | Description | Scope | Insert Target |
-|------|-------------|-------|---------------|
-| **1004** | URAR Single Family | Active | ACI |
-| **1025** | Small Residential Income (2-4 unit) | Active | ACI |
-| **1073** | Individual Condo Unit | Active | ACI |
-| **commercial** | Commercial Narrative | Active | Real Quantum |
-| **1004c** | Manufactured Home | Deferred | ACI |
+| Form | Description | Scope | Export |
+|------|-------------|-------|--------|
+| **1004** | URAR Single Family | **Active** | PDF/DOCX |
+| **commercial** | Commercial Narrative | **Active** | PDF/DOCX |
+| **1025** | Small Residential Income (2-4 unit) | Deferred | — |
+| **1073** | Individual Condo Unit | Deferred | — |
+| **1004c** | Manufactured Home | Deferred | — |
 
 ## Generation Pipeline
 
@@ -141,7 +142,7 @@ GPT-4.1 Draft → Two-Pass Review (hallucination cleanup)
 Approval → KB Growth (approved edits weight 1.5×)
     │
     ▼
-QC Gate → Insertion into ACI/Real Quantum
+QC Gate → Export (PDF/DOCX) or Desktop Insertion
 ```
 
 ## Testing
