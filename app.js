@@ -2,12 +2,34 @@ const API_BASE = window.location.origin;
 const API_KEY = 'cacc-local-key-2026';
 const APP_NAME = 'Appraisal Agent';
 
+// ── Auth guard ──────────────────────────────────────────────────────────────
+// Intercept all fetch() calls to attach JWT and handle 401s.
+const _origFetch = window.fetch;
+window.fetch = async function(url, opts = {}) {
+  const token = sessionStorage.getItem('cacc_token');
+  if (token) {
+    opts.headers = { ...(opts.headers || {}), 'Authorization': `Bearer ${token}` };
+  }
+  const res = await _origFetch(url, opts);
+  if (res.status === 401 && !String(url).includes('/api/auth/')) {
+    sessionStorage.removeItem('cacc_token');
+    sessionStorage.removeItem('cacc_user');
+    window.location.href = '/login';
+  }
+  return res;
+};
+
+// On page load, redirect to login if no token
+if (!sessionStorage.getItem('cacc_token') && !window.DESKTOP_MODE) {
+  window.location.href = '/login';
+}
+
 const STEP_META = [
   { id: 1, label: 'Import', description: 'Load source files' },
   { id: 2, label: 'Facts', description: 'Validate extracted data' },
   { id: 3, label: 'Generate', description: 'Draft narratives' },
   { id: 4, label: 'Review', description: 'Approve or reject sections' },
-  { id: 5, label: 'Insert', description: 'Run QC and send to ACI' }
+  { id: 5, label: 'Export', description: 'Download PDF or DOCX' }
 ];
 
 const FACT_GROUPS = [
@@ -58,12 +80,12 @@ const refs = {};
 const SHORTCUTS = [
   { key: 's', ctrl: true, action: () => { if (S.step === 2) refs.saveFacts.click(); }, label: 'Save facts' },
   { key: 'g', ctrl: true, shift: true, action: () => { if (S.caseId) gotoStep(3); refs.generateButton?.click(); }, label: 'Generate all' },
-  { key: 'Enter', ctrl: true, action: () => { if (S.step === 5) refs.insertButton.click(); }, label: 'Insert all' },
+  { key: 'Enter', ctrl: true, action: () => { if (S.step === 5) refs.exportPdfButton?.click(); }, label: 'Export PDF' },
   { key: '1', alt: true, action: () => gotoStep(1), label: 'Step 1: Import' },
   { key: '2', alt: true, action: () => gotoStep(2), label: 'Step 2: Facts' },
   { key: '3', alt: true, action: () => gotoStep(3), label: 'Step 3: Generate' },
   { key: '4', alt: true, action: () => gotoStep(4), label: 'Step 4: Review' },
-  { key: '5', alt: true, action: () => gotoStep(5), label: 'Step 5: Insert' },
+  { key: '5', alt: true, action: () => gotoStep(5), label: 'Step 5: Export' },
   { key: 'k', ctrl: true, action: () => toggleCommandPalette(), label: 'Command palette' },
   { key: 'Escape', action: () => { if (commandPaletteOpen) toggleCommandPalette(false); }, label: 'Close palette' },
 ];
@@ -126,11 +148,11 @@ function renderCommandPaletteResults(palette, query) {
     { label: 'Go to Facts', shortcut: 'Alt+2', action: () => { gotoStep(2); toggleCommandPalette(false); } },
     { label: 'Go to Generate', shortcut: 'Alt+3', action: () => { gotoStep(3); toggleCommandPalette(false); } },
     { label: 'Go to Review', shortcut: 'Alt+4', action: () => { gotoStep(4); toggleCommandPalette(false); } },
-    { label: 'Go to Insert', shortcut: 'Alt+5', action: () => { gotoStep(5); toggleCommandPalette(false); } },
+    { label: 'Go to Export', shortcut: 'Alt+5', action: () => { gotoStep(5); toggleCommandPalette(false); } },
     { label: 'Save facts', shortcut: 'Ctrl+S', action: () => { refs.saveFacts.click(); toggleCommandPalette(false); } },
     { label: 'Generate all narratives', shortcut: 'Ctrl+Shift+G', action: () => { refs.generateButton?.click(); toggleCommandPalette(false); } },
     { label: 'Approve all sections', action: () => { refs.approveAll?.click(); toggleCommandPalette(false); } },
-    { label: 'Insert into ACI', shortcut: 'Ctrl+Enter', action: () => { refs.insertButton?.click(); toggleCommandPalette(false); } },
+    { label: 'Export as PDF', shortcut: 'Ctrl+Enter', action: () => { refs.exportPdfButton?.click(); toggleCommandPalette(false); } },
     { label: 'Refresh cases', action: () => { refreshCases({ restoreSelection: true }); toggleCommandPalette(false); } },
     { label: 'Toggle sidebar', action: () => { toggleSidebar(); toggleCommandPalette(false); } },
     { label: 'Toggle theme (dark/light)', action: () => { toggleTheme(); toggleCommandPalette(false); } },
@@ -1866,18 +1888,79 @@ function renderInsertSummary() {
     : `
       <div class="empty-state compact">
         <h3>No sections ready</h3>
-        <p>Generate and approve narratives before inserting them into ACI.</p>
+        <p>Generate and approve narratives before exporting.</p>
       </div>
     `;
 
   refs.insertChecklist.innerHTML = `
     <div class="checklist-item ${S.caseId ? 'is-complete' : ''}"><span></span>Case selected</div>
     <div class="checklist-item ${entries.length ? 'is-complete' : ''}"><span></span>Generated sections available</div>
-    <div class="checklist-item ${approved > 0 ? 'is-complete' : ''}"><span></span>Approved sections ready</div>
+    <div class="checklist-item ${approved > 0 ? 'is-complete' : ''}"><span></span>Approved sections ready for export</div>
   `;
 }
 
+// ── Export functions (SaaS cloud mode) ──────────────────────────────────────
+
+async function exportAsPdf() {
+  if (!S.caseId) { showToast('Select a case first.', 'warning'); return; }
+  try {
+    refs.insertResults.innerHTML = '<div class="summary-note loading-note"><div class="spinner spinner-small"></div><span>Generating PDF...</span></div>';
+    const res = await fetch(`${API_BASE}/api/export/${S.caseId}/pdf`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'PDF export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${S.caseId}-report.pdf`; a.click();
+    URL.revokeObjectURL(url);
+    refs.insertResults.innerHTML = '<div class="summary-note success-note"><strong>PDF downloaded successfully.</strong></div>';
+    showToast('PDF exported.', 'success');
+  } catch (err) {
+    refs.insertResults.innerHTML = `<div class="summary-note error-note"><strong>Export failed</strong><span>${escapeHtml(err.message)}</span></div>`;
+    showToast(`Export failed: ${err.message}`, 'error');
+  }
+}
+
+async function exportAsDocx() {
+  if (!S.caseId) { showToast('Select a case first.', 'warning'); return; }
+  try {
+    refs.insertResults.innerHTML = '<div class="summary-note loading-note"><div class="spinner spinner-small"></div><span>Generating DOCX...</span></div>';
+    const res = await fetch(`${API_BASE}/api/export/${S.caseId}/docx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'DOCX export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${S.caseId}-report.docx`; a.click();
+    URL.revokeObjectURL(url);
+    refs.insertResults.innerHTML = '<div class="summary-note success-note"><strong>DOCX downloaded successfully.</strong></div>';
+    showToast('DOCX exported.', 'success');
+  } catch (err) {
+    refs.insertResults.innerHTML = `<div class="summary-note error-note"><strong>Export failed</strong><span>${escapeHtml(err.message)}</span></div>`;
+    showToast(`Export failed: ${err.message}`, 'error');
+  }
+}
+
+function copyToClipboard() {
+  const entries = getSectionEntries();
+  const approved = entries.filter(([, p]) => p.approved);
+  if (!approved.length) { showToast('No approved sections to copy.', 'warning'); return; }
+  const text = approved.map(([key, p]) => `## ${key}\n${p.text || ''}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(
+    () => showToast('Copied to clipboard.', 'success'),
+    () => showToast('Copy failed.', 'error')
+  );
+}
+
+// ── Legacy ACI insertion (desktop mode only) ────────────────────────────────
+
 async function insertAll() {
+  if (!window.DESKTOP_MODE) {
+    showToast('ACI insertion requires the desktop companion app.', 'warning');
+    return;
+  }
   if (!S.caseId) {
     showToast('Select a case first.', 'warning');
     return;
