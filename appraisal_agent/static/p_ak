@@ -1,0 +1,109 @@
+     }
+
+        // ============ D3 Graph Rendering ============
+        function renderGraph() {
+            const svg = d3.select('svg#graph');
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+
+            // Clear previous
+            svg.selectAll('*').remove();
+
+            // Create container groups
+            const g = svg.append('g');
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    zoomLevel = event.transform.k;
+                });
+            svg.call(zoom);
+
+            // Create force simulation
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.edges)
+                    .id(d => d.id)
+                    .distance(80)
+                    .strength(0.5))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('collide', d3.forceCollide().radius(30))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw links
+            const link = g.selectAll('line')
+                .data(graphData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 1);
+
+            // Draw nodes
+            const node = g.selectAll('circle')
+                .data(graphData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => 5 + (d.connections || 0) * 1.5)
+                .attr('fill', d => nodeTypeColors[d.type] || '#888')
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded))
+                .on('click', (event, d) => selectNode(d))
+                .on('mouseover', (event, d) => showTooltip(event, d))
+                .on('mouseout', hideTooltip);
+
+            // Draw labels
+            const labels = g.selectAll('.node-label')
+                .data(graphData.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .attr('dy', '.3em')
+                .text(d => d.name)
+                .style('display', areLabelsShown ? 'block' : 'none');
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            // Setup zoom buttons
+            document.getElementById('zoom-in-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    1.3
+                );
+            };
+
+            document.getElementById('zoom-out-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    0.7
+                );
+            };
+
+            document.getElementById('toggle-labels-btn').onclick = () => {
+                areLabelsShown = !areLabelsShown;
+                labels.style('display', areLabelsShown ? 'block' : 'none');
+                document.getElementById('toggle-labels-btn').classList.toggle('active');
+            };
+
+            document.getElementById('toggle-physics-btn').onclick = () => {
+                isPhysicsEnabled = !isPhysicsEnabled;
+                if (isPhysicsEnabled) {
+                    simulation.alpha(1).restart();
+       

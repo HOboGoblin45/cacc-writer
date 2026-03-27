@@ -101,19 +101,20 @@ function toggleCommandPalette(force) {
       `;
       document.body.appendChild(palette);
       palette.addEventListener('click', (e) => { if (e.target === palette) toggleCommandPalette(false); });
+      const input = palette.querySelector('.command-palette-input');
+      input.addEventListener('input', () => renderCommandPaletteResults(palette, input.value));
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const first = palette.querySelector('.command-palette-item');
+          if (first) first.click();
+        }
+      });
     }
     palette.classList.remove('hidden');
     const input = palette.querySelector('.command-palette-input');
     input.value = '';
     input.focus();
     renderCommandPaletteResults(palette, '');
-    input.addEventListener('input', () => renderCommandPaletteResults(palette, input.value));
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const first = palette.querySelector('.command-palette-item');
-        if (first) first.click();
-      }
-    });
   } else if (palette) {
     palette.classList.add('hidden');
   }
@@ -153,6 +154,7 @@ function renderCommandPaletteResults(palette, query) {
 
 // ── Auto-refresh polling ─────────────────────────────────────────────────────
 let pollTimer = null;
+let serviceCheckTimer = null;
 
 async function checkServices() {
   try {
@@ -197,12 +199,12 @@ function startPolling() {
       }
     } catch (_) { /* silent */ }
   }, 8000);
-  // Re-check services every 2 minutes
-  window.setInterval(checkServices, 120000);
+  serviceCheckTimer = window.setInterval(checkServices, 120000);
 }
 
 function stopPolling() {
   if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+  if (serviceCheckTimer) { window.clearInterval(serviceCheckTimer); serviceCheckTimer = null; }
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -534,9 +536,9 @@ async function promptNewCase() {
   const address = window.prompt('Property address for new case:', '');
   if (!address || !address.trim()) return;
 
-  const formOptions = ['1004', '1025', '1073', 'commercial'];
-  const formPrompt = window.prompt(`Form type:\n  1. 1004 – Single Family\n  2. 1025 – Small Income\n  3. 1073 – Condo\n  4. commercial\n\nEnter number or form type:`, '1');
-  const formMap = { '1': '1004', '2': '1025', '3': '1073', '4': 'commercial' };
+  const formOptions = ['1004', '1025', '1073', '1004c', 'commercial'];
+  const formPrompt = window.prompt(`Form type:\n  1. 1004 – Single Family\n  2. 1025 – Small Income\n  3. 1073 – Condo\n  4. 1004c – Manufactured Home\n  5. commercial\n\nEnter number or form type:`, '1');
+  const formMap = { '1': '1004', '2': '1025', '3': '1073', '4': '1004c', '5': 'commercial' };
   const formType = formMap[formPrompt] || (formOptions.includes(formPrompt) ? formPrompt : '1004');
 
   try {
@@ -1341,7 +1343,7 @@ async function generateAll() {
 
 var _fullReportAbortController = null;
 
-var FULL_REPORT_SECTIONS_1004 = [
+var FULL_REPORT_SECTIONS_FALLBACK = [
   { id: 'neighborhood_description', title: 'Neighborhood Description' },
   { id: 'site_description', title: 'Site Description' },
   { id: 'improvements_description', title: 'Improvements Description' },
@@ -1355,6 +1357,17 @@ var FULL_REPORT_SECTIONS_1004 = [
   { id: 'contract_analysis', title: 'Contract Analysis' },
   { id: 'prior_sales_subject', title: 'Prior Sales of Subject' },
 ];
+
+async function getFullReportSections() {
+  var formType = getCaseFormType(S.caseMeta) || '1004';
+  try {
+    var config = await api('/api/forms/' + formType);
+    if (config && Array.isArray(config.fields) && config.fields.length > 0) {
+      return config.fields.map(function(f) { return { id: f.id, title: f.title }; });
+    }
+  } catch (_) { /* fall back to default */ }
+  return FULL_REPORT_SECTIONS_FALLBACK;
+}
 
 function openGenerateReportModal(sections) {
   var list = refs.genModalSectionList;
@@ -1424,7 +1437,7 @@ async function generateFullReport() {
     return;
   }
 
-  var sections = FULL_REPORT_SECTIONS_1004;
+  var sections = await getFullReportSections();
   openGenerateReportModal(sections);
 
   var startedAt = Date.now();

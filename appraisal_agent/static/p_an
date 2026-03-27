@@ -1,0 +1,68 @@
+          const data = await apiCall('/api/comps');
+            if (data && data.length > 0) {
+                const tbody = document.getElementById('comps-table-body');
+                tbody.innerHTML = data.map(comp => `
+                    <tr>
+                        <td>${comp.address}</td>
+                        <td>$${comp.sale_price?.toLocaleString()}</td>
+                        <td>${comp.sale_date}</td>
+                        <td>${comp.sqft?.toLocaleString()}</td>
+                        <td>${comp.beds}</td>
+                        <td>${comp.baths}</td>
+                        <td>${comp.distance?.toFixed(1)} mi</td>
+                        <td>$${comp.adjustments?.toLocaleString() || '0'}</td>
+                        <td>$${comp.adjusted_price?.toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // ============ Report Preview ============
+        async function loadReportData() {
+            const data = await apiCall('/api/report/preview');
+            if (data) {
+                // Subject property
+                document.getElementById('report-subject-address').textContent = data.subject?.address || '--';
+                document.getElementById('report-subject-type').textContent = data.subject?.type || '--';
+                document.getElementById('report-subject-sqft').textContent = data.subject?.sqft?.toLocaleString() || '--';
+                document.getElementById('report-subject-beds').textContent = data.subject?.beds || '--';
+                document.getElementById('report-subject-baths').textContent = data.subject?.baths || '--';
+
+                // Neighborhood
+                document.getElementById('report-neighborhood').textContent = data.neighborhood?.market_area || '--';
+                document.getElementById('report-school-district').textContent = data.neighborhood?.school_district || '--';
+                document.getElementById('report-condition').textContent = data.neighborhood?.condition || '--';
+
+                // Market
+                document.getElementById('report-market-type').textContent = data.market?.type || '--';
+                document.getElementById('report-median-price').textContent = `$${data.market?.median_price?.toLocaleString() || '--'}`;
+                document.getElementById('report-days-market').textContent = data.market?.days_on_market || '--';
+
+                // Reconciliation
+                document.getElementById('report-approach1').textContent = `$${data.approaches?.comp_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-approach2').textContent = `$${data.approaches?.cost_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-approach3').textContent = `$${data.approaches?.income_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-final-value').textContent = `$${data.final_value?.toLocaleString() || '--'}`;
+            }
+        }
+
+        // ============ UI Event Listeners ============
+        function setupUIEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+
+                    if (tabId === 'comps-tab') loadComps();
+                    if (tabId === 'report-tab') loadReportData();
+                });
+            });
+
+            // Chat
+            document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
+            document.getElementById('chat-input').addEventList

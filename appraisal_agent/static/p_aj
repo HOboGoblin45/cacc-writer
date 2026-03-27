@@ -1,0 +1,103 @@
+   <div class="details-section">
+                <div class="details-section-title">Connected Nodes</div>
+                <div class="connections-list" id="node-connections"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ Global State ============
+        let graphData = { nodes: [], edges: [] };
+        let selectedNode = null;
+        let isPhysicsEnabled = true;
+        let areLabelsShown = true;
+        let is3DMode = false;
+        let simulation = null;
+        let zoomLevel = 1;
+        const nodeTypeColors = {
+            concept: "#FF6B6B",
+            property: "#4ECDC4",
+            comparable: "#45B7D1",
+            market_area: "#FFA07A",
+            standard: "#98D8C8",
+            data_source: "#F7DC6F",
+            user_knowledge: "#BB8FCE",
+        };
+
+        // ============ API Utilities ============
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                return null;
+            }
+        }
+
+        // ============ Initialization ============
+        async function initializeApp() {
+            // Load initial graph
+            await loadGraph();
+
+            // Setup WebSocket connection
+            setupWebSocket();
+
+            // Update connection status
+            updateConnectionStatus();
+
+            // Load market data
+            await loadMarketData();
+
+            // Setup UI event listeners
+            setupUIEventListeners();
+
+            // Load initial chat message
+            addChatMessage('agent', 'Welcome to CACC Appraiser! I\'m ready to help you complete a property appraisal. What property would you like to appraise today?');
+        }
+
+        // ============ Graph Loading & Management ============
+        async function loadGraph() {
+            const data = await apiCall('/api/graph');
+            if (data) {
+                graphData = data;
+                renderGraph();
+                updateStats();
+                updateLegend();
+            }
+        }
+
+        function updateStats() {
+            const nodes = graphData.nodes || [];
+            const edges = graphData.edges || [];
+            const nodeCount = nodes.length;
+            const edgeCount = edges.length;
+            const avgConnections = nodeCount > 0 ? (edgeCount * 2 / nodeCount).toFixed(1) : 0;
+            const density = nodeCount > 1 ? (edgeCount / (nodeCount * (nodeCount - 1) / 2)).toFixed(2) : 0;
+
+            document.getElementById('node-count').textContent = nodeCount;
+            document.getElementById('edge-count').textContent = edgeCount;
+            document.getElementById('stat-nodes').textContent = nodeCount;
+            document.getElementById('stat-edges').textContent = edgeCount;
+            document.getElementById('stat-density').textContent = density;
+            document.getElementById('stat-avg-conn').textContent = avgConnections;
+        }
+
+        function updateLegend() {
+            const legendContainer = document.getElementById('legend-container');
+            legendContainer.innerHTML = '';
+            Object.entries(nodeTypeColors).forEach(([type, color]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-dot" style="background: ${color};"></div>
+                    <span class="legend-label">${type.replace(/_/g, ' ').toUpperCase()}</span>
+                `;
+                item.onclick = () => filterByNodeType(type);
+                legendContainer.appendChild(item);
+            });
+   

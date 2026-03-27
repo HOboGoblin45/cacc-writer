@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appraisal Agent | Neural Knowledge Graph</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-dim": "#10141a",
+        "surface": "#1c2026",
+        "surface-bright": "#353940",
+        "surface-container": "#1c2026",
+        "surface-container-high": "#262a31",
+        "primary": "#ffd341",
+        "tertiary": "#f6d650",
+        "on-surface": "#dfe2eb",
+        "on-surface-variant": "#d1c5ad",
+        "outline": "#9a9079",
+        "outline-variant": "#4d4633",
+        "secondary-container": "#414a53",
+        "on-secondary": "#29313a",
+        "error": "#ffb4ab",
+      },
+      fontFamily: { sans: ["Inter", "sans-serif"] },
+    },
+  },
+};
+</script>
+<style>
+  body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; background: #10141a; }
+  #canvas3d { position: fixed; top: 0; left: 0; z-index: 0; }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed; top: 0; right: 0; width: 380px; height: 100vh;
+    background: rgba(28, 32, 38, 0.95); backdrop-filter: blur(20px);
+    border-left: 1px solid #4d4633; z-index: 20;
+    display: flex; flex-direction: column; transition: transform 0.3s ease;
+  }
+  .sidebar.collapsed { transform: translateX(380px); }
+
+  /* Top bar */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 56px;
+    background: rgba(16, 20, 26, 0.9); backdrop-filter: blur(16px);
+    border-bottom: 1px solid #4d4633; z-index: 15;
+    display: flex; align-items: center; padding: 0 20px; gap: 16px;
+  }
+
+  /* Node tooltip */
+  .node-tooltip {
+    position: fixed; z-index: 30; pointer-events: none;
+    background: rgba(38, 42, 49, 0.96); border: 1px solid #4d4633;
+    border-radius: 10px; padding: 12px 16px; max-width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Connection line */
+  .connection-mode { cursor: crosshair !important; }
+
+  /* Floating action buttons */
+  .fab-group {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 12px; z-index: 15;
+  }
+  .fab {
+    padding: 12px 20px; border-radius: 16px; border: 1px solid #4d4633;
+    background: rgba(28, 32, 38, 0.95); color: #dfe2eb;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 500; transition: all 0.2s;
+    backdrop-filter: blur(12px);
+  }
+  .fab:hover { background: #353940; border-color: #ffd341; color: #ffd341; }
+  .fab.active { background: #3c2f00; border-color: #ffd341; color: #ffd341; }
+
+  /* Stats panel */
+  .stats-panel {
+    position: fixed; top: 72px; left: 16px; z-index: 15;
+    background: rgba(28, 32, 38, 0.92); backdrop-filter: blur(16px);
+    border: 1px solid #4d4633; border-radius: 12px; padding: 16px;
+    min-width: 220px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #4d4633; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9a9079; }
+
+  /* Glow effect for selected nodes */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255,211,65,0.3); }
+    50% { box-shadow: 0 0 20px rgba(255,211,65,0.6); }
+  }
+
+  /* Mini-map */
+  .minimap {
+    position: fixed; bottom: 80px; right: 16px; width: 180px; height: 140px;
+    background: rgba(16, 20, 26, 0.9); border: 1px solid #4d4633;
+    border-radius: 8px; z-index: 15; overflow: hidden;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px); z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-content {
+    background: #1c2026; border: 1px solid #4d4633; border-radius: 16px;
+    padding: 28px; width: 460px; max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+
+  input[type="text"], input[type="number"], textarea, select {
+    background: #10141a; border: 1px solid #4d4633; border-radius: 8px;
+    padding: 10px 14px; color: #dfe2eb; font-family: 'Inter', sans-serif;
+    font-size: 13px; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: #ffd341; }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: #10141a; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#ffd341,#f6d650);display:flex;align-items:center;justify-content:center;">
+      <span class="material-symbols-outlined" style="color:#3c2f00;font-size:20px;">hub</span>
+    </div>
+    <span style="color:#dfe2eb;font-weight:700;font-size:16px;">Neural Knowledge Graph</span>
+    <span style="color:#9a9079;font-size:12px;padding:3px 10px;background:#262a31;border-radius:6px;">v3.1.0</span>
+  </div>
+  <div style="flex:1;"></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button id="btn-reset-view" class="fab" style="padding:8px 14px;font-size:12px;">
+      <span class="material-symbols-outlined" style="font-size:16px;">center_focus_strong</span> Reset View
+    </button>
+    <button id="btn-toggle-sidebar" class="fab" style="padding:8px 14px;font-size:12px;">
+      <span class="material-symbols-outlined" style="font-size:16px;">right_panel_open</span> Panel
+    </button>
+    <button id="btn-export" class="fab" style="padding:8px 14px;font-size:12px;">
+      <span class="material-symbols-outlined" style="font-size:16px;">download</span> Export
+    </button>
+  </div>
+</div>
+
+<!-- Stats Panel -->
+<div class="stats-panel" id="stats-panel">
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9a9079;margin-bottom:10px;">Knowledge Graph Stats</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:#10141a;border-radius:8px;padding:10px;">
+      <div style="font-size:20px;font-weight:700;color:#ffd341;" id="stat-nodes">0</div>
+      <div style="font-size:11px;color:#9a9079;">Nodes</div>
+    </div>
+    <div style="background:#10141a;border-radius:8px;padding:10px;">
+      <div style="font-size:20px;font-weight:700;color:#f6d650;" id="stat-edges">0</div>
+      <div style="font-size:11px;color:#9a9079;">Connections</div>
+    </div>
+    <div style="background:#10141a;border-radius:8px;padding:10px;">
+      <div style="font-size:20px;font-weight:700;color:#dfe2eb;" id="stat-examples">0</div>
+      <div style="font-size:11px;color:#9a9079;">Examples</div>
+    </div>
+    <div style="background:#10141a;border-radius:8px;padding:10px;">
+      <div style="font-size:20px;font-weight:700;color:#bec7d2;" id="stat-categories">0</div>
+      <div style="font-size:11px;color:#9a9079;">Categories</div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Actions -->
+<div class="fab-group">
+  <button class="fab" id="btn-add-node">
+    <span class="material-symbols-outlined" style="font-size:18px;">add_circle</span> Add Node
+  </button>
+  <button class="fab" id="btn-connect">
+    <span class="material-symbols-outlined" style="font-size:18px;">link</span> Connect
+  </button>
+  <button class="fab" id="btn-auto-layout">
+    <span class="material-symbols-outlined" style="font-size:18px;">auto_fix_high</span> Auto Layout
+  </button>
+  <button class="fab" id="btn-toggle-labels">
+    <span class="material-symbols-outlined" style="font-size:18px;">label</span> Labels
+  </button>
+  <button class="fab" id="btn-search">
+    <span class="material-symbols-outlined" style="font-size:18px;">search</span> Search
+  </button>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div style="padding:16px 20px;border-bottom:1px solid #4d4633;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-weight:600;color:#dfe2eb;font-size:14px;" id="sidebar-title">Node Inspector</span>
+    <button id="sidebar-close" style="background:none;border:none;cursor:pointer;color:#9a9079;">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px 20px;" id="sidebar-content">
+    <div style="color:#9a9079;font-size:13px;text-align:center;padding:40px 0;">
+      Click a node to inspect it
+    </div>
+  </div>
+</div>
+
+<!-- Node Tooltip -->
+<div class="node-tooltip" id="tooltip" style="display:none;"></div>
+
+<!-- Canvas -->
+<canvas id="canvas3d"></canvas>
+
+<!-- Templates for modals (hidden) -->
+<div id="modal-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// APPRAISAL AGENT — NEURAL KNOWLEDGE GRAPH
+// 3D Node Editor & Brain Visualization for ML Training Data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Category color palette ───────────────────────────────────────────────────
+const CATEGORY_COLORS = {
+  'Core Appraisal':      { hex: '#ffd341', r: 1.0,  g: 0.83, b: 0.25 },
+  'Narrative Writing':   { hex: '#4fc3f7', r: 0.31, g: 0.76, b: 0.97 },
+  'Data Extraction':     { hex: '#81c784', r: 0.51, g: 0.78, b: 0.52 },
+  'Market Analysis':     { hex: '#ff8a65', r: 1.0,  g: 0.54, b: 0.40 },
+  'Compliance':          { hex: '#ce93d8', r: 0.81, g: 0.58, b: 0.85 },
+  'Specialized':         { hex: '#fff176', r: 1.0,  g: 0.95, b: 0.46 },
+  'Property Types':      { hex: '#a5d6a7', r: 0.65, g: 0.84, b: 0.65 },
+  'Valuation Methods':   { hex: '#ef9a9a', r: 0.94, g: 0.60, b: 0.60 },
+  'Regulatory':          { hex: '#90caf9', r: 0.56, g: 0.79, b: 0.98 },
+  'Education':           { hex: '#ffcc80', r: 1.0,  g: 0.80, b: 0.50 },
+};
+
+// ── Map training types to categories ─────────────────────────────────────────
+const TYPE_TO_CATEGORY = {
+  'full_appraisal': 'Core Appraisal',
+  'reconciliation': 'Core Appraisal',
+  'scope_of_work': 'Core Appraisal',
+  'narrative_writing': 'Narrative Writing',
+  'report_narrative_style': 'Narrative Writing',
+  'order_extraction': 'Data Extraction',
+  'contract_extraction': 'Data Extraction',
+  'inspection_details': 'Data Extraction',
+  'comp_selection': 'Market Analysis',
+  'market_analysis': 'Market Analysis',
+  'market_trends': 'Market Analysis',
+  'prior_sales': 'Market Analysis',
+  'adjustment_reasoning': 'Valuation Methods',
+  'adjustment_methodology': 'Valuation Methods',
+  'condition_quality': 'Valuation Methods',
+  'site_valuation': 'Valuation Methods',
+  'concessions': 'Valuation Methods',
+  'hbu_analysis': 'Valuation Methods',
+  'manufactured_home': 'Property Types',
+  'condo_appraisal': 'Property Types',
+  'multifamily_1025': 'Property Types',
+  'farm_appraisal': 'Property Types',
+  'commercial_lease': 'Property Types',
+  'va_appraisal': 'Specialized',
+  'expert_reasoning': 'Specialized',
+  'special_assignments': 'Specialized',
+  'assignment_types': 'Specialized',
+  'environmental': 'Compliance',
+  'flood_zone': 'Compliance',
+  'zoning': 'Compliance',
+  'easements': 'Compliance',
+  'ethics': 'Regulatory',
+  'licensing': 'Regulatory',
+  'ucdp': 'Regulatory',
+  'quality_review': 'Regulatory',
+  'repairs': 'Compliance',
+  'your comp process': 'Market Analysis',
+};
+
+// ── Graph Data Store ─────────────────────────────────────────────────────────
+class GraphStore {
+  constructor() {
+    this.nodes = [];
+    this.edges = [];
+    this.nextNodeId = 1;
+    this.nextEdgeId = 1;
+    this.listeners = new Set();
+  }
+
+  subscribe(fn) { this.listeners.add(fn); }
+  notify() { this.listeners.forEach(fn => fn()); }
+
+  addNode(node) {
+    const n = {
+      id: this.nextNodeId++,
+      label: node.label || 'Untitled',
+      category: node.category || 'Core Appraisal',
+      type: node.type || 'concept',
+      description: node.description || '',
+      exampleCount: node.exampleCount || 0,
+      x: node.x || (Math.random() - 0.5) * 20,
+      y: node.y || (Math.random() - 0.5) * 20,
+      z: node.z || (Math.random() - 0.5) * 20,
+      vx: 0, vy: 0, vz: 0,
+      metadata: node.metadata || {},
+      pinned: false,
+      size: Math.max(0.3, Math.min(2.0, Math.log2((node.exampleCount || 1) + 1) * 0.4)),
+    };
+    this.nodes.push(n);
+    this.notify();
+    return n;
+  }
+
+  updateNode(id, updates) {
+    const n = this.nodes.find(n => n.id === id);
+    if (!n) return;
+    Object.assign(n, updates);
+    if (updates.exampleCount !== undefined) {
+      n.size = Math.max(0.3, Math.min(2.0, Math.log2((n.exampleCount || 1) + 1) * 0.4));
+    }
+    this.notify();
+    return n;
+  }
+
+  removeNode(id) {
+    this.nodes = this.nodes.filter(n => n.id !== id);
+    this.edges = this.edges.filter(e => e.source !== id && e.target !== id);
+    this.notify();
+  }
+
+  addEdge(sourceId, targetId, label = '', strength = 1.0) {
+    if (sourceId === targetId) return null;
+    const exists = this.edges.find(e =>
+      (e.source === sourceId && e.target === targetId) ||
+      (e.source === targetId && e.target === sourceId)
+    );
+    if (exists) return null;
+    const e = {
+      id: this.nextEdgeId++,
+      source: sourceId,
+      target: targetId,
+      label: label,
+      strength: strength,
+    };
+    this.edges.push(e);
+    this.notify();
+    return e;
+  }
+
+  removeEdge(id) {
+    this.edges = this.edges.filter(e => e.id !== id);
+    this.notify();
+  }
+
+  getNode(id) { return this.nodes.find(n => n.id === id); }
+
+  getConnections(nodeId) {
+    return this.edges.filter(e => e.source === nodeId || e.target === nodeId);
+  }
+
+  getNeighbors(nodeId) {
+    return this.getConnections(nodeId).map(e =>
+      e.source === nodeId ? this.getNode(e.target) : this.getNode(e.source)
+    ).filter(Boolean);
+  }
+
+  totalExamples() {
+    return this.nodes.reduce((sum, n) => sum + (n.exampleCount || 0), 0);
+  }
+
+  categoryCount() {
+    return new Set(this.nodes.map(n => n.category)).size;
+  }
+
+  exportJSON() {
+    return JSON.stringify({ nodes: this.nodes, edges: this.edges }, null, 2);
+  }
+
+  importJSON(json) {
+    const data = JSON.parse(json);
+    this.nodes = data.nodes || [];
+    this.edges = data.edges || [];
+    this.nextNodeId = Math.max(0, ...this.nodes.map(n => n.id)) + 1;
+    this.nextEdgeId = Math.max(0, ...this.edges.map(e => e.id)) + 1;
+    this.notify();
+  }
+}
+
+const store = new GraphStore();
+
+// ── Initialize with training data ────────────────────────────────────────────
+function initializeFromTrainingData() {
+  const trainingTypes = {
+    'narrative_writing': 605, 'full_appraisal': 319, 'order_extraction': 170,
+    'reconciliation': 94, 'contract_extraction': 74, 'comp_selection': 23,
+    'adjustment_reasoning': 21, 'adjustment_methodology': 20, 'market_analysis': 20,
+    'manufactured_home': 20, 'commercial_lease': 19, 'condo_appraisal': 19,
+    'va_appraisal': 19, 'condition_quality': 18, 'hbu_analysis': 17,
+    'multifamily_1025': 17, 'farm_appraisal': 16, 'environmental': 10,
+    'flood_zone': 10, 'scope_of_work': 10, 'zoning': 10, 'site_valuation': 9,
+    'expert_reasoning': 9, 'inspection_details': 8,
+  };
+
+  // Add category hub nodes
+  const catNodes = {};
+  Object.keys(CATEGORY_COLORS).forEach((cat, i) => {
+    const angle = (i / Object.keys(CATEGORY_COLORS).length) * Math.PI * 2;
+    const radius = 12;
+    catNodes[cat] = store.addNode({
+      label: cat,
+      category: cat,
+      type: 'category',
+      description: `Category hub for ${cat} knowledge domain`,
+      exampleCount: 0,
+      x: Math.cos(angle) * radius,
+      y: (Math.random() - 0.5) * 6,
+      z: Math.sin(angle) * radius,
+    });
+  });
+
+  // Add training type nodes
+  const typeNodes = {};
+  Object.entries(trainingTypes).forEach(([type, count]) => {
+    const cat = TYPE_TO_CATEGORY[type] || 'Core Appraisal';
+    const catNode = catNodes[cat];
+    const offset = () => (Math.random() - 0.5) * 6;
+    typeNodes[type] = store.addNode({
+      label: type.replace(/_/g, ' '),
+      category: cat,
+      type: 'training_type',
+      description: `Training examples for ${type.replace(/_/g, ' ')} tasks`,
+      exampleCount: count,
+      x: catNode.x + offset(),
+      y: catNode.y + offset(),
+      z: catNode.z + offset(),
+    });
+    // Connect to category hub
+    store.addEdge(catNode.id, typeNodes[type].id, 'contains', 0.8);
+  });
+
+  // Add conceptual cross-category connections
+  const crossLinks = [
+    ['adjustment_reasoning', 'comp_selection', 'informs'],
+    ['market_analysis', 'adjustment_methodology', 'drives'],
+    ['full_appraisal', 'narrative_writing', 'produces'],
+    ['order_extraction', 'full_appraisal', 'initiates'],
+    ['contract_extraction', 'order_extraction', 'feeds'],
+    ['condition_quality', 'adjustment_reasoning', 'affects'],
+    ['hbu_analysis', 'site_valuation', 'determines'],
+    ['environmental', 'condition_quality', 'impacts'],
+    ['flood_zone', 'site_valuation', 'restricts'],
+    ['zoning', 'hbu_analysis', 'constrains'],
+    ['reconciliation', 'full_appraisal', 'finalizes'],
+    ['scope_of_work', 'full_appraisal', 'defines'],
+    ['inspection_details', 'condition_quality', 'documents'],
+    ['va_appraisal', 'full_appraisal', 'specializes'],
+    ['condo_appraisal', 'full_appraisal', 'specializes'],
+    ['manufactured_home', 'full_appraisal', 'specializes'],
+    ['commercial_lease', 'market_analysis', 'applies'],
+    ['comp_selection', 'market_analysis', 'supports'],
+  ];
+
+  crossLinks.forEach(([src, tgt, label]) => {
+    if (typeNodes[src] && typeNodes[tgt]) {
+      store.addEdge(typeNodes[src].id, typeNodes[tgt].id, label, 0.4);
+    }
+  });
+
+  // Add planned education nodes (not yet populated)
+  const educationTopics = [
+    { label: 'USPAP Standards', desc: 'Uniform Standards of Professional Appraisal Practice — Standards 1 & 2', count: 0 },
+    { label: 'Fannie Mae Guidelines', desc: 'Selling Guide B4-1: Appraisal Requirements', count: 0 },
+    { label: 'FHA/HUD 4000.1', desc: 'FHA Single Family Housing Policy Handbook — Appraisal Protocol', count: 0 },
+    { label: 'Freddie Mac Guide', desc: 'Freddie Mac Single-Family Seller/Servicer Guide Ch. 5601+', count: 0 },
+    { label: 'Cost Approach', desc: 'Marshall & Swift methodology, depreciation analysis', count: 0 },
+    { label: 'Income Approach', desc: 'Cap rate, GRM, DCF analysis for income properties', count: 0 },
+    { label: 'Sales Comparison', desc: 'Paired sales, regression, qualitative & quantitative adjustments', count: 0 },
+    { label: 'URAR/Form 1004', desc: 'Uniform Residential Appraisal Report form completion', count: 0 },
+    { label: 'Illinois Regulations', desc: 'State-specific appraisal licensing and compliance requirements', count: 0 },
+    { label: 'UAD Compliance', desc: 'Uniform Appraisal Dataset standardized coding', count: 0 },
+  ];
+
+  const eduCatNode = catNodes['Education'];
+  educationTopics.forEach(topic => {
+    const offset = () => (Math.random() - 0.5) * 5;
+    const n = store.addNode({
+      label: topic.label,
+      category: 'Education',
+      type: 'education_planned',
+      description: topic.desc,
+      exampleCount: topic.count,
+      x: eduCatNode.x + offset(),
+      y: eduCatNode.y + offset(),
+      z: eduCatNode.z + offset(),
+    });
+    store.addEdge(eduCatNode.id, n.id, 'teaches', 0.6);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREE.JS 3D RENDERER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let scene, camera, renderer, raycaster, mouse;
+let nodeMeshes = new Map();   // nodeId → mesh
+let edgeLines = new Map();     // edgeId → line
+let labelSprites = new Map();  // nodeId → sprite
+let selectedNodeId = null;
+let hoveredNodeId = null;
+let connectMode = false;
+let connectSource = null;
+let showLabels = true;
+let isDragging = false;
+let isRotating = false;
+let mouseDown = false;
+let lastMouse = { x: 0, y: 0 };
+let cameraTarget = new THREE.Vector3(0, 0, 0);
+let cameraRadius = 35;
+let cameraTheta = Math.PI / 4;
+let cameraPhi = Math.PI / 3;
+let simulationRunning = true;
+
+function initThree() {
+  const canvas = document.getElementById('canvas3d');
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x10141a, 0.012);
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
+  updateCameraPosition();
+
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x10141a);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+  scene.add(ambientLight);
+
+  const pointLight1 = new THREE.PointLight(0xffd341, 1.2, 100);
+  pointLight1.position.set(20, 20, 20);
+  scene.add(pointLight1);
+
+  const pointLight2 = new THREE.PointLight(0x4fc3f7, 0.8, 80);
+  pointLight2.position.set(-15, -10, 15);
+  scene.add(pointLight2);
+
+  // Particle field background
+  createParticleField();
+
+  // Grid (subtle)
+  const gridHelper = new THREE.GridHelper(80, 40, 0x1a1e24, 0x1a1e24);
+  gridHelper.position.y = -15;
+  scene.add(gridHelper);
+
+  raycaster = new THREE.Raycaster();
+  raycaster.params.Points = { threshold: 0.5 };
+  mouse = new THREE.Vector2();
+
+  // Events
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mouseup', onMouseUp);
+  canvas.addEventListener('wheel', onWheel);
+  canvas.addEventListener('dblclick', onDoubleClick);
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('resize', onResize);
+}
+
+function createParticleField() {
+  const count = 800;
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({ color: 0x2a2e36, size: 0.15, transparent: true, opacity: 0.5 });
+  scene.add(new THREE.Points(geo, mat));
+}
+
+function updateCameraPosition() {
+  if (!camera) return;
+  camera.position.set(
+    cameraTarget.x + cameraRadius * Math.sin(cameraPhi) * Math.cos(cameraTheta),
+    cameraTarget.y + cameraRadius * Math.cos(cameraPhi),
+    cameraTarget.z + cameraRadius * Math.sin(cameraPhi) * Math.sin(cameraTheta)
+  );
+  camera.lookAt(cameraTarget);
+}
+
+function getNodeColor(node) {
+  const catColor = CATEGORY_COLORS[node.category];
+  if (!catColor) return { r: 0.8, g: 0.8, b: 0.8, hex: '#cccccc' };
+  return catColor;
+}
+
+function createNodeMesh(node) {
+  const color = getNodeColor(node);
+  const isHub = node.type === 'category';
+  const isPlanned = node.type === 'education_planned';
+  const size = isHub ? 1.2 : node.size;
+
+  // Main sphere
+  const geo = new THREE.SphereGeometry(size, isHub ? 32 : 16, isHub ? 32 : 16);
+  const mat = new THREE.MeshPhongMaterial({
+    color: new THREE.Color(color.r, color.g, color.b),
+    emissive: new THREE.Color(color.r * 0.2, color.g * 0.2, color.b * 0.2),
+    transparent: isPlanned,
+    opacity: isPlanned ? 0.4 : 1.0,
+    shininess: 60,
+    wireframe: isPlanned,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(node.x, node.y, node.z);
+  mesh.userData = { nodeId: node.id };
+
+  // Glow ring for hub nodes
+  if (isHub) {
+    const ringGeo = new THREE.RingGeometry(size * 1.3, size * 1.6, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color.r, color.g, color.b),
+      transparent: true, opacity: 0.15, side: THREE.DoubleSide,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.lookAt(camera.position);
+    mesh.add(ring);
+    mesh.userData.ring = ring;
+  }
+
+  scene.add(mesh);
+  return mesh;
+}
+
+function createEdgeLine(edge) {
+  const srcNode = store.getNode(edge.source);
+  const tgtNode = store.getNode(edge.target);
+  if (!srcNode || !tgtNode) return null;
+
+  const srcColor = getNodeColor(srcNode);
+  const tgtColor = getNodeColor(tgtNode);
+
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(6);
+  positions[0] = srcNode.x; positions[1] = srcNode.y; positions[2] = srcNode.z;
+  positions[3] = tgtNode.x; positions[4] = tgtNode.y; positions[5] = tgtNode.z;
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const mat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(
+      (srcColor.r + tgtColor.r) / 2,
+      (srcColor.g + tgtColor.g) / 2,
+      (srcColor.b + tgtColor.b) / 2
+    ),
+    transparent: true,
+    opacity: 0.2 + edge.strength * 0.3,
+    linewidth: 1,
+  });
+
+  const line = new THREE.Line(geo, mat);
+  line.userData = { edgeId: edge.id };
+  scene.add(line);
+  return line;
+}
+
+function createLabelSprite(node) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 512;
+  canvas.height = 64;
+  ctx.clearRect(0, 0, 512, 64);
+  ctx.font = node.type === 'category' ? 'bold 28px Inter' : '22px Inter';
+  ctx.fillStyle = '#dfe2eb';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.label, 256, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.85 });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(node.type === 'category' ? 6 : 4, 0.75, 1);
+  sprite.position.set(node.x, node.y + node.size + 0.8, node.z);
+  scene.add(sprite);
+  return sprite;
+}
+
+function rebuildScene() {
+  // Clear existing
+  nodeMeshes.forEach(m => scene.remove(m));
+  edgeLines.forEach(l => scene.remove(l));
+  labelSprites.forEach(s => scene.remove(s));
+  nodeMeshes.clear();
+  edgeLines.clear();
+  labelSprites.clear();
+
+  // Rebuild
+  store.nodes.forEach(node => {
+    nodeMeshes.set(node.id, createNodeMesh(node));
+    if (showLabels) {
+      labelSprites.set(node.id, createLabelSprite(node));
+    }
+  });
+  store.edges.forEach(edge => {
+    const line = createEdgeLine(edge);
+    if (line) edgeLines.set(edge.id, line);
+  });
+
+  updateStats();
+}
+
+function updatePositions() {
+  store.nodes.forEach(node => {
+    const mesh = nodeMeshes.get(node.id);
+    if (mesh) {
+      mesh.position.set(node.x, node.y, node.z);
+      // Pulse selected node
+      if (node.id === selectedNodeId) {
+        const scale = 1 + Math.sin(Date.now() * 0.004) * 0.1;
+        mesh.scale.set(scale, scale, scale);
+      } else {
+        mesh.scale.set(1, 1, 1);
+      }
+      // Rings face camera
+      if (mesh.userData.ring) {
+        mesh.userData.ring.lookAt(camera.position);
+      }
+    }
+    const sprite = labelSprites.get(node.id);
+    if (sprite) {
+      sprite.position.set(node.x, node.y + node.size + 0.8, node.z);
+    }
+  });
+
+  store.edges.forEach(edge => {
+    const line = edgeLines.get(edge.id);
+    if (!line) return;
+    const src = store.getNode(edge.source);
+    const tgt = store.getNode(edge.target);
+    if (!src || !tgt) return;
+    const pos = line.geometry.attributes.position.array;
+    pos[0] = src.x; pos[1] = src.y; pos[2] = src.z;
+    pos[3] = tgt.x; pos[4] = tgt.y; pos[5] = tgt.z;
+    line.geometry.attributes.position.needsUpdate = true;
+  });
+}
+
+// ── Force-directed simulation ────────────────────────────────────────────────
+function simulationStep() {
+  if (!simulationRunning) return;
+
+  const nodes = store.nodes;
+  const edges = store.edges;
+  const damping = 0.92;
+  const repulsion = 8.0;
+  const attraction = 0.015;
+  const centerGravity = 0.002;
+
+  // Repulsion between all nodes
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].pinned) continue;
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dz = nodes[i].z - nodes[j].z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.01;
+      const force = repulsion / (dist * dist);
+      const fx = dx / dist * force;
+      const fy = dy / dist * force;
+      const fz = dz / dist * force;
+      if (!nodes[i].pinned) { nodes[i].vx += fx; nodes[i].vy += fy; nodes[i].vz += fz; }
+      if (!nodes[j].pinned) { nodes[j].vx -= fx; nodes[j].vy -= fy; nodes[j].vz -= fz; }
+    }
+  }
+
+  // Attraction along edges
+  edges.forEach(edge => {
+    const src = store.getNode(edge.source);
+    const tgt = store.getNode(edge.target);
+    if (!src || !tgt) return;
+    const dx = tgt.x - src.x;
+    const dy = tgt.y - src.y;
+    const dz = tgt.z - src.z;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.01;
+    const idealDist = edge.strength > 0.5 ? 5 : 8;
+    const force = (dist - idealDist) * attraction * edge.strength;
+    const fx = dx / dist * force;
+    const fy = dy / dist * force;
+    const fz = dz / dist * force;
+    if (!src.pinned) { src.vx += fx; src.vy += fy; src.vz += fz; }
+    if (!tgt.pinned) { tgt.vx -= fx; tgt.vy -= fy; tgt.vz -= fz; }
+  });
+
+  // Center gravity
+  nodes.forEach(n => {
+    if (n.pinned) return;
+    n.vx -= n.x * centerGravity;
+    n.vy -= n.y * centerGravity;
+    n.vz -= n.z * centerGravity;
+  });
+
+  // Apply velocities
+  nodes.forEach(n => {
+    if (n.pinned) return;
+    n.vx *= damping;
+    n.vy *= damping;
+    n.vz *= damping;
+    n.x += n.vx;
+    n.y += n.vy;
+    n.z += n.vz;
+  });
+}
+
+// ── Mouse interaction ────────────────────────────────────────────────────────
+function onMouseMove(e) {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  if (mouseDown && e.buttons === 1 && !isDragging) {
+    // Rotate camera
+    const dx = e.clientX - lastMouse.x;
+    const dy = e.clientY - lastMouse.y;
+    cameraTheta -= dx * 0.005;
+    cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi + dy * 0.005));
+    updateCameraPosition();
+  }
+
+  if (isDragging && selectedNodeId) {
+    // Drag node in 3D
+    const node = store.getNode(selectedNodeId);
+    if (node) {
+      raycaster.setFromCamera(mouse, camera);
+      const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion), 0);
+      const meshPos = nodeMeshes.get(selectedNodeId)?.position;
+      if (meshPos) {
+        plane.constant = -meshPos.dot(plane.normal);
+      }
+      const intersection = new THREE.Vector3();
+      raycaster.ray.intersectPlane(plane, intersection);
+      if (intersection) {
+        node.x = intersection.x;
+        node.y = intersection.y;
+        node.z = intersection.z;
+        node.pinned = true;
+      }
+    }
+  }
+
+  lastMouse = { x: e.clientX, y: e.clientY };
+
+  // Tooltip on hover
+  updateHover(e);
+}
+
+function onMouseDown(e) {
+  if (e.target !== renderer.domElement) return;
+  mouseDown = true;
+  lastMouse = { x: e.clientX, y: e.clientY };
+
+  // Check for node hit
+  raycaster.setFromCamera(mouse, camera);
+  const meshArray = Array.from(nodeMeshes.values());
+  const intersects = raycaster.intersectObjects(meshArray);
+
+  if (intersects.length > 0) {
+    const hitId = intersects[0].object.userData.nodeId;
+
+    if (connectMode) {
+      if (!connectSource) {
+        connectSource = hitId;
+        highlightNode(hitId, true);
+      } else {
+        store.addEdge(connectSource, hitId, '', 0.6);
+        highlightNode(connectSource, false);
+        connectSource = null;
+        connectMode = false;
+        document.getElementById('btn-connect').classList.remove('active');
+        document.body.classList.remove('connection-mode');
+        rebuildScene();
+      }
+      return;
+    }
+
+    if (e.detail === 1) {
+      isDragging = true;
+      selectNode(hitId);
+    }
+  } else if (!connectMode) {
+    isRotating = true;
+  }
+}
+
+function onMouseUp(e) {
+  mouseDown = false;
+  if (isDragging && selectedNodeId) {
+    const node = store.getNode(selectedNodeId);
+    if (node) node.pinned = false;
+  }
+  isDragging = false;
+  isRotating = false;
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  cameraRadius = Math.max(8, Math.min(80, cameraRadius + e.deltaY * 0.03));
+  updateCameraPosition();
+}
+
+function onDoubleClick(e) {
+  raycaster.setFromCamera(mouse, camera);
+  const meshArray = Array.from(nodeMeshes.values());
+  const intersects = raycaster.intersectObjects(meshArray);
+  if (intersects.length > 0) {
+    const hitId = intersects[0].object.userData.nodeId;
+    openEditModal(hitId);
+  }
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function updateHover(e) {
+  raycaster.setFromCamera(mouse, camera);
+  const meshArray = Array.from(nodeMeshes.values());
+  const intersects = raycaster.intersectObjects(meshArray);
+  const tooltip = document.getElementById('tooltip');
+
+  if (intersects.length > 0 && !isDragging) {
+    const hitId = intersects[0].object.userData.nodeId;
+    const node = store.getNode(hitId);
+    if (node && hitId !== hoveredNodeId) {
+      hoveredNodeId = hitId;
+      const connections = store.getConnections(hitId).length;
+      const color = getNodeColor(node);
+      tooltip.innerHTML = `
+        <div style="font-weight:600;color:${color.hex};font-size:14px;margin-bottom:4px;">${node.label}</div>
+        <div style="color:#9a9079;font-size:12px;margin-bottom:6px;">${node.category} &middot; ${node.type}</div>
+        ${node.description ? `<div style="color:#bec7d2;font-size:12px;margin-bottom:6px;">${node.description}</div>` : ''}
+        <div style="display:flex;gap:12px;font-size:11px;color:#9a9079;">
+          <span>${node.exampleCount} examples</span>
+          <span>${connections} connections</span>
+        </div>
+      `;
+      tooltip.style.display = 'block';
+    }
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+  } else {
+    hoveredNodeId = null;
+    tooltip.style.display = 'none';
+  }
+}
+
+function highlightNode(nodeId, highlight) {
+  const mesh = nodeMeshes.get(nodeId);
+  if (!mesh) return;
+  if (highlight) {
+    mesh.material.emissive.setHex(0xffd341);
+    mesh.material.emissiveIntensity = 0.8;
+  } else {
+    const node = store.getNode(nodeId);
+    const color = getNodeColor(node);
+    mesh.material.emissive.setRGB(color.r * 0.2, color.g * 0.2, color.b * 0.2);
+    mesh.material.emissiveIntensity = 1.0;
+  }
+}
+
+function selectNode(nodeId) {
+  if (selectedNodeId) highlightNode(selectedNodeId, false);
+  selectedNodeId = nodeId;
+  highlightNode(nodeId, true);
+  showNodeInSidebar(nodeId);
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+function showNodeInSidebar(nodeId) {
+  const node = store.getNode(nodeId);
+  if (!node) return;
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.remove('collapsed');
+  document.getElementById('sidebar-title').textContent = node.label;
+
+  const connections = store.getConnections(nodeId);
+  const neighbors = store.getNeighbors(nodeId);
+  const color = getNodeColor(node);
+
+  const content = document.getElementById('sidebar-content');
+  content.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="display:inline-block;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;color:${color.hex};background:${color.hex}22;border:1px solid ${color.hex}44;">
+        ${node.category}
+      </div>
+      <span style="color:#9a9079;font-size:12px;margin-left:8px;">${node.type}</span>
+    </div>
+
+    ${node.description ? `<div style="color:#bec7d2;font-size:13px;line-height:1.5;margin-bottom:16px;">${node.description}</div>` : ''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
+      <div style="background:#10141a;border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:#ffd341;">${node.exampleCount}</div>
+        <div style="font-size:11px;color:#9a9079;">Training Examples</div>
+      </div>
+      <div style="background:#10141a;border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:#4fc3f7;">${connections.length}</div>
+        <div style="font-size:11px;color:#9a9079;">Connections</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:600;color:#dfe2eb;margin-bottom:8px;">Connected Nodes</div>
+      ${neighbors.length === 0 ? '<div style="color:#9a9079;font-size:12px;">No connections</div>' :
+        neighbors.map(n => {
+          const nc = getNodeColor(n);
+          return `<div onclick="selectNode(${n.id})" style="cursor:pointer;padding:8px 12px;background:#10141a;border-radius:8px;margin-bottom:4px;display:flex;align-items:center;gap:8px;transition:background 0.15s;" onmouseover="this.style.background='#262a31'" onmouseout="this.style.background='#10141a'">
+            <div style="width:8px;height:8px;border-radius:50%;background:${nc.hex};flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;color:#dfe2eb;">${n.label}</div>
+              <div style="font-size:10px;color:#9a9079;">${n.exampleCount} examples</div>
+            </div>
+          </div>`;
+        }).join('')}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="openEditModal(${nodeId})" style="flex:1;padding:10px;background:#262a31;border:1px solid #4d4633;border-radius:8px;color:#dfe2eb;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">edit</span> Edit
+      </button>
+      <button onclick="confirmDeleteNode(${nodeId})" style="flex:1;padding:10px;background:#262a31;border:1px solid #4d4633;border-radius:8px;color:#ef9a9a;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Remove
+      </button>
+    </div>
+  `;
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+function showModal(html) {
+  const container = document.getElementById('modal-container');
+  container.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-content">${html}</div></div>`;
+}
+
+function closeModal() {
+  document.getElementById('modal-container').innerHTML = '';
+}
+
+function openAddNodeModal() {
+  showModal(`
+    <div style="font-size:16px;font-weight:700;color:#dfe2eb;margin-bottom:20px;">Add Knowledge Node</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Label</label>
+      <input type="text" id="new-node-label" placeholder="e.g. USPAP Ethics Rule" />
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Category</label>
+      <select id="new-node-category">
+        ${Object.keys(CATEGORY_COLORS).map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Type</label>
+      <select id="new-node-type">
+        <option value="concept">Concept</option>
+        <option value="training_type">Training Type</option>
+        <option value="education_planned">Education (Planned)</option>
+        <option value="regulation">Regulation</option>
+        <option value="methodology">Methodology</option>
+        <option value="category">Category Hub</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Description</label>
+      <textarea id="new-node-desc" placeholder="Brief description of this knowledge node"></textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Example Count</label>
+      <input type="number" id="new-node-count" value="0" min="0" />
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeModal()" style="padding:10px 20px;background:#262a31;border:1px solid #4d4633;border-radius:8px;color:#dfe2eb;cursor:pointer;font-size:13px;">Cancel</button>
+      <button onclick="addNodeFromModal()" style="padding:10px 20px;background:#3c2f00;border:1px solid #ffd341;border-radius:8px;color:#ffd341;cursor:pointer;font-weight:600;font-size:13px;">Add Node</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('new-node-label').focus(), 100);
+}
+
+function addNodeFromModal() {
+  const label = document.getElementById('new-node-label').value.trim();
+  if (!label) return;
+  store.addNode({
+    label,
+    category: document.getElementById('new-node-category').value,
+    type: document.getElementById('new-node-type').value,
+    description: document.getElementById('new-node-desc').value.trim(),
+    exampleCount: parseInt(document.getElementById('new-node-count').value) || 0,
+  });
+  closeModal();
+  rebuildScene();
+}
+
+function openEditModal(nodeId) {
+  const node = store.getNode(nodeId);
+  if (!node) return;
+  showModal(`
+    <div style="font-size:16px;font-weight:700;color:#dfe2eb;margin-bottom:20px;">Edit Node</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Label</label>
+      <input type="text" id="edit-node-label" value="${node.label}" />
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Category</label>
+      <select id="edit-node-category">
+        ${Object.keys(CATEGORY_COLORS).map(c => `<option value="${c}" ${c === node.category ? 'selected' : ''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Type</label>
+      <select id="edit-node-type">
+        ${['concept','training_type','education_planned','regulation','methodology','category'].map(t => `<option value="${t}" ${t === node.type ? 'selected' : ''}>${t}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Description</label>
+      <textarea id="edit-node-desc">${node.description}</textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:#9a9079;display:block;margin-bottom:4px;">Example Count</label>
+      <input type="number" id="edit-node-count" value="${node.exampleCount}" min="0" />
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeModal()" style="padding:10px 20px;background:#262a31;border:1px solid #4d4633;border-radius:8px;color:#dfe2eb;cursor:pointer;font-size:13px;">Cancel</button>
+      <button onclick="saveEditModal(${nodeId})" style="padding:10px 20px;background:#3c2f00;border:1px solid #ffd341;border-radius:8px;color:#ffd341;cursor:pointer;font-weight:600;font-size:13px;">Save</button>
+    </div>
+  `);
+}
+
+function saveEditModal(nodeId) {
+  store.updateNode(nodeId, {
+    label: document.getElementById('edit-node-label').value.trim(),
+    category: document.getElementById('edit-node-category').value,
+    type: document.getElementById('edit-node-type').value,
+    description: document.getElementById('edit-node-desc').value.trim(),
+    exampleCount: parseInt(document.getElementById('edit-node-count').value) || 0,
+  });
+  closeModal();
+  rebuildScene();
+  showNodeInSidebar(nodeId);
+}
+
+function confirmDeleteNode(nodeId) {
+  const node = store.getNode(nodeId);
+  showModal(`
+    <div style="font-size:16px;font-weight:700;color:#ef9a9a;margin-bottom:12px;">Remove Node</div>
+    <div style="color:#bec7d2;font-size:13px;margin-bottom:20px;">
+      Remove <strong>${node.label}</strong> and all its connections? This cannot be undone.
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeModal()" style="padding:10px 20px;background:#262a31;border:1px solid #4d4633;border-radius:8px;color:#dfe2eb;cursor:pointer;font-size:13px;">Cancel</button>
+      <button onclick="deleteNodeConfirmed(${nodeId})" style="padding:10px 20px;background:#93000a;border:1px solid #ef9a9a;border-radius:8px;color:#ef9a9a;cursor:pointer;font-weight:600;font-size:13px;">Remove</button>
+    </div>
+  `);
+}
+
+function deleteNodeConfirmed(nodeId) {
+  store.removeNode(nodeId);
+  selectedNodeId = null;
+  closeModal();
+  rebuildScene();
+  document.getElementById('sidebar-content').innerHTML = '<div style="color:#9a9079;font-size:13px;text-align:center;padding:40px 0;">Click a node to inspect it</div>';
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+function openSearchModal() {
+  showModal(`
+    <div style="font-size:16px;font-weight:700;color:#dfe2eb;margin-bottom:16px;">Search Nodes</div>
+    <input type="text" id="search-input" placeholder="Search by name, category, or description..." oninput="updateSearchResults()" />
+    <div id="search-results" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>
+  `);
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+
+function updateSearchResults() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  const results = document.getElementById('search-results');
+  if (!query) { results.innerHTML = ''; return; }
+
+  const matches = store.nodes.filter(n =>
+    n.label.toLowerCase().includes(query) ||
+    n.category.toLowerCase().includes(query) ||
+    n.description.toLowerCase().includes(query)
+  ).slice(0, 20);
+
+  results.innerHTML = matches.map(n => {
+    const color = getNodeColor(n);
+    return `<div onclick="focusNode(${n.id});closeModal();" style="cursor:pointer;padding:10px 12px;background:#10141a;border-radius:8px;margin-bottom:4px;display:flex;align-items:center;gap:10px;transition:background 0.15s;" onmouseover="this.style.background='#262a31'" onmouseout="this.style.background='#10141a'">
+      <div style="width:10px;height:10px;border-radius:50%;background:${color.hex};flex-shrink:0;"></div>
+      <div>
+        <div style="font-size:13px;color:#dfe2eb;">${n.label}</div>
+        <div style="font-size:11px;color:#9a9079;">${n.category} &middot; ${n.exampleCount} examples</div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:#9a9079;font-size:12px;padding:12px;">No matches found</div>';
+}
+
+function focusNode(nodeId) {
+  const node = store.getNode(nodeId);
+  if (!node) return;
+  cameraTarget.set(node.x, node.y, node.z);
+  cameraRadius = 20;
+  updateCameraPosition();
+  selectNode(nodeId);
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-nodes').textContent = store.nodes.length;
+  document.getElementById('stat-edges').textContent = store.edges.length;
+  document.getElementById('stat-examples').textContent = store.totalExamples().toLocaleString();
+  document.getElementById('stat-categories').textContent = store.categoryCount();
+}
+
+// ── Button handlers ──────────────────────────────────────────────────────────
+document.getElementById('btn-add-node').addEventListener('click', openAddNodeModal);
+document.getElementById('btn-search').addEventListener('click', openSearchModal);
+
+document.getElementById('btn-connect').addEventListener('click', function() {
+  connectMode = !connectMode;
+  connectSource = null;
+  this.classList.toggle('active', connectMode);
+  document.body.classList.toggle('connection-mode', connectMode);
+});
+
+document.getElementById('btn-auto-layout').addEventListener('click', function() {
+  store.nodes.forEach(n => { n.pinned = false; n.vx = (Math.random()-0.5)*2; n.vy = (Math.random()-0.5)*2; n.vz = (Math.random()-0.5)*2; });
+  simulationRunning = true;
+});
+
+document.getElementById('btn-toggle-labels').addEventListener('click', function() {
+  showLabels = !showLabels;
+  this.classList.toggle('active', showLabels);
+  rebuildScene();
+});
+
+document.getElementById('btn-reset-view').addEventListener('click', function() {
+  cameraTarget.set(0, 0, 0);
+  cameraRadius = 35;
+  cameraTheta = Math.PI / 4;
+  cameraPhi = Math.PI / 3;
+  updateCameraPosition();
+});
+
+document.getElementById('btn-toggle-sidebar').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+document.getElementById('sidebar-close').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.add('collapsed');
+});
+
+document.getElementById('btn-export').addEventListener('click', function() {
+  const json = store.exportJSON();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'knowledge-graph.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ── Keyboard shortcuts ───────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedNodeId) confirmDeleteNode(selectedNodeId);
+  }
+  if (e.key === 'Escape') {
+    closeModal();
+    if (connectMode) {
+      connectMode = false;
+      connectSource = null;
+      document.getElementById('btn-connect').classList.remove('active');
+      document.body.classList.remove('connection-mode');
+    }
+  }
+  if (e.key === 'n' || e.key === 'N') openAddNodeModal();
+  if (e.key === 'f' || e.key === 'F') openSearchModal();
+  if (e.key === ' ') {
+    e.preventDefault();
+    simulationRunning = !simulationRunning;
+  }
+});
+
+// ── Animation loop ───────────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  simulationStep();
+  updatePositions();
+  renderer.render(scene, camera);
+}
+
+// ── Bootstrap ────────────────────────────────────────────────────────────────
+initThree();
+initializeFromTrainingData();
+rebuildScene();
+animate();
+
+// Collapse sidebar initially
+document.getElementById('sidebar').classList.add('collapsed');
+</script>
+</body>
+</html>

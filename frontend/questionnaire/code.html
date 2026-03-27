@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Train Your AI — Appraisal Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--card:#161b22;--line:rgba(230,237,243,0.08);--gold:#e2b714;--green:#3fb950;--red:#f85149;--blue:#58a6ff;--purple:#bc8ff3;--text:#e6edf3;--muted:#8b949e;--xp:#58d68d}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+.app{max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:50}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.logo{width:28px;height:28px;background:linear-gradient(135deg,#e2b714,#f5d54f);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#111}
+.streak-badge{display:flex;align-items:center;gap:3px;font-weight:700;font-size:13px;color:#ff9500}
+.xp-pill{background:var(--card);padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;color:var(--xp)}
+
+.xp-bar{padding:4px 16px 6px}
+.xp-track{height:8px;background:#21262d;border-radius:4px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--xp),var(--green));border-radius:4px;transition:width 0.6s cubic-bezier(.4,0,.2,1)}
+.xp-info{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px}
+
+.daily{margin:0 16px 8px;background:var(--card);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.daily-ring{width:40px;height:40px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--gold)}
+.daily-ring svg{position:absolute;inset:-3px;transform:rotate(-90deg)}
+.daily-ring circle{fill:none;stroke-width:3;stroke-linecap:round}
+.daily-ring .bg{stroke:#21262d}
+.daily-ring .fg{stroke:var(--gold);transition:stroke-dashoffset 0.6s}
+.daily-info{flex:1}
+.daily-info .t{font-size:13px;font-weight:700}
+.daily-info .s{font-size:11px;color:var(--muted)}
+
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+
+/* SKILL TREE */
+.tree{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center}
+.tree-line{width:3px;height:20px;border-radius:2px}
+.tree-line.on{background:var(--gold)}
+.tree-line.off{background:#21262d}
+.node{width:68px;height:68px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform 0.2s;border:3px solid var(--gold)}
+.node:active{transform:scale(0.93)}
+.node.locked{border-color:#21262d;opacity:0.35;pointer-events:none}
+.node.done{box-shadow:0 0 16px rgba(226,183,20,0.3)}
+.node .em{font-size:22px}
+.node .crown{position:absolute;top:-10px;font-size:14px}
+.nname{font-size:10px;font-weight:600;text-align:center;margin-top:3px;max-width:90px}
+.nname.off{color:#555}
+.nbtn{margin-top:3px;background:linear-gradient(135deg,var(--gold),#f5d54f);color:#111;border:none;padding:3px 12px;border-radius:999px;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer}
+.nprog{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* LESSON */
+.lheader{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.lback{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px}
+.lbar{flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden}
+.lbar-fill{height:100%;background:var(--gold);border-radius:4px;transition:width 0.3s}
+.lcontent{flex:1;padding:16px;display:flex;flex-direction:column;overflow-y:auto}
+.qcat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold);margin-bottom:6px}
+.qtxt{font-size:16px;font-weight:700;line-height:1.4;margin-bottom:12px}
+.qsub{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--card);padding:10px 12px;border-radius:10px;border-left:3px solid var(--gold)}
+
+/* Choices - all answers are valid, just different */
+.choices{display:flex;flex-direction:column;gap:8px}
+.ch{padding:14px 16px;background:var(--card);border:2px solid var(--line);border-radius:12px;color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;transition:border-color 0.2s,background 0.2s}
+.ch:active{transform:scale(0.98)}
+.ch.picked{border-color:var(--gold);background:rgba(226,183,20,0.1)}
+
+/* Sliders */
+.sl-wrap{margin-bottom:14px}
+.sl-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.sl-label{color:var(--muted)}
+.sl-val{color:var(--gold);font-weight:700;font-size:14px}
+input[type=range]{width:100%;height:6px;-webkit-appearance:none;background:#21262d;border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:linear-gradient(135deg,var(--gold),#f5d54f);border-radius:50%;cursor:pointer;box-shadow:0 2px 10px rgba(226,183,20,0.4)}
+
+/* Text */
+.atxt{width:100%;min-height:110px;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:12px;color:var(--text);font-family:inherit;font-size:14px;resize:vertical;outline:none;flex:1}
+.atxt:focus{border-color:var(--gold)}
+.atxt-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Swipe */
+.sw-subj{background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.sw-subj h4{font-size:12px;color:var(--gold);font-weight:700}
+.sw-subj p{font-size:11px;color:var(--muted)}
+.sw-opts{display:flex;gap:10px;flex:1}
+.sw-card{flex:1;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;transition:transform 0.2s,border-color 0.2s;display:flex;flex-direction:column}
+.sw-card:active{transform:scale(0.97)}
+.sw-card:hover{border-color:var(--gold)}
+.sw-card h5{font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px}
+.sw-card .d{font-size:10px;color:var(--muted);margin-bottom:2px}
+.sw-card .p{font-size:15px;font-weight:800;margin-top:auto;padding-top:6px}
+
+/* Stars */
+.stars{display:flex;justify-content:center;gap:6px;padding:8px 0}
+.star{font-size:34px;background:none;border:none;cursor:pointer;filter:grayscale(1) opacity(0.3);transition:filter 0.15s,transform 0.15s}
+.star.lit{filter:none;transform:scale(1.1)}
+
+/* Action */
+.abar{padding:12px 16px;border-top:1px solid var(--line)}
+.abtn{width:100%;padding:14px;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:transform 0.12s}
+.abtn:active{transform:scale(0.97)}
+.abtn.go{background:linear-gradient(135deg,var(--gold),#f5d54f);color:#111}
+.abtn.off{background:#21262d;color:#555;cursor:default}
+.abtn.skip{background:none;color:var(--muted);font-size:13px;margin-top:6px;padding:8px}
+
+/* Complete */
+.done-screen{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px}
+.done-screen.active{display:flex}
+.done-emoji{font-size:64px;margin-bottom:10px}
+.done-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.done-sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.done-xp{font-size:30px;font-weight:900;color:var(--xp);margin-bottom:20px}
+.done-stats{display:flex;gap:16px;margin-bottom:28px}
+.ds{text-align:center}
+.ds-v{font-size:18px;font-weight:800}
+.ds-l{font-size:9px;color:var(--muted);text-transform:uppercase}
+
+/* Goal Picker */
+.gpick{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.gpick h2{font-size:20px;font-weight:900;margin-bottom:4px}
+.gpick p{color:var(--muted);font-size:12px;margin-bottom:20px}
+.gopts{display:flex;flex-direction:column;gap:8px;width:100%}
+.gopt{padding:14px;background:var(--card);border:2px solid var(--line);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color 0.2s}
+.gopt:hover{border-color:var(--gold)}
+.gopt .ge{font-size:22px}
+.gopt .gn{font-weight:700;font-size:13px}
+.gopt .gd{font-size:10px;color:var(--muted)}
+
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);padding:8px 18px;border-radius:12px;font-weight:700;font-size:13px;z-index:200;pointer-events:none;transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.confetti{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:300;animation:cfall 1.2s ease-out forwards}
+@keyframes cfall{0%{opacity:1;transform:translateY(0) rotate(0) scale(1)}100%{opacity:0;transform:translateY(280px) rotate(600deg) scale(0.2)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-left"><div class="logo">AA</div><div class="streak-badge" id="sb">🔥 0</div></div>
+    <div style="display:flex;gap:8px;align-items:center"><div class="xp-pill" id="xpPill">0 XP</div></div>
+  </div>
+  <div class="xp-bar"><div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div><div class="xp-info"><span id="lvl">Level 1 · Trainee</span><span id="xpn">0/100</span></div></div>
+  <div class="daily" id="dailyBox">
+    <div class="daily-ring"><svg viewBox="0 0 46 46"><circle class="bg" cx="23" cy="23" r="20"/><circle class="fg" id="darc" cx="23" cy="23" r="20" stroke-dasharray="125.6" stroke-dashoffset="125.6"/></svg><span id="dpct">0%</span></div>
+    <div class="daily-info"><div class="t">Daily Training</div><div class="s" id="dsub">0/100 XP</div></div>
+  </div>
+
+  <div class="screen gpick" id="goalScr">
+    <h2>How much training today?</h2>
+    <p>Your answers teach your AI to appraise like you</p>
+    <div class="gopts">
+      <div class="gopt" onclick="setGoal(50)"><div class="ge">☕</div><div><div class="gn">Quick · 50 XP</div><div class="gd">~5 min · A few key decisions</div></div></div>
+      <div class="gopt" onclick="setGoal(100)"><div class="ge">📊</div><div><div class="gn">Standard · 100 XP</div><div class="gd">~10 min · Solid training session</div></div></div>
+      <div class="gopt" onclick="setGoal(200)"><div class="ge">🔥</div><div><div class="gn">Deep · 200 XP</div><div class="gd">~20 min · Serious AI training</div></div></div>
+      <div class="gopt" onclick="setGoal(500)"><div class="ge">🧠</div><div><div class="gn">Expert · 500 XP</div><div class="gd">~45 min · Full knowledge transfer</div></div></div>
+    </div>
+  </div>
+
+  <div class="screen" id="homeScr"><div class="tree" id="tree"></div></div>
+
+  <div class="screen" id="lessonScr">
+    <div class="lheader"><button class="lback" onclick="goHome()">✕</button><div class="lbar"><div class="lbar-fill" id="lprog" style="width:0%"></div></div></div>
+    <div class="lcontent" id="lcon"></div>
+    <div class="abar" id="abar" style="display:none">
+      <button class="abtn go" id="abtn" onclick="doAction()">Submit</button>
+      <button class="abtn skip" onclick="skipQ()">Skip →</button>
+    </div>
+  </div>
+
+  <div class="done-screen" id="doneScr">
+    <div class="done-emoji">🎉</div>
+    <div class="done-title">Training Complete!</div>
+    <div class="done-sub">Your AI just got smarter</div>
+    <div class="done-xp" id="dxp">+0 XP</div>
+    <div class="done-stats">
+      <div class="ds"><div class="ds-v" id="dans" style="color:var(--green)">0</div><div class="ds-l">Answered</div></div>
+      <div class="ds"><div class="ds-v" id="dtime" style="color:var(--blue)">0s</div><div class="ds-l">Time</div></div>
+      <div class="ds"><div class="ds-v" id="dtotal" style="color:var(--gold)">0</div><div class="ds-l">Total XP</div></div>
+    </div>
+    <button class="abtn go" style="max-width:260px" onclick="goHome()">Continue</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API=location.origin+'/api';
+const R=a=>a[Math.floor(Math.random()*a.length)];
+const RI=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const LVLS=[{n:'Trainee',m:0},{n:'Licensed',m:500},{n:'Certified',m:1500},{n:'SRA',m:3000},{n:'MAI',m:5000}];
+const AREAS=['Bloomington','Normal','Heyworth','LeRoy','Downs','Clinton','El Paso','Lexington','Chenoa','Gridley'];
+
+let S={xp:0,streak:0,lastDay:null,dxp:0,goal:0,skills:{},ans:0};
+try{const v=JSON.parse(localStorage.getItem('aa3'));if(v)S=v}catch{}
+function save(){localStorage.setItem('aa3',JSON.stringify(S))}
+
+// SKILLS — each is a knowledge domain to extract from the appraiser
+const SK=[
+  // DATA COLLECTION & TECHNICAL SKILLS (how to gather and verify data)
+  {id:'intake',name:'Order Intake & Setup',em:'📋',n:5,pre:null},
+  {id:'datasrc',name:'Data Sources & Research',em:'🔍',n:5,pre:'intake'},
+  {id:'inspect',name:'Property Inspection',em:'📸',n:5,pre:'intake'},
+  {id:'measure',name:'Measuring & Sketching',em:'📐',n:5,pre:'inspect'},
+  {id:'pubrecords',name:'Public Records & Tax',em:'🏛️',n:5,pre:'datasrc'},
+  {id:'mls',name:'MLS Data & Verification',em:'💻',n:5,pre:'datasrc'},
+  // ANALYSIS & JUDGMENT SKILLS (how to analyze and decide)
+  {id:'comp',name:'Comp Selection',em:'🏠',n:5,pre:'mls'},
+  {id:'gla',name:'GLA Adjustments',em:'📏',n:5,pre:'measure'},
+  {id:'cond',name:'Condition & Quality',em:'🔨',n:5,pre:'inspect'},
+  {id:'age',name:'Age & Design',em:'🏗️',n:5,pre:'gla'},
+  {id:'gar',name:'Garage & Basement',em:'🅿️',n:5,pre:'gla'},
+  {id:'site',name:'Site & Location',em:'🏘️',n:5,pre:'pubrecords'},
+  {id:'mkt',name:'Market Analysis',em:'📊',n:5,pre:'site'},
+  {id:'hbu',name:'Highest & Best Use',em:'⚖️',n:5,pre:'mkt'},
+  {id:'recon',name:'Reconciliation',em:'💰',n:5,pre:'hbu'},
+  {id:'loan',name:'FHA / Conv / VA',em:'🏦',n:5,pre:'recon'},
+  {id:'dist',name:'Distressed Sales',em:'💀',n:5,pre:'loan'},
+  {id:'cost',name:'Cost Approach',em:'🏭',n:5,pre:'age'},
+  {id:'spec',name:'Special Conditions',em:'🗺️',n:5,pre:'site'},
+  // REPORT & DELIVERY SKILLS (how to produce and deliver)
+  {id:'narr',name:'Your Writing Style',em:'✍️',n:5,pre:'recon'},
+  {id:'formfill',name:'Form Fields & PDF',em:'📄',n:5,pre:'narr'},
+  {id:'photos',name:'Photos & Addenda',em:'📷',n:5,pre:'inspect'},
+  {id:'review',name:'QC & Review Process',em:'✅',n:5,pre:'formfill'},
+  {id:'delivery',name:'Delivery & Revisions',em:'📬',n:5,pre:'review'},
+  {id:'expert',name:'Complex Scenarios',em:'🧠',n:5,pre:'delivery'},
+];
+
+function prog(id){return S.skills[id]||0}
+function unlocked(s){return !s.pre||prog(s.pre)>=s.n}
+
+// ═══════════════════════════════════════════════════════════════
+// QUESTIONS — designed to EXTRACT expert knowledge, not test it
+// Every answer is valuable. No wrong answers.
+// ═══════════════════════════════════════════════════════════════
+function QS(id){
+  const area=R(AREAS);
+  const price=RI(10,35)*10000;
+  const gla=RI(900,2400);
+  const yr=RI(1955,2020);
+  const q=[];
+  switch(id){
+  // ──── DATA COLLECTION & TECHNICAL ────
+  case 'intake':
+    q.push({t:'text',cat:'YOUR PROCESS',q:'When you receive a new appraisal order, walk through your exact first steps. What info do you check first? What do you set up before going to the property?',xp:50});
+    q.push({t:'pick',cat:'YOUR WORKFLOW',q:'What do you review FIRST when a new order comes in?',opts:['The subject address on Google Maps','The order requirements (FHA/Conv/scope)','County records for the property','MLS for recent sales in the area','The contact info and access instructions'],xp:15});
+    q.push({t:'text',cat:'YOUR SETUP',q:'What information do you extract from the assignment order XML/PDF and enter into your appraisal software before you even visit the property?',xp:50});
+    q.push({t:'slider',cat:'YOUR TIMELINE',q:'How many days before the due date do you typically schedule the inspection?',min:1,max:14,step:1,u:' days',xp:20});
+    q.push({t:'text',cat:'YOUR CHECKLIST',q:'What is your pre-inspection checklist? List everything you prepare or look up before driving to the property.',xp:50});
+    q.push({t:'pick',cat:'YOUR TOOLS',q:'What software do you use for the actual appraisal report?',opts:['ACI','a la mode/TOTAL','ClickForms','DataMaster','Bradford/Spark','Other'],xp:15});
+    break;
+  case 'datasrc':
+    q.push({t:'text',cat:'YOUR SOURCES',q:'List every data source you use for a typical residential appraisal. Include websites, databases, county resources, and any paid services.',xp:50});
+    q.push({t:'pick',cat:'YOUR PRIMARY',q:'Your primary source for comparable sales data?',opts:['MRED MLS','County assessor website','Zillow/Redfin','CoStar','DataMaster','Multiple sources combined'],xp:15});
+    q.push({t:'text',cat:'YOUR VERIFICATION',q:'How do you verify the accuracy of MLS data? What specific fields do you double-check against other sources?',xp:50});
+    q.push({t:'text',cat:'YOUR RESEARCH',q:'Where do you find neighborhood information (demographics, schools, trends)? What specific sources do you cite in your reports?',xp:50});
+    q.push({t:'pick',cat:'YOUR PROCESS',q:'How do you determine the legal description for a property?',opts:['From the deed on county recorder','From the title commitment','From the MLS listing','From the tax assessor records','From the survey if available'],xp:15});
+    q.push({t:'text',cat:'YOUR KNOWLEDGE',q:'How do you find and verify: flood zone status, zoning classification, HOA info, and any easements or encumbrances?',xp:50});
+    break;
+  case 'inspect':
+    q.push({t:'text',cat:'YOUR INSPECTION',q:'Walk through your entire inspection process from pulling up to the property to leaving. What do you look at first? What order do you go through the house?',xp:50});
+    q.push({t:'text',cat:'YOUR EYES',q:'What specific things do you look for that indicate condition problems? (Foundation, roof, electrical, plumbing, HVAC, water damage, etc.)',xp:50});
+    q.push({t:'slider',cat:'YOUR TIME',q:'How long does a typical interior/exterior inspection take?',min:15,max:120,step:5,u:' min',xp:20});
+    q.push({t:'pick',cat:'YOUR TOOLS',q:'What tools do you bring to every inspection?',opts:['Tape measure + camera + clipboard','Laser measure + phone camera + tablet','Full toolkit with moisture meter, level, etc.','Just phone with measuring app'],xp:15});
+    q.push({t:'text',cat:'YOUR NOTES',q:'What notes do you take during inspection? How do you record room sizes, features, condition issues, and updates?',xp:50});
+    q.push({t:'text',cat:'YOUR JUDGMENT',q:'How do you determine effective age vs actual age during inspection? What physical clues tell you the effective age is different from actual?',xp:50});
+    q.push({t:'pick',cat:'YOUR RATING',q:'You see a 2005 home with original everything but well-maintained. Your condition rating?',opts:['C2','C3','C4','C5'],xp:15});
+    break;
+  case 'measure':
+    q.push({t:'text',cat:'YOUR METHOD',q:'How do you measure a house? Do you measure interior, exterior, or both? What tool do you use? Walk through your exact process.',xp:50});
+    q.push({t:'pick',cat:'YOUR STANDARD',q:'What measurement standard do you follow?',opts:['ANSI Z765','Local custom/convention','Fannie Mae guidelines','County assessor standard','My own consistent method'],xp:15});
+    q.push({t:'text',cat:'YOUR CALCULATION',q:'How do you handle: finished basement SF, garage SF, screened porches, covered patios, second floor above garage? What counts as GLA?',xp:50});
+    q.push({t:'pick',cat:'YOUR SKETCH',q:'What do you use to create the floor plan sketch?',opts:['ACI sketch tool','a la mode sketch','Cubicasa or similar app','Hand-drawn then digitized','Apex Sketch'],xp:15});
+    q.push({t:'text',cat:'YOUR ACCURACY',q:'When the county records show different SF than what you measure, how do you handle the discrepancy? What do you report?',xp:50});
+    q.push({t:'text',cat:'YOUR SPECIFICS',q:'How do you measure and calculate: room count, bedroom count (what qualifies as a bedroom?), bathroom count (full vs half)?',xp:50});
+    break;
+  case 'pubrecords':
+    q.push({t:'text',cat:'YOUR PROCESS',q:'What specific information do you pull from the county assessor records? Walk through exactly what you look up and what fields you extract.',xp:50});
+    q.push({t:'text',cat:'YOUR VERIFICATION',q:'How do you verify the sale history of the subject and comps? What sources do you use to confirm sale prices, dates, and whether sales were arms-length?',xp:50});
+    q.push({t:'pick',cat:'YOUR SOURCES',q:'Your primary source for property tax information?',opts:['McLean County assessor website','IL Dept of Revenue','Tax bill from homeowner','Title company records','Multiple sources'],xp:15});
+    q.push({t:'text',cat:'YOUR KNOWLEDGE',q:'How do you determine if a prior sale was arms-length? What red flags do you look for in the transfer history?',xp:50});
+    q.push({t:'text',cat:'YOUR RESEARCH',q:'How do you find: prior sale prices within 3 years, current listings/pending sales of the subject, and any active listings of the comps?',xp:50});
+    break;
+  case 'mls':
+    q.push({t:'text',cat:'YOUR SEARCH',q:'Walk through your exact MLS search process. What filters do you set? In what order? What search radius and time frame do you start with?',xp:50});
+    q.push({t:'text',cat:'YOUR FILTERS',q:'When your initial MLS search returns too many or too few results, how do you adjust your criteria? What do you loosen or tighten first?',xp:50});
+    q.push({t:'pick',cat:'YOUR VERIFICATION',q:'What MLS fields do you verify against other sources before using a comp?',opts:['Sale price only','Sale price + GLA','Sale price + GLA + lot size','All physical characteristics','Everything including concessions'],xp:15});
+    q.push({t:'text',cat:'YOUR DATA',q:'What specific data points from the MLS listing sheet do you transfer into your appraisal report for each comp? List them all.',xp:50});
+    q.push({t:'text',cat:'YOUR CONCESSIONS',q:'How do you find and handle seller concessions? Where in the MLS do you look? How do you adjust for them?',xp:50});
+    q.push({t:'slider',cat:'YOUR PRACTICE',q:'What % of the time does the MLS data match what you find in county records?',min:50,max:100,step:5,u:'%',xp:20});
+    break;
+  // ──── REPORT & DELIVERY ────
+  case 'formfill':
+    q.push({t:'text',cat:'YOUR PROCESS',q:'Walk through how you fill out the 1004 form. What sections do you complete first? Which fields require the most judgment vs being straightforward data entry?',xp:50});
+    q.push({t:'text',cat:'YOUR SPECIFICS',q:'How do you fill out: the neighborhood section (built-up, growth rate, property values, demand/supply, marketing time)? What data informs each checkbox?',xp:50});
+    q.push({t:'text',cat:'YOUR GRID',q:'Walk through how you fill out the sales comparison grid. What adjustments go in what order? How do you determine the line items?',xp:50});
+    q.push({t:'pick',cat:'YOUR SOFTWARE',q:'How do you handle the comp photos and location map?',opts:['MLS photos + Google Maps','Personal photos + MLS map','All personal photos','ACI auto-generates maps','Mix of sources'],xp:15});
+    q.push({t:'text',cat:'YOUR ADDENDA',q:'What addenda do you typically include beyond the standard form? (Location map, flood map, sketch, photos, market conditions, etc.) List everything.',xp:50});
+    break;
+  case 'photos':
+    q.push({t:'text',cat:'YOUR PHOTOS',q:'List every photo you take for a standard residential appraisal. How many total photos do you typically include?',xp:50});
+    q.push({t:'pick',cat:'YOUR STANDARD',q:'Minimum number of photos you include in a typical report?',opts:['6-10','11-15','16-20','21-30','30+'],xp:15});
+    q.push({t:'text',cat:'YOUR PRACTICE',q:'How do you organize your photos in the addendum? What order? Do you label them? What format?',xp:50});
+    q.push({t:'text',cat:'YOUR COMP PHOTOS',q:'For comp photos — do you take your own exterior photos or use MLS? How do you handle comps you cannot photograph?',xp:50});
+    break;
+  case 'review':
+    q.push({t:'text',cat:'YOUR QC',q:'Before you submit a report, what is your quality control checklist? What do you review and double-check?',xp:50});
+    q.push({t:'text',cat:'YOUR REVIEW',q:'What are the most common errors you catch in your own reports during review? What mistakes have you learned to watch for?',xp:50});
+    q.push({t:'pick',cat:'YOUR PROCESS',q:'Do you use any automated QC tools?',opts:['ACI built-in checks only','UCDP/EAD pre-submission check','Third-party QC software','Manual review only','Combination of automated + manual'],xp:15});
+    q.push({t:'text',cat:'YOUR STANDARD',q:'What would make you go back and change a comp or redo part of your analysis before submitting?',xp:50});
+    break;
+  case 'delivery':
+    q.push({t:'text',cat:'YOUR PROCESS',q:'Walk through your delivery process. How do you submit to the AMC/lender? What format? What portal? What happens after submission?',xp:50});
+    q.push({t:'text',cat:'YOUR REVISIONS',q:'What are the most common revision requests you receive? How do you handle them? Give specific examples of revision requests and how you responded.',xp:50});
+    q.push({t:'pick',cat:'YOUR TIMELINE',q:'Typical turnaround time from inspection to delivery?',opts:['Same day','1-2 days','3-5 days','5-7 days','7+ days'],xp:15});
+    q.push({t:'text',cat:'YOUR EXPERIENCE',q:'How do you handle a reconsideration of value request? Walk through your process when the agent says "the value needs to be higher."',xp:50});
+    q.push({t:'text',cat:'YOUR UCDP',q:'Describe your UCDP/EAD submission process. What issues commonly come up and how do you resolve them?',xp:50});
+    break;
+  case 'comp':
+    q.push({t:'pick',cat:'YOUR COMP PROCESS',q:'When searching for comps, what do you filter for FIRST?',opts:['Location/proximity','Recency of sale','Similar GLA','Same design style','Price range'],xp:15});
+    q.push({t:'pick',cat:'YOUR COMP PROCESS',q:'What makes you REJECT an otherwise good comp?',opts:['Too many adjustments needed','Different design type','Too far away','Sold too long ago','Non-arms-length sale','Significantly different GLA'],xp:15});
+    q.push({t:'slider',cat:'YOUR SEARCH RADIUS',q:`In ${area}, how far (miles) do you typically search for comps?`,min:0.5,max:5,step:0.5,u:' mi',xp:20});
+    q.push({t:'slider',cat:'YOUR TIME LIMIT',q:'How many months back will you look for comp sales?',min:3,max:24,step:1,u:' months',xp:20});
+    q.push({t:'text',cat:'YOUR EXPERTISE',q:`You have a ${gla} SF ${R(['ranch','2-story','bi-level'])} in ${area} at $${price.toLocaleString()}. Describe exactly how you would search for and select your 3 comps.`,xp:50});
+    q.push({t:'swipe',cat:'WHICH COMP DO YOU PREFER?',q:`Subject: ${gla} SF, ${area}, built ${yr}`,xp:15,
+      subj:{a:`Subject: ${gla} SF in ${area}`,d:`Built ${yr} · $${price.toLocaleString()}`},
+      a:{t:'Comp A',d:`${gla+RI(-200,200)} SF · ${R(['Ranch','2-Story'])} · 0.${RI(2,8)} mi · ${RI(1,6)} mo ago`,p:'$'+((price+RI(-15000,15000))).toLocaleString()},
+      b:{t:'Comp B',d:`${gla+RI(-400,400)} SF · ${R(['Ranch','Bi-Level'])} · ${RI(1,3)}.${RI(0,9)} mi · ${RI(1,11)} mo ago`,p:'$'+((price+RI(-25000,25000))).toLocaleString()}});
+    break;
+  case 'gla':
+    q.push({t:'slider',cat:'YOUR $/SF',q:`What $/SF do you adjust for GLA in ${area} ($${(price/1000).toFixed(0)}K range)?`,min:5,max:60,step:1,u:' $/SF',xp:25});
+    q.push({t:'slider',cat:'YOUR $/SF',q:`Same area but $${((price*2)/1000).toFixed(0)}K+ range — does your $/SF change?`,min:5,max:80,step:1,u:' $/SF',xp:25});
+    q.push({t:'pick',cat:'YOUR METHOD',q:'How do you support your GLA adjustment rate?',opts:['Paired sales analysis','Market extraction from data','Consistent rate I know works','Published cost data','Combination of methods'],xp:15});
+    q.push({t:'text',cat:'YOUR REASONING',q:`The subject is ${gla} SF and comp is ${gla+RI(200,500)} SF. Walk through your exact GLA adjustment calculation.`,xp:50});
+    q.push({t:'slider',cat:'YOUR LIMITS',q:'At what SF difference do you stop adjusting and look for a different comp?',min:100,max:1000,step:50,u:' SF',xp:20});
+    break;
+  case 'cond':
+    q.push({t:'pick',cat:'YOUR RATING',q:`A ${yr} home, well-maintained, updated kitchen, original baths. Your rating?`,opts:['C2','C3','C4','C5'],xp:15});
+    q.push({t:'pick',cat:'YOUR RATING',q:`A ${yr-30} home, no updates, clean but showing age. Your rating?`,opts:['C3','C4','C5','C6'],xp:15});
+    q.push({t:'slider',cat:'YOUR $ AMOUNT',q:'What $ adjustment between C3 and C4 in your market?',min:0,max:25000,step:500,u:'$',xp:25});
+    q.push({t:'slider',cat:'YOUR $ AMOUNT',q:'What $ adjustment between C4 and C5?',min:0,max:30000,step:500,u:'$',xp:25});
+    q.push({t:'text',cat:'YOUR APPROACH',q:'How do you separate condition adjustments from age adjustments? When do they overlap and how do you avoid double-counting?',xp:50});
+    q.push({t:'pick',cat:'YOUR JUDGMENT',q:'Can a fully renovated 1960 home be the same condition as a 2010 home?',opts:['Yes — condition is about current state','No — age always matters','Depends on scope of renovation','Yes but with effective age adjustment'],xp:15});
+    break;
+  case 'mkt':
+    q.push({t:'pick',cat:'YOUR MARKET READ',q:`How would you describe the current ${area} market?`,opts:['Declining','Stable','Slightly increasing','Strongly increasing','Mixed/transitional'],xp:15});
+    q.push({t:'slider',cat:'YOUR ADJUSTMENT',q:'If market is appreciating ~4%/year, what monthly time adjustment?',min:0,max:1,step:0.05,u:'%/mo',xp:25});
+    q.push({t:'text',cat:'YOUR ANALYSIS',q:'What specific data points do you look at to determine market trend? Where do you find this data?',xp:50});
+    q.push({t:'pick',cat:'YOUR DECISION',q:'Comp sold 10 months ago in a stable market. Time adjustment?',opts:['No adjustment needed','Small positive adjustment','Depends on price movement data','Always adjust over 6 months'],xp:15});
+    q.push({t:'slider',cat:'YOUR MARKETING TIME',q:`Typical marketing time in ${area} for $${(price/1000).toFixed(0)}K range?`,min:5,max:120,step:5,u:' days',xp:20});
+    break;
+  case 'hbu':
+    q.push({t:'text',cat:'YOUR ANALYSIS',q:'Walk through your highest and best use analysis for a typical SFR. How detailed do you get in the report?',xp:50});
+    q.push({t:'pick',cat:'YOUR JUDGMENT',q:'SFR lot zoned commercial in a transitioning area. Your HBU conclusion?',opts:['Existing residential use','Future commercial use','Interim residential use','Need more data to decide'],xp:15});
+    q.push({t:'text',cat:'YOUR APPROACH',q:'When would you conclude that the existing use is NOT the highest and best use? Give a specific example from your experience.',xp:50});
+    q.push({t:'pick',cat:'YOUR PRACTICE',q:'How much detail do you typically write for the HBU section?',opts:['Standard boilerplate — 2-3 sentences','Customized paragraph for each property','Detailed analysis only when non-typical','Full four-test analysis every time'],xp:15});
+    break;
+  case 'recon':
+    q.push({t:'text',cat:'YOUR METHOD',q:`Your 3 comps adjusted to $${(price-8000).toLocaleString()}, $${price.toLocaleString()}, and $${(price+12000).toLocaleString()}. Walk through exactly how you arrive at your final value.`,xp:50});
+    q.push({t:'pick',cat:'YOUR WEIGHTING',q:'Which comp do you typically weight most?',opts:['Most similar overall','Least total adjustments','Most recent sale','Closest in proximity','Bracketing approach — use the range'],xp:15});
+    q.push({t:'slider',cat:'YOUR RANGE',q:'Maximum acceptable spread between your highest and lowest adjusted comp?',min:5000,max:50000,step:1000,u:'$',xp:20});
+    q.push({t:'text',cat:'YOUR NARRATIVE',q:'How do you write your reconciliation narrative? What specific language do you use to explain your final value conclusion?',xp:50});
+    break;
+  case 'loan':
+    q.push({t:'text',cat:'YOUR PRACTICE',q:'What extra items do you specifically check for on an FHA appraisal vs conventional?',xp:50});
+    q.push({t:'pick',cat:'YOUR EXPERIENCE',q:'Peeling paint on a 1975 home — FHA appraisal. Your call?',opts:['Require repair before completion','Note as-is, not a safety issue','Depends on location of peeling paint','Call it out but complete as-is with repair requirement'],xp:15});
+    q.push({t:'text',cat:'YOUR KNOWLEDGE',q:'What are the key differences between FHA, VA, and conventional appraisals in your daily practice? What do you do differently for each?',xp:50});
+    break;
+  case 'dist':
+    q.push({t:'pick',cat:'YOUR JUDGMENT',q:'REO sale in the same subdivision as subject — use it?',opts:['Yes with concession adjustment','Yes if market has many REOs','No — never use distressed sales','Only if no other comps available'],xp:15});
+    q.push({t:'text',cat:'YOUR APPROACH',q:'How do you handle estate sales as comps? What adjustment, if any, do you make? How do you verify if it was arms-length?',xp:50});
+    q.push({t:'slider',cat:'YOUR ADJUSTMENT',q:'Typical % adjustment for a verified short sale comp?',min:0,max:20,step:1,u:'%',xp:20});
+    break;
+  case 'spec':
+    q.push({t:'text',cat:'YOUR HANDLING',q:'Property is in FEMA flood zone AE. How does this affect your appraisal? What adjustments do you make and what do you disclose?',xp:50});
+    q.push({t:'pick',cat:'YOUR JUDGMENT',q:'Utility easement across back 10 feet of lot. Adjustment?',opts:['No adjustment — typical for area','Small negative adjustment','Depends on whether it limits use','Significant negative if it limits building'],xp:15});
+    q.push({t:'text',cat:'YOUR EXPERIENCE',q:'Describe a property with a zoning issue you have appraised. What was the issue and how did you handle it in the report?',xp:50});
+    q.push({t:'slider',cat:'YOUR ADJUSTMENT',q:'Adjacent to a busy commercial road — typical negative adjustment?',min:0,max:25000,step:1000,u:'$',xp:20});
+    break;
+  case 'narr':
+    q.push({t:'text',cat:'YOUR WRITING STYLE',q:`Write your typical neighborhood/market conditions narrative for a $${price.toLocaleString()} home in ${area}.`,xp:50});
+    q.push({t:'text',cat:'YOUR WRITING STYLE',q:'Write your standard highest and best use paragraph as you would in a real report.',xp:50});
+    q.push({t:'text',cat:'YOUR WRITING STYLE',q:`Write your sales comparison commentary for a ${gla} SF ${R(['ranch','2-story'])} in ${area} at $${price.toLocaleString()} with 3 comps.`,xp:50});
+    q.push({t:'text',cat:'YOUR VOICE',q:'Write your typical condition of property narrative for a well-maintained 1990s home with updated kitchen.',xp:50});
+    break;
+  default:
+    q.push({t:'text',cat:'YOUR EXPERTISE',q:`Share your approach to ${SK.find(s=>s.id===id)?.name||'this topic'}. How do you handle it in practice?`,xp:50});
+    q.push({t:'pick',cat:'YOUR PRACTICE',q:'How often does this topic come up in your typical appraisal?',opts:['Every appraisal','Most appraisals','Occasionally','Rarely'],xp:15});
+    q.push({t:'slider',cat:'YOUR EXPERIENCE',q:'How many years have you been handling this type of situation?',min:0,max:20,step:1,u:' years',xp:10});
+    q.push({t:'text',cat:'YOUR HARDEST CASE',q:'Describe the most challenging situation you have faced related to this topic. How did you resolve it?',xp:50});
+  }
+  return q.sort(()=>Math.random()-0.5);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════
+function getLvl(){let l=Math.floor(S.xp/100)+1;let b=LVLS[0];for(let i=LVLS.length-1;i>=0;i--)if(S.xp>=LVLS[i].m){b=LVLS[i];break}return{l,b,inLvl:S.xp%100}}
+function ui(){
+  const li=getLvl();
+  document.getElementById('xpPill').textContent=S.xp+' XP';
+  document.getElementById('xpFill').style.width=li.inLvl+'%';
+  document.getElementById('lvl').textContent='Level '+li.l+' · '+li.b.n;
+  document.getElementById('xpn').textContent=li.inLvl+'/100';
+  document.getElementById('sb').textContent='🔥 '+S.streak;
+  if(S.goal>0){const p=Math.min(S.dxp/S.goal*100,100);document.getElementById('dpct').textContent=Math.round(p)+'%';document.getElementById('dsub').textContent=S.dxp+'/'+S.goal+' XP today';document.getElementById('darc').style.strokeDashoffset=125.6-(125.6*p/100)}
+  save();
+}
+function checkDay(){const d=new Date().toDateString();if(S.lastDay!==d){const y=new Date(Date.now()-864e5).toDateString();if(S.lastDay&&S.lastDay!==y)S.streak=0;S.dxp=0;S.lastDay=d}}
+
+function show(id){document.querySelectorAll('.screen,.done-screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function setGoal(g){S.goal=g;save();goHome()}
+function goHome(){show('homeScr');renderTree();ui()}
+
+// TREE
+function renderTree(){
+  const t=document.getElementById('tree');t.innerHTML='';
+  SK.forEach((s,i)=>{
+    if(i>0){const c=document.createElement('div');c.className='tree-line '+(unlocked(s)?'on':'off');t.appendChild(c)}
+    const w=document.createElement('div');w.style.cssText='display:flex;flex-direction:column;align-items:center';
+    const p=prog(s.id),done=p>=s.n,ok=unlocked(s);
+    const nd=document.createElement('div');nd.className='node'+(done?' done':'')+(ok?'':' locked');
+    nd.innerHTML=(done?'<div class="crown">👑</div>':'')+'<div class="em">'+s.em+'</div>';
+    if(ok)nd.onclick=()=>startLesson(s.id);
+    w.appendChild(nd);
+    const nm=document.createElement('div');nm.className='nname'+(ok?'':' off');nm.textContent=s.name;w.appendChild(nm);
+    if(ok&&!done){const b=document.createElement('button');b.className='nbtn';b.textContent=p?'Continue':'Start';b.onclick=e=>{e.stopPropagation();startLesson(s.id)};w.appendChild(b)}
+    if(ok&&p>0&&!done){const pg=document.createElement('div');pg.className='nprog';pg.textContent=p+'/'+s.n;w.appendChild(pg)}
+    t.appendChild(w);
+  });
+}
+
+// LESSON
+let L={sk:null,qs:[],ci:0,xp:0,ans:0,t0:0};
+
+function startLesson(sk){
+  const allQ=QS(sk);
+  L={sk,qs:allQ.slice(0,6),ci:0,xp:0,ans:0,t0:Date.now()};
+  show('lessonScr');
+  renderQ();
+}
+
+function renderQ(){
+  if(L.ci>=L.qs.length){finishLesson();return}
+  const q=L.qs[L.ci];
+  document.getElementById('lprog').style.width=(L.ci/L.qs.length*100)+'%';
+  const c=document.getElementById('lcon');
+  const bar=document.getElementById('abar');
+  window._picked=null;
+
+  if(q.t==='pick'){
+    c.innerHTML=`<div class="qcat">${q.cat}</div><div class="qtxt">${q.q}</div>
+      <div class="choices">${q.opts.map((o,i)=>`<button class="ch" onclick="pickCh(this,${i})">${o}</button>`).join('')}</div>`;
+    bar.style.display='block';
+    document.getElementById('abtn').textContent='Submit';
+    document.getElementById('abtn').className='abtn off';
+  } else if(q.t==='slider'){
+    c.innerHTML=`<div class="qcat">${q.cat}</div><div class="qtxt">${q.q}</div>
+      <div class="sl-wrap"><div class="sl-top"><span class="sl-label">${q.min}${q.u}</span><span class="sl-val" id="sv">${Math.round((q.min+q.max)/2)}${q.u}</span><span class="sl-label">${q.max}${q.u}</span></div>
+      <input type="range" min="${q.min}" max="${q.max}" step="${q.step}" value="${Math.round((q.min+q.max)/2)}" id="si" oninput="document.getElementById('sv').textContent=this.value+'${q.u}'"></div>`;
+    bar.style.display='block';
+    document.getElementById('abtn').textContent='Submit';
+    document.getElementById('abtn').className='abtn go';
+  } else if(q.t==='text'){
+    c.innerHTML=`<div class="qcat">${q.cat} · ${q.xp} XP</div><div class="qtxt">${q.q}</div>
+      <textarea class="atxt" id="ta" placeholder="Share how YOU do this..."></textarea>
+      <div class="atxt-hint">The more detail, the smarter your AI gets</div>`;
+    bar.style.display='block';
+    document.getElementById('abtn').textContent='Submit (+'+q.xp+' XP)';
+    document.getElementById('abtn').className='abtn go';
+  } else if(q.t==='swipe'){
+    c.innerHTML=`<div class="qcat">${q.cat}</div><div class="qtxt">${q.q}</div>
+      <div class="sw-subj"><h4>${q.subj.a}</h4><p>${q.subj.d}</p></div>
+      <div class="sw-opts">
+        <div class="sw-card" onclick="swipe('A')"><h5>${q.a.t}</h5><div class="d">${q.a.d}</div><div class="p">${q.a.p}</div></div>
+        <div class="sw-card" onclick="swipe('B')"><h5>${q.b.t}</h5><div class="d">${q.b.d}</div><div class="p">${q.b.p}</div></div>
+      </div>`;
+    bar.style.display='none';
+  }
+}
+
+window.pickCh=function(el,i){
+  document.querySelectorAll('.ch').forEach(b=>b.classList.remove('picked'));
+  el.classList.add('picked');
+  window._picked=i;
+  document.getElementById('abtn').className='abtn go';
+};
+
+window.doAction=function(){
+  const q=L.qs[L.ci];
+  if(q.t==='pick'){
+    if(window._picked===null)return;
+    submit(q.q,q.opts[window._picked],q.cat.toLowerCase());
+    earn(q.xp);next();
+  } else if(q.t==='slider'){
+    const v=document.getElementById('si').value;
+    submit(q.q,v+q.u,q.cat.toLowerCase());
+    earn(q.xp);next();
+  } else if(q.t==='text'){
+    const v=document.getElementById('ta')?.value?.trim();
+    if(!v||v.length<10){toast('Share a bit more — your AI needs details!','var(--red)');return}
+    submit(q.q,v,q.cat.toLowerCase());
+    earn(q.xp);next();
+  }
+};
+
+window.swipe=function(ch){
+  const q=L.qs[L.ci];
+  submit(q.q+' '+q.subj.a,'Selected Comp '+ch+': '+(ch==='A'?q.a.d:q.b.d),'comp_selection');
+  earn(q.xp);setTimeout(next,300);
+};
+
+window.skipQ=function(){next()};
+
+function next(){L.ci++;renderQ()}
+
+function earn(xp){
+  L.xp+=xp;L.ans++;S.xp+=xp;S.dxp+=xp;S.ans++;
+  checkDay();S.streak=Math.max(S.streak,1);
+  ui();toast('+'+xp+' XP','var(--green)');burst(6);
+}
+
+function finishLesson(){
+  S.skills[L.sk]=(S.skills[L.sk]||0)+1;save();
+  document.getElementById('dxp').textContent='+'+L.xp+' XP';
+  document.getElementById('dans').textContent=L.ans;
+  document.getElementById('dtime').textContent=Math.round((Date.now()-L.t0)/1000)+'s';
+  document.getElementById('dtotal').textContent=S.xp;
+  show('doneScr');ui();burst(20);
+}
+
+// API
+function submit(prompt,answer,type){
+  try{fetch(API+'/questionnaire/answer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({questionId:type+'_'+Date.now(),questionType:type,questionPrompt:prompt,answer:String(answer)})})}catch{}
+}
+
+// FX
+function toast(m,bg){const t=document.getElementById('toast');t.textContent=m;t.style.background=bg;t.className='toast show';setTimeout(()=>t.classList.remove('show'),1200)}
+function burst(n){for(let i=0;i<n;i++){setTimeout(()=>{const p=document.createElement('div');p.className='confetti';p.style.cssText=`left:${RI(15,85)}%;top:${RI(15,45)}%;width:${RI(6,10)}px;height:${RI(6,10)}px;background:${R(['#e2b714','#3fb950','#58a6ff','#f85149','#bc8ff3','#ff9500'])}`;document.body.appendChild(p);setTimeout(()=>p.remove(),1400)},i*40)}}
+
+checkDay();ui();
+if(!S.goal){show('goalScr')}else{goHome()}
+</script>
+</body>
+</html>

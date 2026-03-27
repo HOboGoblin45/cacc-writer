@@ -21,8 +21,10 @@ import OpenAI from 'openai';
 import log from './logger.js';
 import { callOllama, probeOllama, OLLAMA_MODEL } from './ollamaClient.js';
 import { callGemini, probeGemini, isGeminiConfigured } from './ai/geminiProvider.js';
+import { callModel as callFinetunedModel, isOllamaAvailable } from './ai/ollamaClient.js';
 
-const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai', 'ollama', or 'gemini'
+const AI_PROVIDER   = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai', 'ollama', or 'gemini'
+const USE_FINETUNED = process.env.USE_FINETUNED !== 'false'; // try cacc-appraiser before OpenAI
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MODEL = AI_PROVIDER === 'ollama' ? OLLAMA_MODEL : AI_PROVIDER === 'gemini' ? GEMINI_MODEL : (process.env.OPENAI_MODEL || 'gpt-4.1');
@@ -230,6 +232,21 @@ export async function callAI(inputMessages, options = {}) {
   // Route to Gemini if configured
   if (AI_PROVIDER === 'gemini') {
     return callGemini(inputMessages, options);
+  }
+
+  // Try fine-tuned cacc-appraiser model before falling back to OpenAI.
+  // callFinetunedModel throws if: model disabled, task routed to OpenAI, or Ollama unavailable.
+  if (USE_FINETUNED && AI_PROVIDER === 'openai') {
+    try {
+      return await callFinetunedModel(
+        inputMessages,
+        options.taskType || 'narrative_writing',
+        options,
+      );
+    } catch (err) {
+      log.debug('finetuned:fallback', { reason: err.message });
+      // Fall through to OpenAI
+    }
   }
 
   if (!client) throw new Error('OpenAI client is not initialized. Set OPENAI_API_KEY in .env');

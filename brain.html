@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appraisal Agent | Knowledge Brain</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "on-surface-variant": "#d1c5ad",
+                    "outline-variant": "#4d4633",
+                    "on-surface": "#dfe2eb",
+                    "on-error": "#690005",
+                    "on-background": "#dfe2eb",
+                    "surface-container-lowest": "#0a0e14",
+                    "error": "#ffb4ab",
+                    "surface-variant": "#31353c",
+                    "on-secondary-fixed": "#141c24",
+                    "surface-container": "#1c2026",
+                    "secondary-fixed": "#dae3ee",
+                    "primary": "#ffd341",
+                    "on-secondary-container": "#b0b9c4",
+                    "tertiary-fixed": "#ffe16b",
+                    "inverse-on-surface": "#2d3137",
+                    "on-primary-container": "#5c4900",
+                    "secondary-fixed-dim": "#bec7d2",
+                    "tertiary": "#f6d650",
+                    "on-primary-fixed": "#231a00",
+                    "on-primary-fixed-variant": "#574500",
+                    "on-primary": "#3c2f00",
+                    "surface-dim": "#10141a",
+                    "surface-bright": "#353940",
+                    "surface-container-high": "#262a31",
+                    "tertiary-fixed-dim": "#e4c540",
+                    "tertiary-container": "#d8ba36",
+                    "secondary-container": "#414a53",
+                    "on-secondary": "#29313a",
+                    "inverse-surface": "#dfe2eb",
+                    "outline": "#9a9079",
+                    "on-tertiary": "#3a3000",
+                    "on-tertiary-container": "#594a00",
+                    "error-container": "#93000a",
+                    "inverse-primary": "#735c00",
+                    "secondary": "#bec7d2",
+                    "background": "#10141a",
+                    "surface-container-highest": "#31353c",
+                    "surface-tint": "#eec224",
+                    "on-tertiary-fixed": "#221b00",
+                    "on-tertiary-fixed-variant": "#544600",
+                    "primary-container": "#00A86B",
+                    "primary-fixed-dim": "#eec224",
+                    "surface-container-low": "#181c22",
+                    "surface": "#10141a",
+                    "primary-fixed": "#ffe087",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#3f4850"
+                },
+                fontFamily: {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+                },
+                borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #10141a; color: #dfe2eb; }
+    .aureate-gradient { background: linear-gradient(135deg, #00A86B 0%, #ffd341 100%); }
+    .ghost-border { border: 1px solid rgba(77, 70, 51, 0.2); }
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-2px); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    #graph-container { width: 100%; height: 500px; background-color: #0a0e14; border-radius: 1rem; position: relative; border: 1px solid rgba(77, 70, 51, 0.2); }
+    .d3-node { cursor: pointer; }
+    .d3-link { stroke: rgba(176, 185, 196, 0.2); stroke-width: 1.5px; }
+    .d3-link:hover { stroke: rgba(255, 211, 65, 0.5); stroke-width: 2px; }
+    .d3-node circle { stroke: rgba(77, 70, 51, 0.3); stroke-width: 2px; filter: drop-shadow(0 0 6px rgba(0, 168, 107, 0.15)); }
+    .d3-node circle:hover { filter: drop-shadow(0 0 12px rgba(255, 211, 65, 0.3)); stroke-width: 3px; }
+    .d3-label { pointer-events: none; font-size: 10px; font-weight: 600; text-anchor: middle; fill: #dfe2eb; }
+    .d3-tooltip { position: absolute; padding: 8px 12px; background-color: #181c22; border: 1px solid rgba(77, 70, 51, 0.3); border-radius: 0.5rem; font-size: 12px; color: #dfe2eb; pointer-events: none; z-index: 1000; max-width: 200px; }
+    .tab-button { padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s ease; color: #b0b9c4; }
+    .tab-button.active { color: #ffd341; border-bottom-color: #ffd341; }
+    .tab-button:hover { color: #dfe2eb; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .chat-message { display: flex; margin-bottom: 1rem; gap: 0.5rem; }
+    .chat-message.user { flex-direction: row-reverse; }
+    .chat-bubble { padding: 0.75rem 1rem; border-radius: 0.75rem; max-width: 70%; word-wrap: break-word; font-size: 0.875rem; }
+    .chat-bubble.agent { background-color: #181c22; border-left: 3px solid #00A86B; color: #dfe2eb; }
+    .chat-bubble.user { background: linear-gradient(135deg, #00A86B 0%, #ffd341 100%); color: #10141a; font-weight: 500; }
+    .status-online { width: 8px; height: 8px; border-radius: 50%; background-color: #00A86B; animation: pulse 2s infinite; }
+    .status-checking { background-color: #ffd341; animation: pulse 1s infinite; }
+    .status-offline { background-color: #ff6b6b; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    #node-details-panel { position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background-color: #181c22; border-left: 1px solid rgba(77, 70, 51, 0.2); box-shadow: -2px 0 20px rgba(0, 0, 0, 0.3); transition: right 0.3s ease; z-index: 40; overflow-y: auto; padding: 1.5rem; }
+    #node-details-panel.open { right: 0; }
+    .property-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(77, 70, 51, 0.15); font-size: 0.875rem; }
+    .property-label { color: #b0b9c4; font-weight: 500; }
+    .property-value { color: #ffd341; font-weight: 600; }
+    .node-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .badge-concept { background-color: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+    .badge-property { background-color: rgba(78, 205, 196, 0.15); color: #4ecdc4; }
+    .badge-comparable { background-color: rgba(69, 183, 209, 0.15); color: #45b7d1; }
+    .badge-market_area { background-color: rgba(255, 160, 122, 0.15); color: #ffa07a; }
+    .badge-standard { background-color: rgba(152, 216, 200, 0.15); color: #98d8c8; }
+    .badge-data_source { background-color: rgba(247, 220, 111, 0.15); color: #f7dc6f; }
+    .badge-user_knowledge { background-color: rgba(187, 143, 206, 0.15); color: #bb8fce; }
+    .connected-node { padding: 0.5rem; background-color: #0a0e14; border-left: 2px solid #00A86B; border-radius: 0.25rem; margin-top: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
+    .connected-node:hover { background-color: #1c2026; border-left-color: #ffd341; }
+    .metric-card { background-color: #181c22; border: 1px solid rgba(77, 70, 51, 0.2); border-radius: 1rem; padding: 1.5rem; text-align: center; }
+    .metric-value { font-size: 2rem; font-weight: 700; color: #ffd341; margin: 0.5rem 0; }
+    .metric-label { font-size: 0.875rem; color: #b0b9c4; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+    .comps-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .comps-table th { background-color: #0a0e14; color: #b0b9c4; padding: 0.75rem; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid rgba(77, 70, 51, 0.2); }
+    .comps-table td { padding: 0.75rem; border-bottom: 1px solid rgba(77, 70, 51, 0.15); }
+    .comps-table tr:nth-child(even) { background-color: rgba(24, 28, 34, 0.5); }
+    .comps-table tr:hover { background-color: rgba(255, 211, 65, 0.05); }
+    .workflow-stage { display: flex; gap: 0.5rem; height: 4px; margin-bottom: 1rem; border-radius: 0.25rem; overflow: hidden; }
+    .workflow-step { flex: 1; background: linear-gradient(90deg, #00A86B, #ffd341); }
+    .workflow-step.pending { background-color: rgba(77, 70, 51, 0.2); }
+    .report-section { background-color: #181c22; border: 1px solid rgba(77, 70, 51, 0.2); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1rem; }
+    .report-section-title { font-size: 0.875rem; font-weight: 700; color: #ffd341; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .report-section-content { font-size: 0.875rem; color: #dfe2eb; line-height: 1.6; }
+</style>
+</head>
+<body class="antialiased overflow-x-hidden">
+
+<!-- Top Navigation Shell -->
+<header class="bg-[#10141a] docked full-width top-0 sticky z-50 bg-[#181c22] border-b border-[#4d4633]/20 shadow-[0_0_20px_rgba(0, 168, 107, 0.05)] flex justify-between items-center w-full px-6 py-3 h-16 font-['Inter'] antialiased text-sm font-medium tracking-tight">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-9 h-9 aureate-gradient rounded-lg flex items-center justify-center shadow-lg shadow-primary/10">
+<span class="text-on-primary-container font-black text-xl">AA</span>
+</div>
+<span class="text-xl font-bold bg-gradient-to-br from-[#00A86B] to-[#ffd341] bg-clip-text text-transparent px-2 py-1 rounded-lg">Appraisal Agent</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/dashboard">Dashboard</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/">Cases</a>
+<a class="text-[#ffd341] border-b-2 border-[#00A86B] pb-1" href="/brain">Knowledge Brain</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/analytics">Analytics</a>
+<a class="text-[#b0b9c4] hover:text-[#dfe2eb] transition-colors" href="/settings">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-secondary-container text-sm">search</span>
+<input id="search-input" class="bg-surface-container-lowest border-none rounded-full pl-10 pr-4 py-1.5 text-xs w-64 focus:ring-1 focus:ring-primary text-on-surface" placeholder="Search knowledge graph..." type="text"/>
+</div>
+<button id="notif-bell" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<a href="/settings" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</a>
+<button id="user-avatar" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 bg-[#00A86B] flex items-center justify-center text-[#F5F5F7] font-black text-sm">?</button>
+<button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="text-[#b0b9c4] hover:bg-[#353940]/30 transition-all duration-200 p-2 rounded-full" title="Sign Out">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</header>
+
+<div class="flex min-h-[calc(100vh-64px)]">
+
+<!-- Side Navigation Shell -->
+<aside class="hidden lg:flex flex-col w-64 bg-[#10141a] border-r border-[#4d4633]/10 h-full py-6 gap-2 shrink-0">
+<div class="px-6 mb-8">
+<h3 class="font-['Inter'] text-xs font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] mb-4">Core Platform</h3>
+<div class="space-y-1">
+<a href="/dashboard" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Dashboard</span>
+</a>
+<a href="/" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Cases</span>
+</a>
+<a href="/brain" class="flex items-center gap-3 text-[#ffd341] bg-[#1c2026] border-l-2 border-[#ffd341] px-4 py-3 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Knowledge Brain</span>
+</a>
+<a href="/analytics" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Analytics</span>
+</a>
+<a href="/settings" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Settings</span>
+</a>
+</div>
+</div>
+
+<!-- AI Engine Section -->
+<div class="px-6 py-4 bg-[#181c22] rounded-lg mx-3 ghost-border">
+<h4 class="text-xs font-semibold uppercase tracking-[0.08em] text-[#b0b9c4] mb-3">AI Engine</h4>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container">Model</span>
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded">CACC v6</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container">vLLM</span>
+<div class="flex items-center gap-1">
+<div class="status-online"></div>
+<span class="text-xs text-on-secondary-container">Online</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-secondary-container">RunPod</span>
+<div class="flex items-center gap-1">
+<div class="status-online"></div>
+<span class="text-xs text-on-secondary-container">Connected</span>
+</div>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-[#4d4633]/20">
+<div class="text-[10px] text-on-secondary-container space-y-1">
+<div class="flex justify-between"><span>Nodes:</span><span class="text-primary font-bold">847</span></div>
+<div class="flex justify-between"><span>Edges:</span><span class="text-primary font-bold">2,156</span></div>
+</div>
+</div>
+</div>
+
+<div class="px-6 mt-auto space-y-1 border-t border-[#4d4633]/10 pt-6">
+<a href="/settings" class="flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Account</span>
+</a>
+<button onclick="localStorage.removeItem('aa-token');localStorage.removeItem('aa-user');window.location.href='/login'" class="w-full flex items-center gap-3 text-[#b0b9c4] px-4 py-3 hover:bg-[#353940] transition-all cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-xs font-semibold uppercase tracking-[0.08em]">Sign Out</span>
+</button>
+</div>
+<div class="px-6 mt-6">
+<button onclick="window.location.href='/case'" class="w-full aureate-gradient text-on-primary h-12 rounded-full font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+New Valuation
+</button>
+</div>
+</aside>
+
+<!-- Main Content Area -->
+<main class="flex-1 p-6 md:p-10 bg-surface-dim overflow-y-auto">
+<div class="max-w-7xl mx-auto">
+
+<!-- Header -->
+<header class="mb-8">
+<h1 class="text-3xl font-extrabold tracking-tight text-on-surface mb-2">Knowledge Brain</h1>
+<p class="text-on-secondary-container text-sm">Interactive knowledge graph with AI-powered analysis and comparable sales integration.</p>
+</header>
+
+<!-- Top Section: D3 Force-Directed Graph -->
+<section class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">schema</span>
+Knowledge Graph
+</h2>
+<div class="flex gap-2">
+<button id="btn-zoom-in" class="p-2 bg-[#181c22] ghost-border rounded-lg hover:bg-[#1c2026] transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+<button id="btn-zoom-out" class="p-2 bg-[#181c22] ghost-border rounded-lg hover:bg-[#1c2026] transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<button id="btn-toggle-labels" class="p-2 bg-[#181c22] ghost-border rounded-lg hover:bg-[#1c2026] transition-colors" title="Toggle Labels">
+<span class="material-symbols-outlined text-sm">label</span>
+</button>
+<button id="btn-toggle-physics" class="p-2 bg-[#181c22] ghost-border rounded-lg hover:bg-[#1c2026] transition-colors" title="Toggle Physics">
+<span class="material-symbols-outlined text-sm">physics</span>
+</button>
+<button id="btn-reset-view" class="p-2 bg-[#181c22] ghost-border rounded-lg hover:bg-[#1c2026] transition-colors" title="Reset View">
+<span class="material-symbols-outlined text-sm">refresh</span>
+</button>
+</div>
+</div>
+<div id="graph-container"></div>
+</section>
+
+<!-- Bottom Section: Tabbed Panel -->
+<section>
+<div class="bg-[#181c22] ghost-border rounded-DEFAULT overflow-hidden">
+
+<!-- Tab Headers -->
+<div class="border-b border-[#4d4633]/20 flex overflow-x-auto">
+<button class="tab-button active" data-tab="chat">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">chat</span>Chat & Workflow</span>
+</button>
+<button class="tab-button" data-tab="comps">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">home</span>Comparable Sales</span>
+</button>
+<button class="tab-button" data-tab="market">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">trending_up</span>Market Data</span>
+</button>
+<button class="tab-button" data-tab="report">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">description</span>Report Preview</span>
+</button>
+</div>
+
+<!-- Tab Contents -->
+<div class="p-6">
+
+<!-- Chat & Workflow Tab -->
+<div id="tab-chat" class="tab-content active">
+<div class="workflow-stage mb-6">
+<div class="workflow-step"></div>
+<div class="workflow-step"></div>
+<div class="workflow-step"></div>
+<div class="workflow-step pending"></div>
+<div class="workflow-step pending"></div>
+</div>
+<div id="chat-messages" class="mb-6 h-96 overflow-y-auto space-y-4 bg-[#0a0e14] rounded-lg p-4">
+<div class="chat-message">
+<div class="chat-bubble agent">
+<div class="font-semibold text-primary mb-1">Knowledge Agent</div>
+<div>I've analyzed the property and loaded comparable sales data. Ready to discuss market adjustments?</div>
+</div>
+</div>
+<div class="chat-message user">
+<div class="chat-bubble user">
+<div class="font-semibold text-on-primary mb-1">You</div>
+<div>Yes, let's focus on location adjustments for this property.</div>
+</div>
+</div>
+</div>
+<div class="flex gap-3">
+<input id="chat-input" type="text" placeholder="Ask about the knowledge graph, comparables, or market conditions..." class="flex-1 bg-[#0a0e14] border border-[#4d4633]/20 rounded-lg px-4 py-2 text-on-surface focus:ring-1 focus:ring-primary focus:border-transparent"/>
+<button id="btn-send-chat" class="aureate-gradient text-on-primary px-6 py-2 rounded-lg font-semibold hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+
+<!-- Comparable Sales Tab -->
+<div id="tab-comps" class="tab-content">
+<div class="mb-6 flex gap-3">
+<button class="aureate-gradient text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform text-sm">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">add</span>Gather Comparable Sales</span>
+</button>
+<button class="px-6 py-2.5 rounded-lg ghost-border text-on-surface font-semibold hover:bg-[#1c2026] transition-colors text-sm">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span>Export CSV</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="comps-table">
+<thead>
+<tr>
+<th>Address</th>
+<th>Sale Price</th>
+<th>Sale Date</th>
+<th>Sq Ft</th>
+<th>Beds</th>
+<th>Baths</th>
+<th>Distance</th>
+<th>Adjustments</th>
+<th>Adjusted Price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>456 Maple Ave</td>
+<td>$485,000</td>
+<td>2024-02-15</td>
+<td>2,150</td>
+<td>4</td>
+<td>2.5</td>
+<td>0.3 mi</td>
+<td>-2.5%</td>
+<td>$472,625</td>
+</tr>
+<tr>
+<td>789 Oak Dr</td>
+<td>$520,000</td>
+<td>2024-01-22</td>
+<td>2,320</td>
+<td>4</td>
+<td>3</td>
+<td>0.7 mi</td>
+<td>+1.2%</td>
+<td>$526,240</td>
+</tr>
+<tr>
+<td>321 Pine St</td>
+<td>$465,000</td>
+<td>2023-12-10</td>
+<td>2,100</td>
+<td>3</td>
+<td>2</td>
+<td>0.5 mi</td>
+<td>-3.1%</td>
+<td>$450,635</td>
+</tr>
+<tr>
+<td>654 Elm Ln</td>
+<td>$510,000</td>
+<td>2023-11-30</td>
+<td>2,280</td>
+<td>4</td>
+<td>2.5</td>
+<td>0.8 mi</td>
+<td>+0.5%</td>
+<td>$512,550</td>
+</tr>
+<tr>
+<td>987 Birch Way</td>
+<td>$495,000</td>
+<td>2023-10-18</td>
+<td>2,200</td>
+<td>4</td>
+<td>3</td>
+<td>0.4 mi</td>
+<td>-1.8%</td>
+<td>$486,110</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- Market Data Tab -->
+<div id="tab-market" class="tab-content">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="metric-card">
+<div class="text-on-secondary-container text-xs font-semibold uppercase tracking-widest mb-1">Median Price</div>
+<div class="metric-value">$495,000</div>
+<div class="text-[10px] text-primary font-bold">↑ 3.2% YoY</div>
+</div>
+<div class="metric-card">
+<div class="text-on-secondary-container text-xs font-semibold uppercase tracking-widest mb-1">Days on Market</div>
+<div class="metric-value">28</div>
+<div class="text-[10px] text-primary font-bold">↓ 2 days</div>
+</div>
+<div class="metric-card">
+<div class="text-on-secondary-container text-xs font-semibold uppercase tracking-widest mb-1">Active Inventory</div>
+<div class="metric-value">156</div>
+<div class="text-[10px] text-primary font-bold">↑ 12 listings</div>
+</div>
+<div class="metric-card">
+<div class="text-on-secondary-container text-xs font-semibold uppercase tracking-widest mb-1">Price Trend</div>
+<div class="metric-value">Stable</div>
+<div class="text-[10px] text-primary font-bold">±0.5% MTM</div>
+</div>
+</div>
+<div class="mt-6 h-48 bg-[#0a0e14] rounded-lg ghost-border flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined mr-2">show_chart</span>
+Market Trend Chart (Ready for D3 implementation)
+</div>
+</div>
+
+<!-- Report Preview Tab -->
+<div id="tab-report" class="tab-content">
+<div class="max-h-96 overflow-y-auto space-y-4">
+<div class="report-section">
+<div class="report-section-title">Subject Property</div>
+<div class="report-section-content space-y-2">
+<div class="flex justify-between"><span>Address:</span><span class="text-primary">123 Main St, Springfield, IL</span></div>
+<div class="flex justify-between"><span>Property Type:</span><span class="text-primary">Single Family Residential</span></div>
+<div class="flex justify-between"><span>Living Area:</span><span class="text-primary">2,250 Sq Ft</span></div>
+<div class="flex justify-between"><span>Bedrooms:</span><span class="text-primary">4</span></div>
+<div class="flex justify-between"><span>Bathrooms:</span><span class="text-primary">2.5</span></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-title">Neighborhood Analysis</div>
+<div class="report-section-content space-y-2">
+<div class="flex justify-between"><span>Market Area:</span><span class="text-primary">Springfield Downtown</span></div>
+<div class="flex justify-between"><span>School District:</span><span class="text-primary">Lincoln High School</span></div>
+<div class="flex justify-between"><span>Condition:</span><span class="text-primary">Good</span></div>
+<div class="flex justify-between"><span>Year Built:</span><span class="text-primary">2005</span></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-title">Market Conditions</div>
+<div class="report-section-content space-y-2">
+<div class="flex justify-between"><span>Property Type Market:</span><span class="text-primary">Balanced</span></div>
+<div class="flex justify-between"><span>Median Sale Price:</span><span class="text-primary">$495,000</span></div>
+<div class="flex justify-between"><span>Days on Market:</span><span class="text-primary">28</span></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-title">Value Reconciliation</div>
+<div class="report-section-content space-y-2">
+<div class="flex justify-between"><span>Sales Comparison:</span><span class="text-primary">$510,000</span></div>
+<div class="flex justify-between"><span>Cost Approach:</span><span class="text-primary">$515,000</span></div>
+<div class="flex justify-between"><span>Income Approach:</span><span class="text-primary">$505,000</span></div>
+<div class="border-t border-[#4d4633]/20 mt-3 pt-3 flex justify-between font-bold">
+<span>Final Opinion of Value:</span>
+<span class="text-primary text-lg">$510,000</span>
+</div>
+</div>
+</div>
+
+<button class="w-full aureate-gradient text-on-primary px-6 py-3 rounded-lg font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform mt-4">
+<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">picture_as_pdf</span>Export PDF Report</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+</div>
+</main>
+</div>
+
+<!-- Node Details Slide-Out Panel -->
+<div id="node-details-panel">
+<div class="flex justify-between items-start mb-4">
+<h2 id="node-title" class="text-xl font-bold text-on-surface">Node Details</h2>
+<button id="btn-close-panel" class="text-on-secondary-container hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div id="node-badge-container"></div>
+<div class="mb-6">
+<h4 class="text-xs font-semibold uppercase tracking-widest text-[#b0b9c4] mb-3">Properties</h4>
+<div id="node-properties" class="space-y-1"></div>
+</div>
+<div>
+<h4 class="text-xs font-semibold uppercase tracking-widest text-[#b0b9c4] mb-3">Connected Nodes</h4>
+<div id="node-connections" class="space-y-2"></div>
+</div>
+</div>
+
+<script>
+// Configuration
+const RUNPOD_POD_ID = localStorage.getItem('aa-runpod-pod') || 'l1rb6jfw6lv7zv';
+const BRAIN_API = '/api/brain';
+const BRAIN_WS = `wss://${RUNPOD_POD_ID}-8080.proxy.runpod.net/ws/chat`;
+
+// Global State
+let graphData = { nodes: [], links: [] };
+let simulation = null;
+let svg = null;
+let g = null;
+let zoom = null;
+let showLabels = true;
+let physicsEnabled = true;
+let selectedNode = null;
+let chatMessages = [];
+let currentTab = 'chat';
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    initializeGraph();
+    initializeTabSystem();
+    initializeChat();
+    loadGraphData();
+    setupEventListeners();
+});
+
+// Graph Initialization
+function initializeGraph() {
+    const container = document.getElementById('graph-container');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    svg = d3.select('#graph-container').append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    zoom = d3.zoom()
+        .on('zoom', (event) => {
+            g.attr('transform', event.transform);
+        });
+
+    svg.call(zoom);
+
+    g = svg.append('g');
+
+    // Add definitions for gradients and markers
+    svg.append('defs').append('marker')
+        .attr('id', 'arrowhead')
+        .attr('markerWidth', 10)
+        .attr('markerHeight', 10)
+        .attr('refX', 9)
+        .attr('refY', 3)
+        .attr('orient', 'auto')
+        .append('polygon')
+        .attr('points', '0 0, 10 3, 0 6')
+        .attr('fill', '#4d4633');
+}
+
+// Load Graph Data
+function loadGraphData() {
+    // Mock data - replace with actual API call
+    graphData = {
+        nodes: [
+            { id: 1, name: 'Property 123 Main St', type: 'property', value: 510000 },
+            { id: 2, name: 'Market Area Springfield', type: 'market_area' },
+            { id: 3, name: 'Comparable Sale 1', type: 'comparable' },
+            { id: 4, name: 'Comparable Sale 2', type: 'comparable' },
+            { id: 5, name: 'School District Lincoln', type: 'data_source' },
+            { id: 6, name: 'Lot Size 0.35 acres', type: 'property' },
+            { id: 7, name: 'Year Built 2005', type: 'standard' },
+            { id: 8, name: 'Neighborhood Quality', type: 'concept' },
+        ],
+        links: [
+            { source: 1, target: 2, relationship: 'located_in' },
+            { source: 1, target: 3, relationship: 'comparable_to' },
+            { source: 1, target: 4, relationship: 'comparable_to' },
+            { source: 2, target: 5, relationship: 'includes' },
+            { source: 1, target: 6, relationship: 'has_property' },
+            { source: 1, target: 7, relationship: 'has_property' },
+            { source: 8, target: 2, relationship: 'influences' },
+        ]
+    };
+
+    renderGraph();
+}
+
+// Render Graph
+function renderGraph() {
+    const width = document.getElementById('graph-container').clientWidth;
+    const height = document.getElementById('graph-container').clientHeight;
+
+    if (simulation) simulation.stop();
+
+    simulation = d3.forceSimulation(graphData.nodes)
+        .force('link', d3.forceLink(graphData.links)
+            .id(d => d.id)
+            .distance(80)
+            .strength(0.5))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(40));
+
+    // Remove old elements
+    g.selectAll('*').remove();
+
+    // Draw links
+    const links = g.selectAll('.d3-link')
+        .data(graphData.links)
+        .enter()
+        .append('line')
+        .attr('class', 'd3-link');
+
+    // Draw nodes
+    const nodes = g.selectAll('.d3-node')
+        .data(graphData.nodes)
+        .enter()
+        .append('g')
+        .attr('class', 'd3-node')
+        .call(d3.drag()
+            .on('start', dragStarted)
+            .on('drag', dragged)
+            .on('end', dragEnded));
+
+    nodes.append('circle')
+        .attr('r', 20)
+        .attr('fill', d => getNodeColor(d.type))
+        .on('click', (event, d) => selectNode(d))
+        .on('mouseover', (event, d) => showNodeTooltip(event, d))
+        .on('mouseout', hideNodeTooltip);
+
+    nodes.append('text')
+        .attr('class', 'd3-label')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '.3em')
+        .text(d => d.name.substring(0, 10))
+        .style('opacity', showLabels ? 1 : 0);
+
+    simulation.on('tick', () => {
+        links
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+
+        nodes.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+}
+
+// Node Color Function
+function getNodeColor(type) {
+    const colors = {
+        concept: '#FF6B6B',
+        property: '#4ECDC4',
+        comparable: '#45B7D1',
+        market_area: '#FFA07A',
+        standard: '#98D8C8',
+        data_source: '#F7DC6F',
+        user_knowledge: '#BB8FCE'
+    };
+    return colors[type] || '#4ECDC4';
+}
+
+// Drag Functions
+function dragStarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+}
+
+function dragEnded(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+}
+
+// Select Node
+function selectNode(node) {
+    selectedNode = node;
+    displayNodeDetails(node);
+    document.getElementById('node-details-panel').classList.add('open');
+}
+
+// Display Node Details
+function displayNodeDetails(node) {
+    document.getElementById('node-title').textContent = node.name;
+
+    const badgeContainer = document.getElementById('node-badge-container');
+    badgeContainer.innerHTML = `<div class="node-badge badge-${node.type}">${node.type.replace('_', ' ').toUpperCase()}</div>`;
+
+    const propsContainer = document.getElementById('node-properties');
+    propsContainer.innerHTML = `
+        <div class="property-row">
+            <span class="property-label">ID</span>
+            <span class="property-value">${node.id}</span>
+        </div>
+        <div class="property-row">
+            <span class="property-label">Type</span>
+            <span class="property-value">${node.type}</span>
+        </div>
+        ${node.value ? `<div class="property-row">
+            <span class="property-label">Value</span>
+            <span class="property-value">$${node.value.toLocaleString()}</span>
+        </div>` : ''}
+    `;
+
+    const connectedNodesContainer = document.getElementById('node-connections');
+    const connectedNodes = graphData.links
+        .filter(link => link.source.id === node.id || link.target.id === node.id)
+        .map(link => link.source.id === node.id ? link.target : link.source);
+
+    if (connectedNodes.length > 0) {
+        connectedNodesContainer.innerHTML = connectedNodes.map(cn => `
+            <div class="connected-node" onclick="selectNode(graphData.nodes.find(n => n.id === ${cn.id}))">
+                <div class="text-xs font-semibold text-on-surface">${cn.name}</div>
+                <div class="text-[10px] text-on-secondary-container">${cn.type}</div>
+            </div>
+        `).join('');
+    } else {
+        connectedNodesContainer.innerHTML = '<div class="text-xs text-on-secondary-container">No connected nodes</div>';
+    }
+}
+
+// Show/Hide Tooltip
+function showNodeTooltip(event, d) {
+    // Tooltip implementation if needed
+}
+
+function hideNodeTooltip() {
+    // Tooltip cleanup if needed
+}
+
+// Tab System
+function initializeTabSystem() {
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+}
+
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    currentTab = tabName;
+}
+
+// Chat System
+function initializeChat() {
+    document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    addChatMessage('user', message);
+    input.value = '';
+
+    // Simulate AI response
+    setTimeout(() => {
+        addChatMessage('agent', 'I have processed your query and updated the knowledge graph with relevant data.');
+    }, 1000);
+}
+
+function addChatMessage(sender, text) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender === 'user' ? 'user' : ''}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${sender === 'user' ? 'user' : 'agent'}`;
+
+    if (sender !== 'user') {
+        const title = document.createElement('div');
+        title.className = 'font-semibold text-primary mb-1';
+        title.textContent = 'Knowledge Agent';
+        bubble.appendChild(title);
+    }
+
+    const content = document.createElement('div');
+    content.textContent = text;
+    bubble.appendChild(content);
+
+    messageDiv.appendChild(bubble);
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Event Listeners
+function setupEventListeners() {
+    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(
+                document.getElementById('graph-container').clientWidth / 2,
+                document.getElementById('graph-container').clientHeight / 2
+            ).scale(1.3)
+        );
+    });
+
+    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(
+                document.getElementById('graph-container').clientWidth / 2,
+                document.getElementById('graph-container').clientHeight / 2
+            ).scale(0.7)
+        );
+    });
+
+    document.getElementById('btn-toggle-labels').addEventListener('click', () => {
+        showLabels = !showLabels;
+        g.selectAll('.d3-label').style('opacity', showLabels ? 1 : 0);
+    });
+
+    document.getElementById('btn-toggle-physics').addEventListener('click', () => {
+        physicsEnabled = !physicsEnabled;
+        if (physicsEnabled) {
+            simulation.alpha(1).restart();
+        } else {
+            simulation.stop();
+        }
+    });
+
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+        const width = document.getElementById('graph-container').clientWidth;
+        const height = document.getElementById('graph-container').clientHeight;
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(width / 2, height / 2)
+        );
+    });
+
+    document.getElementById('btn-close-panel').addEventListener('click', () => {
+        document.getElementById('node-details-panel').classList.remove('open');
+    });
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        g.selectAll('.d3-node').style('opacity', (d) => {
+            return d.name.toLowerCase().includes(query) || query === '' ? 1 : 0.2;
+        });
+    });
+}
+</script>
+
+</body>
+</html>

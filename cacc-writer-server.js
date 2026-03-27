@@ -22,7 +22,7 @@ import log, { setFileLogWriter } from './server/logger.js';
 import { runStartupChecks } from './server/config/startupChecks.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
-import { getDb } from './server/db/database.js';
+import { getDb, closeDb } from './server/db/database.js';
 import { MODEL } from './server/openaiClient.js';
 import { requireAuth } from './server/middleware/authMiddleware.js';
 
@@ -132,6 +132,8 @@ import sketchRouter from './server/api/sketchRoutes.js';
 import uad36Router from './server/api/uad36Routes.js';
 import formDataRouter from './server/api/formDataRoutes.js';
 import photoAddendumRouter from './server/api/photoAddendumRoutes.js';
+import questionnaireRouter from './server/api/questionnaireRoutes.js';
+import brainRouter from './server/api/brainRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -192,6 +194,7 @@ app.get('/workspace', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')))
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
 app.get('/dashboard', (_q, r) => r.sendFile(path.join(__dirname, 'dashboard.html')));
+app.get('/brain', (_q, r) => r.sendFile(path.join(__dirname, 'brain.html')));
 app.get('/admin', (_q, r) => r.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/case', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
 app.get('/case/:id', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
@@ -199,6 +202,9 @@ app.get('/settings', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'set
 app.get('/analytics', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'analytics', 'code.html')));
 app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
 app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
+app.get('/signup', (_q, r) => r.sendFile(path.join(__dirname, 'signup.html')));
+app.get('/signup.html', (_q, r) => r.sendFile(path.join(__dirname, 'signup.html')));
+app.get('/register', (_q, r) => r.redirect('/signup'));
 app.get('/inspection', (_q, r) => r.sendFile(path.join(__dirname, 'inspection.html')));
 app.get('/sketch', (_q, r) => r.sendFile(path.join(__dirname, 'sketch.html')));
 app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
@@ -217,6 +223,8 @@ app.get('/favicon.ico', (_q, r) => {
   r.setHeader('Cache-Control', 'public, max-age=86400');
   r.send(svg);
 });
+
+app.get('/questionnaire', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'questionnaire', 'code.html')));
 
 app.use(requireAuth);
 
@@ -329,6 +337,8 @@ app.use('/api', sketchRouter);
 app.use('/api', uad36Router);
 app.use('/api', formDataRouter);
 app.use('/api', photoAddendumRouter);
+app.use('/api', questionnaireRouter);
+app.use('/api', brainRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
@@ -401,11 +411,36 @@ const server = app.listen(PORT, () => {
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error('Port ' + PORT + ' is already in use. Kill the existing process and restart.');
+    process.exit(1);
   } else {
     console.error('Server error:', err.message);
   }
-  process.exit(1);
 });
 
-export default app;
+// ── Graceful shutdown ──────────────────────────────────────────────────────────
+let _shuttingDown = false;
 
+function gracefulShutdown(signal) {
+  if (_shuttingDown) return;
+  _shuttingDown = true;
+  console.log(`\n${signal} received — shutting down gracefully…`);
+
+  server.close(() => {
+    console.log('HTTP server closed.');
+    try {
+      const db = getDb();
+      if (db && db.open) {
+        db.pragma('wal_checkpoint(TRUNCATE)');
+      }
+      closeDb();
+      console.log('SQLite WAL checkpointed and connection closed.');
+    } catch (e) {
+      console.warn('DB shutdown warning:', e.message);
+    }
+    console.log('Shutdown complete.');
+    process.exit(0);
+  });
+
+  // Force exit if server hasn't closed in 10 seconds
+  setTimeout(() => {
+    console.error('Fo

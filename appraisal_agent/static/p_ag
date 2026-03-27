@@ -1,0 +1,74 @@
+tton class="btn secondary" style="width: 100%; margin-top: 8px;" id="refresh-graph-btn">Refresh Graph</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Graph Section -->
+            <div class="graph-section">
+                <div id="graph-container">
+                    <svg id="graph"></svg>
+                </div>
+                <div class="graph-controls">
+                    <button class="control-btn" id="zoom-in-btn" title="Zoom In">⊕</button>
+                    <button class="control-btn" id="zoom-out-btn" title="Zoom Out">⊖</button>
+                    <button class="control-btn" id="toggle-labels-btn" title="Toggle Labels">A</button>
+                    <button class="control-btn" id="toggle-physics-btn" title="Toggle Physics">⚙</button>
+                    <button class="control-btn" id="reset-view-btn" title="Reset View">⟲</button>
+                    <button class="control-btn" id="toggle-3d-btn" title="3D View">3D</button>
+                </div>
+                <div class="tooltip" id="tooltip" style="display: none;">
+                    <div class="tooltip-title" id="tooltip-title"></div>
+                    <div class="tooltip-content" id="tooltip-content"></div>
+                </div>
+            </div>
+
+            <!-- Tabs Section -->
+            <div class="tabs-section">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="chat-tab">Chat & Workflow</button>
+                    <button class="tab-btn" data-tab="comps-tab">Comparable Sales</button>
+                    <button class="tab-btn" data-tab="market-tab">Market Data</button>
+                    <button class="tab-btn" data-tab="report-tab">Report Preview</button>
+                </div>
+
+                <!-- Chat Tab -->
+                <div id="chat-tab" class="tab-content active">
+                    <div class="workflow-stage" id="workflow-stage">Stage: Starting Appraisal</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type your response...">
+                        <button id="chat-send-btn" class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+
+                <!-- Comps Tab -->
+                <div id="comps-tab" class="tab-content">
+                    <div class="comps-button-group">
+                        <button class="btn" id="gather-comps-btn">Gather Comparable Sales</button>
+                        <button class="btn secondary" id="export-comps-btn">Export as CSV</button>
+                    </div>
+                    <div class="comps-table-wrapper">
+                        <table class="comps-table">
+                            <thead>
+                                <tr>
+                                    <th>Address</th>
+                                    <th>Sale Price</th>
+                                    <th>Sale Date</th>
+                                    <th>Sq Ft</th>
+                                    <th>Beds</th>
+                                    <th>Baths</th>
+                                    <th>Distance</th>
+                                    <th>Adjustments</th>
+                                    <th>Adjusted Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comps-table-body">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; color: #666; padding: 40px;">
+                                        No comparable sales gathered yet. Click "Gather Comparable Sales" to begin.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                 
