@@ -12,6 +12,7 @@ import {
   createPasswordResetToken, resetPassword,
 } from './authService.js';
 import { getUserKbStats } from '../retrieval/userScopedRetrieval.js';
+import { checkLoginRateLimit } from '../security/rateLimiter.js';
 
 const router = Router();
 
@@ -38,6 +39,18 @@ router.post('/auth/login', async (req, res) => {
     // Accept username or email as the login identifier
     const { password } = req.body || {};
     const username = req.body.username || req.body.email;
+
+    // Brute-force protection: rate limit login attempts per IP + username
+    const loginKey = `${req.ip}:${(username || '').toLowerCase()}`;
+    const rateCheck = checkLoginRateLimit(loginKey);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        ok: false,
+        error: 'Too many login attempts. Please try again later.',
+        resetIn: rateCheck.resetIn,
+      });
+    }
+
     const result = await loginUser({ username, password });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -82,6 +95,14 @@ router.post('/auth/forgot-password', (req, res) => {
   try {
     const { email } = req.body || {};
     if (!email) return res.status(400).json({ ok: false, error: 'Email required' });
+
+    // Rate limit password reset requests per IP to prevent abuse
+    const resetKey = `reset:${req.ip}`;
+    const rateCheck = checkLoginRateLimit(resetKey);
+    if (!rateCheck.allowed) {
+      // Still return generic success to prevent enumeration
+      return res.json({ ok: true, message: 'If that email is registered, a reset link has been sent.' });
+    }
 
     const result = createPasswordResetToken(email);
     // Always return success to prevent email enumeration attacks
