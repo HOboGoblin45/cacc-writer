@@ -167,7 +167,7 @@ export function authMiddleware(req, res, next) {
   // In production, auth MUST be enabled — no anonymous access allowed
   if (process.env.CACC_AUTH_ENABLED === 'false' || process.env.CACC_AUTH_ENABLED === '0') {
     if (process.env.NODE_ENV === 'production') {
-      return res.status(503).json({ ok: false, error: 'Auth required in production. Set CACC_AUTH_ENABLED=true.' });
+      return res.status(401).json({ ok: false, error: 'Authentication required' });
     }
     // Development only: still try to parse JWT if present
     const authHeader = req.headers.authorization;
@@ -237,5 +237,21 @@ export const PLANS = {
   professional: { label: 'Professional', reports: 100, price: 149, features: ['100 reports/month', 'All form types', 'Custom voice model', 'ACI + RQ insertion', 'Priority support'] },
   enterprise: { label: 'Enterprise', reports: Infinity, price: 299, features: ['Unlimited reports', 'All features', 'Custom fine-tuned model', 'API access', 'White-label option', 'Dedicated support'] },
 };
+
+/**
+ * Resolve the authenticated userId from a request.
+ * In production, throws if no userId is present (prevents silent 'default' fallback).
+ * In dev, falls back to 'dev-local'.
+ */
+export function resolveUserId(req) {
+  const userId = req.user?.userId;
+  if (userId) return userId;
+  if (process.env.NODE_ENV === 'production') {
+    const err = new Error('Authentication required');
+    err.status = 401;
+    throw err;
+  }
+  return 'dev-local';
+}
 
 export { JWT_SECRET };
