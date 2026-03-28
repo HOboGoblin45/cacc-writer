@@ -153,6 +153,10 @@ import waitlistRouter from './server/api/waitlistRoutes.js';
 import betaRouter from './server/api/betaRoutes.js';
 import referralRouter from './server/api/referralRoutes.js';
 import marketingRouter from './server/api/marketingRoutes.js';
+import selfTrainingRouter from './server/api/selfTrainingRoutes.js';
+import betaFeedbackRouter from './server/api/betaFeedbackRoutes.js';
+import onboardingEnhancedRouter from './server/api/onboardingEnhancedRoutes.js';
+import voiceCorpusRouter from './server/api/voiceCorpusRoutes.js';
 import { applyPendingRestore } from './server/security/backupRestoreService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -457,6 +461,10 @@ app.use('/api/onboarding', onboardingRouter);
 app.use('/api/waitlist', waitlistRouter);
 app.use('/api/beta', betaRouter);
 app.use('/api/referrals', referralRouter);
+app.use('/api', selfTrainingRouter);
+app.use('/api', betaFeedbackRouter);
+app.use('/api', onboardingEnhancedRouter);
+app.use('/api', voiceCorpusRouter);
 
 // ── Global Error Handler ────────────────────────────────────────────────────
 // Structured error responses with request ID correlation, circuit breaker

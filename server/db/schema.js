@@ -53,6 +53,8 @@ import { initPhase25Schema } from '../migration/phase25Schema.js';
 import { initPhase26Schema } from '../migration/phase26Schema.js';
 import { initPipelineSchema } from '../migration/pipelineSchema.js';
 import { initBrainSchema } from '../migration/brainSchema.js';
+import { initPhase27Schema } from '../migration/phase27Schema.js';
+import { initPhase28Schema } from '../migration/phase28Schema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -923,6 +925,20 @@ export function initSchema(db) {
     initBrainSchema(db);
   } catch (err) {
     log.error('schema:brain-init', { error: err.message });
+  }
+
+  // Phase 27 — Self-Training Pipeline
+  try {
+    initPhase27Schema(db);
+  } catch (err) {
+    log.error('schema:phase27-init', { error: err.message });
+  }
+
+  // Phase 28 — Feedback Diffs & Training Exports
+  try {
+    initPhase28Schema(db);
+  } catch (err) {
+    log.error('schema:phase28-init', { error: err.message });
   }
 }
 

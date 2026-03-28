@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Brain - Enhanced Onboarding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --gold: #ffd341;
+      --green: #00A86B;
+      --dark: #10141a;
+      --dark-light: #1a1f2e;
+    }
+
+    body {
+      background-color: var(--dark);
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .brand-gold { color: var(--gold); }
+    .brand-green { color: var(--green); }
+    .bg-brand-dark { background-color: var(--dark); }
+    .bg-brand-dark-light { background-color: var(--dark-light); }
+    .border-brand-gold { border-color: var(--gold); }
+    .border-brand-green { border-color: var(--green); }
+
+    .progress-bar {
+      height: 4px;
+      background-color: var(--dark-light);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--green));
+      transition: width 0.3s ease;
+    }
+
+    .step-indicator {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--dark-light);
+      border: 2px solid var(--dark-light);
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .step.active {
+      background-color: var(--gold);
+      border-color: var(--gold);
+      color: var(--dark);
+    }
+
+    .step.completed {
+      background-color: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--gold);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: rgba(255, 211, 65, 0.05);
+    }
+
+    .upload-zone:hover {
+      background-color: rgba(255, 211, 65, 0.1);
+      border-color: var(--green);
+    }
+
+    .file-item {
+      background-color: var(--dark-light);
+      border-left: 4px solid var(--gold);
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .gauge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--gold);
+    }
+
+    .gauge-label {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--dark-light);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .tab-button {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      background: none;
+      color: #999;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .tab-button.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .celebration-fireworks {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+    }
+
+    .firework {
+      position: absolute;
+      animation: burst 1s ease-out forwards;
+    }
+
+    @keyframes burst {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .metric-card {
+      background-color: var(--dark-light);
+      border: 1px solid var(--dark-light);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+      border-color: var(--gold);
+    }
+
+    .btn-primary {
+      background-color: var(--gold);
+      color: var(--dark);
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--green);
+    }
+
+    .btn-secondary {
+      background-color: var(--dark-light);
+      color: #e0e0e0;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--gold);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 211, 65, 0.1);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--dark-light);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--dark-light);
+      border-left: 4px solid var(--gold);
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-brand-dark">
+  <div class="min-h-screen p-6">
+    <!-- Header -->
+    <div class="max-w-5xl mx-auto mb-8">
+      <h1 class="text-3xl font-bold mb-2">
+        <span class="brand-gold">Real Brain</span> Enhanced Onboarding
+      </h1>
+      <p class="text-gray-400">Complete your appraisal profile in 4 easy steps</p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="max-w-5xl mx-auto mb-8">
+      <div class="step-indicator">
+        <div class="step active" data-step="1">1</div>
+        <div class="step" data-step="2">2</div>
+        <div class="step" data-step="3">3</div>
+        <div class="step" data-step="4">4</div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="mainProgress" style="width: 25%"></div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-5xl mx-auto">
+      <!-- Step 1: Upload Reports -->
+      <div class="step-panel" data-step="1">
+        <div class="bg-brand-dark-light rounded-lg p-8 mb-8 border border-dark-light">
+          <h2 class="text-2xl font-bold mb-2">
+            <span class="brand-gold">Step 1:</span> Upload Your Appraisal Reports
+          </h2>
+          <p class="text-gray-400 mb-6">Upload PDF, XML, or environment reports to analyze your voice</p>
+
+          <div class="upload-zone" id="uploadZone">
+            <div class="text-4xl mb-4">📄</div>
+            <h3 class="text-lg font-semibold mb-2">Drag and drop files here</h3>
+            <p class="text-gray-400 text-sm">or click to select files (PDF, XML, ENV)</p>
+          </div>
+
+          <input type="file" id="fileInput" multiple style="display: none">
+
+          <!-- Uploaded Files List -->
+          <div class="mt-6" id="uploadedFilesList"></div>
+
+          <!-- Progress Indicator -->
+          <div class="mt-6" id="uploadProgress" style="display: none;">
+            <div class="text-sm text-gray-400 mb-2">Upload Progress: <span id="uploadPercent">0</span>%</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="uploadBar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex gap-4">
+            <button class="btn-primary" id="startUploadBtn">Start Upload</button>
+            <button class="btn-secondary" id="skipUploadBtn">Skip This Step</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Voice Analysis -->
+      <div class="step-panel" data-step="2" style="display: none;">
+        <div class="bg-brand-dark-light rounded-lg p-8 mb-8 border border-dark-light">
+          <h2 class="text-2xl font-bold mb-2">
+            <span class="brand-gold">Step 2:</span> Voice Analysis
+          </h2>
+          <p class="text-gray-400 mb-8">We analyze your appraisal writing voice to personalize narratives</p>
+
+          <div class="grid grid-cols-2 gap-6 mb-8">
+            <!-- Voice Match Score -->
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-4">Voice Match Score</h3>
+              <div class="gauge">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--dark)" stroke-width="8"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--gold)" stroke-width="8"
+                    stroke-dasharray="157" stroke-dashoffset="39" stroke-linecap="round"/>
+                </svg>
+                <div class="gauge-text">
+                  <div class="gauge-value" id="voiceScore">0.00</div>
+                  <div class="gauge-label">/1.00</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confidence Level -->
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-4">Confidence Level</h3>
+              <div class="text-4xl brand-gold font-bold mb-2" id="confidenceLevel">—</div>
+              <p class="text-sm text-gray-400" id="confidenceText">Analyzing...</p>
+            </div>
+          </div>
+
+          <!-- Voice Sample Analysis -->
+          <div class="bg-brand-dark rounded-lg p-6 mb-8 border border-dark-light">
+            <h3 class="text-lg font-semibold mb-4">Sample Analysis</h3>
+            <p class="text-gray-400 text-sm" id="voiceSampleMessage">Upload reports to begin voice analysis</p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4">
+            <button class="btn-primary" id="analyzeVoiceBtn">Analyze Voice</button>
+            <button class="btn-secondary" id="nextToGenerateBtn">Continue to Generation</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Generate Narratives -->
+      <div class="step-panel" data-step="3" style="display: none;">
+        <div class="bg-brand-dark-light rounded-lg p-8 mb-8 border border-dark-light">
+          <h2 class="text-2xl font-bold mb-2">
+            <span class="brand-gold">Step 3:</span> Generate Sample Narratives
+          </h2>
+          <p class="text-gray-400 mb-8">Generate preview narratives with your voice style applied</p>
+
+          <!-- Section Tabs -->
+          <div class="tab-buttons">
+            <button class="tab-button active" data-section="subject">Subject</button>
+            <button class="tab-button" data-section="location">Location</button>
+            <button class="tab-button" data-section="improvements">Improvements</button>
+            <button class="tab-button" data-section="marketAnalysis">Market Analysis</button>
+            <button class="tab-button" data-section="conclusion">Conclusion</button>
+          </div>
+
+          <!-- Generation Options -->
+          <div class="bg-brand-dark rounded-lg p-6 mb-6 border border-dark-light">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Style</label>
+                <select id="styleSelect" class="w-full bg-dark-light border border-dark-light rounded px-3 py-2 text-gray-200">
+                  <option value="professional">Professional</option>
+                  <option value="detailed">Detailed</option>
+                  <option value="concise">Concise</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Length</label>
+                <select id="lengthSelect" class="w-full bg-dark-light border border-dark-light rounded px-3 py-2 text-gray-200">
+                  <option value="short">Short</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="long">Long</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Contents -->
+          <div class="tab-content active" data-section="subject">
+            <div class="narrative-display bg-brand-dark rounded-lg p-6 border border-dark-light mb-6">
+              <p id="narrativeText" class="text-gray-300 leading-relaxed">Click Generate to create narrative...</p>
+            </div>
+          </div>
+
+          <div class="tab-content" data-section="location">
+            <div class="narrative-display bg-brand-dark rounded-lg p-6 border border-dark-light mb-6">
+              <p id="narrativeText" class="text-gray-300 leading-relaxed">Click Generate to create narrative...</p>
+            </div>
+          </div>
+
+          <div class="tab-content" data-section="improvements">
+            <div class="narrative-display bg-brand-dark rounded-lg p-6 border border-dark-light mb-6">
+              <p id="narrativeText" class="text-gray-300 leading-relaxed">Click Generate to create narrative...</p>
+            </div>
+          </div>
+
+          <div class="tab-content" data-section="marketAnalysis">
+            <div class="narrative-display bg-brand-dark rounded-lg p-6 border border-dark-light mb-6">
+              <p id="narrativeText" class="text-gray-300 leading-relaxed">Click Generate to create narrative...</p>
+            </div>
+          </div>
+
+          <div class="tab-content" data-section="conclusion">
+            <div class="narrative-display bg-brand-dark rounded-lg p-6 border border-dark-light mb-6">
+              <p id="narrativeText" class="text-gray-300 leading-relaxed">Click Generate to create narrative...</p>
+            </div>
+          </div>
+
+          <!-- Quality Metrics -->
+          <div class="grid grid-cols-3 gap-4 mb-8">
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-2">Quality Score</h3>
+              <div class="text-3xl brand-gold font-bold" id="qualityScore">—</div>
+            </div>
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-2">Voice Consistency</h3>
+              <div class="text-3xl brand-green font-bold" id="voiceConsistency">—</div>
+            </div>
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-2">Fact Accuracy</h3>
+              <div class="text-3xl brand-gold font-bold" id="factAccuracy">—</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4">
+            <button class="btn-primary" id="generateNarrativeBtn">Generate Narrative</button>
+            <button class="btn-secondary" id="nextToCompleteBtn">Continue to Completion</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Completion -->
+      <div class="step-panel" data-step="4" style="display: none;">
+        <div class="bg-brand-dark-light rounded-lg p-8 border border-dark-light text-center">
+          <h2 class="text-3xl font-bold mb-4">
+            <span class="brand-green">Onboarding Complete!</span>
+          </h2>
+          <p class="text-gray-400 mb-8">Your Real Brain profile is now ready to generate appraisal narratives</p>
+
+          <!-- Celebration -->
+          <div class="celebration-fireworks mb-8" id="celebrationContainer"></div>
+
+          <!-- Stats Summary -->
+          <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-2">Total Reports</h3>
+              <div class="text-3xl brand-gold font-bold" id="totalReports">0</div>
+            </div>
+            <div class="metric-card">
+              <h3 class="text-sm text-gray-400 mb-2">Voice Profile Strength</h3>
+              <div class="text-3xl brand-green font-bold" id="finalVoiceScore">0.00</div>
+            </div>
+          </div>
+
+          <!-- Time Estimates -->
+          <div class="bg-brand-dark rounded-lg p-6 border border-dark-light mb-8">
+            <h3 class="text-lg font-semibold mb-4">Average Generation Times</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Subject Narrative:</span>
+                <span class="brand-gold" id="timeSubject">2-3 min</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Location Narrative:</span>
+                <span class="brand-gold" id="timeLocation">2-3 min</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Full Report:</span>
+                <span class="brand-gold" id="timeReport">8-12 min</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4 justify-center">
+            <button class="btn-primary" id="startWorkBtn">Start Creating Cases</button>
+            <button class="btn-secondary" id="reviewSettingsBtn">Review Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State Management
+    const state = {
+      currentStep: 1,
+      userId: null,
+      uploadedFiles: [],
+      voiceData: null,
+      narrativeData: null,
+      analytics: null,
+    };
+
+    // Initialize
+    function init() {
+      state.userId = new URLSearchParams(window.location.search).get('userId') || 'demo-user';
+      attachEventListeners();
+      loadAnalytics();
+    }
+
+    // Event Listeners
+    function attachEventListeners() {
+      // Upload Zone
+      const uploadZone = document.getElementById('uploadZone');
+      const fileInput = document.getElementById('fileInput');
+
+      uploadZone.addEventListener('click', () => fileInput.click());
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'var(--green)';
+      });
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.style.borderColor = 'var(--gold)';
+      });
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'var(--gold)';
+        handleFiles(e.dataTransfer.files);
+      });
+
+      fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+      // Upload Buttons
+      document.getElementById('startUploadBtn').addEventListener('click', startUpload);
+      document.getElementById('skipUploadBtn').addEventListener('click', () => goToStep(2));
+
+      // Voice Analysis
+      document.getElementById('analyzeVoiceBtn').addEventListener('click', analyzeVoice);
+      document.getElementById('nextToGenerateBtn').addEventListener('click', () => goToStep(3));
+
+      // Generation
+      document.getElementById('generateNarrativeBtn').addEventListener('click', generateNarrative);
+      document.getElementById('nextToCompleteBtn').addEventListener('click', () => goToStep(4));
+
+      // Section Tabs
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          e.target.classList.add('active');
+          document.querySelector(`[data-section="${e.target.dataset.section}"]`).classList.add('active');
+        });
+      });
+
+      // Completion
+      document.getElementById('startWorkBtn').addEventListener('click', () => {
+        window.location.href = '/app.html?userId=' + state.userId;
+      });
+      document.getElementById('reviewSettingsBtn').addEventListener('click', () => {
+        window.location.href = '/frontend/settings.html?userId=' + state.userId;
+      });
+    }
+
+    // File Handling
+    function handleFiles(files) {
+      state.uploadedFiles = Array.from(files);
+      renderFilesList();
+    }
+
+    function renderFilesList() {
+      const list = document.getElementById('uploadedFilesList');
+      list.innerHTML = state.uploadedFiles.map((file, idx) => `
+        <div class="file-item">
+          <div>
+            <div class="font-semibold">${file.name}</div>
+            <div class="text-sm text-gray-400">${(file.size / 1024).toFixed(1)} KB</div>
+          </div>
+          <div class="text-sm text-gray-400">📋 Ready</div>
+        </div>
+      `).join('');
+    }
+
+    // Upload
+    async function startUpload() {
+      if (state.uploadedFiles.length === 0) {
+        showToast('Please select files to upload', 'error');
+        return;
+      }
+
+      document.getElementById('uploadProgress').style.display = 'block';
+      document.getElementById('startUploadBtn').disabled = true;
+
+      try {
+        const files = state.uploadedFiles.map(f => ({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+        }));
+
+        const response = await fetch('/api/onboarding/v2/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: state.userId, files }),
+        });
+
+        const result = await response.json();
+
+        // Simulate upload progress
+        for (let i = 0; i <= 100; i += 10) {
+          document.getElementById('uploadPercent').textContent = i;
+          document.getElementById('uploadBar').style.width = i + '%';
+          await new Promise(r => setTimeout(r, 100));
+        }
+
+        showToast(`Uploaded ${result.processingStarted} files successfully`, 'success');
+        goToStep(2);
+      } catch (err) {
+        showToast('Upload failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('startUploadBtn').disabled = false;
+      }
+    }
+
+    // Voice Analysis
+    async function analyzeVoice() {
+      try {
+        const response = await fetch(`/api/onboarding/v2/voice-preview/${state.userId}`);
+        const data = await response.json();
+        state.voiceData = data;
+
+        document.getElementById('voiceScore').textContent = data.voiceMatchScore.toFixed(2);
+        document.getElementById('confidenceLevel').textContent = data.confidenceLevel.charAt(0).toUpperCase() + data.confidenceLevel.slice(1);
+        document.getElementById('confidenceText').textContent = data.sampleAnalysis.message || 'Voice analysis complete';
+
+        showToast('Voice analysis complete', 'success');
+      } catch (err) {
+        showToast('Analysis failed: ' + err.message, 'error');
+      }
+    }
+
+    // Generate Narrative
+    async function generateNarrative() {
+      const section = document.querySelector('.tab-button.active').dataset.section;
+      const style = document.getElementById('styleSelect').value;
+      const length = document.getElementById('lengthSelect').value;
+
+      document.getElementById('generateNarrativeBtn').disabled = true;
+
+      try {
+        const response = await fetch(`/api/onboarding/v2/generate/${state.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sectionId: section, options: { style, length } }),
+        });
+
+        const result = await response.json();
+        state.narrativeData = result;
+
+        // Find the narrative display in the active tab
+        const activeTab = document.querySelector('.tab-content.active');
+        const narrativeText = activeTab.querySelector('#narrativeText');
+        if (narrativeText) {
+          narrativeText.textContent = result.narrative;
+        }
+
+        document.getElementById('qualityScore').textContent = (result.qualityScore * 100).toFixed(0) + '%';
+        document.getElementById('voiceConsistency').textContent = (result.voiceConsistency * 100).toFixed(0) + '%';
+        document.getElementById('factAccuracy').textContent = (result.factAccuracy * 100).toFixed(0) + '%';
+
+        showToast(`${section} narrative generated (${result.generationTimeMs}ms)`, 'success');
+      } catch (err) {
+        showToast('Generation failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('generateNarrativeBtn').disabled = false;
+      }
+    }
+
+    // Step Navigation
+    function goToStep(step) {
+      document.querySelectorAll('.step-panel').forEach(p => p.style.display = 'none');
+      document.querySelector(`[data-step="${step}"]`).style.display = 'block';
+
+      // Update step indicator
+      document.querySelectorAll('.step').forEach(s => {
+        const stepNum = parseInt(s.dataset.step);
+        s.classList.remove('active', 'completed');
+        if (stepNum === step) {
+          s.classList.add('active');
+        } else if (stepNum < step) {
+          s.classList.add('completed');
+        }
+      });
+
+      // Update progress bar
+      const progress = (step / 4) * 100;
+      document.getElementById('mainProgress').style.width = progress + '%';
+
+      state.currentStep = step;
+
+      if (step === 4) {
+        celebrateCompletion();
+      }
+    }
+
+    // Analytics
+    async function loadAnalytics() {
+      try {
+        const response = await fetch(`/api/onboarding/v2/analytics/${state.userId}`);
+        const data = await response.json();
+        state.analytics = data;
+      } catch (err) {
+        console.error('Failed to load analytics:', err);
+      }
+    }
+
+    // Celebration
+    function celebrateCompletion() {
+      const container = document.getElementById('celebrationContainer');
+      for (let i = 0; i < 15; i++) {
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        const angle = (Math.PI * 2 * i) / 15;
+        const velocity = 50 + Math.random() * 100;
+        const x = Math.cos(angle) * velocity;
+        const y = Math.sin(angle) * velocity;
+        firework.style.setProperty('--x', x + 'px');
+        firework.style.setProperty('--y', y + 'px');
+        firework.textContent = ['✨', '🎉', '⭐', '🚀'][Math.floor(Math.random() * 4)];
+        firework.style.fontSize = '24px';
+        container.appendChild(firework);
+      }
+
+      // Load final stats
+      if (state.analytics) {
+        document.getElementById('totalReports').textContent = state.uploadedFiles.length;
+        document.getElementById('finalVoiceScore').textContent = (state.voiceData?.voiceMatchScore || 0).toFixed(2);
+      }
+    }
+
+    // Toast
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
