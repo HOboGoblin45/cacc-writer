@@ -5,12 +5,20 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware, getSubscription, checkReportQuota } from '../auth/authService.js';
 import { isStripeConfigured, createCheckoutSession, createPortalSession, handleWebhook } from './stripeService.js';
+import { validateBody } from '../middleware/validateRequest.js';
 import express from 'express';
 import log from '../logger.js';
 
 const router = Router();
+
+const checkoutSchema = z.object({
+  plan: z.enum(['starter', 'professional', 'enterprise'], {
+    errorMap: () => ({ message: 'Plan must be starter, professional, or enterprise' }),
+  }),
+});
 
 // ── Stripe configuration guard ──────────────────────────────────────────────
 // Returns 503 for all billing endpoints when Stripe is not configured.
@@ -39,13 +47,10 @@ router.get('/billing/status', (_req, res) => {
 
 // ── POST /billing/checkout ───────────────────────────────────────────────────
 
-router.post('/billing/checkout', authMiddleware, requireStripe, async (req, res) => {
+router.post('/billing/checkout', authMiddleware, requireStripe, validateBody(checkoutSchema), async (req, res) => {
   try {
-    const { plan } = req.body || {};
+    const { plan } = req.validated;
     log.info('billing:checkout-attempt', { plan, userId: req.user?.userId });
-    if (!plan || !['starter', 'professional', 'enterprise'].includes(plan)) {
-      return res.status(400).json({ ok: false, error: 'Invalid plan' });
-    }
     const result = await createCheckoutSession(req.user.userId, plan);
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -56,12 +61,9 @@ router.post('/billing/checkout', authMiddleware, requireStripe, async (req, res)
 
 // ── POST /billing/create-checkout-session (alias) ────────────────────────────
 
-router.post('/billing/create-checkout-session', authMiddleware, requireStripe, async (req, res) => {
+router.post('/billing/create-checkout-session', authMiddleware, requireStripe, validateBody(checkoutSchema), async (req, res) => {
   try {
-    const { plan } = req.body || {};
-    if (!plan || !['starter', 'professional', 'enterprise'].includes(plan)) {
-      return res.status(400).json({ ok: false, error: 'Invalid plan' });
-    }
+    const { plan } = req.validated;
     const result = await createCheckoutSession(req.user.userId, plan);
     res.json({ ok: true, ...result });
   } catch (err) {

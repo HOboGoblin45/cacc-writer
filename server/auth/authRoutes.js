@@ -5,6 +5,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import {
   registerUser, loginUser, verifyToken, authMiddleware,
   getSubscription, checkReportQuota, PLANS,
@@ -13,16 +14,47 @@ import {
 } from './authService.js';
 import { getUserKbStats } from '../retrieval/userScopedRetrieval.js';
 import { checkLoginRateLimit } from '../security/rateLimiter.js';
+import { validateBody } from '../middleware/validateRequest.js';
 
 const router = Router();
 
+// ── Zod schemas ──────────────────────────────────────────────────────────────
+const registerSchema = z.object({
+  email: z.string().email('Valid email required').max(254),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+  username: z.string().min(2).max(40).regex(/^[a-zA-Z0-9_]+$/, 'Username must be alphanumeric').optional(),
+  name: z.string().max(100).optional(),
+  displayName: z.string().max(100).optional(),
+});
+
+const loginSchema = z.object({
+  username: z.string().max(254).optional(),
+  email: z.string().max(254).optional(),
+  password: z.string().min(1, 'Password required').max(128),
+}).refine(data => data.username || data.email, {
+  message: 'Either username or email is required',
+});
+
+const refreshSchema = z.object({
+  refreshToken: z.string().min(1, 'refreshToken required'),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Valid email required').max(254),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters').max(128),
+});
+
 // -- POST /auth/register --------------------------------------------------
 
-router.post('/auth/register', async (req, res) => {
+router.post('/auth/register', validateBody(registerSchema), async (req, res) => {
   try {
-    const { email, password, name, displayName: dn } = req.body || {};
+    const { email, password, name, displayName: dn } = req.validated;
     // Accept either username or derive it from email's local part
-    const username = req.body.username || (email ? email.split('@')[0].replace(/[^a-z0-9_]/gi, '_') : undefined);
+    const username = req.validated.username || (email ? email.split('@')[0].replace(/[^a-z0-9_]/gi, '_') : undefined);
     const displayName = dn || name;
     const result = await registerUser({ username, email, password, displayName });
     res.status(201).json({ ok: true, ...result });
@@ -34,11 +66,11 @@ router.post('/auth/register', async (req, res) => {
 
 // -- POST /auth/login -----------------------------------------------------
 
-router.post('/auth/login', async (req, res) => {
+router.post('/auth/login', validateBody(loginSchema), async (req, res) => {
   try {
     // Accept username or email as the login identifier
-    const { password } = req.body || {};
-    const username = req.body.username || req.body.email;
+    const { password } = req.validated;
+    const username = req.validated.username || req.validated.email;
 
     // Brute-force protection: rate limit login attempts per IP + username
     const loginKey = `${req.ip}:${(username || '').toLowerCase()}`;
@@ -60,10 +92,9 @@ router.post('/auth/login', async (req, res) => {
 
 // -- POST /auth/refresh ---------------------------------------------------
 
-router.post('/auth/refresh', async (req, res) => {
+router.post('/auth/refresh', validateBody(refreshSchema), async (req, res) => {
   try {
-    const { refreshToken } = req.body || {};
-    if (!refreshToken) return res.status(400).json({ ok: false, error: 'refreshToken required' });
+    const { refreshToken } = req.validated;
     const result = await refreshAccessToken(refreshToken);
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -91,10 +122,9 @@ router.post('/auth/logout', (req, res) => {
 
 // -- POST /auth/forgot-password -------------------------------------------
 
-router.post('/auth/forgot-password', (req, res) => {
+router.post('/auth/forgot-password', validateBody(forgotPasswordSchema), (req, res) => {
   try {
-    const { email } = req.body || {};
-    if (!email) return res.status(400).json({ ok: false, error: 'Email required' });
+    const { email } = req.validated;
 
     // Rate limit password reset requests per IP to prevent abuse
     const resetKey = `reset:${req.ip}`;
@@ -118,15 +148,9 @@ router.post('/auth/forgot-password', (req, res) => {
 
 // -- POST /auth/reset-password --------------------------------------------
 
-router.post('/auth/reset-password', async (req, res) => {
+router.post('/auth/reset-password', validateBody(resetPasswordSchema), async (req, res) => {
   try {
-    const { token, newPassword } = req.body || {};
-    if (!token || !newPassword) {
-      return res.status(400).json({ ok: false, error: 'token and newPassword required' });
-    }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters' });
-    }
+    const { token, newPassword } = req.validated;
     await resetPassword(token, newPassword);
     res.json({ ok: true, message: 'Password reset successfully. Please log in with your new password.' });
   } catch (err) {
