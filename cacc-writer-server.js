@@ -64,7 +64,12 @@ import compsRouter from './server/api/compsRoutes.js';
 import gmailRouter from './server/api/gmailRoutes.js';
 import sseRouter from './server/api/sseRoutes.js';
 import authRouter from './server/auth/authRoutes.js';
+import oauthRouter from './server/api/oauthRoutes.js';
+import mercuryRouter from './server/api/mercuryRoutes.js';
+import { handleWebhook } from './server/integrations/mercuryAdapter.js';
+import onboardingRouter from './server/api/onboardingRoutes.js';
 import billingRouter from './server/billing/billingRoutes.js';
+import billingPortalRouter from './server/api/billingPortalRoutes.js';
 import adminRouter from './server/api/adminRoutes.js';
 import batchRouter from './server/api/batchRoutes.js';
 import templateRouter from './server/api/templateRoutes.js';
@@ -147,6 +152,7 @@ import enhancementRouter from './server/api/enhancementRoutes.js';
 import waitlistRouter from './server/api/waitlistRoutes.js';
 import betaRouter from './server/api/betaRoutes.js';
 import referralRouter from './server/api/referralRoutes.js';
+import marketingRouter from './server/api/marketingRoutes.js';
 import { applyPendingRestore } from './server/security/backupRestoreService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -315,7 +321,23 @@ app.get('/questionnaire', (_q, r) => r.sendFile(path.join(__dirname, 'frontend',
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
 app.get('/api/auth/csrf-token', csrfTokenEndpoint);
 app.use('/api', authRouter);
+app.use('/api', oauthRouter); // OAuth routes (public + authenticated)
 app.use('/api', billingRouter); // billing webhook needs raw body before auth
+
+// Mercury webhook endpoint — must be public (Mercury posts without auth)
+app.post('/api/mercury/webhook', async (req, res) => {
+  try {
+    const payload = req.body;
+    const signature = req.headers['x-mercury-signature'] || req.headers['x-signature'];
+    const secret = process.env.MERCURY_WEBHOOK_SECRET || null;
+    const result = await handleWebhook(payload, signature, secret);
+    res.json(result);
+    log.info('mercury:webhook-received', { eventType: payload.EventType || payload.event });
+  } catch (err) {
+    log.error('mercury:webhook-error', { error: err.message });
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
 
 // ── Auth Wall — all routes below require authentication ──────────────────────
 app.use(requireAuth);
@@ -345,10 +367,12 @@ try { ensureSignatureSchema(); } catch (e) { console.warn('Signature schema init
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
 // authRouter + billingRouter already mounted above the auth wall
+app.use('/api/billing', billingPortalRouter);
 app.use('/api', adminRouter);
 app.use('/api', batchRouter);
 app.use('/api', templateRouter);
 app.use('/api', pipelineRouter);
+app.use('/api', mercuryRouter); // Authenticated Mercury order management
 app.use('/api', amcRouter);
 app.use('/api', revisionRouter);
 app.use('/api', analyticsRouter);
@@ -363,6 +387,7 @@ app.use('/api', dataEnrichRouter);
 app.use('/api', mobileRouter);
 app.use('/api', businessIntelRouter);
 app.use('/api', deliveryRouter);
+app.use('/api', marketingRouter);
 app.use('/api', aiTimeout, aiRouter);
 app.use('/api', aiTimeout, aiAdvancedRouter);
 app.use('/api', automationRouter);
@@ -428,6 +453,7 @@ app.use('/api', photoAddendumRouter);
 app.use('/api', questionnaireRouter);
 app.use('/api', aiTimeout, brainRouter);
 app.use('/api', enhancementRouter);
+app.use('/api/onboarding', onboardingRouter);
 app.use('/api/waitlist', waitlistRouter);
 app.use('/api/beta', betaRouter);
 app.use('/api/referrals', referralRouter);

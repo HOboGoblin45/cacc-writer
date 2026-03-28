@@ -47,6 +47,10 @@ import { initPhase19Schema } from '../migration/phase19Schema.js';
 import { initPhase20Schema } from '../migration/phase20Schema.js';
 import { initPhase21Schema } from '../migration/phase21Schema.js';
 import { initPhase22Schema } from '../migration/phase22Schema.js';
+import { initPhase23Schema } from '../migration/phase23Schema.js';
+import { initPhase24Schema } from '../migration/phase24Schema.js';
+import { initPhase25Schema } from '../migration/phase25Schema.js';
+import { initPhase26Schema } from '../migration/phase26Schema.js';
 import { initPipelineSchema } from '../migration/pipelineSchema.js';
 import { initBrainSchema } from '../migration/brainSchema.js';
 
@@ -877,6 +881,34 @@ export function initSchema(db) {
     initPhase22Schema(db);
   } catch (err) {
     log.error('schema:phase22-init', { error: err.message });
+  }
+
+  // Run Phase 23 schema additions (Wave 2 Commercial Billing Features)
+  try {
+    initPhase23Schema(db);
+  } catch (err) {
+    log.error('schema:phase23-init', { error: err.message });
+  }
+
+  // Run Phase 24 schema additions (Wave 2 Self-Serve Onboarding)
+  try {
+    initPhase24Schema(db);
+  } catch (err) {
+    log.error('schema:phase24-init', { error: err.message });
+  }
+
+  // Run Phase 25 schema additions (Wave 2 Integration & Auth Hardening)
+  try {
+    initPhase25Schema(db);
+  } catch (err) {
+    log.error('schema:phase25-init', { error: err.message });
+  }
+
+  // Run Phase 26 schema additions (Wave 2 Marketing — Email Campaigns, Content Assets)
+  try {
+    initPhase26Schema(db);
+  } catch (err) {
+    log.error('schema:phase26-init', { error: err.message });
   }
 
   // Run Pipeline schema additions (Cloudflare data pipeline)
