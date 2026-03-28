@@ -16,6 +16,8 @@ import { Router } from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { CASES_DIR } from '../utils/caseUtils.js';
 import { FORM_1004_FIELDS, checkFormCompleteness, getBlankFormData } from '../config/form1004Fields.js';
 import { callAI } from '../openaiClient.js';
@@ -23,6 +25,18 @@ import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
+
+// ── Zod Validation Schemas ───────────────────────────────────────────────────
+
+const paramsSchemaWithCaseId = z.object({
+  caseId: z.string().min(1, 'caseId must be a non-empty string'),
+});
+
+const formDataBodySchema = z.object({}).passthrough(); // Allow any object for partial updates
+
+const autoPopulateBodySchema = z.object({
+  merge: z.boolean().optional().default(true),
+}).passthrough(); // Allow additional fields
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -70,8 +84,8 @@ async function loadCaseMeta(caseId) {
 }
 
 // ── GET /cases/:caseId/form-data ─────────────────────────────────────────────
-router.get('/cases/:caseId/form-data', async (req, res) => {
-  const { caseId } = req.params;
+router.get('/cases/:caseId/form-data', validateParams(paramsSchemaWithCaseId), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     const formData = await loadFormData(caseId);
     const completeness = checkFormCompleteness(formData);
@@ -83,13 +97,10 @@ router.get('/cases/:caseId/form-data', async (req, res) => {
 });
 
 // ── POST /cases/:caseId/form-data ────────────────────────────────────────────
-router.post('/cases/:caseId/form-data', async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/form-data', validateParams(paramsSchemaWithCaseId), validateBody(formDataBodySchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
-    const incoming = req.body;
-    if (!incoming || typeof incoming !== 'object') {
-      return res.status(400).json({ ok: false, error: 'Request body must be a JSON object' });
-    }
+    const incoming = req.validated;
 
     // Merge with existing to allow partial saves
     const existing = await loadFormData(caseId);
@@ -108,8 +119,8 @@ router.post('/cases/:caseId/form-data', async (req, res) => {
 });
 
 // ── POST /cases/:caseId/form-data/completeness ───────────────────────────────
-router.post('/cases/:caseId/form-data/completeness', async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/form-data/completeness', validateParams(paramsSchemaWithCaseId), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     const formData = await loadFormData(caseId);
     const completeness = checkFormCompleteness(formData);
@@ -122,9 +133,9 @@ router.post('/cases/:caseId/form-data/completeness', async (req, res) => {
 
 // ── POST /cases/:caseId/auto-populate ────────────────────────────────────────
 // AI-powered: reads facts.json + case metadata, maps to form fields
-router.post('/cases/:caseId/auto-populate', async (req, res) => {
-  const { caseId } = req.params;
-  const { merge = true } = req.body ?? {};
+router.post('/cases/:caseId/auto-populate', validateParams(paramsSchemaWithCaseId), validateBody(autoPopulateBodySchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const { merge = true } = req.validated ?? {};
 
   try {
     const [facts, meta, existingFormData] = await Promise.all([

@@ -16,6 +16,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 
 // ── Repository layer ──────────────────────────────────────────────────────────
 import {
@@ -128,6 +129,64 @@ const retrievalRankSchema = z.object({
   canonicalFieldId: z.string().max(120),
 }).passthrough();
 
+// ── Parameter schemas ─────────────────────────────────────────────────────────
+const idParamSchema = z.object({
+  id: z.string().min(1),
+});
+
+const ruleIdParamSchema = z.object({
+  ruleId: z.string().min(1),
+});
+
+// ── Query schemas ─────────────────────────────────────────────────────────────
+const approvedListQuerySchema = z.object({
+  bucket: z.string().max(80).optional(),
+  formType: z.string().max(40).optional(),
+  reportFamily: z.string().max(60).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  sourceType: z.string().max(60).optional(),
+  propertyType: z.string().max(80).optional(),
+  approvalStatus: z.string().max(40).optional(),
+  limit: z.coerce.number().int().min(1).max(10000).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+  includeInactive: z.enum(['true', 'false']).optional(),
+}).passthrough();
+
+const stagingListQuerySchema = z.object({
+  reviewStatus: z.string().max(40).default('pending'),
+  candidateSource: z.string().max(60).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  formType: z.string().max(40).optional(),
+  caseId: z.string().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(10000).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+}).passthrough();
+
+const voiceProfilesListQuerySchema = z.object({
+  scope: z.string().max(80).optional(),
+  reportFamily: z.string().max(60).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+}).passthrough();
+
+const voiceResolveQuerySchema = z.object({
+  canonicalFieldId: z.string().max(120).optional(),
+  reportFamily: z.string().max(60).optional(),
+}).passthrough();
+
+const voiceRulesListQuerySchema = z.object({
+  ruleType: z.string().max(80).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+}).passthrough();
+
+const compCommentaryListQuerySchema = z.object({
+  commentaryType: z.string().max(80).optional(),
+  reportFamily: z.string().max(60).optional(),
+  formType: z.string().max(40).optional(),
+  canonicalFieldId: z.string().max(120).optional(),
+  limit: z.coerce.number().int().min(1).max(10000).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+}).passthrough();
+
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
@@ -153,19 +212,20 @@ function parsePayload(schema, payload, res) {
  * Query params: bucket, formType, reportFamily, canonicalFieldId, sourceType,
  *               propertyType, approvalStatus, limit, offset, includeInactive
  */
-router.get('/approved', (req, res) => {
+router.get('/approved', validateQuery(approvedListQuerySchema), (req, res) => {
   try {
+    const q = req.validatedQuery;
     const filters = {
-      bucket: req.query.bucket || undefined,
-      formType: req.query.formType || undefined,
-      reportFamily: req.query.reportFamily || undefined,
-      canonicalFieldId: req.query.canonicalFieldId || undefined,
-      sourceType: req.query.sourceType || undefined,
-      propertyType: req.query.propertyType || undefined,
-      approvalStatus: req.query.approvalStatus || undefined,
-      limit: parseInt(req.query.limit) || 100,
-      offset: parseInt(req.query.offset) || 0,
-      includeInactive: req.query.includeInactive === 'true',
+      bucket: q.bucket,
+      formType: q.formType,
+      reportFamily: q.reportFamily,
+      canonicalFieldId: q.canonicalFieldId,
+      sourceType: q.sourceType,
+      propertyType: q.propertyType,
+      approvalStatus: q.approvalStatus,
+      limit: q.limit,
+      offset: q.offset,
+      includeInactive: q.includeInactive === 'true',
     };
 
     const items = listApprovedMemory(filters);
@@ -181,9 +241,9 @@ router.get('/approved', (req, res) => {
  * GET /api/memory/approved/:id
  * Get a single approved memory item.
  */
-router.get('/approved/:id', (req, res) => {
+router.get('/approved/:id', validateParams(idParamSchema), (req, res) => {
   try {
-    const item = getApprovedMemoryById(req.params.id);
+    const item = getApprovedMemoryById(req.validatedParams.id);
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, item });
   } catch (err) {
@@ -195,13 +255,10 @@ router.get('/approved/:id', (req, res) => {
  * POST /api/memory/approved
  * Create a new approved memory item directly (manual curation).
  */
-router.post('/approved', (req, res) => {
-  const body = parsePayload(approvedCreateSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/approved', validateBody(approvedCreateSchema), (req, res) => {
   try {
     const { text, bucket, canonicalFieldId, formType, reportFamily, propertyType,
-            assignmentType, styleTags, issueTags, qualityScore, notes } = body;
+            assignmentType, styleTags, issueTags, qualityScore, notes } = req.validated;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -234,16 +291,14 @@ router.post('/approved', (req, res) => {
  * PATCH /api/memory/approved/:id
  * Update an approved memory item.
  */
-router.patch('/approved/:id', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.patch('/approved/:id', validateParams(idParamSchema), validateBody(objectMutationSchema), (req, res) => {
   try {
-    const item = getApprovedMemoryById(req.params.id);
+    const id = req.validatedParams.id;
+    const item = getApprovedMemoryById(id);
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
 
-    updateApprovedMemory(req.params.id, body);
-    const updated = getApprovedMemoryById(req.params.id);
+    updateApprovedMemory(id, req.validated);
+    const updated = getApprovedMemoryById(id);
     res.json({ ok: true, item: updated });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -254,11 +309,9 @@ router.patch('/approved/:id', (req, res) => {
  * DELETE /api/memory/approved/:id
  * Soft-delete (deactivate) an approved memory item.
  */
-router.delete('/approved/:id', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.delete('/approved/:id', validateParams(idParamSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    deactivateApprovedMemory(req.params.id);
+    deactivateApprovedMemory(req.validatedParams.id);
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -274,16 +327,17 @@ router.delete('/approved/:id', (req, res) => {
  * List staging candidates with filters.
  * Query params: reviewStatus, candidateSource, canonicalFieldId, formType, caseId, limit, offset
  */
-router.get('/staging', (req, res) => {
+router.get('/staging', validateQuery(stagingListQuerySchema), (req, res) => {
   try {
+    const q = req.validatedQuery;
     const filters = {
-      reviewStatus: req.query.reviewStatus || 'pending',
-      candidateSource: req.query.candidateSource || undefined,
-      canonicalFieldId: req.query.canonicalFieldId || undefined,
-      formType: req.query.formType || undefined,
-      caseId: req.query.caseId || undefined,
-      limit: parseInt(req.query.limit) || 50,
-      offset: parseInt(req.query.offset) || 0,
+      reviewStatus: q.reviewStatus,
+      candidateSource: q.candidateSource,
+      canonicalFieldId: q.canonicalFieldId,
+      formType: q.formType,
+      caseId: q.caseId,
+      limit: q.limit,
+      offset: q.offset,
     };
 
     const items = listStagingCandidates(filters);
@@ -312,9 +366,9 @@ router.get('/staging/summary', (_req, res) => {
  * GET /api/memory/staging/:id
  * Get a single staging candidate.
  */
-router.get('/staging/:id', (req, res) => {
+router.get('/staging/:id', validateParams(idParamSchema), (req, res) => {
   try {
-    const item = getStagingCandidateById(req.params.id);
+    const item = getStagingCandidateById(req.validatedParams.id);
     if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, item });
   } catch (err) {
@@ -326,13 +380,10 @@ router.get('/staging/:id', (req, res) => {
  * POST /api/memory/staging
  * Stage a new candidate. Body must include: text, candidateSource, and metadata.
  */
-router.post('/staging', (req, res) => {
-  const body = parsePayload(stagingCreateSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/staging', validateBody(stagingCreateSchema), (req, res) => {
   try {
     const { text, candidateSource, canonicalFieldId, formType, reportFamily,
-            caseId, sourceDocumentId, sourceRunId, qualityScore, commentaryType } = body;
+            caseId, sourceDocumentId, sourceRunId, qualityScore, commentaryType } = req.validated;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -373,13 +424,10 @@ router.post('/staging', (req, res) => {
  * POST /api/memory/staging/:id/approve
  * Approve a staging candidate and promote to approved memory.
  */
-router.post('/staging/:id/approve', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/staging/:id/approve', validateParams(idParamSchema), validateBody(objectMutationSchema), (req, res) => {
   try {
-    const overrides = body;
-    const result = approveCandidate(req.params.id, overrides);
+    const overrides = req.validated;
+    const result = approveCandidate(req.validatedParams.id, overrides);
 
     if (result.error) {
       return res.status(400).json({ ok: false, error: result.error });
@@ -395,14 +443,11 @@ router.post('/staging/:id/approve', (req, res) => {
  * POST /api/memory/staging/:id/reject
  * Reject a staging candidate.
  */
-router.post('/staging/:id/reject', (req, res) => {
-  const body = parsePayload(stagingRejectSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/staging/:id/reject', validateParams(idParamSchema), validateBody(stagingRejectSchema), (req, res) => {
   try {
-    const result = rejectCandidate(req.params.id, {
-      reason: body.reason,
-      reviewedBy: body.reviewedBy,
+    const result = rejectCandidate(req.validatedParams.id, {
+      reason: req.validated.reason,
+      reviewedBy: req.validated.reviewedBy,
     });
 
     if (result.error) {
@@ -419,12 +464,9 @@ router.post('/staging/:id/reject', (req, res) => {
  * POST /api/memory/staging/batch-approve
  * Batch approve multiple candidates.
  */
-router.post('/staging/batch-approve', (req, res) => {
-  const body = parsePayload(batchApproveSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/staging/batch-approve', validateBody(batchApproveSchema), (req, res) => {
   try {
-    const { ids, overrides } = body;
+    const { ids, overrides } = req.validated;
 
     const result = batchApprove(ids, overrides || {});
     res.json({ ok: true, ...result });
@@ -437,12 +479,9 @@ router.post('/staging/batch-approve', (req, res) => {
  * POST /api/memory/staging/batch-reject
  * Batch reject multiple candidates.
  */
-router.post('/staging/batch-reject', (req, res) => {
-  const body = parsePayload(batchRejectSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/staging/batch-reject', validateBody(batchRejectSchema), (req, res) => {
   try {
-    const { ids, reason, reviewedBy } = body;
+    const { ids, reason, reviewedBy } = req.validated;
 
     const result = batchReject(ids, { reason, reviewedBy });
     res.json({ ok: true, ...result });
@@ -459,12 +498,13 @@ router.post('/staging/batch-reject', (req, res) => {
  * GET /api/memory/voice/profiles
  * List voice profiles.
  */
-router.get('/voice/profiles', (req, res) => {
+router.get('/voice/profiles', validateQuery(voiceProfilesListQuerySchema), (req, res) => {
   try {
+    const q = req.validatedQuery;
     const filters = {
-      scope: req.query.scope || undefined,
-      reportFamily: req.query.reportFamily || undefined,
-      canonicalFieldId: req.query.canonicalFieldId || undefined,
+      scope: q.scope,
+      reportFamily: q.reportFamily,
+      canonicalFieldId: q.canonicalFieldId,
     };
     const profiles = listVoiceProfiles(filters);
     res.json({ ok: true, profiles });
@@ -477,9 +517,9 @@ router.get('/voice/profiles', (req, res) => {
  * GET /api/memory/voice/profiles/:id
  * Get a single voice profile.
  */
-router.get('/voice/profiles/:id', (req, res) => {
+router.get('/voice/profiles/:id', validateParams(idParamSchema), (req, res) => {
   try {
-    const profile = getVoiceProfileById(req.params.id);
+    const profile = getVoiceProfileById(req.validatedParams.id);
     if (!profile) return res.status(404).json({ ok: false, error: 'Not found' });
     res.json({ ok: true, profile });
   } catch (err) {
@@ -491,12 +531,9 @@ router.get('/voice/profiles/:id', (req, res) => {
  * POST /api/memory/voice/profiles
  * Create a new voice profile.
  */
-router.post('/voice/profiles', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/voice/profiles', validateBody(objectMutationSchema), (req, res) => {
   try {
-    const id = createVoiceProfile(body);
+    const id = createVoiceProfile(req.validated);
     const profile = getVoiceProfileById(id);
     res.json({ ok: true, id, profile });
   } catch (err) {
@@ -508,16 +545,14 @@ router.post('/voice/profiles', (req, res) => {
  * PATCH /api/memory/voice/profiles/:id
  * Update a voice profile.
  */
-router.patch('/voice/profiles/:id', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.patch('/voice/profiles/:id', validateParams(idParamSchema), validateBody(objectMutationSchema), (req, res) => {
   try {
-    const existing = getVoiceProfileById(req.params.id);
+    const id = req.validatedParams.id;
+    const existing = getVoiceProfileById(id);
     if (!existing) return res.status(404).json({ ok: false, error: 'Not found' });
 
-    updateVoiceProfile(req.params.id, body);
-    const updated = getVoiceProfileById(req.params.id);
+    updateVoiceProfile(id, req.validated);
+    const updated = getVoiceProfileById(id);
     res.json({ ok: true, profile: updated });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -528,14 +563,13 @@ router.patch('/voice/profiles/:id', (req, res) => {
  * DELETE /api/memory/voice/profiles/:id
  * Soft-delete (deactivate) a voice profile.
  */
-router.delete('/voice/profiles/:id', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.delete('/voice/profiles/:id', validateParams(idParamSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    const existing = getVoiceProfileById(req.params.id);
+    const id = req.validatedParams.id;
+    const existing = getVoiceProfileById(id);
     if (!existing) return res.status(404).json({ ok: false, error: 'Not found' });
 
-    updateVoiceProfile(req.params.id, { active: false });
+    updateVoiceProfile(id, { active: false });
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -547,11 +581,12 @@ router.delete('/voice/profiles/:id', (req, res) => {
  * Resolve the effective voice profile for a given context.
  * Query params: canonicalFieldId, reportFamily
  */
-router.get('/voice/resolve', (req, res) => {
+router.get('/voice/resolve', validateQuery(voiceResolveQuerySchema), (req, res) => {
   try {
+    const q = req.validatedQuery;
     const profile = resolveVoiceProfile({
-      canonicalFieldId: req.query.canonicalFieldId || null,
-      reportFamily: req.query.reportFamily || null,
+      canonicalFieldId: q.canonicalFieldId || null,
+      reportFamily: q.reportFamily || null,
     });
 
     if (!profile) {
@@ -568,11 +603,12 @@ router.get('/voice/resolve', (req, res) => {
  * GET /api/memory/voice/profiles/:id/rules
  * List voice rules for a profile.
  */
-router.get('/voice/profiles/:id/rules', (req, res) => {
+router.get('/voice/profiles/:id/rules', validateParams(idParamSchema), validateQuery(voiceRulesListQuerySchema), (req, res) => {
   try {
-    const rules = listVoiceRules(req.params.id, {
-      ruleType: req.query.ruleType || undefined,
-      canonicalFieldId: req.query.canonicalFieldId || undefined,
+    const q = req.validatedQuery;
+    const rules = listVoiceRules(req.validatedParams.id, {
+      ruleType: q.ruleType,
+      canonicalFieldId: q.canonicalFieldId,
     });
     res.json({ ok: true, rules });
   } catch (err) {
@@ -584,14 +620,11 @@ router.get('/voice/profiles/:id/rules', (req, res) => {
  * POST /api/memory/voice/profiles/:id/rules
  * Create a voice rule for a profile.
  */
-router.post('/voice/profiles/:id/rules', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/voice/profiles/:id/rules', validateParams(idParamSchema), validateBody(objectMutationSchema), (req, res) => {
   try {
     const ruleId = createVoiceRule({
-      profileId: req.params.id,
-      ...body,
+      profileId: req.validatedParams.id,
+      ...req.validated,
     });
     res.json({ ok: true, id: ruleId });
   } catch (err) {
@@ -603,11 +636,9 @@ router.post('/voice/profiles/:id/rules', (req, res) => {
  * DELETE /api/memory/voice/rules/:ruleId
  * Delete (deactivate) a voice rule.
  */
-router.delete('/voice/rules/:ruleId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.delete('/voice/rules/:ruleId', validateParams(ruleIdParamSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    deleteVoiceRule(req.params.ruleId);
+    deleteVoiceRule(req.validatedParams.ruleId);
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -622,15 +653,16 @@ router.delete('/voice/rules/:ruleId', (req, res) => {
  * GET /api/memory/comp-commentary
  * List comp commentary items.
  */
-router.get('/comp-commentary', (req, res) => {
+router.get('/comp-commentary', validateQuery(compCommentaryListQuerySchema), (req, res) => {
   try {
+    const q = req.validatedQuery;
     const filters = {
-      commentaryType: req.query.commentaryType || undefined,
-      reportFamily: req.query.reportFamily || undefined,
-      formType: req.query.formType || undefined,
-      canonicalFieldId: req.query.canonicalFieldId || undefined,
-      limit: parseInt(req.query.limit) || 100,
-      offset: parseInt(req.query.offset) || 0,
+      commentaryType: q.commentaryType,
+      reportFamily: q.reportFamily,
+      formType: q.formType,
+      canonicalFieldId: q.canonicalFieldId,
+      limit: q.limit,
+      offset: q.offset,
     };
     const items = listCompCommentary(filters);
     res.json({ ok: true, items });
@@ -643,14 +675,11 @@ router.get('/comp-commentary', (req, res) => {
  * POST /api/memory/comp-commentary
  * Create a comp commentary item directly.
  */
-router.post('/comp-commentary', (req, res) => {
-  const body = parsePayload(compCommentaryCreateSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/comp-commentary', validateBody(compCommentaryCreateSchema), (req, res) => {
   try {
     const { text, commentaryType, canonicalFieldId, formType, reportFamily,
             subjectPropertyType, compPropertyType, marketDensity, urbanSuburbanRural,
-            issueTags, adjustmentCategories, qualityScore } = body;
+            issueTags, adjustmentCategories, qualityScore } = req.validated;
 
     if (!text || text.trim().length < 10) {
       return res.status(400).json({ ok: false, error: 'Text is required (min 10 chars)' });
@@ -683,12 +712,9 @@ router.post('/comp-commentary', (req, res) => {
  * PATCH /api/memory/comp-commentary/:id
  * Update a comp commentary item.
  */
-router.patch('/comp-commentary/:id', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.patch('/comp-commentary/:id', validateParams(idParamSchema), validateBody(objectMutationSchema), (req, res) => {
   try {
-    updateCompCommentary(req.params.id, body);
+    updateCompCommentary(req.validatedParams.id, req.validated);
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -699,11 +725,9 @@ router.patch('/comp-commentary/:id', (req, res) => {
  * DELETE /api/memory/comp-commentary/:id
  * Deactivate a comp commentary item.
  */
-router.delete('/comp-commentary/:id', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.delete('/comp-commentary/:id', validateParams(idParamSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    deactivateCompCommentary(req.params.id);
+    deactivateCompCommentary(req.validatedParams.id);
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -719,12 +743,9 @@ router.delete('/comp-commentary/:id', (req, res) => {
  * Preview a retrieval pack for a given section and assignment context.
  * Useful for debugging and understanding what memory will be used.
  */
-router.post('/retrieval/preview', (req, res) => {
-  const body = parsePayload(retrievalPreviewSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/retrieval/preview', validateBody(retrievalPreviewSchema), (req, res) => {
   try {
-    const { assignmentContext, canonicalFieldId, reportFamily, formType, options } = body;
+    const { assignmentContext, canonicalFieldId, reportFamily, formType, options } = req.validated;
 
     const pack = buildRetrievalPack({
       assignmentContext: assignmentContext || {},
@@ -745,12 +766,9 @@ router.post('/retrieval/preview', (req, res) => {
  * Preview retrieval ranking for approved memory.
  * Returns scored candidates with full breakdowns.
  */
-router.post('/retrieval/rank', (req, res) => {
-  const query = parsePayload(retrievalRankSchema, req.body || {}, res);
-  if (!query) return;
-
+router.post('/retrieval/rank', validateBody(retrievalRankSchema), (req, res) => {
   try {
-    const result = rankApprovedMemory(query);
+    const result = rankApprovedMemory(req.validated);
     res.json({ ok: true, ...result });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -761,12 +779,9 @@ router.post('/retrieval/rank', (req, res) => {
  * POST /api/memory/retrieval/rank-comp
  * Preview retrieval ranking for comp commentary.
  */
-router.post('/retrieval/rank-comp', (req, res) => {
-  const body = parsePayload(objectMutationSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/retrieval/rank-comp', validateBody(objectMutationSchema), (req, res) => {
   try {
-    const result = rankCompCommentary(body);
+    const result = rankCompCommentary(req.validated);
     res.json({ ok: true, ...result });
   } catch (err) {
     return sendErrorResponse(res, err);
