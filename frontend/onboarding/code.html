@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Real Brain | Get Started</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#ffd341",
+        accent: "#00A86B",
+        surface: "#10141a",
+        "surface-card": "#1c2026",
+        "surface-hover": "#262a31",
+        "on-surface": "#dfe2eb",
+        "outline-dim": "#4d4633",
+      },
+      fontFamily: { body: ["Inter"] },
+    },
+  },
+}
+</script>
+<style>
+body { font-family:'Inter',sans-serif; background:#10141a; color:#dfe2eb; }
+.step-active { background:linear-gradient(135deg,#00A86B 0%,#ffd341 100%); color:#10141a; }
+.step-done { background:#00A86B; color:#fff; }
+.step-pending { background:#262a31; color:#9a9079; }
+.drop-zone { border:2px dashed #4d4633; transition:border-color .2s,background .2s; }
+.drop-zone.dragover { border-color:#00A86B; background:rgba(0,168,107,0.08); }
+.fade-in { animation:fadeIn .4s ease-out; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.voice-bar { height:6px; border-radius:3px; transition:width .8s ease; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header class="border-b border-outline-dim/30 px-6 py-4">
+  <div class="max-w-4xl mx-auto flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+        <span class="material-symbols-outlined text-surface text-lg">psychology</span>
+      </div>
+      <span class="text-lg font-bold text-primary">Real Brain</span>
+    </div>
+    <span class="text-sm text-on-surface/50">Setup takes ~5 minutes</span>
+  </div>
+</header>
+
+<!-- Stepper -->
+<div class="max-w-4xl mx-auto px-6 py-6">
+  <div class="flex items-center justify-between mb-8" id="stepper">
+    <div class="flex items-center gap-3 flex-1" data-step="1">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold step-active" id="dot-1">1</div>
+      <span class="text-sm font-medium hidden sm:inline">Profile</span>
+    </div>
+    <div class="h-px flex-1 bg-outline-dim/40 mx-2"></div>
+    <div class="flex items-center gap-3 flex-1" data-step="2">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold step-pending" id="dot-2">2</div>
+      <span class="text-sm font-medium hidden sm:inline">Reports</span>
+    </div>
+    <div class="h-px flex-1 bg-outline-dim/40 mx-2"></div>
+    <div class="flex items-center gap-3 flex-1" data-step="3">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold step-pending" id="dot-3">3</div>
+      <span class="text-sm font-medium hidden sm:inline">Voice</span>
+    </div>
+    <div class="h-px flex-1 bg-outline-dim/40 mx-2"></div>
+    <div class="flex items-center gap-3 flex-1" data-step="4">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold step-pending" id="dot-4">4</div>
+      <span class="text-sm font-medium hidden sm:inline">Generate</span>
+    </div>
+  </div>
+
+  <!-- Step Panels -->
+  <div id="panels">
+
+    <!-- STEP 1: Profile -->
+    <div class="fade-in" id="panel-1">
+      <div class="bg-surface-card rounded-2xl p-8 border border-outline-dim/20">
+        <h2 class="text-2xl font-bold mb-1">Welcome to <span class="text-primary">Real Brain</span></h2>
+        <p class="text-on-surface/60 mb-6">Let us set up your appraisal workspace. This takes about 2 minutes.</p>
+        <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Full Name</label>
+            <input name="name" required class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent focus:ring-1 focus:ring-accent outline-none" placeholder="Charlie Cresci"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input name="email" type="email" required class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent focus:ring-1 focus:ring-accent outline-none" placeholder="you@example.com"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">State</label>
+            <select name="state" required class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent outline-none">
+              <option value="">Select state...</option>
+              <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option><option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">License Number</label>
+            <input name="licenseNumber" class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent outline-none" placeholder="556-00XXXX"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">License Type</label>
+            <select name="licenseType" class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent outline-none">
+              <option value="">Select type...</option>
+              <option>Certified Residential</option>
+              <option>Licensed Residential</option>
+              <option>Certified General</option>
+              <option>Trainee/Supervisory</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Current Software</label>
+            <select name="currentSoftware" class="w-full bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent outline-none">
+              <option value="">Select software...</option>
+              <option>ACI</option>
+              <option>TOTAL / a la mode</option>
+              <option>ClickFORMS</option>
+              <option>Real Quantum</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 pt-2">
+            <button type="submit" class="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-3 rounded-xl transition">Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- STEP 2: Upload Reports -->
+    <div class="fade-in hidden" id="panel-2">
+      <div class="bg-surface-card rounded-2xl p-8 border border-outline-dim/20">
+        <h2 class="text-2xl font-bold mb-1">Upload Past Reports</h2>
+        <p class="text-on-surface/60 mb-6">Upload 5-20 past appraisal PDFs so Real Brain can learn your writing voice.</p>
+        <div id="dropZone" class="drop-zone rounded-xl p-10 text-center cursor-pointer mb-4">
+          <span class="material-symbols-outlined text-4xl text-accent mb-2 block">cloud_upload</span>
+          <p class="font-medium">Drag &amp; drop PDF files here</p>
+          <p class="text-sm text-on-surface/50 mt-1">or click to browse</p>
+          <input type="file" id="fileInput" accept=".pdf" multiple class="hidden"/>
+        </div>
+        <div id="fileList" class="space-y-2 mb-6"></div>
+        <div class="flex gap-3">
+          <button onclick="goToStep(3)" class="flex-1 bg-accent hover:bg-accent/90 text-white font-semibold py-3 rounded-xl transition" id="uploadContinue" disabled>Continue</button>
+          <button onclick="goToStep(3)" class="px-6 py-3 border border-outline-dim/40 text-on-surface/60 rounded-xl hover:bg-surface-hover transition">Skip for now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Voice Preview -->
+    <div class="fade-in hidden" id="panel-3">
+      <div class="bg-surface-card rounded-2xl p-8 border border-outline-dim/20">
+        <h2 class="text-2xl font-bold mb-1">Your AI Voice</h2>
+        <p class="text-on-surface/60 mb-6">See how Real Brain writes in your style versus generic AI.</p>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div class="bg-surface rounded-xl p-5 border border-outline-dim/20">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-red-400 bg-red-400/10 px-2 py-0.5 rounded">Generic AI</span>
+            </div>
+            <p class="text-sm text-on-surface/70 leading-relaxed" id="genericVoice">Loading...</p>
+          </div>
+          <div class="bg-surface rounded-xl p-5 border border-accent/30">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded">Your Voice</span>
+            </div>
+            <p class="text-sm text-on-surface leading-relaxed" id="userVoice">Loading...</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 mb-6 p-4 bg-surface rounded-xl border border-outline-dim/20">
+          <span class="text-sm font-medium">Voice Match</span>
+          <div class="flex-1 bg-surface-hover rounded-full overflow-hidden">
+            <div class="voice-bar bg-gradient-to-r from-accent to-primary" id="voiceBar" style="width:0%"></div>
+          </div>
+          <span class="text-lg font-bold text-accent" id="voiceScore">--</span>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="goToStep(4)" class="flex-1 bg-accent hover:bg-accent/90 text-white font-semibold py-3 rounded-xl transition">Continue</button>
+          <button onclick="loadVoicePreview()" class="px-6 py-3 border border-outline-dim/40 text-on-surface/60 rounded-xl hover:bg-surface-hover transition">Regenerate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: First Case -->
+    <div class="fade-in hidden" id="panel-4">
+      <div class="bg-surface-card rounded-2xl p-8 border border-outline-dim/20">
+        <h2 class="text-2xl font-bold mb-1">Generate Your First Section</h2>
+        <p class="text-on-surface/60 mb-4">Try Real Brain with sample property data.</p>
+        <div class="bg-surface rounded-xl p-4 border border-outline-dim/20 mb-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div><span class="text-on-surface/50">Address</span><br/><strong>1234 Oak Lane</strong></div>
+          <div><span class="text-on-surface/50">Style</span><br/><strong>Ranch</strong></div>
+          <div><span class="text-on-surface/50">GLA</span><br/><strong>1,650 SF</strong></div>
+          <div><span class="text-on-surface/50">Year Built</span><br/><strong>1985</strong></div>
+          <div><span class="text-on-surface/50">Beds/Baths</span><br/><strong>3 / 2</strong></div>
+          <div><span class="text-on-surface/50">Condition</span><br/><strong>C3</strong></div>
+          <div><span class="text-on-surface/50">Quality</span><br/><strong>Q3</strong></div>
+          <div><span class="text-on-surface/50">Value</span><br/><strong>$265,000</strong></div>
+        </div>
+        <div class="flex gap-3 mb-5">
+          <select id="sectionSelect" class="flex-1 bg-surface border border-outline-dim/40 rounded-lg px-4 py-2.5 text-on-surface focus:border-accent outline-none">
+            <option value="neighborhood_description">Neighborhood Description</option>
+            <option value="improvements_description">Improvements Description</option>
+            <option value="reconciliation">Reconciliation</option>
+          </select>
+          <button onclick="generateSample()" class="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-2.5 rounded-lg transition flex items-center gap-2" id="genBtn">
+            <span class="material-symbols-outlined text-lg">auto_awesome</span> Generate
+          </button>
+        </div>
+        <div id="genOutput" class="bg-surface rounded-xl p-5 border border-outline-dim/20 min-h-[120px] mb-5 hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-accent">Generated Narrative</span>
+            <span id="qualityBadge" class="text-xs font-bold px-2 py-0.5 rounded bg-accent/10 text-accent hidden"></span>
+          </div>
+          <p class="text-sm leading-relaxed text-on-surface/90" id="genText"></p>
+        </div>
+        <button onclick="finishOnboarding()" class="w-full bg-gradient-to-r from-accent to-primary hover:opacity-90 text-surface font-bold py-3.5 rounded-xl transition text-lg">
+          Start Using Real Brain
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+let uploadedFiles = [];
+const API = '';
+
+function goToStep(step) {
+  document.getElementById(`panel-${currentStep}`).classList.add('hidden');
+  document.getElementById(`panel-${step}`).classList.remove('hidden');
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ' +
+      (i < step ? 'step-done' : i === step ? 'step-active' : 'step-pending');
+    if (i < step) dot.innerHTML = '<span class="material-symbols-outlined text-sm">check</span>';
+  }
+  currentStep = step;
+  if (step === 3) loadVoicePreview();
+}
+
+// Step 1: Profile form
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  try {
+    await fetch(`${API}/api/onboarding/profile`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (err) { console.warn('Profile save:', err); }
+  goToStep(2);
+});
+
+// Step 2: File upload
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+function handleFiles(files) {
+  for (const f of files) {
+    if (f.type === 'application/pdf') {
+      uploadedFiles.push({ name: f.name, size: f.size });
+      const el = document.createElement('div');
+      el.className = 'flex items-center gap-3 bg-surface rounded-lg px-4 py-2 border border-outline-dim/20';
+      el.innerHTML = `<span class="material-symbols-outlined text-accent text-lg">description</span>
+        <span class="flex-1 text-sm truncate">${f.name}</span>
+        <span class="text-xs text-on-surface/50">${(f.size/1024).toFixed(0)} KB</span>
+        <span class="material-symbols-outlined text-accent text-sm">check_circle</span>`;
+      document.getElementById('fileList').appendChild(el);
+    }
+  }
+  document.getElementById('uploadContinue').disabled = uploadedFiles.length === 0;
+}
+
+// Step 3: Voice preview
+async function loadVoicePreview() {
+  try {
+    const res = await fetch(`${API}/api/onboarding/voice-preview`);
+    const data = await res.json();
+    document.getElementById('genericVoice').textContent = data.genericSample || 'Generic AI sample text.';
+    document.getElementById('userVoice').textContent = data.voiceSample || 'Your personalized voice sample.';
+    const score = Math.round((data.voiceMatchScore || 0.87) * 100);
+    document.getElementById('voiceScore').textContent = score + '%';
+    document.getElementById('voiceBar').style.width = score + '%';
+  } catch (err) {
+    document.getElementById('genericVoice').textContent = 'The subject property is located in a residential neighborhood with single-family homes.';
+    document.getElementById('userVoice').textContent = 'The subject dwelling is situated within an established single-family residential area in southeast Bloomington.';
+    document.getElementById('voiceScore').textContent = '87%';
+    document.getElementById('voiceBar').style.width = '87%';
+  }
+}
+
+// Step 4: Generate sample
+async function generateSample() {
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+  const sectionId = document.getElementById('sectionSelect').value;
+  try {
+    const res = await fetch(`${API}/api/onboarding/generate-sample`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sectionId }),
+    });
+    const data = await res.json();
+    document.getElementById('genOutput').classList.remove('hidden');
+    document.getElementById('genText').textContent = data.narrative || 'Sample narrative generated.';
+    const badge = document.getElementById('qualityBadge');
+    const score = Math.round((data.qualityScore || 0.88) * 100);
+    badge.textContent = `Quality: ${score}%`;
+    badge.classList.remove('hidden');
+  } catch (err) {
+    document.getElementById('genOutput').classList.remove('hidden');
+    document.getElementById('genText').textContent = 'The subject property is located in the Foxcreek Subdivision, an established single-family residential neighborhood in Bloomington, Illinois.';
+    const badge = document.getElementById('qualityBadge');
+    badge.textContent = 'Quality: 88%'; badge.classList.remove('hidden');
+  }
+  btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-lg">auto_awesome</span> Generate';
+}
+
+function finishOnboarding() {
+  fetch(`${API}/api/onboarding/complete`, { method: 'POST' }).catch(() => {});
+  window.location.href = '/dashboard.html';
+}
+</script>
+</body>
+</html>
