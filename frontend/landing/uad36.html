@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Brain — The AI-Powered Appraisal Platform Built for the New URAR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #10141a;
+      color: #e5e7eb;
+    }
+
+    .gold-accent {
+      color: #ffd341;
+    }
+
+    .gold-bg {
+      background-color: #ffd341;
+    }
+
+    .green-accent {
+      color: #00A86B;
+    }
+
+    .green-bg {
+      background-color: #00A86B;
+    }
+
+    .dark-bg {
+      background-color: #10141a;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0, 168, 107, 0.15);
+    }
+
+    .smooth-scroll {
+      scroll-behavior: smooth;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffd341 0%, #00A86B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .countdown-box {
+      background: rgba(255, 211, 65, 0.1);
+      border: 2px solid #ffd341;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .countdown-number {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #ffd341;
+      line-height: 1;
+    }
+
+    .countdown-label {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .feature-card {
+      background: rgba(255, 211, 65, 0.05);
+      border: 1px solid rgba(0, 168, 107, 0.3);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: #00A86B;
+      box-shadow: 0 10px 30px rgba(0, 168, 107, 0.2);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .button-gold {
+      background: #ffd341;
+      color: #10141a;
+      font-weight: 600;
+      padding: 12px 32px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button-gold:hover {
+      background: #ffdc5a;
+      box-shadow: 0 10px 25px rgba(255, 211, 65, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .button-outline {
+      background: transparent;
+      color: #ffd341;
+      font-weight: 600;
+      padding: 12px 32px;
+      border-radius: 8px;
+      border: 2px solid #ffd341;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .button-outline:hover {
+      background: rgba(255, 211, 65, 0.1);
+      box-shadow: 0 10px 25px rgba(255, 211, 65, 0.2);
+    }
+
+    .step-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #00A86B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #10141a;
+      margin-bottom: 16px;
+    }
+
+    .form-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 211, 65, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #e5e7eb;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #ffd341;
+      background: rgba(255, 211, 65, 0.05);
+      box-shadow: 0 0 0 3px rgba(255, 211, 65, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #6b7280;
+    }
+
+    .form-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 211, 65, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #e5e7eb;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffd341' d='M1 4l5 4 5-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: #ffd341;
+      background-color: rgba(255, 211, 65, 0.05);
+      box-shadow: 0 0 0 3px rgba(255, 211, 65, 0.1);
+    }
+
+    .social-proof {
+      background: rgba(0, 168, 107, 0.1);
+      border: 1px solid rgba(0, 168, 107, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .social-proof-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #00A86B;
+    }
+
+    .social-proof-text {
+      color: #d1d5db;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-error {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .form-success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      color: #86efac;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .form-success.show {
+      display: block;
+    }
+  </style>
+</head>
+<body class="dark-bg smooth-scroll">
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 border-b border-gray-800 bg-opacity-95 backdrop-blur-sm bg-[#10141a]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="text-2xl font-bold">
+        <span class="gold-accent">Real</span><span class="green-accent">Brain</span>
+      </div>
+      <div class="flex gap-6 items-center">
+        <a href="#features" class="text-gray-400 hover:text-white transition">Features</a>
+        <a href="#waitlist" class="text-gray-400 hover:text-white transition">Waitlist</a>
+        <button class="button-gold" onclick="document.getElementById('waitlist-form').scrollIntoView({ behavior: 'smooth' })">
+          Join Waitlist
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="min-h-screen flex items-center justify-center px-6 pt-20 pb-20">
+    <div class="max-w-4xl mx-auto text-center fade-in">
+      <h1 class="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+        <span class="gradient-text">Real Brain</span><br>
+        <span class="text-white">The AI-Powered Appraisal Platform</span>
+      </h1>
+      <p class="text-xl text-gray-400 mb-4">Built for the New URAR</p>
+      <p class="text-gray-500 mb-12 max-w-2xl mx-auto">
+        Meet the UAD 3.6 mandate (Nov 1, 2026) with confidence. Real Brain generates lender-ready narratives, clones your voice, and integrates with ACI and Real Quantum in seconds.
+      </p>
+      <button class="button-gold text-lg py-4 px-8 mb-8" onclick="document.getElementById('waitlist-form').scrollIntoView({ behavior: 'smooth' })">
+        Join 500+ Appraisers on the Waitlist
+      </button>
+      <p class="text-gray-600 text-sm">No credit card required. Early access to beta program.</p>
+    </div>
+  </section>
+
+  <!-- COUNTDOWN TIMER -->
+  <section class="py-16 px-6 bg-gray-900 bg-opacity-50">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-12">UAD 3.6 Mandate Countdown</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="countdown-box">
+          <div class="countdown-number" id="days">0</div>
+          <div class="countdown-label">Days</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="hours">0</div>
+          <div class="countdown-label">Hours</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="minutes">0</div>
+          <div class="countdown-label">Minutes</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="seconds">0</div>
+          <div class="countdown-label">Seconds</div>
+        </div>
+      </div>
+      <p class="text-center text-gray-500 mt-8 text-sm">
+        Deadline: November 1, 2026 — Start preparing now
+      </p>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section id="features" class="py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-4">Powerful Features</h2>
+      <p class="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
+        Everything you need to generate lender-ready appraisal narratives and meet UAD 3.6 compliance
+      </p>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1: AI Narrative Generation -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon gold-bg">⚡</div>
+          <h3 class="text-xl font-bold mb-3">AI Narrative Generation</h3>
+          <p class="text-gray-400 text-sm">
+            Generates section-by-section narratives with your voice, style, and expertise. Every word is lender-ready.
+          </p>
+        </div>
+
+        <!-- Feature 2: Voice Cloning -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon" style="background-color: rgba(0, 168, 107, 0.2); color: #00A86B;">🎙️</div>
+          <h3 class="text-xl font-bold mb-3">Voice Cloning</h3>
+          <p class="text-gray-400 text-sm">
+            Natural voice synthesis that sounds like you. Consistent tone and style across every report.
+          </p>
+        </div>
+
+        <!-- Feature 3: ACI/RQ Desktop Integration -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon gold-bg">🔗</div>
+          <h3 class="text-xl font-bold mb-3">Desktop Integration</h3>
+          <p class="text-gray-400 text-sm">
+            Automated field insertion into ACI and Real Quantum. Copy, paste, submit — your workflow, your speed.
+          </p>
+        </div>
+
+        <!-- Feature 4: UAD 3.6 Compliance -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon" style="background-color: rgba(0, 168, 107, 0.2); color: #00A86B;">✓</div>
+          <h3 class="text-xl font-bold mb-3">UAD 3.6 Compliance</h3>
+          <p class="text-gray-400 text-sm">
+            Built-in compliance checks ensure every narrative meets the Nov 1 mandate. Never miss a requirement.
+          </p>
+        </div>
+
+        <!-- Feature 5: Quality Control Engine -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon gold-bg">🛡️</div>
+          <h3 class="text-xl font-bold mb-3">Quality Control</h3>
+          <p class="text-gray-400 text-sm">
+            6 engines analyze accuracy, relevance, and lender readiness. Only the best narratives see daylight.
+          </p>
+        </div>
+
+        <!-- Feature 6: Knowledge Brain (3D AI) -->
+        <div class="feature-card card-hover">
+          <div class="feature-icon" style="background-color: rgba(0, 168, 107, 0.2); color: #00A86B;">🧠</div>
+          <h3 class="text-xl font-bold mb-3">Knowledge Brain</h3>
+          <p class="text-gray-400 text-sm">
+            Interactive 3D AI visualization. Understand exactly how narratives are generated. Real-time insights.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="py-24 px-6 bg-gray-900 bg-opacity-50">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16">How It Works</h2>
+
+      <div class="grid md:grid-cols-3 gap-12">
+        <!-- Step 1 -->
+        <div class="text-center">
+          <div class="step-number">1</div>
+          <h3 class="text-xl font-bold mb-4">Upload Case Data</h3>
+          <p class="text-gray-400 text-sm">
+            Drop your case file (forms, comparables, photos). Real Brain ingests everything instantly.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="text-center">
+          <div class="step-number">2</div>
+          <h3 class="text-xl font-bold mb-4">AI Generates Narrative</h3>
+          <p class="text-gray-400 text-sm">
+            Sit back while our AI generates lender-ready sections. Quality control runs automatically.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="text-center">
+          <div class="step-number">3</div>
+          <h3 class="text-xl font-bold mb-4">Insert into ACI/RQ</h3>
+          <p class="text-gray-400 text-sm">
+            Copy and paste into your appraisal software. Done in seconds. One report per minute, not per hour.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-12 p-8 bg-gradient-to-r from-[#ffd341] to-[#00A86B] rounded-12 text-center">
+        <p class="text-[#10141a] font-semibold">
+          From upload to submission: 5 minutes instead of 3 hours
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section class="py-16 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="social-proof">
+        <div class="social-proof-number" id="waitlist-count">500+</div>
+        <div class="social-proof-text">Appraisers are preparing for UAD 3.6 with Real Brain</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST FORM SECTION -->
+  <section id="waitlist" class="py-24 px-6 bg-gray-900 bg-opacity-50">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-4">Join the Waitlist</h2>
+      <p class="text-center text-gray-400 mb-12">
+        Get early access to Real Brain. Beta access opens December 2025.
+      </p>
+
+      <form id="waitlist-form" class="space-y-4">
+        <!-- Name -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Name</label>
+          <input
+            type="text"
+            name="name"
+            class="form-input w-full"
+            placeholder="Your name"
+            required
+          >
+          <div class="form-error" id="error-name"></div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            name="email"
+            class="form-input w-full"
+            placeholder="your@email.com"
+            required
+          >
+          <div class="form-error" id="error-email"></div>
+        </div>
+
+        <!-- State -->
+        <div>
+          <label class="block text-sm font-medium mb-2">State</label>
+          <input
+            type="text"
+            name="state"
+            class="form-input w-full"
+            placeholder="e.g., California"
+          >
+        </div>
+
+        <!-- License Type -->
+        <div>
+          <label class="block text-sm font-medium mb-2">License Type</label>
+          <select name="licenseType" class="form-select w-full">
+            <option value="">Select your license type</option>
+            <option value="certified">Certified Appraiser</option>
+            <option value="trainee">Trainee Appraiser</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <!-- Current Software -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Current Appraisal Software</label>
+          <select name="currentSoftware" class="form-select w-full">
+            <option value="">Select your software</option>
+            <option value="ACI">ACI</option>
+            <option value="TOTAL">TOTAL</option>
+            <option value="Real Quantum">Real Quantum</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Referral Source -->
+        <div>
+          <label class="block text-sm font-medium mb-2">How did you hear about us?</label>
+          <select name="referralSource" class="form-select w-full">
+            <option value="">Select a source</option>
+            <option value="search">Google Search</option>
+            <option value="social">Social Media</option>
+            <option value="email">Email</option>
+            <option value="referral">Referral from Colleague</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="button-gold w-full py-3 font-semibold mt-6">
+          Join Waitlist (Free)
+        </button>
+
+        <!-- Success Message -->
+        <div class="form-success" id="form-success">
+          ✓ Welcome to the waitlist! Check your email for next steps.
+        </div>
+
+        <!-- Error Message -->
+        <div class="form-error" id="form-global-error" style="text-align: center; margin-top: 16px;"></div>
+      </form>
+
+      <p class="text-center text-gray-500 text-xs mt-6">
+        We respect your privacy. Unsubscribe anytime.
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-gray-800 py-12 px-6">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <h4 class="font-semibold mb-4">Real Brain</h4>
+        <p class="text-gray-500 text-sm">AI-powered appraisal narratives for the modern appraiser.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4">Product</h4>
+        <ul class="text-gray-500 text-sm space-y-2">
+          <li><a href="#features" class="hover:text-white transition">Features</a></li>
+          <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+          <li><a href="#" class="hover:text-white transition">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4">Company</h4>
+        <ul class="text-gray-500 text-sm space-y-2">
+          <li><a href="#" class="hover:text-white transition">Blog</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+          <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4">Legal</h4>
+        <ul class="text-gray-500 text-sm space-y-2">
+          <li><a href="#" class="hover:text-white transition">Terms</a></li>
+          <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-white transition">SOC 2</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+      <p>&copy; 2025 Real Brain. All rights reserved. | Built for appraisers, by appraisers.</p>
+    </div>
+  </footer>
+
+  <script>
+    // COUNTDOWN TIMER
+    function updateCountdown() {
+      const mandateDate = new Date('2026-11-01T00:00:00Z').getTime();
+      const now = new Date().getTime();
+      const distance = mandateDate - now;
+
+      if (distance < 0) {
+        document.getElementById('days').textContent = '0';
+        document.getElementById('hours').textContent = '0';
+        document.getElementById('minutes').textContent = '0';
+        document.getElementById('seconds').textContent = '0';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById('days').textContent = days;
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // FETCH WAITLIST COUNT
+    async function fetchWaitlistCount() {
+      try {
+        const response = await fetch('/api/waitlist/count');
+        const data = await response.json();
+        if (data.ok && data.data.count) {
+          document.getElementById('waitlist-count').textContent = (data.data.count + 500) + '+';
+        }
+      } catch (err) {
+        console.error('Failed to fetch waitlist count:', err);
+      }
+    }
+
+    fetchWaitlistCount();
+
+    // WAITLIST FORM SUBMISSION
+    document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // Clear previous errors
+      document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+      document.getElementById('form-global-error').textContent = '';
+      document.getElementById('form-success').classList.remove('show');
+
+      // Convert to JSON
+      const data = {
+        email: formData.get('email'),
+        name: formData.get('name') || null,
+        state: formData.get('state') || null,
+        licenseType: formData.get('licenseType') || null,
+        currentSoftware: formData.get('currentSoftware') || null,
+        referralSource: formData.get('referralSource') || null,
+      };
+
+      try {
+        const response = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          if (result.error === 'Email already on waitlist') {
+            document.getElementById('error-email').textContent = 'This email is already on the waitlist';
+          } else {
+            document.getElementById('form-global-error').textContent = result.error || 'Something went wrong. Please try again.';
+          }
+          return;
+        }
+
+        // Success
+        form.reset();
+        document.getElementById('form-success').classList.add('show');
+
+        // Refresh count
+        fetchWaitlistCount();
+
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          document.getElementById('form-success').classList.remove('show');
+        }, 5000);
+      } catch (err) {
+        document.getElementById('form-global-error').textContent = 'Network error. Please try again.';
+        console.error('Form submission error:', err);
+      }
+    });
+  </script>
+</body>
+</html>

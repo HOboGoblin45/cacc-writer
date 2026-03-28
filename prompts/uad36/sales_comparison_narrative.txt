@@ -1,0 +1,149 @@
+You are writing the SALES COMPARISON APPROACH section of a UAD 3.6 URAR.
+
+This section comprises approximately 67 pages of the complete appraisal report and includes detailed narratives for each comparable property with specific dollar adjustments and market data support.
+
+SECTION STRUCTURE:
+This narrative must include:
+1. Introduction and Comparable Selection Methodology
+2. Market Time Adjustment explanation
+3. Per-Comparable Micro-Narratives (for each of 3 comparables)
+4. Adjustment Summary and Analysis
+5. Reconciliation of Comparable Indications
+
+REQUIRED CONTENT FOR EACH COMPARABLE:
+
+Per-Comparable Micro-Narratives (must include for each comp):
+- Property Address: Specific street address
+- Sale Price: Exact sale price, date of sale, days on market
+- Proximity to Subject: Distance and area context (same neighborhood or extended search)
+- Location Characteristics: How location compares to subject (better/worse/similar)
+  - Road access, proximity to amenities, school district, employment centers
+  - Location rating comparison (Urban/Suburban/Rural match to subject)
+
+- Site Characteristics: Lot size, topography, utilities comparison
+  - Does comparable have similar utilities?
+  - Is site size similar? (e.g., "Comparable 1 has a slightly smaller lot of 12,000 SF vs. subject's 15,000 SF")
+
+- Structural/Design Characteristics:
+  - Design style: UAD code (e.g., DT, CL, CT) and style match to subject
+  - Construction type and condition rating (C1-C6)
+  - Quality rating (Q1-Q6)
+  - Year built and effective age — compare to subject's effective age
+
+- Property Features:
+  - GLA (gross living area) and comparison to subject
+  - Bedroom/bathroom count and match to subject
+  - Basement: type, finish, square footage
+  - Garage: type, capacity
+  - View rating (N/B/A) and comparison to subject
+
+- Condition Assessment: Physical condition rating using UAD C1-C6 scale
+  - Does comparable appear to be in similar condition to subject?
+  - Any notable repairs or maintenance issues affecting value?
+
+ADJUSTMENT CATEGORIES AND DOLLAR AMOUNTS (CRITICAL):
+Each comparable must show adjustments in DOLLARS, not percentages. Show the calculation methodology.
+
+Standard Adjustment Categories (use as applicable):
+1. Property Rights Conveyed
+   - Adjustment: $[amount] (typically $0 for arms-length sales)
+
+2. Financing Terms
+   - Cash equivalent adjustment if non-standard financing
+   - Adjustment: $[amount]
+
+3. Market Conditions/Time Adjustment
+   - Days on market adjustment (market time adjustment)
+   - Date of sale vs. appraisal date adjustment
+   - Adjustment: $[amount] or [X.X]% based on [market data source]
+
+4. Location (Micro-location)
+   - Subject address location vs. comparable address location
+   - Adjustment: $[amount] based on [paired sales analysis or market data]
+
+5. Gross Living Area (GLA)
+   - Difference in square footage
+   - Adjustment per SF: $[X.XX] per SF x [difference] SF = $[total adjustment]
+   - Example: "Comparable 1 has 2,200 SF vs. subject's 2,500 SF (300 SF less). Using a market-derived rate of $125 per SF, adjustment is -$37,500."
+
+6. Construction Quality
+   - Quality rating difference (Q1-Q6)
+   - Adjustment: $[amount]
+
+7. Property Condition
+   - Condition rating difference (C1-C6)
+   - Adjustment: $[amount]
+
+8. Design and Style
+   - UAD style code differences impact value
+   - Adjustment: $[amount]
+
+9. Age/Effective Age
+   - Use effective age, not year built
+   - Adjustment for age difference: $[amount]
+
+10. View Rating
+    - N (Neutral), B (Beneficial), A (Adverse) comparison
+    - Adjustment: $[amount] (beneficial views may command premium)
+
+11. Basement/Finish
+    - Type and finish percentage differences
+    - Adjustment per square foot or lump sum: $[amount]
+
+12. Garage
+    - Type (attached/detached), capacity (1-car, 2-car, 3-car), finish
+    - Adjustment: $[amount] per space or total
+
+13. Amenities
+    - Pool, patio, deck, fireplace, etc.
+    - Adjustment: $[amount] per amenity
+
+CRITICAL ADJUSTMENT RULES:
+- EVERY adjustment must be a DOLLAR AMOUNT, not a percentage
+- EVERY adjustment must cite the basis: paired sales, income capitalization, cost depreciation, or market research
+- Show the math: adjustment per SF x SF difference = total, or comparable price - subject cost = adjustment value
+- Quantify market time adjustment using market data from comparable sales (e.g., "Market data indicates an appreciation rate of 3.2% annually, or approximately 0.27% per month. Comparable sold 45 days ago; time adjustment = $[amount]")
+- Do NOT invent adjustment amounts
+
+NET AND GROSS ADJUSTMENT ANALYSIS:
+- Calculate Net Adjustment: sum of all increases minus sum of all decreases
+- Calculate Gross Adjustment: sum of absolute values
+- Gross Adjustment % = Total Gross Adjustment / Comparable Sale Price
+- Standard guideline: Gross adjustments should not exceed 15-20% of comparable sale price
+- Example: "Comparable 1: Net adjustment of $28,000 (1.5% of sale price) and gross adjustments of $125,000 (6.8% of sale price), both within acceptable limits."
+
+BRACKETING AND RANGE ANALYSIS:
+- Verify that the subject's key characteristics fall within the range of the comparables
+- Example: "The subject's GLA of 2,500 SF falls between Comparable 2 (2,200 SF) and Comparable 1 (2,750 SF), establishing a bracket. The subject's condition rating (C3) also falls within the comparable range (C3-C4), supporting the reliability of the approach."
+
+RECONCILIATION TO FINAL INDICATION:
+- After all adjustments, each comparable provides an adjusted indication
+- Summarize how the three indications converge or diverge
+- Explain which comparables received the most weight and why
+- Provide reconciliation to a point estimate or range
+
+CRITICAL RULES FOR THIS SECTION:
+- All adjustments MUST be quantified in dollars
+- All adjustment bases MUST be supported with market data or paired sales analysis
+- Do NOT use vague language like "similar to subject" or "comparable condition"
+- Do NOT invent comparable data
+- Use [INSERT adjustment support] if market data is unavailable
+- Professional, technical appraiser voice
+- Total section: 15-20 pages of detailed narrative
+
+SAMPLE PARAGRAPH STRUCTURE:
+"Comparable 1 is a [design style] style home located at [address], approximately [distance] from the subject in [area/neighborhood]. It sold for $[price] on [date] after [X] days on market. The property features [GLA] square feet of living area with [beds/baths], compared to the subject's [beds/baths]. The design and construction quality are rated [Q rating] compared to the subject's [Q rating], and physical condition is rated [C rating] versus the subject's [C rating]. The site is [size] compared to the subject's [size], and [utility/topography differences].
+
+Adjustments to Comparable 1's sale price of $[price]:
+- Property Rights Conveyed: $0
+- Financing: $0
+- Market Conditions ([X] days on market): -$[amount]
+- Location: +$[amount] (comparable location slightly less desirable per [source])
+- GLA: -$[amount] ([SF difference] SF @ $[X] per SF)
+- Quality: -$[amount] (comparable rated Q[X] vs. subject's Q[X])
+- Condition: $[amount] (comparable rated C[X] vs. subject's C[X])
+- [other categories as applicable]
+
+Net Adjustment: $[amount] ([X]% of sale price)
+Gross Adjustments: $[amount] ([X]%)
+Adjusted Price Indication: $[amount]"

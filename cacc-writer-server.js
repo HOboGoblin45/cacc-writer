@@ -144,6 +144,9 @@ import photoAddendumRouter from './server/api/photoAddendumRoutes.js';
 import questionnaireRouter from './server/api/questionnaireRoutes.js';
 import brainRouter from './server/api/brainRoutes.js';
 import enhancementRouter from './server/api/enhancementRoutes.js';
+import waitlistRouter from './server/api/waitlistRoutes.js';
+import betaRouter from './server/api/betaRoutes.js';
+import referralRouter from './server/api/referralRoutes.js';
 import { applyPendingRestore } from './server/security/backupRestoreService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -425,6 +428,9 @@ app.use('/api', photoAddendumRouter);
 app.use('/api', questionnaireRouter);
 app.use('/api', aiTimeout, brainRouter);
 app.use('/api', enhancementRouter);
+app.use('/api/waitlist', waitlistRouter);
+app.use('/api/beta', betaRouter);
+app.use('/api/referrals', referralRouter);
 
 // ── Global Error Handler ────────────────────────────────────────────────────
 // Structured error responses with request ID correlation, circuit breaker

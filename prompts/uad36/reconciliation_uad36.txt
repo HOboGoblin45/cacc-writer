@@ -1,0 +1,83 @@
+You are writing the RECONCILIATION AND FINAL VALUE OPINION section of a UAD 3.6 URAR.
+
+This is the final analytical section that synthesizes all prior sections and arrives at the appraiser's final value conclusion.
+
+REQUIRED CONTENT:
+
+1. Summary of Approach Indications
+   - Sales Comparison Approach Indication: $[amount]
+     - Range of comparable indications (after adjustment): $[low] to $[high]
+     - Reconciled to point estimate: $[amount]
+     - Quantity and quality of comparables: [description, e.g., "Three comparables located in subject's market area, all sold within 6 months of appraisal date"]
+
+   - Cost Approach Indication: $[amount] (if developed)
+     - Land value: $[amount]
+     - Depreciated improvements: $[amount]
+     - Plus entrepreneurial profit: $[amount]
+     OR state: "The cost approach was not developed (provide reason)"
+
+   - Income Approach Indication: $[amount] (if applicable)
+     - NOI: $[amount]
+     - Cap rate applied: [X]%
+     - Indicated value: $[amount]
+     OR state: "The income approach was not developed (property is not income-producing)"
+
+2. Weighting of Approaches (CRITICAL)
+   - Assign weight (percentage) to each developed approach
+   - Weights must total 100%
+   - Justify each weighting decision
+
+   Example Structure:
+   "The sales comparison approach is assigned [X]% weight. This approach is most reliable for this property type as [reasons: ample comparables available, recent comparable sales, similar properties in same market, etc.]. The comparable adjustments are moderate and fall within acceptable guidelines. The three comparables bracket the subject's characteristics, providing strong support for the indicated value.
+
+   The cost approach is assigned [X]% weight (or not developed). [If developed: This approach provides a secondary check on value. The subject's land value relative to improvement value is typical for [property age/type]. The depreciation estimates are supported by market observation and cost manuals.] [If not developed: The cost approach has limited applicability to existing residential properties of this age and is not relied upon as a primary indicator.]
+
+   The income approach is assigned [X]% weight (or not developed). [If developed: This approach is less relevant for this owner-occupied property but is included for completeness. Market rent studies support the selected rental rate, and the cap rate selection is based on comparable investment property analysis.] [If not developed: The property is not income-producing and this approach is not applicable.]"
+
+3. Reconciliation to Final Conclusion
+   - How do the approach indications converge or diverge?
+   - If results diverge significantly: explain why and which approach carries more weight
+   - Example convergence: "The sales comparison approach ($[amount]), cost approach ($[amount]), and income approach ($[amount]) indicate values within a range of $[low] to $[high]. The convergence of the three approaches supports confidence in the final value conclusion."
+   - Example divergence with explanation: "The cost approach ($[amount]) exceeds the sales comparison indication ($[amount]) by $[difference]. This is typical when land value alone exceeds the depreciated cost of older improvements. The sales comparison approach is weighted more heavily as it reflects actual market activity for comparable properties."
+
+4. Final Value Opinion (Specific Conclusion)
+   - Concluded Market Value: $[exact amount]
+   - Type of Value: "Market value, defined as the most probable price that the property should bring in a competitive and open market under all conditions requisite to a fair sale, the buyer and seller each acting prudently, knowledgeably, and assuming neither is under undue pressure."
+
+   Example: "Based on the foregoing analysis, the appraiser's opinion of the market value of the subject property, as of [effective date], is $[amount]."
+
+5. Confidence Level and Caveats
+   - Confidence in conclusion: high, medium, low
+   - Limiting factors: (e.g., "limited comparable data," "rapidly changing market," "unusual property characteristics")
+   - Special conditions: extraordinary assumptions or hypothetical conditions that affected value
+   - Example: "Confidence in this value conclusion is HIGH. Multiple recent comparable sales in the subject's immediate area, moderate adjustments, and convergence of the three approaches support a reliable indication. The market is stable with typical marketing times, and the subject conforms to neighborhood norms."
+
+6. "As Is" Condition Disclaimer
+   - "This appraisal is made with the subject property in 'as is' condition as of the effective date."
+   - Address any deferred maintenance or adverse conditions noted in the improvements section
+
+7. Personal Property Exclusion
+   - "No personal property is included in the final estimate of value, unless otherwise noted in this appraisal."
+   - List any personal property that WERE included (rare), if applicable
+
+8. Effective Date of Appraisal
+   - "The value opinion is effective as of [date], the date of the appraiser's inspection."
+   - Distinguish between appraisal date and report date if different
+
+9. Assumptions and Limiting Conditions
+   - Brief recap of major assumptions (title is marketable, no adverse conditions exist, etc.)
+   - Note any extraordinary assumptions or hypothetical conditions that affect the value conclusion
+
+10. Final Reconciliation Statement
+    - Concise summary of the appraiser's logic for reaching the final conclusion
+    - Example: "The appraiser concludes that a buyer would be willing to pay $[amount] for the subject property in the current market. This conclusion is supported by comparable sales analysis showing adjusted prices within $[range], a cost approach indicating $[amount], and current market conditions reflecting [description]. The most probable price, considering all factors, is $[amount]."
+
+CRITICAL RULES:
+- The final value opinion MUST be a specific dollar amount, not a range
+- Approach weights must total 100%
+- Each weighting must be justified with specific reasons
+- Reconciliation must address convergence or divergence of approach indications
+- Professional, authoritative appraiser voice
+- No contradictions with prior sections
+- Keep to 8-12 paragraphs
+- Final section must leave no doubt about the concluded value

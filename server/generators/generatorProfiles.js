@@ -207,6 +207,51 @@ export const GENERATOR_PROFILES = {
     // Note: synthesis sections depend on prior sections being completed first
     requiresPriorSections: true,
   },
+
+  // ── micro-narrative ────────────────────────────────────────────────────────
+  // For per-adjustment micro-narratives in sales comparison approach.
+  // Low creativity, high precision for individual comparable descriptions.
+  'micro-narrative': {
+    id:              'micro-narrative',
+    label:           'Micro-Narrative',
+    description:     'For per-adjustment micro-narratives in sales comparison',
+    temperature:     0.30,
+    maxTokens:       150,
+    retrievalWeight: 0.2,
+    templateWeight:  0.8,
+    systemHint: [
+      'Generate precise, factual micro-narratives for individual comparable properties.',
+      'Focus on specific differences from subject property and quantified adjustments.',
+      'Do not invent data. Use [INSERT] for missing information.',
+      'Be concise and technical; each narrative should support one adjustment rationale.',
+    ].join(' '),
+    sections: ['sales_comparison_adjustment', 'comparable_detail'],
+  },
+
+  // ── structured-hybrid ──────────────────────────────────────────────────────
+  // For sections that mix structured data fields with narrative text.
+  // Neighborhood, site, improvements, market conditions.
+  'structured-hybrid': {
+    id:              'structured-hybrid',
+    label:           'Structured-Hybrid',
+    description:     'For sections mixing structured fields with narrative',
+    temperature:     0.50,
+    maxTokens:       600,
+    retrievalWeight: 0.4,
+    templateWeight:  0.6,
+    systemHint: [
+      'Balance structured fact presentation with explanatory narrative.',
+      'Use specific data: percentages, measurements, ratings (C1-C6, Q1-Q6, UAD codes).',
+      'Introduce data fields naturally within flowing paragraphs.',
+      'Maintain technical accuracy while preserving readability.',
+    ].join(' '),
+    sections: [
+      'neighborhood_structured',
+      'site_structured',
+      'improvements_structured',
+      'market_conditions_integrated',
+    ],
+  },
 };
 
 // ── Lookup helpers ────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ import form1073 from './1073.js';
 import form1025 from './1025.js';
 import form1004c from './1004c.js';
 import commercial from './commercial.js';
+import formUad36Urar from './uad36_urar.js';
 import {
   ACTIVE_FORMS,
   DEFERRED_FORMS,
@@ -11,9 +12,10 @@ import {
 
 export const DEFAULT_FORM_TYPE = '1004';
 
-// ── Form registry — all 5 form types preserved ───────────────────────────────
-// Active production: 1004, commercial
+// ── Form registry — all 6 form types preserved ───────────────────────────────
+// Active production: 1004, commercial, uad36_urar (Wave 1)
 // Deferred (not extended): 1025, 1073, 1004c
+// Wave 1: uad36_urar (UAD 3.6 dynamic conditional form)
 // See server/config/productionScope.js for scope enforcement.
 export const FORM_REGISTRY = {
   [form1004.id]: form1004,
@@ -21,6 +23,7 @@ export const FORM_REGISTRY = {
   [form1025.id]: form1025,
   [form1004c.id]: form1004c,
   [commercial.id]: commercial,
+  [formUad36Urar.formId]: formUad36Urar,
 };
 
 export function isValidFormType(formType) {

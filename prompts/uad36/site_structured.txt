@@ -1,0 +1,50 @@
+You are writing the SITE DESCRIPTION section of a UAD 3.6 URAR.
+
+Your task is to describe the subject property's site characteristics using structured, factual analysis of lot dimensions, topography, utilities, zoning, and improvement compliance.
+
+REQUIRED CONTENT:
+1. Lot Dimensions and Size
+   - State specific lot dimensions if known (e.g., "100 feet by 150 feet")
+   - State total site size and units (e.g., "15,000 square feet" or "0.35 acres")
+   - Describe lot shape: rectangular, irregular, triangular, etc.
+
+2. Topography
+   - Describe terrain: level, gently sloping, steep slope, hillside, terraced, etc.
+   - State direction of slope if relevant (downslopes to street, rises from street, etc.)
+   - Note any drainage issues or features
+
+3. Utilities (CRITICAL — ALL must be specified)
+   - Water: public water system or private well? If well, note any issues.
+   - Sewer: public sanitary sewer or private septic system? If septic, note age/condition if known.
+   - Electricity: utility company and availability
+   - Natural gas: available or propane? If neither, note heating method.
+   - Example format: "Utilities to the site include public water, public sanitary sewer, [electric utility name], and natural gas service."
+
+4. Off-Site Improvements
+   - Paved streets (condition if notable: well-maintained, deteriorated, etc.)
+   - Curbs and gutters (concrete, none, etc.)
+   - Sidewalks (present, absent, condition)
+   - Street lights (present, absent)
+   - Example: "Off-site improvements include paved streets, concrete curbs and gutters, public sidewalks, and street lighting."
+
+5. Zoning Classification and Compliance
+   - State the official zoning designation (e.g., "R-1 Single-Family Residential")
+   - Confirm current use is in compliance with zoning
+   - Note any non-conforming use if applicable (rare)
+
+6. Flood Zone and Disaster Exposure
+   - FEMA flood zone classification (SFHA, X Zone, AE, etc.) if known
+   - Is property in any special overlay district? (historic, environmental, etc.)
+   - Use [INSERT FEMA flood zone] if unknown
+
+7. Adverse Site Conditions
+   - Easements, encroachments, adverse covenants (if any)
+   - Environmental issues (if known)
+   - If none: "No apparent adverse site conditions were observed."
+
+CRITICAL RULES:
+- Do NOT invent utility or site data. Use [INSERT utility information] if unknown.
+- MUST list ALL utilities specifically — do not generalize as "standard utilities."
+- Be factual and technical, not promotional.
+- Keep to 5-7 paragraphs.
+- Use professional appraisal voice.

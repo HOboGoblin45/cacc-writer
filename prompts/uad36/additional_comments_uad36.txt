@@ -1,0 +1,85 @@
+You are writing the ADDITIONAL COMMENTS section of a UAD 3.6 URAR.
+
+This section provides structured commentary on scope of work, extraordinary assumptions, hypothetical conditions, prior services, and any other relevant matters affecting the appraisal.
+
+REQUIRED CONTENT (as applicable):
+
+1. Scope of Work Statement
+   - Define the extent of research and analysis performed
+   - Types of inspection(s) conducted: interior/exterior only, full inspection, no inspection?
+   - Extent of comparable market research: how many sales analyzed, time period, geographic area?
+   - Methods and techniques employed: direct sales comparison, cost approach, income capitalization
+   - Data collection: MLS searches, public records, appraiser's files, other sources
+   - Example: "The appraiser conducted a full interior and exterior inspection of the subject property on [date]. Comparable market research included analysis of [number] recent sales within [area] from [date range]. Market data was obtained from [sources: MLS, public records, property managers, etc.]. All three appraisal approaches were analyzed."
+
+2. Limitations of Appraisal
+   - Scope limitations (if any)
+   - Example: "No interior inspection was performed due to tenant occupancy."
+   - Example: "Access to basement was limited due to water heater placement."
+   - Example: "Limited comparable data available for properties of this specific type in this market."
+   - Example: "Rapid market change may affect the reliability of this appraisal if significant time passes before closing."
+
+3. Extraordinary Assumptions (if applicable)
+   - An extraordinary assumption is something that the appraiser assumes to be factual that is not known and is not typical for the market
+   - Format: "It is assumed that [specific extraordinary assumption]. If this assumption is not correct, the value conclusion may be significantly affected."
+   - Examples:
+     * "It is assumed that the subject property is free and clear of liens and encumbrances, subject to the easement noted herein."
+     * "It is assumed that the property has no environmental contamination. If hazardous materials are subsequently discovered, the value conclusion may be materially affected."
+     * "It is assumed that the subject property will be in [condition state] at the time of closing, as inspected on [date]."
+     * "It is assumed that all municipal code violations noted by the local building inspector will be remedied prior to closing at a cost estimated at $[amount]."
+   - If NO extraordinary assumptions: "There are no extraordinary assumptions for this appraisal."
+
+4. Hypothetical Conditions (if applicable)
+   - A hypothetical condition is something contrary to known fact that the appraiser is instructed to assume
+   - Format: "This appraisal is prepared subject to the hypothetical condition that [specific hypothetical condition]. If this condition is not met, the value conclusion may change."
+   - Examples:
+     * "This appraisal assumes the property is free of serious structural defects, despite the minor settlement observed on [date]."
+     * "This appraisal assumes completion of proposed renovations to [description] at an estimated cost of $[amount]."
+     * "This appraisal assumes zoning will be changed from [current zoning] to [proposed zoning] as requested in pending application."
+   - If NO hypothetical conditions: "There are no hypothetical conditions for this appraisal."
+
+5. Prior Services Disclosure (if applicable)
+   - Disclose if the appraiser has previously appraised this property, provided other services, or has a relationship with the parties
+   - Format: "The appraiser prepared an appraisal of the subject property on [date] with a concluded value of $[amount]. This current appraisal represents [continuation of that value/material change in conclusion due to market/condition changes]."
+   - Or: "The appraiser has provided [other services] for [client/property] within the past [time period]."
+   - Or: "The appraiser has no prior services or relationships affecting independence for this assignment."
+
+6. Certification and Independence
+   - Brief statement of appraiser's certification status and compliance with USPAP
+   - Example: "The appraiser is a Certified Residential Appraiser licensed in [state] and subject to the Uniform Standards of Professional Appraisal Practice (USPAP). The appraiser confirms independence from the client, lender, and transaction parties."
+
+7. Market Trends and Forecast (if relevant)
+   - Brief commentary on market direction if it affects interpretation of appraisal results
+   - Example: "The subject market has experienced [rate]% appreciation annually over the past [period]. Current market indicators suggest [stable/improving/declining] conditions ahead."
+
+8. Extraordinary Market Conditions
+   - Note if appraisal prepared during extraordinary market conditions (pandemic, recession, natural disaster, etc.)
+   - Impact on data reliability and comparable availability
+   - Example: "This appraisal is prepared during the [2024] [description of market condition]. Limited comparable data was available due to [market constraint]. The concluded value represents the most probable price under current conditions but may be subject to volatility as market conditions normalize."
+
+9. Appraiser's Comments on Property and Value
+   - Final summary comments or notable observations
+   - Any factors that make this property unusual or particularly noteworthy
+   - Example: "The subject property is exceptionally well-maintained and represents good value in the current market. Comparable properties with similar characteristics command similar prices."
+   - Example: "The property's location near [feature] adds premium value. Market evidence supports a [X]% value premium for this micro-location advantage."
+
+10. Special Conditions or Considerations
+    - Zoning non-conformity (if applicable) and impact on value
+    - Code violations or repairs needed (if applicable)
+    - Environmental factors (proximity to landfill, power lines, flood zone)
+    - Example: "The property is located within the [flood zone designation] per FEMA Flood Insurance Rate Maps. This may affect flood insurance requirements for the borrower."
+    - Example: "Deferred maintenance noted: [item], estimated repair cost $[amount]. This has been factored into the condition rating and value conclusion."
+
+STRUCTURE AND TONE:
+- Address each category as applicable to the specific appraisal
+- Keep comments concise but complete
+- Use professional appraisal language
+- Be factual and avoid speculation
+- If a category does not apply, state clearly (e.g., "There are no extraordinary assumptions for this appraisal.")
+
+CRITICAL RULES:
+- Extraordinary assumptions and hypothetical conditions MUST be prominently noted if they materially affect value
+- Prior services disclosures are REQUIRED if applicable
+- Do NOT minimize the impact of extraordinary assumptions or hypothetical conditions
+- Keep total section to 6-10 paragraphs
+- Professional, authoritative appraiser voice
