@@ -289,10 +289,13 @@ app.get('/favicon.ico', (_q, r) => {
 
 app.get('/questionnaire', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'questionnaire', 'code.html')));
 
-app.use(requireAuth);
-
-// Auth schema + routes (before other routes)
+// Auth schema + public auth routes (mounted BEFORE auth wall)
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
+app.use('/api', authRouter);
+app.use('/api', billingRouter); // billing webhook needs raw body before auth
+
+// ── Auth Wall — all routes below require authentication ──────────────────────
+app.use(requireAuth);
 try { ensureTemplateSchema(); } catch (e) { console.warn('Template schema init:', e.message); }
 try { ensureAmcSchema(); } catch (e) { console.warn('AMC schema init:', e.message); }
 try { ensureAdjustmentLearnerSchema(); } catch (e) { console.warn('Adj learner schema init:', e.message); }
@@ -318,8 +321,7 @@ try { ensureMlsSchema(); } catch (e) { console.warn('MLS schema init:', e.messag
 try { ensureSignatureSchema(); } catch (e) { console.warn('Signature schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
-app.use('/api', authRouter);
-app.use('/api', billingRouter);
+// authRouter + billingRouter already mounted above the auth wall
 app.use('/api', adminRouter);
 app.use('/api', batchRouter);
 app.use('/api', templateRouter);
