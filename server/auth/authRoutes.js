@@ -1,16 +1,21 @@
 /**
  * server/auth/authRoutes.js
- * ─────────────────────────────────────────────────────────────────────────────
- * Authentication API routes: register, login, profile, subscription status.
+ * ---------------------------------------------------------------------------
+ * Authentication API routes: register, login, profile, refresh, reset, logout.
  */
 
 import { Router } from 'express';
-import { registerUser, loginUser, verifyToken, authMiddleware, getSubscription, checkReportQuota, PLANS } from './authService.js';
+import {
+  registerUser, loginUser, verifyToken, authMiddleware,
+  getSubscription, checkReportQuota, PLANS,
+  refreshAccessToken, revokeAllTokens,
+  createPasswordResetToken, resetPassword,
+} from './authService.js';
 import { getUserKbStats } from '../retrieval/userScopedRetrieval.js';
 
 const router = Router();
 
-// ── POST /auth/register ──────────────────────────────────────────────────────
+// -- POST /auth/register --------------------------------------------------
 
 router.post('/auth/register', async (req, res) => {
   try {
@@ -26,7 +31,7 @@ router.post('/auth/register', async (req, res) => {
   }
 });
 
-// ── POST /auth/login ─────────────────────────────────────────────────────────
+// -- POST /auth/login -----------------------------------------------------
 
 router.post('/auth/login', async (req, res) => {
   try {
@@ -40,7 +45,75 @@ router.post('/auth/login', async (req, res) => {
   }
 });
 
-// ── GET /auth/me ─────────────────────────────────────────────────────────────
+// -- POST /auth/refresh ---------------------------------------------------
+
+router.post('/auth/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (!refreshToken) return res.status(400).json({ ok: false, error: 'refreshToken required' });
+    const result = await refreshAccessToken(refreshToken);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(401).json({ ok: false, error: err.message });
+  }
+});
+
+// -- POST /auth/logout ----------------------------------------------------
+
+router.post('/auth/logout', (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const decoded = verifyToken(authHeader.slice(7));
+      if (decoded && decoded.userId) {
+        revokeAllTokens(decoded.userId);
+      }
+    }
+    res.json({ ok: true, message: 'Logged out' });
+  } catch (_err) {
+    // Logout should always succeed from client perspective
+    res.json({ ok: true, message: 'Logged out' });
+  }
+});
+
+// -- POST /auth/forgot-password -------------------------------------------
+
+router.post('/auth/forgot-password', (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ ok: false, error: 'Email required' });
+
+    const result = createPasswordResetToken(email);
+    // Always return success to prevent email enumeration attacks
+    if (result && process.env.NODE_ENV !== 'production') {
+      console.log(`[auth] Password reset token for ${email}: ${result.token}`);
+    }
+    // TODO: integrate email service (SendGrid/SES) to send reset link
+    res.json({ ok: true, message: 'If that email is registered, a reset link has been sent.' });
+  } catch (_err) {
+    res.status(500).json({ ok: false, error: 'Failed to process reset request' });
+  }
+});
+
+// -- POST /auth/reset-password --------------------------------------------
+
+router.post('/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body || {};
+    if (!token || !newPassword) {
+      return res.status(400).json({ ok: false, error: 'token and newPassword required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters' });
+    }
+    await resetPassword(token, newPassword);
+    res.json({ ok: true, message: 'Password reset successfully. Please log in with your new password.' });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+// -- GET /auth/me ---------------------------------------------------------
 
 router.get('/auth/me', (req, res) => {
   // Always use JWT for /auth/me (even if CACC_AUTH_ENABLED=false)
@@ -66,7 +139,7 @@ router.get('/auth/me', (req, res) => {
   });
 });
 
-// ── GET /auth/voice-stats ─────────────────────────────────────────────────────
+// -- GET /auth/voice-stats ------------------------------------------------
 
 router.get('/auth/voice-stats', authMiddleware, (req, res) => {
   const stats = getUserKbStats(req.user.userId);
@@ -88,7 +161,7 @@ router.get('/auth/voice-stats', authMiddleware, (req, res) => {
   });
 });
 
-// ── GET /auth/plans ──────────────────────────────────────────────────────────
+// -- GET /auth/plans ------------------------------------------------------
 
 router.get('/auth/plans', (_req, res) => {
   res.json({ ok: true, plans: PLANS });
