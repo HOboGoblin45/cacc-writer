@@ -12,6 +12,7 @@ import { extractOrderFromPdf, extractCompFromPdf, extractTaxRecord, processAnyDo
 import { isGeminiConfigured, probeGemini } from '../ai/geminiProvider.js';
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { validateParams, validateBody } from '../middleware/validateRequest.js';
+import { rateLimitMiddleware } from '../security/rateLimiter.js';
 
 const router = Router();
 
@@ -41,7 +42,7 @@ router.get('/ai/status', async (_req, res) => {
 });
 
 // POST /ai/photos/:photoId/analyze — analyze a single photo
-router.post('/ai/photos/:photoId/analyze', authMiddleware, validateParams(photoIdParam), async (req, res) => {
+router.post('/ai/photos/:photoId/analyze', authMiddleware, rateLimitMiddleware('ai'), validateParams(photoIdParam), async (req, res) => {
   try {
     const result = await analyzeAndUpdatePhoto(req.validatedParams.photoId);
     res.json({ ok: true, ...result });
@@ -51,7 +52,7 @@ router.post('/ai/photos/:photoId/analyze', authMiddleware, validateParams(photoI
 });
 
 // POST /cases/:caseId/ai/analyze-photos — analyze ALL case photos
-router.post('/cases/:caseId/ai/analyze-photos', authMiddleware, validateParams(caseIdParam), async (req, res) => {
+router.post('/cases/:caseId/ai/analyze-photos', authMiddleware, rateLimitMiddleware('ai'), validateParams(caseIdParam), async (req, res) => {
   try {
     const result = await analyzeCasePhotos(req.validatedParams.caseId);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
@@ -62,7 +63,7 @@ router.post('/cases/:caseId/ai/analyze-photos', authMiddleware, validateParams(c
 });
 
 // POST /ai/extract-order — upload PDF order form → structured data
-router.post('/ai/extract-order', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/ai/extract-order', authMiddleware, rateLimitMiddleware('ai'), upload.single('file'), async (req, res) => {
   let filePath = null;
   try {
     if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
@@ -77,7 +78,7 @@ router.post('/ai/extract-order', authMiddleware, upload.single('file'), async (r
 });
 
 // POST /ai/extract-comp — upload MLS sheet → comp data
-router.post('/ai/extract-comp', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/ai/extract-comp', authMiddleware, rateLimitMiddleware('ai'), upload.single('file'), async (req, res) => {
   let filePath = null;
   try {
     if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
@@ -92,7 +93,7 @@ router.post('/ai/extract-comp', authMiddleware, upload.single('file'), async (re
 });
 
 // POST /ai/extract-tax — upload tax record → structured data
-router.post('/ai/extract-tax', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/ai/extract-tax', authMiddleware, rateLimitMiddleware('ai'), upload.single('file'), async (req, res) => {
   let filePath = null;
   try {
     if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
@@ -107,7 +108,7 @@ router.post('/ai/extract-tax', authMiddleware, upload.single('file'), async (req
 });
 
 // POST /ai/process-document — general document processing
-router.post('/ai/process-document', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/ai/process-document', authMiddleware, rateLimitMiddleware('ai'), upload.single('file'), async (req, res) => {
   let filePath = null;
   try {
     if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });

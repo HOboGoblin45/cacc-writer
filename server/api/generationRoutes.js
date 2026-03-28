@@ -21,6 +21,7 @@ import { Router } from 'express';
 import path from 'path';
 import { z } from 'zod';
 import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
+import { rateLimitMiddleware } from '../security/rateLimiter.js';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
@@ -232,7 +233,7 @@ router.param('caseId', (req, res, next, caseId) => {
 });
 
 // ── POST /generate (legacy compat, now modular) ──────────────────────────────
-router.post('/generate', ensureAI, async (req, res) => {
+router.post('/generate', rateLimitMiddleware('ai'), ensureAI, async (req, res) => {
   try {
     const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
     const prompt = trimText(req.body?.prompt, 24000);
@@ -310,7 +311,7 @@ router.post('/generate', ensureAI, async (req, res) => {
 });
 
 // ── POST /generate-batch (legacy compat, now modular) ────────────────────────
-router.post('/generate-batch', ensureAI, async (req, res) => {
+router.post('/generate-batch', rateLimitMiddleware('ai'), ensureAI, async (req, res) => {
   try {
     const { fields, caseId, twoPass = false } = req.body;
     if (!Array.isArray(fields) || !fields.length) {
@@ -929,6 +930,7 @@ function parseGenPayload(schema, payload, res) {
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
 router.post('/cases/:caseId/generate-full-draft',
+  rateLimitMiddleware('ai'),
   validateParams(caseIdParamsSchema),
   validateBody(generateFullDraftSchema),
   async (req, res) => {

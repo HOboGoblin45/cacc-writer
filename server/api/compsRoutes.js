@@ -19,11 +19,13 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { z } from 'zod';
 
 import { casePath } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { scanDropboxForPhotos } from '../integrations/photoScanner.js';
 import { parseMredCsv, formatCompForDisplay } from '../comparables/mredCsvParser.js';
 import { extractCompPatterns, saveCompPatterns, getCompGuidance } from '../comparables/compPatternLearner.js';
@@ -40,6 +42,24 @@ import log from '../logger.js';
 import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const router = Router();
+
+// ── Zod Schemas ────────────────────────────────────────────────────────────────
+
+/** Case ID parameter validation */
+const caseIdParams = z.object({ caseId: z.string().min(1) });
+
+/** MRED search request body validation */
+const mredSearchSchema = z.object({
+  minPrice: z.number().positive().optional(),
+  maxPrice: z.number().positive().optional(),
+  minGla: z.number().positive().optional(),
+  maxGla: z.number().positive().optional(),
+  minBeds: z.number().int().positive().optional(),
+  city: z.string().min(1).optional(),
+  state: z.string().min(1).max(2).optional(),
+  maxDaysOld: z.number().int().positive().default(365),
+  top: z.number().int().min(1).max(100).default(20),
+});
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -64,9 +84,9 @@ function getSubjectCoords(caseId) {
  * GET /api/cases/:caseId/photos
  * Scan Dropbox for photos matching this case's borrower/address.
  */
-router.get('/cases/:caseId/photos', (req, res) => {
+router.get('/cases/:caseId/photos', validateParams(caseIdParams), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(req.validatedParams.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const meta         = projection.meta || {};
@@ -92,9 +112,9 @@ router.get('/cases/:caseId/photos', (req, res) => {
  * POST /api/cases/:caseId/import-comps
  * Upload an MRED CSV file, parse comps, geocode distances, save to case.
  */
-router.post('/cases/:caseId/import-comps', upload.single('file'), async (req, res) => {
+router.post('/cases/:caseId/import-comps', validateParams(caseIdParams), upload.single('file'), async (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -205,9 +225,9 @@ router.post('/cases/:caseId/import-comps', upload.single('file'), async (req, re
  * GET /api/cases/:caseId/comp-guidance
  * Return learned comp selection guidance for this case's form type.
  */
-router.get('/cases/:caseId/comp-guidance', (req, res) => {
+router.get('/cases/:caseId/comp-guidance', validateParams(caseIdParams), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(req.validatedParams.caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const formType = projection.meta?.formType || '1004';
@@ -234,9 +254,9 @@ router.get('/cases/:caseId/comp-guidance', (req, res) => {
  * POST /api/cases/:caseId/mred-search
  * Search MRED API for comps matching criteria.
  */
-router.post('/cases/:caseId/mred-search', async (req, res) => {
+router.post('/cases/:caseId/mred-search', validateParams(caseIdParams), validateBody(mredSearchSchema), async (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -250,8 +270,8 @@ router.post('/cases/:caseId/mred-search', async (req, res) => {
 
     const {
       minPrice, maxPrice, minGla, maxGla,
-      minBeds, city, state, maxDaysOld = 365, top = 20,
-    } = req.body || {};
+      minBeds, city, state, maxDaysOld, top,
+    } = req.validated;
 
     const result = await mredSearchComps({ minPrice, maxPrice, minGla, maxGla, minBeds, city, state, maxDaysOld, top });
     if (!result.ok) return res.status(502).json({ ok: false, error: result.error, needsAuth: result.needsReauth });

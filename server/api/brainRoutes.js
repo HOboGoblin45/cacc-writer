@@ -16,6 +16,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import log from '../logger.js';
 import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
+import { rateLimitMiddleware } from '../security/rateLimiter.js';
 import {
   getActiveModel, listModels, registerModel, promoteModel, rollbackToModel
 } from '../db/repositories/brainRepo.js';
@@ -341,7 +342,7 @@ router.post('/brain/graph/sync', async (req, res) => {
 });
 
 // ─── Chat / Workflow ─────────────────────────────────────────
-router.post('/brain/chat', validateBody(chatSchema), async (req, res) => {
+router.post('/brain/chat', rateLimitMiddleware('ai'), validateBody(chatSchema), async (req, res) => {
   const data = req.validated;
   const userId = req.user?.userId || 'dev-local';
   const caseId = data.caseId || null;
