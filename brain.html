@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -303,6 +304,9 @@ Knowledge Graph
 <button class="tab-button" data-tab="report">
 <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">description</span>Report Preview</span>
 </button>
+<button class="tab-button" data-tab="insights">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">insights</span>Brain Insights</span>
+</button>
 </div>
 
 <!-- Tab Contents -->
@@ -506,6 +510,69 @@ Market Trend Chart (Ready for D3 implementation)
 </button>
 </div>
 </div>
+
+<!-- Brain Insights Tab -->
+<div id="tab-insights" class="tab-content">
+<div class="max-h-96 overflow-y-auto space-y-4">
+
+<div id="insights-loading" class="text-center py-8">
+<span class="material-symbols-outlined text-4xl text-primary animate-pulse">psychology</span>
+<p class="text-on-secondary-container mt-2 text-sm">Analyzing your knowledge graph...</p>
+</div>
+
+<div id="insights-content" class="space-y-4 hidden">
+<!-- Graph Stats -->
+<div class="report-section">
+<div class="report-section-title flex items-center gap-2"><span class="material-symbols-outlined text-sm">hub</span>Graph Overview</div>
+<div class="report-section-content">
+<div class="grid grid-cols-3 gap-3">
+<div class="text-center p-3 bg-[#0a0e14] rounded-lg">
+<div id="stat-nodes" class="text-2xl font-bold text-primary">0</div>
+<div class="text-[10px] text-on-secondary-container uppercase tracking-wider">Nodes</div>
+</div>
+<div class="text-center p-3 bg-[#0a0e14] rounded-lg">
+<div id="stat-edges" class="text-2xl font-bold text-[#00A86B]">0</div>
+<div class="text-[10px] text-on-secondary-container uppercase tracking-wider">Connections</div>
+</div>
+<div class="text-center p-3 bg-[#0a0e14] rounded-lg">
+<div id="stat-types" class="text-2xl font-bold text-[#45B7D1]">0</div>
+<div class="text-[10px] text-on-secondary-container uppercase tracking-wider">Node Types</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- AI Patterns -->
+<div class="report-section">
+<div class="report-section-title flex items-center gap-2"><span class="material-symbols-outlined text-sm">auto_awesome</span>AI-Detected Patterns</div>
+<div id="insight-patterns" class="report-section-content space-y-2">
+<div class="text-xs text-on-secondary-container">No patterns detected yet. Add more cases to build your knowledge graph.</div>
+</div>
+</div>
+
+<!-- Model Status -->
+<div class="report-section">
+<div class="report-section-title flex items-center gap-2"><span class="material-symbols-outlined text-sm">model_training</span>AI Model Status</div>
+<div id="insight-model" class="report-section-content space-y-2">
+<div class="text-xs text-on-secondary-container">Loading...</div>
+</div>
+</div>
+
+<!-- Cost Summary -->
+<div class="report-section">
+<div class="report-section-title flex items-center gap-2"><span class="material-symbols-outlined text-sm">payments</span>AI Usage (30 days)</div>
+<div id="insight-costs" class="report-section-content space-y-2">
+<div class="text-xs text-on-secondary-container">Loading...</div>
+</div>
+</div>
+</div>
+
+<button onclick="loadInsights()" class="w-full bg-[#1c2026] ghost-border text-on-surface px-6 py-3 rounded-lg font-semibold hover:bg-[#242930] transition-colors mt-4">
+<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">refresh</span>Refresh Insights</span>
+</button>
+</div>
+</div>
+
 </div>
 </div>
 </section>
@@ -534,231 +601,418 @@ Market Trend Chart (Ready for D3 implementation)
 </div>
 
 <script>
-// Configuration — fetched from server (no hardcoded pod IDs)
+// ═══════════════════════════════════════════════════════════════════════════════
+// CACC Writer — Knowledge Brain Dashboard (Phase 1.5)
+// Three.js 3D graph + D3 force simulation + Live API integration
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const BRAIN_API = '/api/brain';
 let BRAIN_WS = '';
 let BRAIN_CONFIG = {};
 
 // Global State
 let graphData = { nodes: [], links: [] };
-let simulation = null;
-let svg = null;
-let g = null;
-let zoom = null;
 let showLabels = true;
 let physicsEnabled = true;
 let selectedNode = null;
-let chatMessages = [];
 let currentTab = 'chat';
+let chatWs = null;
 
-// Initialize — fetch config from server first, then boot UI
+// ── Three.js 3D Graph State ─────────────────────────────────────────────────
+let scene, camera, renderer, controls;
+let nodeObjects = new Map();   // id → THREE.Mesh
+let edgeObjects = [];          // THREE.Line[]
+let raycaster, mouse;
+let d3Sim = null;              // D3 force simulation driving node positions
+let is3D = true;
+let animationId = null;
+
+// ── D3 2D Fallback State ────────────────────────────────────────────────────
+let svg = null, g = null, zoom = null, simulation = null;
+
+// ── Color Palette ───────────────────────────────────────────────────────────
+const NODE_COLORS = {
+    case: 0xffd341,        // gold
+    property: 0x4ECDC4,    // teal
+    comp: 0x45B7D1,        // blue
+    comparable: 0x45B7D1,
+    market_area: 0xFFA07A, // salmon
+    pattern: 0xFF6B6B,     // red
+    concept: 0xFF6B6B,
+    appraiser: 0xBB8FCE,   // purple
+    adjustment: 0x00A86B,  // green
+    section: 0x98D8C8,     // mint
+    standard: 0x98D8C8,
+    data_source: 0xF7DC6F, // yellow
+};
+
+function getNodeColor(type) {
+    return NODE_COLORS[type] || 0x4ECDC4;
+}
+function getNodeColorCSS(type) {
+    const hex = NODE_COLORS[type] || 0x4ECDC4;
+    return '#' + hex.toString(16).padStart(6, '0');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch server config
     try {
         const resp = await fetch(`${BRAIN_API}/config`);
         BRAIN_CONFIG = await resp.json();
         BRAIN_WS = BRAIN_CONFIG.wsUrl || '';
     } catch (e) {
-        console.warn('[brain] Could not fetch config, chat may be limited:', e.message);
+        console.warn('[brain] Could not fetch config:', e.message);
     }
-    initializeGraph();
+
+    initializeGraph3D();
     initializeTabSystem();
     initializeChat();
     loadGraphData();
     setupEventListeners();
+    loadChatHistory();
 });
 
-// Graph Initialization
-function initializeGraph() {
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREE.JS 3D GRAPH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function initializeGraph3D() {
     const container = document.getElementById('graph-container');
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    svg = d3.select('#graph-container').append('svg')
-        .attr('width', width)
-        .attr('height', height);
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0e14);
+    scene.fog = new THREE.FogExp2(0x0a0e14, 0.0015);
 
-    zoom = d3.zoom()
-        .on('zoom', (event) => {
-            g.attr('transform', event.transform);
-        });
+    // Camera
+    camera = new THREE.PerspectiveCamera(60, width / height, 1, 5000);
+    camera.position.set(0, 0, 400);
 
-    svg.call(zoom);
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
 
-    g = svg.append('g');
+    // Lights
+    scene.add(new THREE.AmbientLight(0x404040, 2));
+    const pointLight = new THREE.PointLight(0xffd341, 1, 800);
+    pointLight.position.set(100, 100, 200);
+    scene.add(pointLight);
+    const pointLight2 = new THREE.PointLight(0x00A86B, 0.6, 600);
+    pointLight2.position.set(-100, -100, -200);
+    scene.add(pointLight2);
 
-    // Add definitions for gradients and markers
-    svg.append('defs').append('marker')
-        .attr('id', 'arrowhead')
-        .attr('markerWidth', 10)
-        .attr('markerHeight', 10)
-        .attr('refX', 9)
-        .attr('refY', 3)
-        .attr('orient', 'auto')
-        .append('polygon')
-        .attr('points', '0 0, 10 3, 0 6')
-        .attr('fill', '#4d4633');
+    // Camera controls (simple orbit via mouse)
+    let isDragging = false, prevMouse = { x: 0, y: 0 };
+    let cameraTheta = 0, cameraPhi = Math.PI / 2, cameraRadius = 400;
+
+    function updateCameraOrbit() {
+        camera.position.x = cameraRadius * Math.sin(cameraPhi) * Math.cos(cameraTheta);
+        camera.position.y = cameraRadius * Math.cos(cameraPhi);
+        camera.position.z = cameraRadius * Math.sin(cameraPhi) * Math.sin(cameraTheta);
+        camera.lookAt(0, 0, 0);
+    }
+
+    renderer.domElement.addEventListener('mousedown', (e) => { isDragging = true; prevMouse = { x: e.clientX, y: e.clientY }; });
+    renderer.domElement.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevMouse.x;
+        const dy = e.clientY - prevMouse.y;
+        cameraTheta += dx * 0.005;
+        cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi - dy * 0.005));
+        updateCameraOrbit();
+        prevMouse = { x: e.clientX, y: e.clientY };
+    });
+    renderer.domElement.addEventListener('mouseup', () => { isDragging = false; });
+    renderer.domElement.addEventListener('wheel', (e) => {
+        cameraRadius = Math.max(100, Math.min(1200, cameraRadius + e.deltaY * 0.5));
+        updateCameraOrbit();
+    });
+
+    // Raycaster for node picking
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    renderer.domElement.addEventListener('click', onGraphClick);
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        const w = container.clientWidth, h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    });
+
+    // Start render loop
+    animate3D();
 }
 
-// Load Graph Data
-function loadGraphData() {
-    // Mock data - replace with actual API call
-    graphData = {
+function animate3D() {
+    animationId = requestAnimationFrame(animate3D);
+
+    // Gentle auto-rotation when not dragging
+    nodeObjects.forEach((mesh) => {
+        if (mesh.userData.glowMesh) {
+            mesh.userData.glowMesh.rotation.y += 0.01;
+        }
+    });
+
+    renderer.render(scene, camera);
+}
+
+function onGraphClick(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const meshes = Array.from(nodeObjects.values());
+    const intersects = raycaster.intersectObjects(meshes);
+    if (intersects.length > 0) {
+        const node = intersects[0].object.userData.node;
+        if (node) selectNode(node);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRAPH DATA LOADING (Live API → local fallback → mock)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function loadGraphData() {
+    let loaded = false;
+
+    // Try RunPod graph first
+    try {
+        const resp = await fetch(`${BRAIN_API}/graph`);
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.nodes && data.nodes.length > 0) {
+                graphData = normalizeGraphData(data);
+                loaded = true;
+            }
+        }
+    } catch (e) { console.warn('[brain] RunPod graph unavailable:', e.message); }
+
+    // Try local persisted graph
+    if (!loaded) {
+        try {
+            const resp = await fetch(`${BRAIN_API}/graph/local`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.nodes && data.nodes.length > 0) {
+                    graphData = normalizeGraphData(data);
+                    loaded = true;
+                }
+            }
+        } catch (e) { console.warn('[brain] Local graph unavailable:', e.message); }
+    }
+
+    // Fallback to demo data
+    if (!loaded) {
+        graphData = getDemoGraphData();
+    }
+
+    renderGraph3D();
+    updateNodeCount();
+}
+
+function normalizeGraphData(data) {
+    const nodes = (data.nodes || []).map(n => ({
+        id: n.id,
+        name: n.label || n.name || n.id,
+        type: n.node_type || n.nodeType || n.type || 'concept',
+        properties: n.properties || {},
+        value: n.properties?.value,
+        x: (Math.random() - 0.5) * 300,
+        y: (Math.random() - 0.5) * 300,
+        z: (Math.random() - 0.5) * 300,
+    }));
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const links = (data.edges || data.links || [])
+        .filter(e => nodeIds.has(e.source_id || e.sourceId || e.source) && nodeIds.has(e.target_id || e.targetId || e.target))
+        .map(e => ({
+            source: e.source_id || e.sourceId || e.source,
+            target: e.target_id || e.targetId || e.target,
+            relationship: e.edge_type || e.edgeType || e.relationship || 'related_to',
+        }));
+    return { nodes, links };
+}
+
+function getDemoGraphData() {
+    return {
         nodes: [
-            { id: 1, name: 'Property 123 Main St', type: 'property', value: 510000 },
-            { id: 2, name: 'Market Area Springfield', type: 'market_area' },
-            { id: 3, name: 'Comparable Sale 1', type: 'comparable' },
-            { id: 4, name: 'Comparable Sale 2', type: 'comparable' },
-            { id: 5, name: 'School District Lincoln', type: 'data_source' },
-            { id: 6, name: 'Lot Size 0.35 acres', type: 'property' },
-            { id: 7, name: 'Year Built 2005', type: 'standard' },
-            { id: 8, name: 'Neighborhood Quality', type: 'concept' },
+            { id: 'n1', name: 'Property 123 Main St', type: 'property', value: 510000, x: 0, y: 0, z: 0 },
+            { id: 'n2', name: 'Market Area Springfield', type: 'market_area', x: 80, y: 40, z: -30 },
+            { id: 'n3', name: 'Comparable Sale 1', type: 'comp', x: -60, y: 70, z: 20 },
+            { id: 'n4', name: 'Comparable Sale 2', type: 'comp', x: 40, y: -80, z: 50 },
+            { id: 'n5', name: 'School District Lincoln', type: 'data_source', x: 120, y: -20, z: -60 },
+            { id: 'n6', name: 'Lot Size Pattern', type: 'pattern', x: -100, y: -50, z: -40 },
+            { id: 'n7', name: 'Year Built 2005', type: 'section', x: 50, y: 100, z: 30 },
+            { id: 'n8', name: 'Neighborhood Quality', type: 'concept', x: -30, y: -100, z: 80 },
+            { id: 'n9', name: 'GLA Adjustment -$5,000', type: 'adjustment', x: -80, y: 30, z: -70 },
         ],
         links: [
-            { source: 1, target: 2, relationship: 'located_in' },
-            { source: 1, target: 3, relationship: 'comparable_to' },
-            { source: 1, target: 4, relationship: 'comparable_to' },
-            { source: 2, target: 5, relationship: 'includes' },
-            { source: 1, target: 6, relationship: 'has_property' },
-            { source: 1, target: 7, relationship: 'has_property' },
-            { source: 8, target: 2, relationship: 'influences' },
+            { source: 'n1', target: 'n2', relationship: 'located_in' },
+            { source: 'n1', target: 'n3', relationship: 'comparable_to' },
+            { source: 'n1', target: 'n4', relationship: 'comparable_to' },
+            { source: 'n2', target: 'n5', relationship: 'related_to' },
+            { source: 'n1', target: 'n6', relationship: 'derived_from' },
+            { source: 'n1', target: 'n7', relationship: 'related_to' },
+            { source: 'n8', target: 'n2', relationship: 'related_to' },
+            { source: 'n3', target: 'n9', relationship: 'adjusted_by' },
+            { source: 'n4', target: 'n9', relationship: 'adjusted_by' },
         ]
     };
-
-    renderGraph();
 }
 
-// Render Graph
-function renderGraph() {
-    const width = document.getElementById('graph-container').clientWidth;
-    const height = document.getElementById('graph-container').clientHeight;
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3D GRAPH RENDERING
+// ═══════════════════════════════════════════════════════════════════════════════
 
-    if (simulation) simulation.stop();
+function renderGraph3D() {
+    // Clear previous
+    nodeObjects.forEach(mesh => scene.remove(mesh));
+    nodeObjects.clear();
+    edgeObjects.forEach(line => scene.remove(line));
+    edgeObjects = [];
 
-    simulation = d3.forceSimulation(graphData.nodes)
-        .force('link', d3.forceLink(graphData.links)
-            .id(d => d.id)
-            .distance(80)
-            .strength(0.5))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(40));
+    // Create node meshes (spheres)
+    const nodeGeometry = new THREE.SphereGeometry(6, 16, 16);
+    graphData.nodes.forEach(node => {
+        const material = new THREE.MeshPhongMaterial({
+            color: getNodeColor(node.type),
+            emissive: getNodeColor(node.type),
+            emissiveIntensity: 0.3,
+            shininess: 80,
+        });
+        const mesh = new THREE.Mesh(nodeGeometry, material);
+        mesh.position.set(node.x || 0, node.y || 0, node.z || 0);
+        mesh.userData.node = node;
 
-    // Remove old elements
-    g.selectAll('*').remove();
+        // Glow ring
+        const glowGeo = new THREE.RingGeometry(8, 10, 32);
+        const glowMat = new THREE.MeshBasicMaterial({ color: getNodeColor(node.type), transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+        const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+        glowMesh.position.copy(mesh.position);
+        mesh.userData.glowMesh = glowMesh;
+        scene.add(glowMesh);
 
-    // Draw links
-    const links = g.selectAll('.d3-link')
-        .data(graphData.links)
-        .enter()
-        .append('line')
-        .attr('class', 'd3-link');
-
-    // Draw nodes
-    const nodes = g.selectAll('.d3-node')
-        .data(graphData.nodes)
-        .enter()
-        .append('g')
-        .attr('class', 'd3-node')
-        .call(d3.drag()
-            .on('start', dragStarted)
-            .on('drag', dragged)
-            .on('end', dragEnded));
-
-    nodes.append('circle')
-        .attr('r', 20)
-        .attr('fill', d => getNodeColor(d.type))
-        .on('click', (event, d) => selectNode(d))
-        .on('mouseover', (event, d) => showNodeTooltip(event, d))
-        .on('mouseout', hideNodeTooltip);
-
-    nodes.append('text')
-        .attr('class', 'd3-label')
-        .attr('text-anchor', 'middle')
-        .attr('dy', '.3em')
-        .text(d => d.name.substring(0, 10))
-        .style('opacity', showLabels ? 1 : 0);
-
-    simulation.on('tick', () => {
-        links
-            .attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
-
-        nodes.attr('transform', d => `translate(${d.x},${d.y})`);
+        scene.add(mesh);
+        nodeObjects.set(node.id, mesh);
     });
+
+    // Create edges (lines)
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x4d4633, transparent: true, opacity: 0.4 });
+    graphData.links.forEach(link => {
+        const srcMesh = nodeObjects.get(typeof link.source === 'object' ? link.source.id : link.source);
+        const tgtMesh = nodeObjects.get(typeof link.target === 'object' ? link.target.id : link.target);
+        if (!srcMesh || !tgtMesh) return;
+        const geometry = new THREE.BufferGeometry().setFromPoints([srcMesh.position, tgtMesh.position]);
+        const line = new THREE.Line(geometry, lineMaterial);
+        line.userData = { source: link.source, target: link.target };
+        scene.add(line);
+        edgeObjects.push(line);
+    });
+
+    // D3 force simulation in 3D
+    if (d3Sim) d3Sim.stop();
+    d3Sim = d3.forceSimulation(graphData.nodes)
+        .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(80).strength(0.4))
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(0, 0))
+        .force('collision', d3.forceCollide().radius(15))
+        .on('tick', () => {
+            graphData.nodes.forEach(node => {
+                const mesh = nodeObjects.get(node.id);
+                if (mesh) {
+                    mesh.position.set(node.x || 0, node.y || 0, node.z || 0);
+                    if (mesh.userData.glowMesh) {
+                        mesh.userData.glowMesh.position.copy(mesh.position);
+                        mesh.userData.glowMesh.lookAt(camera.position);
+                    }
+                }
+            });
+            // Update edge positions
+            edgeObjects.forEach(line => {
+                const srcId = typeof line.userData.source === 'object' ? line.userData.source.id : line.userData.source;
+                const tgtId = typeof line.userData.target === 'object' ? line.userData.target.id : line.userData.target;
+                const src = nodeObjects.get(srcId);
+                const tgt = nodeObjects.get(tgtId);
+                if (src && tgt) {
+                    const positions = line.geometry.attributes.position;
+                    positions.setXYZ(0, src.position.x, src.position.y, src.position.z);
+                    positions.setXYZ(1, tgt.position.x, tgt.position.y, tgt.position.z);
+                    positions.needsUpdate = true;
+                }
+            });
+        });
+
+    // Add Z-force for 3D spread
+    d3Sim.force('z', d3.forceZ(0).strength(0.01));
 }
 
-// Node Color Function
-function getNodeColor(type) {
-    const colors = {
-        concept: '#FF6B6B',
-        property: '#4ECDC4',
-        comparable: '#45B7D1',
-        market_area: '#FFA07A',
-        standard: '#98D8C8',
-        data_source: '#F7DC6F',
-        user_knowledge: '#BB8FCE'
-    };
-    return colors[type] || '#4ECDC4';
+function updateNodeCount() {
+    const el = document.getElementById('graph-node-count');
+    if (el) el.textContent = `${graphData.nodes.length} nodes · ${graphData.links.length} connections`;
 }
 
-// Drag Functions
-function dragStarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-}
+// ═══════════════════════════════════════════════════════════════════════════════
+// NODE SELECTION & DETAILS
+// ═══════════════════════════════════════════════════════════════════════════════
 
-function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
-}
-
-function dragEnded(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-}
-
-// Select Node
 function selectNode(node) {
     selectedNode = node;
     displayNodeDetails(node);
     document.getElementById('node-details-panel').classList.add('open');
+
+    // Highlight selected node
+    nodeObjects.forEach((mesh, id) => {
+        mesh.material.emissiveIntensity = id === node.id ? 0.8 : 0.3;
+        if (mesh.userData.glowMesh) mesh.userData.glowMesh.material.opacity = id === node.id ? 0.4 : 0.15;
+    });
 }
 
-// Display Node Details
 function displayNodeDetails(node) {
     document.getElementById('node-title').textContent = node.name;
-
     const badgeContainer = document.getElementById('node-badge-container');
-    badgeContainer.innerHTML = `<div class="node-badge badge-${node.type}">${node.type.replace('_', ' ').toUpperCase()}</div>`;
+    badgeContainer.innerHTML = `<div class="node-badge badge-${node.type}" style="background:${getNodeColorCSS(node.type)}22;color:${getNodeColorCSS(node.type)};border:1px solid ${getNodeColorCSS(node.type)}44">${(node.type || '').replace('_', ' ').toUpperCase()}</div>`;
 
     const propsContainer = document.getElementById('node-properties');
-    propsContainer.innerHTML = `
-        <div class="property-row">
-            <span class="property-label">ID</span>
-            <span class="property-value">${node.id}</span>
-        </div>
-        <div class="property-row">
-            <span class="property-label">Type</span>
-            <span class="property-value">${node.type}</span>
-        </div>
-        ${node.value ? `<div class="property-row">
-            <span class="property-label">Value</span>
-            <span class="property-value">$${node.value.toLocaleString()}</span>
-        </div>` : ''}
-    `;
+    let propsHTML = `
+        <div class="property-row"><span class="property-label">ID</span><span class="property-value">${node.id}</span></div>
+        <div class="property-row"><span class="property-label">Type</span><span class="property-value">${node.type}</span></div>`;
+    if (node.value) propsHTML += `<div class="property-row"><span class="property-label">Value</span><span class="property-value">$${Number(node.value).toLocaleString()}</span></div>`;
+    if (node.properties) {
+        Object.entries(node.properties).forEach(([k, v]) => {
+            if (k !== 'value') propsHTML += `<div class="property-row"><span class="property-label">${k}</span><span class="property-value">${v}</span></div>`;
+        });
+    }
+    propsContainer.innerHTML = propsHTML;
 
     const connectedNodesContainer = document.getElementById('node-connections');
     const connectedNodes = graphData.links
-        .filter(link => link.source.id === node.id || link.target.id === node.id)
-        .map(link => link.source.id === node.id ? link.target : link.source);
+        .filter(link => {
+            const sid = typeof link.source === 'object' ? link.source.id : link.source;
+            const tid = typeof link.target === 'object' ? link.target.id : link.target;
+            return sid === node.id || tid === node.id;
+        })
+        .map(link => {
+            const sid = typeof link.source === 'object' ? link.source.id : link.source;
+            return sid === node.id
+                ? graphData.nodes.find(n => n.id === (typeof link.target === 'object' ? link.target.id : link.target))
+                : graphData.nodes.find(n => n.id === sid);
+        })
+        .filter(Boolean);
 
     if (connectedNodes.length > 0) {
         connectedNodesContainer.innerHTML = connectedNodes.map(cn => `
-            <div class="connected-node" onclick="selectNode(graphData.nodes.find(n => n.id === ${cn.id}))">
+            <div class="connected-node" onclick="selectNode(graphData.nodes.find(n => n.id === '${cn.id}'))" style="cursor:pointer">
                 <div class="text-xs font-semibold text-on-surface">${cn.name}</div>
                 <div class="text-[10px] text-on-secondary-container">${cn.type}</div>
             </div>
@@ -768,16 +1022,10 @@ function displayNodeDetails(node) {
     }
 }
 
-// Show/Hide Tooltip
-function showNodeTooltip(event, d) {
-    // Tooltip implementation if needed
-}
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAB SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
 
-function hideNodeTooltip() {
-    // Tooltip cleanup if needed
-}
-
-// Tab System
 function initializeTabSystem() {
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => {
@@ -790,21 +1038,36 @@ function initializeTabSystem() {
 function switchTab(tabName) {
     document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
     document.getElementById(`tab-${tabName}`).classList.add('active');
     currentTab = tabName;
+    if (tabName === 'insights') loadInsights();
 }
 
-// Chat System
+// ═══════════════════════════════════════════════════════════════════════════════
+// LIVE CHAT (API + WebSocket fallback)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function initializeChat() {
     document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
     document.getElementById('chat-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendChatMessage();
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
     });
 }
 
-function sendChatMessage() {
+async function loadChatHistory() {
+    try {
+        const resp = await fetch(`${BRAIN_API}/chat/history?limit=50`);
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(msg => addChatMessage(msg.role === 'user' ? 'user' : 'agent', msg.content, false));
+            }
+        }
+    } catch { /* silent */ }
+}
+
+async function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const message = input.value.trim();
     if (!message) return;
@@ -812,89 +1075,210 @@ function sendChatMessage() {
     addChatMessage('user', message);
     input.value = '';
 
-    // Simulate AI response
-    setTimeout(() => {
-        addChatMessage('agent', 'I have processed your query and updated the knowledge graph with relevant data.');
-    }, 1000);
+    // Show typing indicator
+    const typingId = addChatMessage('agent', '...thinking', false, true);
+
+    try {
+        const resp = await fetch(`${BRAIN_API}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, messages: [{ role: 'user', content: message }] }),
+        });
+
+        removeTypingIndicator(typingId);
+
+        if (resp.ok) {
+            const data = await resp.json();
+            const reply = data.response || data.choices?.[0]?.message?.content || 'No response received.';
+            addChatMessage('agent', reply);
+            if (data._fallback) {
+                addChatMessage('system', `⚡ Response via fallback model (${data._fallback_model}). Primary AI unavailable.`);
+            }
+        } else {
+            addChatMessage('agent', 'Sorry, I could not process your request. Please try again.');
+        }
+    } catch (error) {
+        removeTypingIndicator(typingId);
+        addChatMessage('agent', 'Connection error — AI service may be unavailable.');
+    }
 }
 
-function addChatMessage(sender, text) {
+let chatMsgCounter = 0;
+function addChatMessage(sender, text, scroll = true, isTyping = false) {
     const messagesContainer = document.getElementById('chat-messages');
+    const msgId = 'chat-msg-' + (++chatMsgCounter);
     const messageDiv = document.createElement('div');
+    messageDiv.id = msgId;
     messageDiv.className = `chat-message ${sender === 'user' ? 'user' : ''}`;
+    if (isTyping) messageDiv.classList.add('typing-indicator');
 
     const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${sender === 'user' ? 'user' : 'agent'}`;
+    bubble.className = `chat-bubble ${sender === 'user' ? 'user' : sender === 'system' ? 'agent' : 'agent'}`;
 
-    if (sender !== 'user') {
+    if (sender === 'agent' && !isTyping) {
         const title = document.createElement('div');
         title.className = 'font-semibold text-primary mb-1';
         title.textContent = 'Knowledge Agent';
         bubble.appendChild(title);
     }
+    if (sender === 'system') {
+        bubble.style.borderLeft = '3px solid #ffd341';
+        bubble.style.fontSize = '0.75rem';
+        bubble.style.opacity = '0.7';
+    }
 
     const content = document.createElement('div');
     content.textContent = text;
+    if (isTyping) content.style.opacity = '0.5';
     bubble.appendChild(content);
 
     messageDiv.appendChild(bubble);
     messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    if (scroll) messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return msgId;
 }
 
-// Event Listeners
+function removeTypingIndicator(msgId) {
+    const el = document.getElementById(msgId);
+    if (el) el.remove();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRAIN INSIGHTS (AI-powered analytics)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function loadInsights() {
+    const loading = document.getElementById('insights-loading');
+    const content = document.getElementById('insights-content');
+    if (loading) loading.classList.remove('hidden');
+    if (content) content.classList.add('hidden');
+
+    // Graph stats
+    const types = new Set(graphData.nodes.map(n => n.type));
+    const el = (id) => document.getElementById(id);
+    if (el('stat-nodes')) el('stat-nodes').textContent = graphData.nodes.length;
+    if (el('stat-edges')) el('stat-edges').textContent = graphData.links.length;
+    if (el('stat-types')) el('stat-types').textContent = types.size;
+
+    // Pattern detection
+    const patternEl = el('insight-patterns');
+    if (patternEl) {
+        const typeCounts = {};
+        graphData.nodes.forEach(n => { typeCounts[n.type] = (typeCounts[n.type] || 0) + 1; });
+        const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+        if (sorted.length > 0) {
+            patternEl.innerHTML = sorted.map(([type, count]) => `
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-2">
+                        <span style="width:8px;height:8px;border-radius:50%;background:${getNodeColorCSS(type)};display:inline-block"></span>
+                        ${type.replace('_', ' ')}
+                    </span>
+                    <span class="text-primary font-mono">${count}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Model status
+    try {
+        const resp = await fetch(`${BRAIN_API}/health`);
+        if (resp.ok) {
+            const health = await resp.json();
+            const modelEl = el('insight-model');
+            if (modelEl) {
+                modelEl.innerHTML = `
+                    <div class="flex justify-between"><span>Brain API</span><span class="${health.brain === 'online' ? 'text-[#00A86B]' : 'text-[#FF6B6B]'}">${health.brain}</span></div>
+                    <div class="flex justify-between"><span>vLLM Engine</span><span class="${health.vllm === 'online' ? 'text-[#00A86B]' : 'text-[#FF6B6B]'}">${health.vllm}</span></div>
+                    ${health.model ? `<div class="flex justify-between"><span>Active Model</span><span class="text-primary">${health.model}</span></div>` : ''}
+                    ${health.registeredModel ? `<div class="flex justify-between"><span>Registry</span><span class="text-on-surface">${health.registeredModel.version}</span></div>` : ''}
+                    <div class="flex justify-between"><span>Fallback</span><span class="${health.fallbackAvailable ? 'text-[#00A86B]' : 'text-[#FF6B6B]'}">${health.fallbackAvailable ? 'ready' : 'not configured'}</span></div>
+                `;
+            }
+        }
+    } catch { /* silent */ }
+
+    // Cost summary
+    try {
+        const resp = await fetch(`${BRAIN_API}/costs`);
+        if (resp.ok) {
+            const data = await resp.json();
+            const costEl = el('insight-costs');
+            if (costEl && data.summary) {
+                costEl.innerHTML = `
+                    <div class="flex justify-between"><span>Requests</span><span class="text-primary font-mono">${data.summary.total_requests || 0}</span></div>
+                    <div class="flex justify-between"><span>Tokens Used</span><span class="text-primary font-mono">${((data.summary.total_input_tokens || 0) + (data.summary.total_output_tokens || 0)).toLocaleString()}</span></div>
+                    <div class="flex justify-between"><span>GPU Seconds</span><span class="text-primary font-mono">${(data.summary.total_gpu_seconds || 0).toFixed(1)}</span></div>
+                    <div class="flex justify-between"><span>Est. Cost</span><span class="text-primary font-mono">$${(data.summary.total_estimated_cost || 0).toFixed(4)}</span></div>
+                `;
+                if (data.byProvider && data.byProvider.length > 0) {
+                    costEl.innerHTML += '<div class="mt-2 pt-2 border-t border-[#4d4633]/20 text-[10px] text-on-secondary-container uppercase tracking-wider">By Provider</div>';
+                    costEl.innerHTML += data.byProvider.map(p => `
+                        <div class="flex justify-between"><span>${p.provider}</span><span class="text-on-surface">${p.requests} reqs · $${(p.total_cost || 0).toFixed(4)}</span></div>
+                    `).join('');
+                }
+            }
+        }
+    } catch { /* silent */ }
+
+    if (loading) loading.classList.add('hidden');
+    if (content) content.classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVENT LISTENERS (zoom, labels, physics, search, filter)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function setupEventListeners() {
     document.getElementById('btn-zoom-in').addEventListener('click', () => {
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity.translate(
-                document.getElementById('graph-container').clientWidth / 2,
-                document.getElementById('graph-container').clientHeight / 2
-            ).scale(1.3)
-        );
+        camera.position.multiplyScalar(0.8);
     });
-
     document.getElementById('btn-zoom-out').addEventListener('click', () => {
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity.translate(
-                document.getElementById('graph-container').clientWidth / 2,
-                document.getElementById('graph-container').clientHeight / 2
-            ).scale(0.7)
-        );
+        camera.position.multiplyScalar(1.25);
     });
 
     document.getElementById('btn-toggle-labels').addEventListener('click', () => {
         showLabels = !showLabels;
-        g.selectAll('.d3-label').style('opacity', showLabels ? 1 : 0);
+        // Labels managed via CSS sprites in 3D — toggle glow visibility as indicator
+        nodeObjects.forEach(mesh => {
+            if (mesh.userData.glowMesh) mesh.userData.glowMesh.visible = showLabels;
+        });
     });
 
     document.getElementById('btn-toggle-physics').addEventListener('click', () => {
         physicsEnabled = !physicsEnabled;
-        if (physicsEnabled) {
-            simulation.alpha(1).restart();
-        } else {
-            simulation.stop();
+        if (physicsEnabled && d3Sim) {
+            d3Sim.alpha(1).restart();
+        } else if (d3Sim) {
+            d3Sim.stop();
         }
     });
 
     document.getElementById('btn-reset-view').addEventListener('click', () => {
-        const width = document.getElementById('graph-container').clientWidth;
-        const height = document.getElementById('graph-container').clientHeight;
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity.translate(width / 2, height / 2)
-        );
+        camera.position.set(0, 0, 400);
+        camera.lookAt(0, 0, 0);
     });
 
     document.getElementById('btn-close-panel').addEventListener('click', () => {
         document.getElementById('node-details-panel').classList.remove('open');
+        // Reset node highlights
+        nodeObjects.forEach(mesh => {
+            mesh.material.emissiveIntensity = 0.3;
+            if (mesh.userData.glowMesh) mesh.userData.glowMesh.material.opacity = 0.15;
+        });
     });
 
+    // Search — filter nodes by dimming non-matches
     document.getElementById('search-input').addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
-        g.selectAll('.d3-node').style('opacity', (d) => {
-            return d.name.toLowerCase().includes(query) || query === '' ? 1 : 0.2;
+        nodeObjects.forEach((mesh, id) => {
+            const node = mesh.userData.node;
+            const match = !query || node.name.toLowerCase().includes(query) || (node.type || '').includes(query);
+            mesh.material.opacity = match ? 1 : 0.15;
+            mesh.material.transparent = true;
+            if (mesh.userData.glowMesh) mesh.userData.glowMesh.visible = match && showLabels;
+        });
+        edgeObjects.forEach(line => {
+            line.material.opacity = query ? 0.1 : 0.4;
         });
     });
 }

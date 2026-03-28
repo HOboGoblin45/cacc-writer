@@ -276,6 +276,50 @@ router.delete('/brain/graph/edge/:id', (req, res) => {
   }
 });
 
+// ─── Graph Sync (pull from RunPod → persist locally) ─────────
+router.post('/brain/graph/sync', async (req, res) => {
+  const userId = req.user?.userId || 'dev-local';
+  try {
+    const resp = await fetch(`${BRAIN_BASE}/api/graph`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) return res.status(502).json({ ok: false, error: 'RunPod graph unavailable' });
+    const data = await resp.json();
+    const nodes = data.nodes || [];
+    const edges = data.edges || data.links || [];
+
+    let nodesCreated = 0, edgesCreated = 0;
+    for (const n of nodes) {
+      upsertGraphNode({
+        id: n.id,
+        userId,
+        nodeType: n.node_type || n.type || 'concept',
+        label: n.label || n.name || n.id,
+        properties: n.properties || {},
+        weight: n.weight ?? 1.0,
+      });
+      nodesCreated++;
+    }
+    for (const e of edges) {
+      createGraphEdge({
+        userId,
+        sourceId: e.source_id || e.source,
+        targetId: e.target_id || e.target,
+        edgeType: e.edge_type || e.type || 'related_to',
+        weight: e.weight ?? 1.0,
+        properties: e.properties || {},
+      });
+      edgesCreated++;
+    }
+
+    log.info('brain:graph-sync', { userId, nodesCreated, edgesCreated });
+    res.json({ ok: true, nodesCreated, edgesCreated });
+  } catch (error) {
+    log.error('brain:graph-sync', { error: error.message });
+    res.status(500).json({ ok: false, error: sanitizeError(error) });
+  }
+});
+
 // ─── Chat / Workflow ─────────────────────────────────────────
 router.post('/brain/chat', async (req, res) => {
   const data = validate(chatSchema, req, res);
@@ -284,9 +328,35 @@ router.post('/brain/chat', async (req, res) => {
   const caseId = data.caseId || null;
 
   // Save user message
+  const userContent = data.message || data.messages?.[0]?.content || '';
   try {
-    saveChatMessage({ userId, caseId, role: 'user', content: req.body?.message || req.body?.messages?.[0]?.content || '' });
+    saveChatMessage({ userId, caseId, role: 'user', content: userContent });
   } catch { /* non-critical */ }
+
+  // Build context-aware message body
+  // If a caseId is provided, inject case context into the system prompt
+  let chatBody = { ...req.body };
+  if (caseId) {
+    try {
+      // Dynamic import to avoid circular dependency — only load if case context needed
+      const { getCaseProjection } = await import('../caseRecord/caseRecordService.js');
+      const caseData = getCaseProjection(caseId, { userId });
+      if (caseData && caseData.facts) {
+        const contextMsg = {
+          role: 'system',
+          content: `You are an appraisal assistant. The user is working on case ${caseId}. ` +
+            `Here are the current case facts: ${JSON.stringify(caseData.facts).slice(0, 3000)}. ` +
+            `Use this context to answer questions about this specific appraisal.`
+        };
+        // Prepend context to messages
+        if (chatBody.messages) {
+          chatBody.messages = [contextMsg, ...chatBody.messages];
+        } else {
+          chatBody.messages = [contextMsg, { role: 'user', content: chatBody.message || '' }];
+        }
+      }
+    } catch { /* case lookup failed — continue without context */ }
+  }
 
   // Try RunPod first
   try {
@@ -294,7 +364,7 @@ router.post('/brain/chat', async (req, res) => {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(chatBody),
       signal: AbortSignal.timeout(30000),
     });
 
