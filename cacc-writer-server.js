@@ -26,6 +26,8 @@ import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogge
 import { getDb, closeDb, closeAllUserDbs } from './server/db/database.js';
 import { MODEL } from './server/openaiClient.js';
 import { requireAuth } from './server/middleware/authMiddleware.js';
+import { requestIdMiddleware } from './server/middleware/requestId.js';
+import { errorHandler } from './server/middleware/errorHandler.js';
 
 import healthRouter from './server/api/healthRoutes.js';
 import casesRouter from './server/api/casesRoutes.js';
@@ -192,6 +194,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
 }));
+
+// ── Request ID ──────────────────────────────────────────────────────────────
+app.use(requestIdMiddleware());
 
 // ── Rate Limiting ────────────────────────────────────────────────────────────
 
@@ -405,34 +410,10 @@ app.use('/api', photoAddendumRouter);
 app.use('/api', questionnaireRouter);
 app.use('/api', brainRouter);
 
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-
-  const status = Number(err?.status || err?.statusCode) || 500;
-  const message = String(err?.message || 'Request failed');
-
-  log.error('request:error', {
-    method: req.method,
-    path: req.path,
-    status,
-    error: message,
-  });
-
-  const payload = {
-    ok: false,
-    error: status >= 500 ? 'Internal server error' : message,
-  };
-
-  if (err?.code) {
-    payload.code = String(err.code);
-  }
-
-  if (status >= 500 && process.env.NODE_ENV !== 'production') {
-    payload.detail = message;
-  }
-
-  res.status(status).json(payload);
-});
+// ── Global Error Handler ────────────────────────────────────────────────────
+// Structured error responses with request ID correlation, circuit breaker
+// awareness, and production-safe error sanitization.
+app.use(errorHandler());
 
 const server = app.listen(PORT, () => {
   console.log('Appraisal Agent server running on port ' + PORT);

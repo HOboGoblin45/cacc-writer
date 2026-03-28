@@ -62,7 +62,7 @@ import {
   createSupportBundle,
   listExports,
 } from '../backupExport.js';
-import { MODEL, probeOpenAIAuth } from '../openaiClient.js';
+import { MODEL, probeOpenAIAuth, getCircuitBreakerStats } from '../openaiClient.js';
 import { getDb } from '../db/database.js';
 import { detectStuckStates } from '../operations/stuckStateDetector.js';
 import { probeAciAgent, probeRqAgent } from './agentHealth.js';
@@ -109,8 +109,55 @@ function parsePayload(schema, payload, res) {
 }
 
 // ── GET /health ───────────────────────────────────────────────────────────────
+// Liveness probe — returns 200 if server process is alive (no external checks)
 router.get('/health', (_req, res) => {
-  res.json({ ok: true, model: MODEL, version: '3.1.0' });
+  res.json({ ok: true, model: MODEL, version: '3.1.0', uptime: Math.round(process.uptime()) });
+});
+
+// ── GET /health/ready ────────────────────────────────────────────────────────
+// Readiness probe — returns 200 only if the server is ready to handle requests.
+// Checks: DB connection, AI provider circuit not OPEN.
+router.get('/health/ready', (_req, res) => {
+  const checks = { db: false, ai: true };
+  let ready = true;
+
+  // Check database
+  try {
+    const db = getDb();
+    db.prepare('SELECT 1').get();
+    checks.db = true;
+  } catch {
+    checks.db = false;
+    ready = false;
+  }
+
+  // Check circuit breakers — if primary AI circuit is OPEN, we're not ready
+  const circuits = getCircuitBreakerStats();
+  checks.circuits = circuits;
+  const primaryProvider = process.env.AI_PROVIDER || 'openai';
+  const primaryCircuit = circuits[primaryProvider];
+  if (primaryCircuit && primaryCircuit.state === 'OPEN') {
+    checks.ai = false;
+    ready = false;
+  }
+
+  const status = ready ? 200 : 503;
+  res.status(status).json({
+    ok: ready,
+    ready,
+    checks,
+    checkedAt: new Date().toISOString(),
+  });
+});
+
+// ── GET /health/circuits ─────────────────────────────────────────────────────
+// Circuit breaker dashboard — shows state of all AI provider circuits.
+router.get('/health/circuits', (_req, res) => {
+  res.json({
+    ok: true,
+    circuits: getCircuitBreakerStats(),
+    checkedAt: new Date().toISOString(),
+  });
 });
 
 // ── GET /health/detailed ──────────────────────────────────────────────────────
