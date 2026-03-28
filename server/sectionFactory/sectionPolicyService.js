@@ -166,6 +166,8 @@ export function scoreSectionOutput({
   analysisContextUsed = false,
   priorSectionsContextUsed = false,
   retrievalSourceIds = [],
+  voiceScore = null,
+  factCoverage = null,
 }) {
   const normalizedText = normalizeText(text);
   const qualityProfile = sectionPolicy?.qualityProfile || QUALITY_PROFILES.default;
@@ -228,6 +230,44 @@ export function scoreSectionOutput({
     score -= 0.05;
   }
 
+  // ── Phase 3: Voice consistency penalty ────────────────────────────────────
+  if (voiceScore !== null) {
+    if (voiceScore < 0.70) {
+      penalties.push({
+        code: 'voice_drift',
+        amount: 0.15,
+        detail: `Voice score ${voiceScore.toFixed(3)} indicates significant drift from appraiser voice`,
+      });
+      score -= 0.15;
+    } else if (voiceScore >= 0.70 && voiceScore < 0.85) {
+      penalties.push({
+        code: 'voice_weak',
+        amount: 0.05,
+        detail: `Voice score ${voiceScore.toFixed(3)} indicates weak consistency with appraiser voice`,
+      });
+      score -= 0.05;
+    }
+  }
+
+  // ── Phase 3: Fact coverage penalty ────────────────────────────────────────
+  if (factCoverage !== null) {
+    if (factCoverage < 0.3) {
+      penalties.push({
+        code: 'low_fact_coverage',
+        amount: 0.20,
+        detail: `Fact coverage ${(factCoverage * 100).toFixed(1)}% is critically low`,
+      });
+      score -= 0.20;
+    } else if (factCoverage < 0.5) {
+      penalties.push({
+        code: 'low_fact_coverage',
+        amount: 0.10,
+        detail: `Fact coverage ${(factCoverage * 100).toFixed(1)}% is below 50% threshold`,
+      });
+      score -= 0.10;
+    }
+  }
+
   const boundedScore = Math.max(0, Math.min(1, Number(score.toFixed(2))));
   return {
     score: boundedScore,
@@ -244,6 +284,8 @@ export function scoreSectionOutput({
       },
       analysisContextUsed,
       priorSectionsContextUsed,
+      voiceScore,
+      factCoverage,
       penalties,
     },
   };
