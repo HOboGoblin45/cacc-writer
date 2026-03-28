@@ -37,6 +37,7 @@ import './checkers/placeholderGenericityChecker.js';
 import './checkers/complianceSignalChecker.js';
 import './checkers/contradictionGraphChecker.js';
 import './checkers/comparableIntelligenceChecker.js';
+import './checkers/factCompletenessChecker.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

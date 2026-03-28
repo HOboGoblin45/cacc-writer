@@ -4,16 +4,28 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateParams, validateBody } from '../middleware/validateRequest.js';
 import { pullPublicRecords } from '../data/publicRecordsService.js';
 import { verifyAddress, verifyCaseAddress, isUspsConfigured } from '../data/addressVerification.js';
 
 const router = Router();
 
+// Schemas
+const caseIdSchema = z.object({ caseId: z.string().min(1) });
+const addressVerifySchema = z.object({
+  street: z.string().min(1),
+  unit: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip: z.string().optional(),
+});
+
 // POST /cases/:caseId/public-records — pull public records
-router.post('/cases/:caseId/public-records', authMiddleware, async (req, res) => {
+router.post('/cases/:caseId/public-records', authMiddleware, validateParams(caseIdSchema), async (req, res) => {
   try {
-    const result = await pullPublicRecords(req.params.caseId);
+    const result = await pullPublicRecords(req.validatedParams.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -21,9 +33,9 @@ router.post('/cases/:caseId/public-records', authMiddleware, async (req, res) =>
 });
 
 // POST /cases/:caseId/verify-address — verify + standardize subject address vs USPS
-router.post('/cases/:caseId/verify-address', authMiddleware, async (req, res) => {
+router.post('/cases/:caseId/verify-address', authMiddleware, validateParams(caseIdSchema), async (req, res) => {
   try {
-    const result = await verifyCaseAddress(req.params.caseId);
+    const result = await verifyCaseAddress(req.validatedParams.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -31,11 +43,9 @@ router.post('/cases/:caseId/verify-address', authMiddleware, async (req, res) =>
 });
 
 // POST /address/verify — standalone address verification (no case needed)
-router.post('/address/verify', authMiddleware, async (req, res) => {
+router.post('/address/verify', authMiddleware, validateBody(addressVerifySchema), async (req, res) => {
   try {
-    const { street, unit, city, state, zip } = req.body;
-    if (!street) return res.status(400).json({ ok: false, error: 'street is required' });
-    const result = await verifyAddress({ street, unit, city, state, zip });
+    const result = await verifyAddress(req.validated);
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

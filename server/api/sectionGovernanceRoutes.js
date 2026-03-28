@@ -14,7 +14,9 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
+import { validateBody, validateParams } from '../middleware/validateRequest.js';
 import {
   getSectionGovernanceMetadata,
   getSingleSectionGovernance,
@@ -26,10 +28,29 @@ import {
 
 const router = Router();
 
+// ── Zod Validation Schemas ────────────────────────────────────────────────────
+const caseIdSchema = z.object({
+  caseId: z.string().min(1, 'caseId is required'),
+});
+
+const caseIdSectionIdSchema = z.object({
+  caseId: z.string().min(1, 'caseId is required'),
+  sectionId: z.string().min(1, 'sectionId is required'),
+});
+
+const invalidateSectionBodySchema = z.object({
+  reason: z.string().optional(),
+});
+
+const invalidateDownstreamBodySchema = z.object({
+  sectionId: z.string().min(1, 'sectionId is required in body'),
+  formType: z.string().default('1004'),
+});
+
 // ── GET /governance/sections/:caseId ──────────────────────────────────────────
-router.get('/governance/sections/:caseId', (req, res) => {
+router.get('/governance/sections/:caseId', validateParams(caseIdSchema), (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const sections = getSectionGovernanceMetadata(caseId);
     const graph = getSectionDependencyGraph(caseId);
     res.json({
@@ -46,9 +67,9 @@ router.get('/governance/sections/:caseId', (req, res) => {
 });
 
 // ── GET /governance/sections/:caseId/:sectionId ───────────────────────────────
-router.get('/governance/sections/:caseId/:sectionId', (req, res) => {
+router.get('/governance/sections/:caseId/:sectionId', validateParams(caseIdSectionIdSchema), (req, res) => {
   try {
-    const { caseId, sectionId } = req.params;
+    const { caseId, sectionId } = req.validatedParams;
     const section = getSingleSectionGovernance(caseId, sectionId);
     if (!section) {
       return res.status(404).json({
@@ -64,10 +85,10 @@ router.get('/governance/sections/:caseId/:sectionId', (req, res) => {
 });
 
 // ── POST /governance/sections/:caseId/:sectionId/invalidate ───────────────────
-router.post('/governance/sections/:caseId/:sectionId/invalidate', (req, res) => {
+router.post('/governance/sections/:caseId/:sectionId/invalidate', validateParams(caseIdSectionIdSchema), validateBody(invalidateSectionBodySchema), (req, res) => {
   try {
-    const { caseId, sectionId } = req.params;
-    const reason = req.body?.reason || 'manual_invalidation';
+    const { caseId, sectionId } = req.validatedParams;
+    const reason = req.validated?.reason || 'manual_invalidation';
     const result = markSectionStale(caseId, sectionId, reason);
     res.json({ ok: result.ok, caseId, sectionId, reason, updated: result.updated });
   } catch (err) {
@@ -77,17 +98,10 @@ router.post('/governance/sections/:caseId/:sectionId/invalidate', (req, res) => 
 });
 
 // ── POST /governance/sections/:caseId/invalidate-downstream ───────────────────
-router.post('/governance/sections/:caseId/invalidate-downstream', (req, res) => {
+router.post('/governance/sections/:caseId/invalidate-downstream', validateParams(caseIdSchema), validateBody(invalidateDownstreamBodySchema), (req, res) => {
   try {
-    const { caseId } = req.params;
-    const changedSectionId = req.body?.sectionId;
-    const formType = req.body?.formType || '1004';
-    if (!changedSectionId) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Request body must include "sectionId" of the changed upstream section',
-      });
-    }
+    const { caseId } = req.validatedParams;
+    const { sectionId: changedSectionId, formType } = req.validated;
     const result = invalidateDownstream(caseId, changedSectionId, formType);
     res.json({
       ok: result.ok,
@@ -103,9 +117,9 @@ router.post('/governance/sections/:caseId/invalidate-downstream', (req, res) => 
 });
 
 // ── GET /governance/freshness/:caseId ─────────────────────────────────────────
-router.get('/governance/freshness/:caseId', (req, res) => {
+router.get('/governance/freshness/:caseId', validateParams(caseIdSchema), (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const summary = getFreshnessSummary(caseId);
     res.json({ ok: true, ...summary });
   } catch (err) {

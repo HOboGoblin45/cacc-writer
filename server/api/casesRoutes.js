@@ -32,6 +32,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { casePath, resolveCaseDir, normalizeFormType, getCaseFormConfig } from '../utils/caseUtils.js';
@@ -247,6 +248,39 @@ const comparableAdjustmentDecisionSchema = z.object({
     'no_adjustment_warranted',
   ]).optional(),
 }).passthrough();
+
+// ── Parameter validation schemas ──────────────────────────────────────────────
+const caseIdSchema = z.object({ caseId: z.string().min(1) });
+const contradictionParamsSchema = z.object({
+  caseId: z.string().min(1),
+  contradictionId: z.string().min(1),
+});
+const candidateParamsSchema = z.object({
+  caseId: z.string().min(1),
+  candidateId: z.string().min(1),
+});
+const sectionAuditParamsSchema = z.object({
+  caseId: z.string().min(1),
+  sectionId: z.string().min(1),
+});
+const insertionRunParamsSchema = z.object({
+  caseId: z.string().min(1),
+  runId: z.string().min(1),
+});
+const missingFactsParamsSchema = z.object({
+  caseId: z.string().min(1),
+  fieldId: z.string().min(1),
+});
+const adjustmentDecisionParamsSchema = z.object({
+  caseId: z.string().min(1),
+  gridSlot: z.string().min(1),
+  adjustmentCategory: z.string().min(1),
+});
+
+// ── Query validation schemas ──────────────────────────────────────────────────
+const formTypeQuerySchema = z.object({
+  formType: z.string().max(40).optional(),
+});
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -544,13 +578,14 @@ router.post('/migration/backfill', (req, res) => {
   }
 });
 
-router.get('/:caseId/record', (req, res) => {
+router.get('/:caseId/record', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       record: projection.caseRecord,
     });
   } catch (err) {
@@ -558,12 +593,13 @@ router.get('/:caseId/record', (req, res) => {
   }
 });
 
-router.get('/:caseId/workspace', (req, res) => {
+router.get('/:caseId/workspace', validateParams(caseIdSchema), validateQuery(formTypeQuerySchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const formType = normalizeFormType(req.validatedQuery?.formType || projection.meta?.formType || '1004');
     const definition = getWorkspaceDefinition(formType);
     if (!definition) {
       return res.status(404).json({
@@ -573,13 +609,13 @@ router.get('/:caseId/workspace', (req, res) => {
       });
     }
 
-    const conflictReport = detectFactConflicts(req.params.caseId) || { summary: {}, conflicts: [] };
-    const decisionQueue = buildFactDecisionQueue(req.params.caseId) || { summary: {}, conflicts: [], pendingFactGroups: [] };
-    const approvalGate = evaluateCaseApprovalGate(req.params.caseId);
-    const extractedFacts = getExtractedFacts(req.params.caseId);
-    const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
-    const insertionReliability = buildInsertionWorkspaceSummary(req.params.caseId);
-    const contradictionGraph = buildContradictionGraph(req.params.caseId, {
+    const conflictReport = detectFactConflicts(caseId) || { summary: {}, conflicts: [] };
+    const decisionQueue = buildFactDecisionQueue(caseId) || { summary: {}, conflicts: [], pendingFactGroups: [] };
+    const approvalGate = evaluateCaseApprovalGate(caseId);
+    const extractedFacts = getExtractedFacts(caseId);
+    const comparableIntelligence = buildComparableIntelligence(caseId);
+    const insertionReliability = buildInsertionWorkspaceSummary(caseId);
+    const contradictionGraph = buildContradictionGraph(caseId, {
       projection,
       factConflictReport: conflictReport,
       comparableIntelligence,
@@ -622,7 +658,7 @@ router.get('/:caseId/workspace', (req, res) => {
     // Batch freshness evaluation (one DB query + staleness check for all sections)
     let freshnessMap = {};
     try {
-      const freshnessResult = evaluateAllSectionsFreshness(req.params.caseId);
+      const freshnessResult = evaluateAllSectionsFreshness(caseId);
       for (const s of freshnessResult.sections) {
         freshnessMap[s.sectionId] = s;
       }
@@ -652,7 +688,7 @@ router.get('/:caseId/workspace', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       formType,
       workspace,
     });
@@ -661,18 +697,19 @@ router.get('/:caseId/workspace', (req, res) => {
   }
 });
 
-router.get('/:caseId/insertion-runs', (req, res) => {
+router.get('/:caseId/insertion-runs', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const parsedLimit = Number.parseInt(req.query.limit, 10);
     const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 50) : 10;
-    const insertionReliability = buildInsertionWorkspaceSummary(req.params.caseId, { limit });
+    const insertionReliability = buildInsertionWorkspaceSummary(caseId, { limit });
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       summary: insertionReliability.summary,
       latestRun: insertionReliability.latestRun,
       runs: insertionReliability.recentRuns,
@@ -682,20 +719,21 @@ router.get('/:caseId/insertion-runs', (req, res) => {
   }
 });
 
-router.get('/:caseId/insertion-runs/:runId', (req, res) => {
+router.get('/:caseId/insertion-runs/:runId', validateParams(insertionRunParamsSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId, runId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const run = getInsertionRun(req.params.runId);
-    if (!run || run.caseId !== req.params.caseId) {
+    const run = getInsertionRun(runId);
+    if (!run || run.caseId !== caseId) {
       return res.status(404).json({ ok: false, error: 'Insertion run not found for this case' });
     }
 
     const detail = buildInsertionRunDetail(run);
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       ...detail,
     });
   } catch (err) {
@@ -703,19 +741,20 @@ router.get('/:caseId/insertion-runs/:runId', (req, res) => {
   }
 });
 
-router.get('/:caseId/insertion-runs/:runId/replay-package', (req, res) => {
+router.get('/:caseId/insertion-runs/:runId/replay-package', validateParams(insertionRunParamsSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId, runId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const run = getInsertionRun(req.params.runId);
-    if (!run || run.caseId !== req.params.caseId) {
+    const run = getInsertionRun(runId);
+    if (!run || run.caseId !== caseId) {
       return res.status(404).json({ ok: false, error: 'Insertion run not found for this case' });
     }
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       run: summarizeInsertionRun(run, { hydrateReplayPackage: true }),
       replayPackage: getInsertionReplayPackage(run.id) || { items: [], summary: {} },
     });
@@ -724,14 +763,15 @@ router.get('/:caseId/insertion-runs/:runId/replay-package', (req, res) => {
   }
 });
 
-router.get('/:caseId/contradiction-graph', (req, res) => {
+router.get('/:caseId/contradiction-graph', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const conflictReport = detectFactConflicts(req.params.caseId) || { summary: {}, conflicts: [] };
-    const comparableIntelligence = buildComparableIntelligence(req.params.caseId);
-    const contradictionGraph = buildContradictionGraph(req.params.caseId, {
+    const conflictReport = detectFactConflicts(caseId) || { summary: {}, conflicts: [] };
+    const comparableIntelligence = buildComparableIntelligence(caseId);
+    const contradictionGraph = buildContradictionGraph(caseId, {
       projection,
       factConflictReport: conflictReport,
       comparableIntelligence,
@@ -739,13 +779,13 @@ router.get('/:caseId/contradiction-graph', (req, res) => {
 
     // Phase E — merge resolution status into graph items
     if (contradictionGraph) {
-      contradictionGraph.items = mergeResolutionStatus(req.params.caseId, contradictionGraph.items);
-      contradictionGraph.resolutionSummary = buildResolutionSummary(req.params.caseId, contradictionGraph.items);
+      contradictionGraph.items = mergeResolutionStatus(caseId, contradictionGraph.items);
+      contradictionGraph.resolutionSummary = buildResolutionSummary(caseId, contradictionGraph.items);
     }
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       contradictionGraph,
     });
   } catch (err) {
@@ -770,67 +810,68 @@ const contradictionReopenSchema = z.object({
   reason: z.string().max(500).optional().default(''),
 });
 
-router.post('/:caseId/contradiction-graph/:contradictionId/resolve', (req, res) => {
-  const body = parsePayload(contradictionResolutionSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/contradiction-graph/:contradictionId/resolve', validateParams(contradictionParamsSchema), validateBody(contradictionResolutionSchema), (req, res) => {
+  const { caseId, contradictionId } = req.validatedParams;
+  const body = req.validated;
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const record = resolveContradiction(req.params.caseId, req.params.contradictionId, body);
-    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+    const record = resolveContradiction(caseId, contradictionId, body);
+    res.json({ ok: true, caseId, contradictionId, resolution: record });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/contradiction-graph/:contradictionId/dismiss', (req, res) => {
-  const body = parsePayload(contradictionDismissSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/contradiction-graph/:contradictionId/dismiss', validateParams(contradictionParamsSchema), validateBody(contradictionDismissSchema), (req, res) => {
+  const { caseId, contradictionId } = req.validatedParams;
+  const body = req.validated;
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const record = dismissContradiction(req.params.caseId, req.params.contradictionId, body);
-    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+    const record = dismissContradiction(caseId, contradictionId, body);
+    res.json({ ok: true, caseId, contradictionId, resolution: record });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/contradiction-graph/:contradictionId/acknowledge', (req, res) => {
-  const body = parsePayload(contradictionResolutionSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/contradiction-graph/:contradictionId/acknowledge', validateParams(contradictionParamsSchema), validateBody(contradictionResolutionSchema), (req, res) => {
+  const { caseId, contradictionId } = req.validatedParams;
+  const body = req.validated;
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const record = acknowledgeContradiction(req.params.caseId, req.params.contradictionId, body);
-    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+    const record = acknowledgeContradiction(caseId, contradictionId, body);
+    res.json({ ok: true, caseId, contradictionId, resolution: record });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/contradiction-graph/:contradictionId/reopen', (req, res) => {
-  const body = parsePayload(contradictionReopenSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/contradiction-graph/:contradictionId/reopen', validateParams(contradictionParamsSchema), validateBody(contradictionReopenSchema), (req, res) => {
+  const { caseId, contradictionId } = req.validatedParams;
+  const body = req.validated;
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const record = reopenContradiction(req.params.caseId, req.params.contradictionId, body);
-    res.json({ ok: true, caseId: req.params.caseId, contradictionId: req.params.contradictionId, resolution: record });
+    const record = reopenContradiction(caseId, contradictionId, body);
+    res.json({ ok: true, caseId, contradictionId, resolution: record });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.get('/:caseId/comparable-intelligence', (req, res) => {
+router.get('/:caseId/comparable-intelligence', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const intelligence = buildComparableIntelligence(req.params.caseId);
+    const intelligence = buildComparableIntelligence(caseId);
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       intelligence,
     });
   } catch (err) {
@@ -840,13 +881,14 @@ router.get('/:caseId/comparable-intelligence', (req, res) => {
 
 // ── Section audit / policy endpoints ──────────────────────────────────────────
 
-router.get('/:caseId/section-audit', (req, res) => {
+router.get('/:caseId/section-audit', validateParams(caseIdSchema), validateQuery(formTypeQuerySchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const facts = projection.facts || {};
-    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const formType = normalizeFormType(req.validatedQuery?.formType || projection.meta?.formType || '1004');
     const definition = getWorkspaceDefinition(formType);
     if (!definition) return res.status(404).json({ ok: false, error: 'Unknown form type' });
 
@@ -864,7 +906,7 @@ router.get('/:caseId/section-audit', (req, res) => {
     // Batch freshness evaluation
     let freshnessMap = {};
     try {
-      const freshnessResult = evaluateAllSectionsFreshness(req.params.caseId);
+      const freshnessResult = evaluateAllSectionsFreshness(caseId);
       for (const s of freshnessResult.sections) {
         freshnessMap[s.sectionId] = s;
       }
@@ -893,7 +935,7 @@ router.get('/:caseId/section-audit', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       formType,
       sectionAudits,
     });
@@ -902,17 +944,17 @@ router.get('/:caseId/section-audit', (req, res) => {
   }
 });
 
-router.get('/:caseId/section-audit/:sectionId', (req, res) => {
+router.get('/:caseId/section-audit/:sectionId', validateParams(sectionAuditParamsSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId, sectionId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const facts = projection.facts || {};
-    const { sectionId } = req.params;
 
     const policy = buildSectionPolicy(sectionId, facts);
     const snapshot = buildDependencySnapshot(sectionId, facts);
-    const freshness = evaluateSectionFreshness(req.params.caseId, sectionId);
+    const freshness = evaluateSectionFreshness(caseId, sectionId);
     const regeneratePolicy = evaluateRegeneratePolicy(sectionId, facts, {}, {
       freshnessStatus: freshness.freshness,
       qualityScore: freshness.qualityScore,
@@ -922,7 +964,7 @@ router.get('/:caseId/section-audit/:sectionId', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       sectionId,
       policy,
       dependencySnapshot: snapshot,
@@ -987,9 +1029,9 @@ const reconciliationComputeSchema = z.object({
   }).optional().default({}),
 });
 
-router.post('/:caseId/valuation/sales-comparison', (req, res) => {
-  const body = parsePayload(valuationComputeSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/valuation/sales-comparison', validateParams(caseIdSchema), validateBody(valuationComputeSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
   try {
     const compMetrics = body.comps.map(c => computeCompAdjustments(c));
     const burden = computeBurdenMetrics(compMetrics);
@@ -1004,7 +1046,7 @@ router.post('/:caseId/valuation/sales-comparison', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       compMetrics,
       burden,
       suggestedWeights,
@@ -1015,47 +1057,47 @@ router.post('/:caseId/valuation/sales-comparison', (req, res) => {
   }
 });
 
-router.post('/:caseId/valuation/income', (req, res) => {
-  const body = parsePayload(incomeComputeSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/valuation/income', validateParams(caseIdSchema), validateBody(incomeComputeSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
   try {
     const result = computeIncomeApproachValue(body);
-    res.json({ ok: true, caseId: req.params.caseId, ...result });
+    res.json({ ok: true, caseId, ...result });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/valuation/cost', (req, res) => {
-  const body = parsePayload(costComputeSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/valuation/cost', validateParams(caseIdSchema), validateBody(costComputeSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
   try {
     const result = computeCostApproachValue(body);
-    res.json({ ok: true, caseId: req.params.caseId, ...result });
+    res.json({ ok: true, caseId, ...result });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/valuation/reconciliation', (req, res) => {
-  const body = parsePayload(reconciliationComputeSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/valuation/reconciliation', validateParams(caseIdSchema), validateBody(reconciliationComputeSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
   try {
     const result = buildReconciliationSupport(body);
-    res.json({ ok: true, caseId: req.params.caseId, ...result });
+    res.json({ ok: true, caseId, ...result });
   } catch (err) {
     return sendErrorResponse(res, err);
   }
 });
 
-router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', (req, res) => {
-  const body = parsePayload(comparableAcceptSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', validateParams(candidateParamsSchema), validateBody(comparableAcceptSchema), (req, res) => {
+  const { caseId, candidateId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const result = acceptComparableCandidate({
-      caseId: req.params.caseId,
-      candidateId: req.params.candidateId,
+      caseId,
+      candidateId,
       acceptedBy: trimText(body.acceptedBy, 120) || 'appraiser',
       gridSlot: body.gridSlot || null,
       becameFinalComp: Boolean(body.becameFinalComp),
@@ -1064,7 +1106,7 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', (
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       intelligence: result.intelligence,
       meta: result.projection?.meta || null,
     });
@@ -1073,21 +1115,21 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/accept', (
   }
 });
 
-router.post('/:caseId/comparable-intelligence/candidates/:candidateId/hold', (req, res) => {
-  const body = parsePayload(comparableHoldSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/hold', validateParams(candidateParamsSchema), validateBody(comparableHoldSchema), (req, res) => {
+  const { caseId, candidateId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const intelligence = holdComparableCandidate({
-      caseId: req.params.caseId,
-      candidateId: req.params.candidateId,
+      caseId,
+      candidateId,
       actor: trimText(body.actor, 120) || 'appraiser',
     });
     if (!intelligence) return res.status(404).json({ ok: false, error: 'Comparable candidate not found' });
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       intelligence,
     });
   } catch (err) {
@@ -1095,14 +1137,14 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/hold', (re
   }
 });
 
-router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', (req, res) => {
-  const body = parsePayload(comparableRejectSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', validateParams(candidateParamsSchema), validateBody(comparableRejectSchema), (req, res) => {
+  const { caseId, candidateId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const intelligence = rejectComparableCandidate({
-      caseId: req.params.caseId,
-      candidateId: req.params.candidateId,
+      caseId,
+      candidateId,
       rejectedBy: trimText(body.rejectedBy, 120) || 'appraiser',
       reasonCode: body.reasonCode || 'other',
       note: trimText(body.note, 600) || '',
@@ -1111,7 +1153,7 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', (
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       intelligence,
     });
   } catch (err) {
@@ -1119,15 +1161,15 @@ router.post('/:caseId/comparable-intelligence/candidates/:candidateId/reject', (
   }
 });
 
-router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adjustmentCategory', (req, res) => {
-  const body = parsePayload(comparableAdjustmentDecisionSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adjustmentCategory', validateParams(adjustmentDecisionParamsSchema), validateBody(comparableAdjustmentDecisionSchema), (req, res) => {
+  const { caseId, gridSlot, adjustmentCategory } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const intelligence = saveAdjustmentSupportDecision({
-      caseId: req.params.caseId,
-      gridSlot: trimText(req.params.gridSlot, 20),
-      adjustmentCategory: trimText(req.params.adjustmentCategory, 80),
+      caseId,
+      gridSlot: trimText(gridSlot, 20),
+      adjustmentCategory: trimText(adjustmentCategory, 80),
       decisionStatus: body.decisionStatus,
       rationaleNote: trimText(body.rationaleNote, 1000) || '',
       finalAmount: body.finalAmount ?? null,
@@ -1138,7 +1180,7 @@ router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adju
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       intelligence,
     });
   } catch (err) {
@@ -1146,15 +1188,15 @@ router.post('/:caseId/comparable-intelligence/adjustment-support/:gridSlot/:adju
   }
 });
 
-router.put('/:caseId/workspace', (req, res) => {
-  const body = parsePayload(workspacePatchSchema, req.body || {}, res);
-  if (!body) return;
+router.put('/:caseId/workspace', validateParams(caseIdSchema), validateBody(workspacePatchSchema), validateQuery(formTypeQuerySchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const formType = normalizeFormType(req.query?.formType || projection.meta?.formType || '1004');
+    const formType = normalizeFormType(req.validatedQuery?.formType || projection.meta?.formType || '1004');
     const definition = getWorkspaceDefinition(formType);
     if (!definition) {
       return res.status(404).json({
@@ -1174,7 +1216,7 @@ router.put('/:caseId/workspace', (req, res) => {
     });
 
     const updated = saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta: result.meta,
       facts: result.facts,
       provenance: result.provenance,
@@ -1188,7 +1230,7 @@ router.put('/:caseId/workspace', (req, res) => {
     try {
       const changedPaths = detectChangedFactPaths(oldFacts, result.facts || {});
       if (changedPaths.length > 0) {
-        const invalidation = onFactsChanged(req.params.caseId, changedPaths);
+        const invalidation = onFactsChanged(caseId, changedPaths);
         factChangeInvalidation = {
           changedPaths,
           affectedSections: invalidation.affectedSections,
@@ -1201,7 +1243,7 @@ router.put('/:caseId/workspace', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       formType,
       savedAt: result.savedAt,
       saved: result.saved,
@@ -1213,13 +1255,14 @@ router.put('/:caseId/workspace', (req, res) => {
   }
 });
 
-router.get('/:caseId/fact-sources', (req, res) => {
+router.get('/:caseId/fact-sources', validateParams(caseIdSchema), (req, res) => {
   try {
-    const sources = getCaseFactProvenance(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const sources = getCaseFactProvenance(caseId);
     if (!sources) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       sources,
       count: Object.keys(sources).length,
     });
@@ -1228,15 +1271,15 @@ router.get('/:caseId/fact-sources', (req, res) => {
   }
 });
 
-router.put('/:caseId/fact-sources', (req, res) => {
-  const body = parsePayload(factSourcesSchema, req.body || {}, res);
-  if (!body) return;
+router.put('/:caseId/fact-sources', validateParams(caseIdSchema), validateBody(factSourcesSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const incoming = sanitizeFactSources(body.sources || {});
     const replace = Boolean(body.replace);
 
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const merged = replace
@@ -1251,12 +1294,12 @@ router.put('/:caseId/fact-sources', (req, res) => {
       merged[factPath] = sourceData;
     }
 
-    const updated = updateCaseFactProvenance(req.params.caseId, merged, { replace: true });
+    const updated = updateCaseFactProvenance(caseId, merged, { replace: true });
     if (!updated) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       sources: updated.provenance || {},
       count: Object.keys(updated.provenance || {}).length,
     });
@@ -1266,9 +1309,10 @@ router.put('/:caseId/fact-sources', (req, res) => {
 });
 
 // ── GET /:caseId — Load case ──────────────────────────────────────────────────
-router.get('/:caseId/fact-conflicts', (req, res) => {
+router.get('/:caseId/fact-conflicts', validateParams(caseIdSchema), (req, res) => {
   try {
-    const report = detectFactConflicts(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const report = detectFactConflicts(caseId);
     if (!report) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, ...report });
   } catch (err) {
@@ -1276,9 +1320,10 @@ router.get('/:caseId/fact-conflicts', (req, res) => {
   }
 });
 
-router.get('/:caseId/fact-review-queue', (req, res) => {
+router.get('/:caseId/fact-review-queue', validateParams(caseIdSchema), (req, res) => {
   try {
-    const queue = buildFactDecisionQueue(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const queue = buildFactDecisionQueue(caseId);
     if (!queue) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, queue });
   } catch (err) {
@@ -1286,13 +1331,13 @@ router.get('/:caseId/fact-review-queue', (req, res) => {
   }
 });
 
-router.post('/:caseId/fact-review-queue/resolve', (req, res) => {
-  const body = parsePayload(resolveFactDecisionSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/fact-review-queue/resolve', validateParams(caseIdSchema), validateBody(resolveFactDecisionSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const result = resolveFactDecision({
-      caseId: req.params.caseId,
+      caseId,
       factPath: body.factPath,
       selectedValue: body.selectedValue,
       sourceType: body.sourceType || 'manual',
@@ -1308,8 +1353,9 @@ router.post('/:caseId/fact-review-queue/resolve', (req, res) => {
   }
 });
 
-router.get('/:caseId/pre-draft-check', (req, res) => {
+router.get('/:caseId/pre-draft-check', validateParams(caseIdSchema), (req, res) => {
   try {
+    const { caseId } = req.validatedParams;
     const formType = trimText(req.query.formType, 40) || null;
     const sectionIds = trimText(req.query.sections, 4000)
       .split(',')
@@ -1317,16 +1363,16 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
       .filter(Boolean);
 
     const gate = evaluatePreDraftGate({
-      caseId: req.params.caseId,
+      caseId,
       formType,
       sectionIds: sectionIds.length ? sectionIds : null,
     });
     if (!gate) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const decisionQueue = buildFactDecisionQueue(req.params.caseId);
+    const decisionQueue = buildFactDecisionQueue(caseId);
     res.json({
       ok: true,
       gate,
-      factReviewQueuePath: `/api/cases/${req.params.caseId}/fact-review-queue`,
+      factReviewQueuePath: `/api/cases/${caseId}/fact-review-queue`,
       decisionQueueSummary: decisionQueue?.summary || null,
     });
   } catch (err) {
@@ -1334,14 +1380,15 @@ router.get('/:caseId/pre-draft-check', (req, res) => {
   }
 });
 
-router.get('/:caseId/qc-approval-gate', (req, res) => {
+router.get('/:caseId/qc-approval-gate', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
-    const gate = evaluateCaseApprovalGate(req.params.caseId);
+    const gate = evaluateCaseApprovalGate(caseId);
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId,
       gate,
     });
   } catch (err) {
@@ -1349,13 +1396,14 @@ router.get('/:caseId/qc-approval-gate', (req, res) => {
   }
 });
 
-router.get('/:caseId', (req, res) => {
+router.get('/:caseId', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const { meta, facts, provenance, outputs, docSummary, scopeMeta, caseRecord } = projection;
     if (scopeMeta.scope === 'deferred') {
-      log.warn(`[SCOPE] Legacy deferred-form case loaded — caseId="${req.params.caseId}" formType="${meta.formType}"`);
+      log.warn(`[SCOPE] Legacy deferred-form case loaded — caseId="${caseId}" formType="${meta.formType}"`);
     }
 
     res.json({
@@ -1375,12 +1423,12 @@ router.get('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId — Update case metadata ─────────────────────────────────────
-router.patch('/:caseId', (req, res) => {
-  const body = parsePayload(updateCaseSchema, req.body || {}, res);
-  if (!body) return;
+router.patch('/:caseId', validateParams(caseIdSchema), validateBody(updateCaseSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     let meta = { ...(projection.meta || {}) };
@@ -1398,7 +1446,7 @@ router.patch('/:caseId', (req, res) => {
     meta.updatedAt = new Date().toISOString();
 
     const updated = saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta,
       facts: projection.facts || {},
       provenance: projection.provenance || {},
@@ -1413,14 +1461,14 @@ router.patch('/:caseId', (req, res) => {
 });
 
 // ── DELETE /:caseId — Delete case ─────────────────────────────────────────────
-router.delete('/:caseId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+router.delete('/:caseId', validateParams(caseIdSchema), validateBody(emptyMutationSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
 
   try {
     const cd = req.caseDir;
     if (!fs.existsSync(cd)) return res.status(404).json({ ok: false, error: 'Case not found' });
     fs.rmSync(cd, { recursive: true, force: true });
-    safeDeleteCaseRecord(req.params.caseId);
+    safeDeleteCaseRecord(caseId);
     res.json({ ok: true });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -1428,17 +1476,17 @@ router.delete('/:caseId', (req, res) => {
 });
 
 // ── PATCH /:caseId/status — Set case status ───────────────────────────────────
-router.patch('/:caseId/status', (req, res) => {
-  const body = parsePayload(statusSchema, req.body || {}, res);
-  if (!body) return;
+router.patch('/:caseId/status', validateParams(caseIdSchema), validateBody(statusSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const nextStatus = trimText(body.status, 20).toLowerCase() || 'active';
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
     if (QC_GATED_CASE_STATUSES.has(nextStatus) && nextStatus !== (meta.status || '')) {
-      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      const gate = evaluateCaseApprovalGate(caseId);
       if (!gate.ok) {
         return res.status(409).json({
           ok: false,
@@ -1452,7 +1500,7 @@ router.patch('/:caseId/status', (req, res) => {
     meta.status    = nextStatus;
     meta.updatedAt = new Date().toISOString();
     const updated = saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta,
       facts: projection.facts || {},
       provenance: projection.provenance || {},
@@ -1467,13 +1515,13 @@ router.patch('/:caseId/status', (req, res) => {
 });
 
 // ── PATCH /:caseId/pipeline — Advance pipeline stage ─────────────────────────
-router.patch('/:caseId/pipeline', (req, res) => {
-  const body = parsePayload(pipelineSchema, req.body || {}, res);
-  if (!body) return;
+router.patch('/:caseId/pipeline', validateParams(caseIdSchema), validateBody(pipelineSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const stage = trimText(body.stage, 20).toLowerCase();
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
     const transition = evaluatePipelineTransition({
@@ -1492,7 +1540,7 @@ router.patch('/:caseId/pipeline', (req, res) => {
       });
     }
     if (QC_GATED_PIPELINE_STAGES.has(stage) && stage !== (meta.pipelineStage || '')) {
-      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      const gate = evaluateCaseApprovalGate(caseId);
       if (!gate.ok) {
         return res.status(409).json({
           ok: false,
@@ -1510,7 +1558,7 @@ router.patch('/:caseId/pipeline', (req, res) => {
     if (!Array.isArray(meta.pipelineHistory)) meta.pipelineHistory = [];
     meta.pipelineHistory.push({ stage, at: meta.updatedAt });
     const updated = saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta,
       facts: projection.facts || {},
       provenance: projection.provenance || {},
@@ -1529,9 +1577,9 @@ router.patch('/:caseId/pipeline', (req, res) => {
 });
 
 // ── PATCH /:caseId/workflow-status — Set workflowStatus ──────────────────────
-router.patch('/:caseId/workflow-status', (req, res) => {
-  const body = parsePayload(workflowStatusSchema, req.body || {}, res);
-  if (!body) return;
+router.patch('/:caseId/workflow-status', validateParams(caseIdSchema), validateBody(workflowStatusSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const status = trimText(body.workflowStatus, 40);
@@ -1547,11 +1595,11 @@ router.patch('/:caseId/workflow-status', (req, res) => {
       });
     }
 
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const meta = { ...(projection.meta || {}) };
     if (QC_GATED_WORKFLOW_STATUSES.has(status) && status !== (meta.workflowStatus || '')) {
-      const gate = evaluateCaseApprovalGate(req.params.caseId);
+      const gate = evaluateCaseApprovalGate(caseId);
       if (!gate.ok) {
         return res.status(409).json({
           ok: false,
@@ -1565,7 +1613,7 @@ router.patch('/:caseId/workflow-status', (req, res) => {
     meta.workflowStatus = status;
     meta.updatedAt      = new Date().toISOString();
     const updated = saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta,
       facts: projection.facts || {},
       provenance: projection.provenance || {},
@@ -1584,12 +1632,12 @@ router.patch('/:caseId/workflow-status', (req, res) => {
 });
 
 // ── PUT /:caseId/facts — Save/merge facts ─────────────────────────────────────
-router.put('/:caseId/facts', (req, res) => {
-  const body = parsePayload(factsSchema, req.body || {}, res);
-  if (!body) return;
+router.put('/:caseId/facts', validateParams(caseIdSchema), validateBody(factsSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const updated = { ...(projection.facts || {}), ...body, updatedAt: new Date().toISOString() };
@@ -1601,7 +1649,7 @@ router.put('/:caseId/facts', (req, res) => {
     const changedPaths = detectChangedFactPaths(oldFacts, updated);
 
     saveCaseProjection({
-      caseId: req.params.caseId,
+      caseId,
       meta,
       facts: updated,
       provenance: projection.provenance || {},
@@ -1613,7 +1661,7 @@ router.put('/:caseId/facts', (req, res) => {
     // Auto-invalidate sections that depend on changed facts
     let invalidation = { affectedSections: [], invalidated: [] };
     if (changedPaths.length > 0) {
-      invalidation = onFactsChanged(req.params.caseId, changedPaths);
+      invalidation = onFactsChanged(caseId, changedPaths);
     }
 
     res.json({
@@ -1631,9 +1679,10 @@ router.put('/:caseId/facts', (req, res) => {
 });
 
 // ── GET /:caseId/history — Section version history ────────────────────────────
-router.get('/:caseId/history', (req, res) => {
+router.get('/:caseId/history', validateParams(caseIdSchema), (req, res) => {
   try {
-    const projection = getCaseProjection(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     res.json({ ok: true, history: projection.history || {} });
   } catch (err) {
@@ -1642,9 +1691,10 @@ router.get('/:caseId/history', (req, res) => {
 });
 
 // ── GET /:caseId/generation-runs — List orchestrator runs ─────────────────────
-router.get('/:caseId/generation-runs', (req, res) => {
+router.get('/:caseId/generation-runs', validateParams(caseIdSchema), (req, res) => {
   try {
-    const runs = getRunsForCase(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const runs = getRunsForCase(caseId);
     res.json({ ok: true, runs, count: runs.length });
   } catch (err) {
     return sendErrorResponse(res, err);
@@ -1652,13 +1702,13 @@ router.get('/:caseId/generation-runs', (req, res) => {
 });
 
 // ── POST /:caseId/geocode — Geocode subject + comps ───────────────────────────
-router.post('/:caseId/geocode', async (req, res) => {
-  const body = parsePayload(geocodeSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/geocode', validateParams(caseIdSchema), validateBody(geocodeSchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const cd = req.caseDir;
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const facts = projection.facts || {};
@@ -1793,7 +1843,7 @@ router.get('/:caseId/location-context', async (req, res) => {
       return res.status(400).json({
         ok:    false,
         error: 'No geocode data found. Run POST /api/cases/:caseId/geocode first.',
-        hint:  `POST /api/cases/${req.params.caseId}/geocode`,
+        hint:  `POST /api/cases/${caseId}/geocode`,
       });
     }
 
@@ -1835,12 +1885,12 @@ router.get('/:caseId/location-context', async (req, res) => {
  * Body: { targetSoftware?: 'aci' }
  * Returns: { ok, results: [{ fieldId, status, error? }] }
  */
-router.post('/:caseId/insert-basic-info', async (req, res) => {
+router.post('/:caseId/insert-basic-info', validateParams(caseIdSchema), async (req, res) => {
   const ACI_AGENT_URL = process.env.ACI_AGENT_URL || 'http://localhost:5180';
   const FIELD_TIMEOUT_MS = 15_000;
 
   try {
-    const caseId = req.params.caseId;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -1920,9 +1970,9 @@ router.post('/:caseId/insert-basic-info', async (req, res) => {
  *   { ok, caseId, formType, pipelineStage, factsComplete, missingCriticalFacts,
  *     generatedFields, totalFields, lastActivity }
  */
-router.get('/:caseId/health', (req, res) => {
+router.get('/:caseId/health', validateParams(caseIdSchema), (req, res) => {
   try {
-    const caseId = req.params.caseId;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -1993,12 +2043,13 @@ router.get('/:caseId/health', (req, res) => {
 });
 
 // ── GET /:caseId/missing-facts/:fieldId — Single-field missing facts ───────────
-router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
+router.get('/:caseId/missing-facts/:fieldId', validateParams(missingFactsParamsSchema), (req, res) => {
   try {
-    const fieldId = trimText(req.params.fieldId, 80);
+    const { caseId, fieldId: rawFieldId } = req.validatedParams;
+    const fieldId = trimText(rawFieldId, 80);
     if (!fieldId) return res.status(400).json({ ok: false, error: 'fieldId required' });
 
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const facts     = projection.facts || {};
     const missing   = getMissingFacts(fieldId, facts);
@@ -2010,15 +2061,15 @@ router.get('/:caseId/missing-facts/:fieldId', (req, res) => {
 });
 
 // ── POST /:caseId/missing-facts — Batch missing facts check ───────────────────
-router.post('/:caseId/missing-facts', (req, res) => {
-  const body = parsePayload(missingFactsBatchSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/:caseId/missing-facts', validateParams(caseIdSchema), validateBody(missingFactsBatchSchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
     const fieldIds = Array.isArray(body.fieldIds) ? body.fieldIds : [];
     if (!fieldIds.length) return res.json({ ok: true, warnings: [] });
 
-    const projection = getCaseProjection(req.params.caseId);
+    const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
     const facts       = projection.facts || {};
     const allWarnings = [];

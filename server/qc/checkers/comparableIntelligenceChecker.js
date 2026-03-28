@@ -10,7 +10,7 @@ import { registerRules } from '../qcRuleRegistry.js';
 
 const rules = [
   {
-    ruleId: 'CMP-001',
+    ruleId: 'COMP-001',
     displayName: 'Comparable Contradictions',
     category: 'consistency',
     defaultSeverity: 'high',
@@ -34,7 +34,7 @@ function checkComparableContradictions(ctx) {
   if (!contradictions.length) return [];
 
   return contradictions.map((flag) => ({
-    ruleId: 'CMP-001',
+    ruleId: 'COMP-001',
     severity: flag.severity === 'high' ? 'high' : 'medium',
     category: 'consistency',
     sectionIds: ['sales_comparison', 'reconciliation'],

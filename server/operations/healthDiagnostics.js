@@ -221,8 +221,10 @@ function getDbStats() {
     `).all().map(r => r.name);
 
     const tableCounts = {};
+    const SAFE_TABLE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     for (const table of tables) {
       try {
+        if (!SAFE_TABLE_RE.test(table)) { tableCounts[table] = -1; continue; }
         const row = db.prepare(`SELECT COUNT(*) as cnt FROM "${table}"`).get();
         tableCounts[table] = row?.cnt || 0;
       } catch {

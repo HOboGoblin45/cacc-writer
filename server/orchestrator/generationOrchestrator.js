@@ -65,6 +65,7 @@ import {
 } from '../db/repositories/generationRepo.js';
 import { resolveSectionPolicy, buildDependencySnapshot } from '../sectionFactory/sectionPolicyService.js';
 import { emitCaseEvent } from '../operations/auditLogger.js';
+import { runQC } from '../qc/qcRunEngine.js';
 
 const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_SECTIONS) || 5; // max concurrent section jobs
 const ALLOW_FORCE_GATE_BYPASS = ['1', 'true', 'yes', 'on']
@@ -698,7 +699,41 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs: phaseMs.parallelDraftMs,
     });
 
-    // â”€â”€ 8. Execute dependent synthesis sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── 7b. Orchestrator-level retry of failed independent sections ──────────
+    // If any parallel sections failed, retry them once before proceeding.
+    // This catches transient AI provider failures that the section-level retry missed.
+    const failedParallelIds = Object.entries(parallelResults)
+      .filter(([, r]) => !r.ok)
+      .map(([id]) => id);
+
+    if (failedParallelIds.length > 0 && failedParallelIds.length < parallelDefs.length) {
+      log('info', 'orchestrator-retry', runId, {
+        failedSections: failedParallelIds,
+        retryCount: failedParallelIds.length,
+      });
+
+      const retryDefs = parallelDefs.filter(s => failedParallelIds.includes(s.id));
+
+      // Brief pause before retrying to let transient issues resolve
+      await new Promise(r => setTimeout(r, 2000));
+
+      const { results: retryResults, durationMs: retryMs } =
+        await runParallelSections(retryDefs, jobParams, jobMap, runId);
+
+      // Merge retried results — only replace if the retry succeeded
+      for (const [sectionId, result] of Object.entries(retryResults)) {
+        if (result.ok) {
+          parallelResults[sectionId] = result;
+          log('info', 'orchestrator-retry-success', runId, { sectionId });
+        } else {
+          log('info', 'orchestrator-retry-still-failed', runId, { sectionId });
+        }
+      }
+
+      phaseMs.parallelDraftMs += retryMs;
+    }
+
+    // ── 8. Execute dependent synthesis sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const dependentDefs = plan.sections.filter(s => s.dependsOn.length > 0);
     let allResults = { ...parallelResults };
 
@@ -775,6 +810,32 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
     // Enables result retrieval after server restart without re-querying all sections.
     persistDraftPackage(runId, draftPackage);
 
+    // â”€â”€ 12b. Automatic QC evaluation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Run QC checkers against the assembled draft. Non-blocking: QC failures
+    // are logged but never prevent generation from completing.
+    let qcResult = null;
+    const skipQc = process.env.CACC_SKIP_AUTO_QC === '1' || errorCount === plan.totalSections;
+    if (!skipQc) {
+      try {
+        const tQc = Date.now();
+        qcResult = await runQC({ caseId, generationRunId: runId });
+        phaseMs.qcMs = Date.now() - tQc;
+
+        log('info', 'qc-complete', runId, {
+          qcRunId:        qcResult.qcRunId,
+          draftReadiness: qcResult.draftReadiness,
+          findingCount:   qcResult.findings?.length || 0,
+          qcMs:           phaseMs.qcMs,
+        });
+      } catch (qcErr) {
+        phaseMs.qcMs = Date.now() - (phaseMs.qcMs || Date.now());
+        log('warn', 'qc-skipped', runId, {
+          reason: 'qc-engine-error',
+          error:  qcErr.message,
+        });
+      }
+    }
+
     // â”€â”€ 13. Finalize run status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const finalStatus = errorCount === 0
       ? RUN_STATUS.COMPLETE
@@ -790,6 +851,7 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       successCount,
       errorCount,
       grade:        draftPackage.metrics?.performanceGrade,
+      qcReadiness:  qcResult?.draftReadiness || 'skipped',
     });
 
     emitCaseEvent(caseId, 'generation.completed', 'Full-draft generation completed', {
@@ -799,6 +861,8 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       successCount,
       errorCount,
       grade: draftPackage.metrics?.performanceGrade,
+      qcRunId: qcResult?.qcRunId || null,
+      qcReadiness: qcResult?.draftReadiness || 'skipped',
     });
 
     return {
@@ -808,6 +872,12 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       metrics:      draftPackage.metrics,
       validation,
       warnings,
+      qc: qcResult ? {
+        qcRunId:        qcResult.qcRunId,
+        draftReadiness: qcResult.draftReadiness,
+        findingCount:   qcResult.findings?.length || 0,
+        blockerCount:   (qcResult.findings || []).filter(f => f.severity === 'blocker').length,
+      } : null,
     };
 
   } catch (err) {

@@ -31,6 +31,8 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
+import { validateBody, validateParams, CommonSchemas } from '../middleware/validateRequest.js';
 import {
   getCompGrid,
   updateGridSlot,
@@ -66,6 +68,61 @@ import {
 
 const router = Router();
 
+// ── Validation Schemas ───────────────────────────────────────────────────────
+
+const caseIdSchema = CommonSchemas.caseId;
+
+const gridSlotSchema = z.object({
+  caseId: z.string().min(1),
+  gridSlot: z.string().min(1),
+});
+
+const gridSlotWithBodySchema = z.object({
+  slotData: z.record(z.any()),
+});
+
+const swapGridSlotsSchema = z.object({
+  slotA: z.string().min(1),
+  slotB: z.string().min(1),
+});
+
+const rentCompsSchema = z.object({
+  rentComps: z.array(z.record(z.any())).optional(),
+}).passthrough();
+
+const expensesSchema = z.object({
+  expenses: z.array(z.record(z.any())).optional(),
+}).passthrough();
+
+const landValueSchema = z.object({
+  landValue: z.number().optional(),
+}).passthrough();
+
+const replacementCostSchema = z.object({
+  replacementCost: z.number().optional(),
+}).passthrough();
+
+const depreciationSchema = z.object({
+  depreciation: z.number().optional(),
+}).passthrough();
+
+const approachValuesSchema = z.object({
+  marketValue: z.number().optional(),
+  incomeValue: z.number().optional(),
+  costValue: z.number().optional(),
+}).passthrough();
+
+const weightsSchema = z.object({
+  marketWeight: z.number().optional(),
+  incomeWeight: z.number().optional(),
+  costWeight: z.number().optional(),
+}).passthrough();
+
+const reconciliationNarrativeSchema = z.object({
+  narrative: z.string().optional(),
+  text: z.string().optional(),
+}).passthrough();
+
 // ── Helper ───────────────────────────────────────────────────────────────────
 
 function wrap(fn) {
@@ -82,88 +139,155 @@ function wrap(fn) {
 
 // ── Comp Grid Routes ─────────────────────────────────────────────────────────
 
-router.get('/valuation/grid/:caseId', wrap(req =>
-  getCompGrid(req.params.caseId)
-));
+router.get('/valuation/grid/:caseId',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    getCompGrid(req.validatedParams.caseId)
+  )
+);
 
-router.get('/valuation/grid/:caseId/summary', wrap(req =>
-  getGridSummary(req.params.caseId)
-));
+router.get('/valuation/grid/:caseId/summary',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    getGridSummary(req.validatedParams.caseId)
+  )
+);
 
-router.put('/valuation/grid/:caseId/:gridSlot', wrap(req =>
-  updateGridSlot(req.params.caseId, req.params.gridSlot, req.body)
-));
+router.put('/valuation/grid/:caseId/:gridSlot',
+  validateParams(gridSlotSchema),
+  validateBody(gridSlotWithBodySchema),
+  wrap(req =>
+    updateGridSlot(req.validatedParams.caseId, req.validatedParams.gridSlot, req.validated)
+  )
+);
 
-router.post('/valuation/grid/:caseId/swap', wrap(req =>
-  swapGridSlots(req.params.caseId, req.body.slotA, req.body.slotB)
-));
+router.post('/valuation/grid/:caseId/swap',
+  validateParams(caseIdSchema),
+  validateBody(swapGridSlotsSchema),
+  wrap(req =>
+    swapGridSlots(req.validatedParams.caseId, req.validated.slotA, req.validated.slotB)
+  )
+);
 
-router.delete('/valuation/grid/:caseId/:gridSlot', wrap(req =>
-  removeFromGrid(req.params.caseId, req.params.gridSlot)
-));
+router.delete('/valuation/grid/:caseId/:gridSlot',
+  validateParams(gridSlotSchema),
+  wrap(req =>
+    removeFromGrid(req.validatedParams.caseId, req.validatedParams.gridSlot)
+  )
+);
 
 // ── Income Approach Routes ───────────────────────────────────────────────────
 
-router.get('/valuation/income/:caseId', wrap(req =>
-  getIncomeAnalysis(req.params.caseId)
-));
+router.get('/valuation/income/:caseId',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    getIncomeAnalysis(req.validatedParams.caseId)
+  )
+);
 
-router.put('/valuation/income/:caseId/rent-comps', wrap(req =>
-  saveRentComps(req.params.caseId, req.body.rentComps ?? req.body)
-));
+router.put('/valuation/income/:caseId/rent-comps',
+  validateParams(caseIdSchema),
+  validateBody(rentCompsSchema),
+  wrap(req =>
+    saveRentComps(req.validatedParams.caseId, req.validated.rentComps ?? req.validated)
+  )
+);
 
-router.put('/valuation/income/:caseId/expenses', wrap(req =>
-  saveExpenseWorksheet(req.params.caseId, req.body.expenses ?? req.body)
-));
+router.put('/valuation/income/:caseId/expenses',
+  validateParams(caseIdSchema),
+  validateBody(expensesSchema),
+  wrap(req =>
+    saveExpenseWorksheet(req.validatedParams.caseId, req.validated.expenses ?? req.validated)
+  )
+);
 
-router.get('/valuation/income/:caseId/calculate', wrap(req => {
-  calculateGRM(req.params.caseId);
-  calculateNetIncome(req.params.caseId);
-  return getIncomeIndicatedValue(req.params.caseId);
-}));
+router.get('/valuation/income/:caseId/calculate',
+  validateParams(caseIdSchema),
+  wrap(req => {
+    calculateGRM(req.validatedParams.caseId);
+    calculateNetIncome(req.validatedParams.caseId);
+    return getIncomeIndicatedValue(req.validatedParams.caseId);
+  })
+);
 
 // ── Cost Approach Routes ─────────────────────────────────────────────────────
 
-router.get('/valuation/cost/:caseId', wrap(req =>
-  getCostAnalysis(req.params.caseId)
-));
+router.get('/valuation/cost/:caseId',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    getCostAnalysis(req.validatedParams.caseId)
+  )
+);
 
-router.put('/valuation/cost/:caseId/land', wrap(req =>
-  saveLandValue(req.params.caseId, req.body)
-));
+router.put('/valuation/cost/:caseId/land',
+  validateParams(caseIdSchema),
+  validateBody(landValueSchema),
+  wrap(req =>
+    saveLandValue(req.validatedParams.caseId, req.validated)
+  )
+);
 
-router.put('/valuation/cost/:caseId/replacement', wrap(req =>
-  saveReplacementCost(req.params.caseId, req.body)
-));
+router.put('/valuation/cost/:caseId/replacement',
+  validateParams(caseIdSchema),
+  validateBody(replacementCostSchema),
+  wrap(req =>
+    saveReplacementCost(req.validatedParams.caseId, req.validated)
+  )
+);
 
-router.put('/valuation/cost/:caseId/depreciation', wrap(req =>
-  saveDepreciation(req.params.caseId, req.body)
-));
+router.put('/valuation/cost/:caseId/depreciation',
+  validateParams(caseIdSchema),
+  validateBody(depreciationSchema),
+  wrap(req =>
+    saveDepreciation(req.validatedParams.caseId, req.validated)
+  )
+);
 
-router.get('/valuation/cost/:caseId/calculate', wrap(req =>
-  costIndicatedValue(req.params.caseId)
-));
+router.get('/valuation/cost/:caseId/calculate',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    costIndicatedValue(req.validatedParams.caseId)
+  )
+);
 
 // ── Reconciliation Routes ────────────────────────────────────────────────────
 
-router.get('/valuation/reconciliation/:caseId', wrap(req =>
-  getReconciliation(req.params.caseId)
-));
+router.get('/valuation/reconciliation/:caseId',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    getReconciliation(req.validatedParams.caseId)
+  )
+);
 
-router.put('/valuation/reconciliation/:caseId/values', wrap(req =>
-  saveApproachValues(req.params.caseId, req.body)
-));
+router.put('/valuation/reconciliation/:caseId/values',
+  validateParams(caseIdSchema),
+  validateBody(approachValuesSchema),
+  wrap(req =>
+    saveApproachValues(req.validatedParams.caseId, req.validated)
+  )
+);
 
-router.put('/valuation/reconciliation/:caseId/weights', wrap(req =>
-  saveWeights(req.params.caseId, req.body)
-));
+router.put('/valuation/reconciliation/:caseId/weights',
+  validateParams(caseIdSchema),
+  validateBody(weightsSchema),
+  wrap(req =>
+    saveWeights(req.validatedParams.caseId, req.validated)
+  )
+);
 
-router.put('/valuation/reconciliation/:caseId/narrative', wrap(req =>
-  saveReconciliationNarrative(req.params.caseId, req.body.narrative ?? req.body.text ?? '')
-));
+router.put('/valuation/reconciliation/:caseId/narrative',
+  validateParams(caseIdSchema),
+  validateBody(reconciliationNarrativeSchema),
+  wrap(req =>
+    saveReconciliationNarrative(req.validatedParams.caseId, req.validated.narrative ?? req.validated.text ?? '')
+  )
+);
 
-router.get('/valuation/reconciliation/:caseId/calculate', wrap(req =>
-  calculateFinalValue(req.params.caseId)
-));
+router.get('/valuation/reconciliation/:caseId/calculate',
+  validateParams(caseIdSchema),
+  wrap(req =>
+    calculateFinalValue(req.validatedParams.caseId)
+  )
+);
 
 export default router;

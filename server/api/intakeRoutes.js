@@ -17,6 +17,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { parseOrderText, getMissingRequiredFields, buildFactsFromOrder } from '../intake/orderParser.js';
@@ -36,22 +37,20 @@ import { sendErrorResponse } from '../utils/errorResponse.js';
 
 const router = Router();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Zod Schemas ───────────────────────────────────────────────────────────────
 
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  res.status(400).json({
-    ok: false,
-    code: 'INVALID_PAYLOAD',
-    error: 'Invalid request payload',
-    details: parsed.error.issues.map(i => ({
-      path: i.path.join('.') || '(root)',
-      message: i.message,
-    })),
-  });
-  return null;
-}
+const createFolderSchema = z.object({
+  caseId: z.string().min(1).max(20).optional(),
+  orderDate: z.string().datetime().optional(),
+  borrowerName: z.string().min(1).max(120),
+  address: z.string().min(1).max(200),
+});
+
+const scanFolderSchema = z.object({
+  folderPath: z.string().min(1).max(500),
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 // Month name → zero-padded number
 const MONTH_NAMES = [
@@ -317,24 +316,15 @@ router.post('/intake/order', upload.single('file'), async (req, res) => {
 
 // ── POST /api/intake/create-folder ───────────────────────────────────────────
 
-const createFolderSchema = z.object({
-  caseId: z.string().optional(),
-  orderDate: z.string().optional(),
-  borrowerName: z.string().min(1).max(120),
-  address: z.string().min(1).max(200),
-});
-
 /**
  * Create the standard CACC Appraisals folder structure for a job.
  *
  * Body: { caseId?, orderDate?, borrowerName, address }
  * Returns: { ok, folderPath, created }
  */
-router.post('/intake/create-folder', (req, res) => {
-  const body = parsePayload(createFolderSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/intake/create-folder', validateBody(createFolderSchema), (req, res) => {
   try {
+    const body = req.validated;
     const folderPath = buildJobFolderPath({
       orderDate: body.orderDate || new Date().toISOString(),
       borrowerName: body.borrowerName,
@@ -357,10 +347,6 @@ router.post('/intake/create-folder', (req, res) => {
 });
 
 // ── POST /api/intake/scan-job-folder ─────────────────────────────────────────
-
-const scanFolderSchema = z.object({
-  folderPath: z.string().min(1).max(500),
-});
 
 // Patterns that identify assignment sheets vs completed reports
 const ASSIGNMENT_SHEET_PATTERNS = [
@@ -437,11 +423,9 @@ function classifyFiles(dirPath) {
  * Body: { folderPath }
  * Returns: { ok, assignmentSheet, completedReport, otherFiles, allPdfs }
  */
-router.post('/intake/scan-job-folder', (req, res) => {
-  const body = parsePayload(scanFolderSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/intake/scan-job-folder', validateBody(scanFolderSchema), (req, res) => {
   try {
+    const body = req.validated;
     const folderPath = resolveAllowedIntakeFolderPath(body.folderPath);
     if (!folderPath) {
       return res.status(403).json({

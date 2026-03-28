@@ -4,18 +4,24 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateQuery } from '../middleware/validateRequest.js';
 import { getAuditLog, getSecuritySummary } from '../security/auditLog.js';
 import { TIER_LIMITS } from '../security/rateLimiter.js';
 
 const router = Router();
 
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const auditLogQuerySchema = z.object({}).passthrough();
+
 // GET /admin/security/audit — audit log (admin only)
-router.get('/admin/security/audit', authMiddleware, (req, res) => {
+router.get('/admin/security/audit', authMiddleware, validateQuery(auditLogQuerySchema), (req, res) => {
   if (req.user.role !== 'admin' && req.user.userId !== 'default') {
     return res.status(403).json({ ok: false, error: 'Admin access required' });
   }
-  const auditLog = getAuditLog(req.query);
+  const auditLog = getAuditLog(req.validatedQuery);
   res.json({ ok: true, events: auditLog });
 });
 

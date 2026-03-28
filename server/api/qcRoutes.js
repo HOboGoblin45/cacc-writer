@@ -21,6 +21,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import { runQC } from '../qc/qcRunEngine.js';
 import {
   getQcRun,
@@ -37,28 +38,79 @@ import { getRegistryStats } from '../qc/qcRuleRegistry.js';
 import log from '../logger.js';
 
 const router = Router();
-const qcRunSchema = z.object({
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────
+
+/** POST /qc/run body */
+const qcRunBodySchema = z.object({
   caseId: z.string().min(1).max(80),
   generationRunId: z.string().max(120).optional(),
-}).passthrough();
-const findingActionSchema = z.object({
-  note: z.string().max(2000).optional(),
-}).passthrough();
+});
 
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  res.status(400).json({
-    ok: false,
-    code: 'INVALID_PAYLOAD',
-    error: 'Invalid request payload',
-    details: parsed.error.issues.map(i => ({
-      path: i.path.join('.') || '(root)',
-      message: i.message,
-    })),
-  });
-  return null;
-}
+/** GET /qc/runs/:qcRunId params */
+const qcRunIdSchema = z.object({
+  qcRunId: z.string().min(1),
+});
+
+/** GET /qc/runs/:qcRunId/findings params and query */
+const qcRunFindingsParamsSchema = z.object({
+  qcRunId: z.string().min(1),
+});
+const qcRunFindingsQuerySchema = z.object({
+  status: z.string().optional(),
+  severity: z.string().optional(),
+  category: z.string().optional(),
+});
+
+/** GET /qc/runs/:qcRunId/findings/:findingId params */
+const findingDetailParamsSchema = z.object({
+  qcRunId: z.string().min(1),
+  findingId: z.string().min(1),
+});
+
+/** GET /qc/runs/:qcRunId/summary params */
+const qcRunSummaryParamsSchema = z.object({
+  qcRunId: z.string().min(1),
+});
+
+/** GET /qc/runs/:qcRunId/sections/:sectionId params */
+const sectionFindingsParamsSchema = z.object({
+  qcRunId: z.string().min(1),
+  sectionId: z.string().min(1),
+});
+
+/** POST /qc/findings/:findingId/* body */
+const findingActionBodySchema = z.object({
+  note: z.string().max(2000).optional(),
+});
+
+/** POST /qc/findings/:findingId/dismiss params */
+const dismissFindingParamsSchema = z.object({
+  findingId: z.string().min(1),
+});
+
+/** POST /qc/findings/:findingId/resolve params */
+const resolveFindingParamsSchema = z.object({
+  findingId: z.string().min(1),
+});
+
+/** POST /qc/findings/:findingId/reopen params */
+const reopenFindingParamsSchema = z.object({
+  findingId: z.string().min(1),
+});
+
+/** GET /cases/:caseId/qc-runs params and query */
+const caseQcRunsParamsSchema = z.object({
+  caseId: z.string().min(1),
+});
+const caseQcRunsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(1000).default(20),
+});
+
+/** GET /qc/generation-runs/:generationRunId/latest params */
+const generationRunIdSchema = z.object({
+  generationRunId: z.string().min(1),
+});
 
 // ── POST /qc/run ─────────────────────────────────────────────────────────────
 /**
@@ -67,10 +119,8 @@ function parsePayload(schema, payload, res) {
  * Body: { caseId: string, generationRunId?: string }
  * Returns: { ok, qcRunId, summary, draftReadiness, findingCount, duration }
  */
-router.post('/qc/run', async (req, res) => {
-  const payload = parsePayload(qcRunSchema, req.body || {}, res);
-  if (!payload) return;
-  const { caseId, generationRunId } = payload;
+router.post('/qc/run', validateBody(qcRunBodySchema), async (req, res) => {
+  const { caseId, generationRunId } = req.validated;
 
   try {
     log.info('[qc] Starting QC run', { caseId, generationRunId });
@@ -104,8 +154,8 @@ router.post('/qc/run', async (req, res) => {
  *
  * Returns: { ok, run }
  */
-router.get('/qc/runs/:qcRunId', (req, res) => {
-  const { qcRunId } = req.params;
+router.get('/qc/runs/:qcRunId', validateParams(qcRunIdSchema), (req, res) => {
+  const { qcRunId } = req.validatedParams;
 
   try {
     const run = getQcRun(qcRunId);
@@ -125,9 +175,9 @@ router.get('/qc/runs/:qcRunId', (req, res) => {
  * Query params: status, severity, category (optional filters)
  * Returns: { ok, findings, count }
  */
-router.get('/qc/runs/:qcRunId/findings', (req, res) => {
-  const { qcRunId } = req.params;
-  const { status, severity, category } = req.query;
+router.get('/qc/runs/:qcRunId/findings', validateParams(qcRunFindingsParamsSchema), validateQuery(qcRunFindingsQuerySchema), (req, res) => {
+  const { qcRunId } = req.validatedParams;
+  const { status, severity, category } = req.validatedQuery;
 
   try {
     const run = getQcRun(qcRunId);
@@ -154,8 +204,8 @@ router.get('/qc/runs/:qcRunId/findings', (req, res) => {
  *
  * Returns: { ok, finding }
  */
-router.get('/qc/runs/:qcRunId/findings/:findingId', (req, res) => {
-  const { findingId } = req.params;
+router.get('/qc/runs/:qcRunId/findings/:findingId', validateParams(findingDetailParamsSchema), (req, res) => {
+  const { findingId } = req.validatedParams;
 
   try {
     const finding = getFinding(findingId);
@@ -174,8 +224,8 @@ router.get('/qc/runs/:qcRunId/findings/:findingId', (req, res) => {
  *
  * Returns: { ok, summary, draftReadiness }
  */
-router.get('/qc/runs/:qcRunId/summary', (req, res) => {
-  const { qcRunId } = req.params;
+router.get('/qc/runs/:qcRunId/summary', validateParams(qcRunSummaryParamsSchema), (req, res) => {
+  const { qcRunId } = req.validatedParams;
 
   try {
     const run = getQcRun(qcRunId);
@@ -210,8 +260,8 @@ router.get('/qc/runs/:qcRunId/summary', (req, res) => {
  *
  * Returns: { ok, sectionId, findings, count }
  */
-router.get('/qc/runs/:qcRunId/sections/:sectionId', (req, res) => {
-  const { qcRunId, sectionId } = req.params;
+router.get('/qc/runs/:qcRunId/sections/:sectionId', validateParams(sectionFindingsParamsSchema), (req, res) => {
+  const { qcRunId, sectionId } = req.validatedParams;
 
   try {
     const run = getQcRun(qcRunId);
@@ -240,11 +290,9 @@ router.get('/qc/runs/:qcRunId/sections/:sectionId', (req, res) => {
  * Body: { note?: string }
  * Returns: { ok, findingId, status }
  */
-router.post('/qc/findings/:findingId/dismiss', (req, res) => {
-  const { findingId } = req.params;
-  const payload = parsePayload(findingActionSchema, req.body || {}, res);
-  if (!payload) return;
-  const { note } = payload;
+router.post('/qc/findings/:findingId/dismiss', validateParams(dismissFindingParamsSchema), validateBody(findingActionBodySchema), (req, res) => {
+  const { findingId } = req.validatedParams;
+  const { note } = req.validated;
 
   try {
     const success = dismissFinding(findingId, note);
@@ -264,11 +312,9 @@ router.post('/qc/findings/:findingId/dismiss', (req, res) => {
  * Body: { note?: string }
  * Returns: { ok, findingId, status }
  */
-router.post('/qc/findings/:findingId/resolve', (req, res) => {
-  const { findingId } = req.params;
-  const payload = parsePayload(findingActionSchema, req.body || {}, res);
-  if (!payload) return;
-  const { note } = payload;
+router.post('/qc/findings/:findingId/resolve', validateParams(resolveFindingParamsSchema), validateBody(findingActionBodySchema), (req, res) => {
+  const { findingId } = req.validatedParams;
+  const { note } = req.validated;
 
   try {
     const success = resolveFinding(findingId, note);
@@ -287,9 +333,8 @@ router.post('/qc/findings/:findingId/resolve', (req, res) => {
  *
  * Returns: { ok, findingId, status }
  */
-router.post('/qc/findings/:findingId/reopen', (req, res) => {
-  const { findingId } = req.params;
-  if (!parsePayload(findingActionSchema, req.body || {}, res)) return;
+router.post('/qc/findings/:findingId/reopen', validateParams(reopenFindingParamsSchema), validateBody(findingActionBodySchema), (req, res) => {
+  const { findingId } = req.validatedParams;
 
   try {
     const success = reopenFinding(findingId);
@@ -309,9 +354,9 @@ router.post('/qc/findings/:findingId/reopen', (req, res) => {
  * Query params: limit (default 20)
  * Returns: { ok, caseId, runs, count }
  */
-router.get('/cases/:caseId/qc-runs', (req, res) => {
-  const { caseId } = req.params;
-  const limit = parseInt(req.query.limit) || 20;
+router.get('/cases/:caseId/qc-runs', validateParams(caseQcRunsParamsSchema), validateQuery(caseQcRunsQuerySchema), (req, res) => {
+  const { caseId } = req.validatedParams;
+  const { limit } = req.validatedQuery;
 
   try {
     const runs = listQcRuns(caseId, { limit });
@@ -332,8 +377,8 @@ router.get('/cases/:caseId/qc-runs', (req, res) => {
  *
  * Returns: { ok, run }
  */
-router.get('/qc/generation-runs/:generationRunId/latest', (req, res) => {
-  const { generationRunId } = req.params;
+router.get('/qc/generation-runs/:generationRunId/latest', validateParams(generationRunIdSchema), (req, res) => {
+  const { generationRunId } = req.validatedParams;
 
   try {
     const run = getLatestQcRunForGeneration(generationRunId);

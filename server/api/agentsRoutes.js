@@ -20,6 +20,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
+import { validateBody } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,26 +38,13 @@ const _agentProcs = { aci: null, rq: null };
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
+
+// ── Validation Schemas ─────────────────────────────────────────────────────────
 const insertPayloadSchema = z.object({
   fieldId: z.string().min(1).max(80),
   text: z.string().min(1).max(50000),
   formType: z.string().max(40).optional(),
 }).passthrough();
-
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  res.status(400).json({
-    ok: false,
-    code: 'INVALID_PAYLOAD',
-    error: 'Invalid request payload',
-    details: parsed.error.issues.map(i => ({
-      path: i.path.join('.') || '(root)',
-      message: i.message,
-    })),
-  });
-  return null;
-}
 
 // ── Ping helper ───────────────────────────────────────────────────────────────
 async function pingAgent(url) {
@@ -123,11 +111,9 @@ router.post('/agents/rq/stop', (_req, res) => {
  * Forward generated text to the ACI desktop automation agent (residential).
  * The ACI agent (desktop_agent/agent.py) must be running on port 5180.
  */
-router.post('/insert-aci', async (req, res) => {
+router.post('/insert-aci', validateBody(insertPayloadSchema), async (req, res) => {
   try {
-    const body = parsePayload(insertPayloadSchema, req.body || {}, res);
-    if (!body) return;
-    const { fieldId, text, formType = '1004' } = body;
+    const { fieldId, text, formType = '1004' } = req.validated;
 
     const agentRes = await fetch(`${ACI_AGENT_URL}/insert`, {
       method:  'POST',
@@ -166,11 +152,9 @@ router.post('/insert-aci', async (req, res) => {
  * The RQ agent (real_quantum_agent/agent.py) must be running on port 5181.
  * Chrome must be open with --remote-debugging-port=9222 and Real Quantum loaded.
  */
-router.post('/insert-rq', async (req, res) => {
+router.post('/insert-rq', validateBody(insertPayloadSchema), async (req, res) => {
   try {
-    const body = parsePayload(insertPayloadSchema, req.body || {}, res);
-    if (!body) return;
-    const { fieldId, text, formType = 'commercial' } = body;
+    const { fieldId, text, formType = 'commercial' } = req.validated;
 
     const agentRes = await fetch(`${RQ_AGENT_URL}/insert`, {
       method:  'POST',

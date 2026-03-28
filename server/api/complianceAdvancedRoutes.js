@@ -4,10 +4,15 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateParams } from '../middleware/validateRequest.js';
 import { runComplianceCheck, REGULATIONS } from '../compliance/regulatoryCompliance.js';
 
 const router = Router();
+
+// Schemas
+const paramsSchema = z.object({ id: z.string().min(1) });
 
 // GET /regulations — list all supported regulations
 router.get('/regulations', (_req, res) => {
@@ -16,9 +21,9 @@ router.get('/regulations', (_req, res) => {
 });
 
 // POST /cases/:id/compliance-check — full multi-regulation check
-router.post('/cases/:id/compliance-check', authMiddleware, (req, res) => {
+router.post('/cases/:id/compliance-check', authMiddleware, validateParams(paramsSchema), (req, res) => {
   try {
-    const result = runComplianceCheck(req.params.id);
+    const result = runComplianceCheck(req.validatedParams.id);
     res.json({ ok: true, ...result });
   } catch (err) { res.status(400).json({ ok: false, error: err.message }); }
 });

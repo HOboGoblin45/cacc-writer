@@ -18,8 +18,10 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { dbGet, dbRun, dbAll } from '../db/database.js';
 import { getDb } from '../db/database.js';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { runFullPipeline } from '../pipeline/fullReportPipeline.js';
 import { analyzeComps } from '../comparables/compAnalyzer.js';
 import { callAI } from '../openaiClient.js';
@@ -29,6 +31,31 @@ import log from '../logger.js';
 import crypto from 'crypto';
 
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const orderSubmitSchema = z.object({
+  orderText: z.string().min(1),
+  formType: z.string().optional(),
+  autoProcess: z.boolean().optional(),
+}).passthrough();
+
+const caseIdParamSchema = CommonSchemas.caseId;
+
+const reportFormatSchema = z.object({
+  format: z.enum(['pdf', 'xml', 'uad36']).default('pdf'),
+});
+
+const generateTextSchema = z.object({
+  prompt: z.string().optional(),
+  sectionType: z.string().optional(),
+  facts: z.record(z.any()).optional(),
+  maxTokens: z.number().optional(),
+}).passthrough();
+
+const compsAnalyzeSchema = z.object({
+  caseId: z.string().min(1),
+});
 
 // ── API Key Schema ───────────────────────────────────────────────────────────
 
@@ -102,9 +129,9 @@ router.get('/v1/status', (_req, res) => {
 
 // ── POST /v1/orders ──────────────────────────────────────────────────────────
 
-router.post('/v1/orders', validateApiKey, async (req, res) => {
+router.post('/v1/orders', validateApiKey, validateBody(orderSubmitSchema), async (req, res) => {
   try {
-    const { orderText, formType, autoProcess } = req.body;
+    const { orderText, formType, autoProcess } = req.validated;
     if (!orderText) return res.status(400).json({ error: 'orderText is required' });
 
     if (autoProcess) {
@@ -137,11 +164,11 @@ router.post('/v1/orders', validateApiKey, async (req, res) => {
 
 // ── GET /v1/orders/:id ───────────────────────────────────────────────────────
 
-router.get('/v1/orders/:caseId', validateApiKey, (req, res) => {
-  const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [req.params.caseId]);
+router.get('/v1/orders/:caseId', validateApiKey, validateParams(caseIdParamSchema), (req, res) => {
+  const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [req.validatedParams.caseId]);
   if (!caseRecord) return res.status(404).json({ error: 'Order not found' });
 
-  const caseFacts = dbGet('SELECT facts_json FROM case_facts WHERE case_id = ?', [req.params.caseId]);
+  const caseFacts = dbGet('SELECT facts_json FROM case_facts WHERE case_id = ?', [req.validatedParams.caseId]);
   const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
 
   res.json({
@@ -157,17 +184,17 @@ router.get('/v1/orders/:caseId', validateApiKey, (req, res) => {
 
 // ── GET /v1/orders/:id/report ────────────────────────────────────────────────
 
-router.get('/v1/orders/:caseId/report', validateApiKey, async (req, res) => {
+router.get('/v1/orders/:caseId/report', validateApiKey, validateParams(caseIdParamSchema), validateQuery(reportFormatSchema), async (req, res) => {
   try {
-    const format = req.query.format || 'pdf';
+    const format = req.validatedQuery.format;
 
     if (format === 'xml' || format === 'uad36') {
-      const caseData = loadCaseData(req.params.caseId);
+      const caseData = loadCaseData(req.validatedParams.caseId);
       if (!caseData) return res.status(404).json({ error: 'Case not found' });
       const xml = buildUad36Document(caseData);
       res.type('application/xml').send(xml);
     } else {
-      const pdfBuffer = await renderPdf(req.params.caseId);
+      const pdfBuffer = await renderPdf(req.validatedParams.caseId);
       res.type('application/pdf').send(pdfBuffer);
     }
   } catch (err) {
@@ -177,9 +204,9 @@ router.get('/v1/orders/:caseId/report', validateApiKey, async (req, res) => {
 
 // ── POST /v1/generate ────────────────────────────────────────────────────────
 
-router.post('/v1/generate', validateApiKey, async (req, res) => {
+router.post('/v1/generate', validateApiKey, validateBody(generateTextSchema), async (req, res) => {
   try {
-    const { prompt, sectionType, facts, maxTokens } = req.body;
+    const { prompt, sectionType, facts, maxTokens } = req.validated;
     if (!prompt && !sectionType) return res.status(400).json({ error: 'prompt or sectionType required' });
 
     const messages = [
@@ -196,9 +223,9 @@ router.post('/v1/generate', validateApiKey, async (req, res) => {
 
 // ── POST /v1/comps/analyze ───────────────────────────────────────────────────
 
-router.post('/v1/comps/analyze', validateApiKey, async (req, res) => {
+router.post('/v1/comps/analyze', validateApiKey, validateBody(compsAnalyzeSchema), async (req, res) => {
   try {
-    const { caseId } = req.body;
+    const { caseId } = req.validated;
     if (!caseId) return res.status(400).json({ error: 'caseId required' });
     const result = await analyzeComps(caseId);
     res.json({ ok: true, ...result });

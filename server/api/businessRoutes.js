@@ -60,6 +60,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import log from '../logger.js';
 import { parsePayload } from '../utils/routeUtils.js';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 
 import {
   createQuote, getQuote, listQuotes, updateQuote,
@@ -164,6 +165,47 @@ const addTagSchema = z.object({
   tag: z.string().max(80),
 }).passthrough();
 
+// ── Parameter Schemas ──────────────────────────────────────────────────────────
+
+const quoteIdParamSchema = z.object({
+  quoteId: z.string().min(1),
+});
+
+const engIdParamSchema = z.object({
+  engId: z.string().min(1),
+});
+
+const invoiceIdParamSchema = z.object({
+  invoiceId: z.string().min(1),
+});
+
+const entryIdParamSchema = z.object({
+  entryId: z.string().min(1),
+});
+
+const tagParamSchema = z.object({
+  entryId: z.string().min(1),
+  tag: z.string().min(1),
+});
+
+const caseIdParamSchema = z.object({
+  caseId: z.string().min(1),
+});
+
+const tenantIdParamSchema = z.object({
+  id: z.string().min(1),
+});
+
+const keyParamSchema = z.object({
+  key: z.string().min(1),
+});
+
+// ── Query Schemas ──────────────────────────────────────────────────────────────
+
+const upcomingDaysQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).default(7),
+}).passthrough();
+
 const router = Router();
 
 // ── Quotes ──────────────────────────────────────────────────────────────────
@@ -200,9 +242,9 @@ router.get('/business/quotes', (req, res) => {
   }
 });
 
-router.get('/business/quotes/:quoteId', (req, res) => {
+router.get('/business/quotes/:quoteId', validateParams(quoteIdParamSchema), (req, res) => {
   try {
-    const quote = getQuote(req.params.quoteId);
+    const quote = getQuote(req.validatedParams.quoteId);
     if (!quote) return res.status(404).json({ ok: false, error: 'Quote not found' });
     res.json({ ok: true, quote });
   } catch (err) {
@@ -211,11 +253,9 @@ router.get('/business/quotes/:quoteId', (req, res) => {
   }
 });
 
-router.put('/business/quotes/:quoteId', (req, res) => {
+router.put('/business/quotes/:quoteId', validateParams(quoteIdParamSchema), validateBody(updateQuoteSchema), (req, res) => {
   try {
-    const body = parsePayload(updateQuoteSchema, req.body || {}, res);
-    if (!body) return;
-    const quote = updateQuote(req.params.quoteId, body);
+    const quote = updateQuote(req.validatedParams.quoteId, req.validated);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-update', { error: err.message });
@@ -223,9 +263,9 @@ router.put('/business/quotes/:quoteId', (req, res) => {
   }
 });
 
-router.post('/business/quotes/:quoteId/send', (req, res) => {
+router.post('/business/quotes/:quoteId/send', validateParams(quoteIdParamSchema), (req, res) => {
   try {
-    const quote = sendQuote(req.params.quoteId);
+    const quote = sendQuote(req.validatedParams.quoteId);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-send', { error: err.message });
@@ -233,9 +273,9 @@ router.post('/business/quotes/:quoteId/send', (req, res) => {
   }
 });
 
-router.post('/business/quotes/:quoteId/accept', (req, res) => {
+router.post('/business/quotes/:quoteId/accept', validateParams(quoteIdParamSchema), (req, res) => {
   try {
-    const quote = acceptQuote(req.params.quoteId);
+    const quote = acceptQuote(req.validatedParams.quoteId);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-accept', { error: err.message });
@@ -243,9 +283,9 @@ router.post('/business/quotes/:quoteId/accept', (req, res) => {
   }
 });
 
-router.post('/business/quotes/:quoteId/decline', (req, res) => {
+router.post('/business/quotes/:quoteId/decline', validateParams(quoteIdParamSchema), validateBody(z.object({ reason: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const quote = declineQuote(req.params.quoteId, req.body.reason);
+    const quote = declineQuote(req.validatedParams.quoteId, req.validated.reason);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-decline', { error: err.message });
@@ -253,9 +293,9 @@ router.post('/business/quotes/:quoteId/decline', (req, res) => {
   }
 });
 
-router.post('/business/quotes/:quoteId/expire', (req, res) => {
+router.post('/business/quotes/:quoteId/expire', validateParams(quoteIdParamSchema), (req, res) => {
   try {
-    const quote = expireQuote(req.params.quoteId);
+    const quote = expireQuote(req.validatedParams.quoteId);
     res.json({ ok: true, quote });
   } catch (err) {
     log.error('api:quote-expire', { error: err.message });
@@ -263,11 +303,9 @@ router.post('/business/quotes/:quoteId/expire', (req, res) => {
   }
 });
 
-router.post('/business/quotes/:quoteId/convert', (req, res) => {
+router.post('/business/quotes/:quoteId/convert', validateParams(quoteIdParamSchema), validateBody(convertQuoteSchema), (req, res) => {
   try {
-    const body = parsePayload(convertQuoteSchema, req.body || {}, res);
-    if (!body) return;
-    const result = convertQuoteToCaseAndEngagement(req.params.quoteId, body.caseId);
+    const result = convertQuoteToCaseAndEngagement(req.validatedParams.quoteId, req.validated.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:quote-convert', { error: err.message });
@@ -301,10 +339,9 @@ router.post('/business/engagements', (req, res) => {
   }
 });
 
-router.get('/business/engagements/upcoming', (req, res) => {
+router.get('/business/engagements/upcoming', validateQuery(upcomingDaysQuerySchema), (req, res) => {
   try {
-    const days = parseInt(req.query.days || '7', 10);
-    const engagements = getEngagementsByDueDate(days);
+    const engagements = getEngagementsByDueDate(req.validatedQuery.days);
     res.json({ ok: true, engagements });
   } catch (err) {
     log.error('api:engagement-upcoming', { error: err.message });
@@ -332,9 +369,9 @@ router.get('/business/engagements', (req, res) => {
   }
 });
 
-router.get('/business/engagements/:engId', (req, res) => {
+router.get('/business/engagements/:engId', validateParams(engIdParamSchema), (req, res) => {
   try {
-    const engagement = getEngagement(req.params.engId);
+    const engagement = getEngagement(req.validatedParams.engId);
     if (!engagement) return res.status(404).json({ ok: false, error: 'Engagement not found' });
     res.json({ ok: true, engagement });
   } catch (err) {
@@ -343,11 +380,9 @@ router.get('/business/engagements/:engId', (req, res) => {
   }
 });
 
-router.put('/business/engagements/:engId', (req, res) => {
+router.put('/business/engagements/:engId', validateParams(engIdParamSchema), validateBody(updateEngagementSchema), (req, res) => {
   try {
-    const body = parsePayload(updateEngagementSchema, req.body || {}, res);
-    if (!body) return;
-    const engagement = updateEngagement(req.params.engId, body);
+    const engagement = updateEngagement(req.validatedParams.engId, req.validated);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-update', { error: err.message });
@@ -355,9 +390,9 @@ router.put('/business/engagements/:engId', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/accept', (req, res) => {
+router.post('/business/engagements/:engId/accept', validateParams(engIdParamSchema), (req, res) => {
   try {
-    const engagement = acceptEngagement(req.params.engId);
+    const engagement = acceptEngagement(req.validatedParams.engId);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-accept', { error: err.message });
@@ -365,9 +400,9 @@ router.post('/business/engagements/:engId/accept', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/hold', (req, res) => {
+router.post('/business/engagements/:engId/hold', validateParams(engIdParamSchema), validateBody(z.object({ reason: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const engagement = putOnHold(req.params.engId, req.body.reason);
+    const engagement = putOnHold(req.validatedParams.engId, req.validated.reason);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-hold', { error: err.message });
@@ -375,9 +410,9 @@ router.post('/business/engagements/:engId/hold', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/resume', (req, res) => {
+router.post('/business/engagements/:engId/resume', validateParams(engIdParamSchema), (req, res) => {
   try {
-    const engagement = resumeEngagement(req.params.engId);
+    const engagement = resumeEngagement(req.validatedParams.engId);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-resume', { error: err.message });
@@ -385,9 +420,9 @@ router.post('/business/engagements/:engId/resume', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/complete', (req, res) => {
+router.post('/business/engagements/:engId/complete', validateParams(engIdParamSchema), (req, res) => {
   try {
-    const engagement = completeEngagement(req.params.engId);
+    const engagement = completeEngagement(req.validatedParams.engId);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-complete', { error: err.message });
@@ -395,9 +430,9 @@ router.post('/business/engagements/:engId/complete', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/cancel', (req, res) => {
+router.post('/business/engagements/:engId/cancel', validateParams(engIdParamSchema), validateBody(z.object({ reason: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const engagement = cancelEngagement(req.params.engId, req.body.reason);
+    const engagement = cancelEngagement(req.validatedParams.engId, req.validated.reason);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-cancel', { error: err.message });
@@ -405,11 +440,9 @@ router.post('/business/engagements/:engId/cancel', (req, res) => {
   }
 });
 
-router.post('/business/engagements/:engId/fee-adjustment', (req, res) => {
+router.post('/business/engagements/:engId/fee-adjustment', validateParams(engIdParamSchema), validateBody(feeAdjustmentSchema), (req, res) => {
   try {
-    const body = parsePayload(feeAdjustmentSchema, req.body || {}, res);
-    if (!body) return;
-    const engagement = addFeeAdjustment(req.params.engId, body);
+    const engagement = addFeeAdjustment(req.validatedParams.engId, req.validated);
     res.json({ ok: true, engagement });
   } catch (err) {
     log.error('api:engagement-fee-adj', { error: err.message });
@@ -461,9 +494,9 @@ router.get('/business/invoices', (req, res) => {
   }
 });
 
-router.get('/business/invoices/:invoiceId', (req, res) => {
+router.get('/business/invoices/:invoiceId', validateParams(invoiceIdParamSchema), (req, res) => {
   try {
-    const invoice = getInvoice(req.params.invoiceId);
+    const invoice = getInvoice(req.validatedParams.invoiceId);
     if (!invoice) return res.status(404).json({ ok: false, error: 'Invoice not found' });
     res.json({ ok: true, invoice });
   } catch (err) {
@@ -472,11 +505,9 @@ router.get('/business/invoices/:invoiceId', (req, res) => {
   }
 });
 
-router.put('/business/invoices/:invoiceId', (req, res) => {
+router.put('/business/invoices/:invoiceId', validateParams(invoiceIdParamSchema), validateBody(updateInvoiceSchema), (req, res) => {
   try {
-    const body = parsePayload(updateInvoiceSchema, req.body || {}, res);
-    if (!body) return;
-    const invoice = updateInvoice(req.params.invoiceId, body);
+    const invoice = updateInvoice(req.validatedParams.invoiceId, req.validated);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-update', { error: err.message });
@@ -484,9 +515,9 @@ router.put('/business/invoices/:invoiceId', (req, res) => {
   }
 });
 
-router.post('/business/invoices/:invoiceId/issue', (req, res) => {
+router.post('/business/invoices/:invoiceId/issue', validateParams(invoiceIdParamSchema), (req, res) => {
   try {
-    const invoice = issueInvoice(req.params.invoiceId);
+    const invoice = issueInvoice(req.validatedParams.invoiceId);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-issue', { error: err.message });
@@ -494,11 +525,9 @@ router.post('/business/invoices/:invoiceId/issue', (req, res) => {
   }
 });
 
-router.post('/business/invoices/:invoiceId/payment', (req, res) => {
+router.post('/business/invoices/:invoiceId/payment', validateParams(invoiceIdParamSchema), validateBody(recordPaymentSchema), (req, res) => {
   try {
-    const body = parsePayload(recordPaymentSchema, req.body || {}, res);
-    if (!body) return;
-    const invoice = recordPayment(req.params.invoiceId, body);
+    const invoice = recordPayment(req.validatedParams.invoiceId, req.validated);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-payment', { error: err.message });
@@ -506,9 +535,9 @@ router.post('/business/invoices/:invoiceId/payment', (req, res) => {
   }
 });
 
-router.post('/business/invoices/:invoiceId/void', (req, res) => {
+router.post('/business/invoices/:invoiceId/void', validateParams(invoiceIdParamSchema), validateBody(z.object({ reason: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const invoice = voidInvoice(req.params.invoiceId, req.body.reason);
+    const invoice = voidInvoice(req.validatedParams.invoiceId, req.validated.reason);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-void', { error: err.message });
@@ -516,9 +545,9 @@ router.post('/business/invoices/:invoiceId/void', (req, res) => {
   }
 });
 
-router.post('/business/invoices/:invoiceId/reminder', (req, res) => {
+router.post('/business/invoices/:invoiceId/reminder', validateParams(invoiceIdParamSchema), (req, res) => {
   try {
-    const invoice = sendReminder(req.params.invoiceId);
+    const invoice = sendReminder(req.validatedParams.invoiceId);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-reminder', { error: err.message });
@@ -526,9 +555,9 @@ router.post('/business/invoices/:invoiceId/reminder', (req, res) => {
   }
 });
 
-router.post('/business/invoices/from-engagement/:engId', (req, res) => {
+router.post('/business/invoices/from-engagement/:engId', validateParams(engIdParamSchema), (req, res) => {
   try {
-    const invoice = createInvoiceFromEngagement(req.params.engId);
+    const invoice = createInvoiceFromEngagement(req.validatedParams.engId);
     res.json({ ok: true, invoice });
   } catch (err) {
     log.error('api:invoice-from-engagement', { error: err.message });
@@ -580,9 +609,9 @@ router.post('/business/pipeline', (req, res) => {
   }
 });
 
-router.get('/business/pipeline/:entryId', (req, res) => {
+router.get('/business/pipeline/:entryId', validateParams(entryIdParamSchema), (req, res) => {
   try {
-    const entry = getPipelineEntry(req.params.entryId);
+    const entry = getPipelineEntry(req.validatedParams.entryId);
     if (!entry) return res.status(404).json({ ok: false, error: 'Pipeline entry not found' });
     res.json({ ok: true, entry });
   } catch (err) {
@@ -591,11 +620,9 @@ router.get('/business/pipeline/:entryId', (req, res) => {
   }
 });
 
-router.put('/business/pipeline/:entryId', (req, res) => {
+router.put('/business/pipeline/:entryId', validateParams(entryIdParamSchema), validateBody(updatePipelineSchema), (req, res) => {
   try {
-    const body = parsePayload(updatePipelineSchema, req.body || {}, res);
-    if (!body) return;
-    const entry = updatePipelineEntry(req.params.entryId, body);
+    const entry = updatePipelineEntry(req.validatedParams.entryId, req.validated);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-update', { error: err.message });
@@ -603,11 +630,9 @@ router.put('/business/pipeline/:entryId', (req, res) => {
   }
 });
 
-router.post('/business/pipeline/:entryId/advance', (req, res) => {
+router.post('/business/pipeline/:entryId/advance', validateParams(entryIdParamSchema), validateBody(advanceStageSchema), (req, res) => {
   try {
-    const body = parsePayload(advanceStageSchema, req.body || {}, res);
-    if (!body) return;
-    const entry = advanceStage(req.params.entryId, body.stage);
+    const entry = advanceStage(req.validatedParams.entryId, req.validated.stage);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-advance', { error: err.message });
@@ -615,11 +640,9 @@ router.post('/business/pipeline/:entryId/advance', (req, res) => {
   }
 });
 
-router.post('/business/pipeline/:entryId/priority', (req, res) => {
+router.post('/business/pipeline/:entryId/priority', validateParams(entryIdParamSchema), validateBody(setPrioritySchema), (req, res) => {
   try {
-    const body = parsePayload(setPrioritySchema, req.body || {}, res);
-    if (!body) return;
-    const entry = setPriority(req.params.entryId, body.priority);
+    const entry = setPriority(req.validatedParams.entryId, req.validated.priority);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-priority', { error: err.message });
@@ -627,11 +650,9 @@ router.post('/business/pipeline/:entryId/priority', (req, res) => {
   }
 });
 
-router.post('/business/pipeline/:entryId/tags', (req, res) => {
+router.post('/business/pipeline/:entryId/tags', validateParams(entryIdParamSchema), validateBody(addTagSchema), (req, res) => {
   try {
-    const body = parsePayload(addTagSchema, req.body || {}, res);
-    if (!body) return;
-    const entry = addTag(req.params.entryId, body.tag);
+    const entry = addTag(req.validatedParams.entryId, req.validated.tag);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-add-tag', { error: err.message });
@@ -639,9 +660,9 @@ router.post('/business/pipeline/:entryId/tags', (req, res) => {
   }
 });
 
-router.delete('/business/pipeline/:entryId/tags/:tag', (req, res) => {
+router.delete('/business/pipeline/:entryId/tags/:tag', validateParams(tagParamSchema), (req, res) => {
   try {
-    const entry = removeTag(req.params.entryId, req.params.tag);
+    const entry = removeTag(req.validatedParams.entryId, req.validatedParams.tag);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-remove-tag', { error: err.message });
@@ -649,9 +670,9 @@ router.delete('/business/pipeline/:entryId/tags/:tag', (req, res) => {
   }
 });
 
-router.post('/business/pipeline/sync/:caseId', (req, res) => {
+router.post('/business/pipeline/sync/:caseId', validateParams(caseIdParamSchema), (req, res) => {
   try {
-    const entry = syncPipelineFromCase(req.params.caseId);
+    const entry = syncPipelineFromCase(req.validatedParams.caseId);
     res.json({ ok: true, entry });
   } catch (err) {
     log.error('api:pipeline-sync', { error: err.message });
@@ -682,9 +703,9 @@ router.post('/business/tenants', (req, res) => {
   }
 });
 
-router.get('/business/tenants/:id', (req, res) => {
+router.get('/business/tenants/:id', validateParams(tenantIdParamSchema), (req, res) => {
   try {
-    const tenant = getTenant(req.params.id);
+    const tenant = getTenant(req.validatedParams.id);
     if (!tenant) return res.status(404).json({ ok: false, error: 'Tenant not found' });
     res.json({ ok: true, tenant });
   } catch (err) {
@@ -693,9 +714,9 @@ router.get('/business/tenants/:id', (req, res) => {
   }
 });
 
-router.put('/business/tenants/:id', (req, res) => {
+router.put('/business/tenants/:id', validateParams(tenantIdParamSchema), validateBody(z.object({}).passthrough()), (req, res) => {
   try {
-    const result = updateTenant(req.params.id, req.body || {});
+    const result = updateTenant(req.validatedParams.id, req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -716,9 +737,9 @@ router.get('/business/feature-flags', (req, res) => {
   }
 });
 
-router.get('/business/feature-flags/:key', (req, res) => {
+router.get('/business/feature-flags/:key', validateParams(keyParamSchema), (req, res) => {
   try {
-    const flag = getFlag(req.params.key);
+    const flag = getFlag(req.validatedParams.key);
     if (!flag) return res.status(404).json({ ok: false, error: 'Flag not found' });
     res.json({ ok: true, flag });
   } catch (err) {
@@ -738,9 +759,9 @@ router.post('/business/feature-flags', (req, res) => {
   }
 });
 
-router.put('/business/feature-flags/:key/enable', (req, res) => {
+router.put('/business/feature-flags/:key/enable', validateParams(keyParamSchema), validateBody(z.object({ tenantId: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const result = enableFlag(req.params.key, req.body?.tenantId);
+    const result = enableFlag(req.validatedParams.key, req.validated.tenantId);
     if (result.error) return res.status(404).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -749,9 +770,9 @@ router.put('/business/feature-flags/:key/enable', (req, res) => {
   }
 });
 
-router.put('/business/feature-flags/:key/disable', (req, res) => {
+router.put('/business/feature-flags/:key/disable', validateParams(keyParamSchema), validateBody(z.object({ tenantId: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const result = disableFlag(req.params.key, req.body?.tenantId);
+    const result = disableFlag(req.validatedParams.key, req.validated.tenantId);
     if (result.error) return res.status(404).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -762,9 +783,9 @@ router.put('/business/feature-flags/:key/disable', (req, res) => {
 
 // ── Billing ──────────────────────────────────────────────────────────────────
 
-router.get('/business/billing/:tenantId', (req, res) => {
+router.get('/business/billing/:tenantId', validateParams(z.object({ tenantId: z.string().min(1) })), (req, res) => {
   try {
-    const history = getBillingHistory(req.params.tenantId, req.query);
+    const history = getBillingHistory(req.validatedParams.tenantId, req.query);
     res.json({ ok: true, history });
   } catch (err) {
     log.error('api:billing-history', { error: err.message });
@@ -772,9 +793,9 @@ router.get('/business/billing/:tenantId', (req, res) => {
   }
 });
 
-router.get('/business/billing/:tenantId/summary', (req, res) => {
+router.get('/business/billing/:tenantId/summary', validateParams(z.object({ tenantId: z.string().min(1) })), validateQuery(z.object({ period: z.string().optional() }).passthrough()), (req, res) => {
   try {
-    const summary = getBillingSummary(req.params.tenantId, req.query.period);
+    const summary = getBillingSummary(req.validatedParams.tenantId, req.validatedQuery.period);
     res.json({ ok: true, summary });
   } catch (err) {
     log.error('api:billing-summary', { error: err.message });
@@ -782,9 +803,9 @@ router.get('/business/billing/:tenantId/summary', (req, res) => {
   }
 });
 
-router.post('/business/billing/event', (req, res) => {
+router.post('/business/billing/event', validateBody(z.object({}).passthrough()), (req, res) => {
   try {
-    const result = recordBillingEvent(req.body || {});
+    const result = recordBillingEvent(req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {

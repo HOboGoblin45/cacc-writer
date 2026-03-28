@@ -15,12 +15,20 @@ import { Router } from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
+import { validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { CASES_DIR } from '../utils/caseUtils.js';
 import { getCasePhotos } from '../photos/photoManager.js';
 import log from '../logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+const paramsSchema = CommonSchemas.caseId;
+const getQuerySchema = z.object({
+  format: z.enum(['json', 'html']).default('json'),
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -403,8 +411,8 @@ ${pageHtmlArr.join('\n')}
 }
 
 // ── POST /cases/:caseId/photo-addendum ───────────────────────────────────────
-router.post('/cases/:caseId/photo-addendum', async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/photo-addendum', validateParams(paramsSchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
 
   try {
     // Load photos from DB
@@ -440,9 +448,9 @@ router.post('/cases/:caseId/photo-addendum', async (req, res) => {
 });
 
 // ── GET /cases/:caseId/photo-addendum ────────────────────────────────────────
-router.get('/cases/:caseId/photo-addendum', async (req, res) => {
-  const { caseId } = req.params;
-  const { format = 'json' } = req.query;
+router.get('/cases/:caseId/photo-addendum', validateParams(paramsSchema), validateQuery(getQuerySchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const { format } = req.validatedQuery;
 
   try {
     const p = addendumPath(caseId);

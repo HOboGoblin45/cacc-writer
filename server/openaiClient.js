@@ -22,6 +22,7 @@ import log from './logger.js';
 import { callOllama, probeOllama, OLLAMA_MODEL } from './ollamaClient.js';
 import { callGemini, probeGemini, isGeminiConfigured } from './ai/geminiProvider.js';
 import { callModel as callFinetunedModel, isOllamaAvailable } from './ai/ollamaClient.js';
+import { CircuitBreaker, isRetryableError } from './utils/retryHelper.js';
 
 const AI_PROVIDER   = (process.env.AI_PROVIDER || 'openai').toLowerCase(); // 'openai', 'ollama', or 'gemini'
 const USE_FINETUNED = process.env.USE_FINETUNED !== 'false'; // try cacc-appraiser before OpenAI
@@ -42,6 +43,38 @@ const OPENAI_AUTH_PROBE_TTL_MS = Number(process.env.OPENAI_AUTH_PROBE_TTL_MS) ||
 const DEFAULT_MAX_RETRIES = 2;        // 1 original + 2 retries = 3 total attempts
 const RETRY_BASE_DELAY_MS = 1000;     // 1s, 2s, 4s exponential backoff
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+
+// ── Circuit Breakers per provider ────────────────────────────────────────────
+// Protects against cascading failures when an AI provider is down.
+const openaiCircuit = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeoutMs: 60_000,
+  successThreshold: 2,
+  name: 'openai',
+});
+
+const geminiCircuit = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeoutMs: 60_000,
+  successThreshold: 2,
+  name: 'gemini',
+});
+
+const ollamaCircuit = new CircuitBreaker({
+  failureThreshold: 3,
+  resetTimeoutMs: 30_000,
+  successThreshold: 1,
+  name: 'ollama',
+});
+
+/** Get circuit breaker stats for health checks. */
+export function getCircuitBreakerStats() {
+  return {
+    openai: openaiCircuit.stats,
+    gemini: geminiCircuit.stats,
+    ollama: ollamaCircuit.stats,
+  };
+}
 
 if (!OPENAI_API_KEY) {
   log.warn('openai:init', { error: 'OPENAI_API_KEY is not set. AI calls will fail.' });
@@ -224,14 +257,14 @@ export async function probeOpenAIAuth({
  * @returns {Promise<string>} The generated text.
  */
 export async function callAI(inputMessages, options = {}) {
-  // Route to Ollama if configured
+  // Route to Ollama if configured (with circuit breaker)
   if (AI_PROVIDER === 'ollama') {
-    return callOllama(inputMessages, options);
+    return ollamaCircuit.exec(() => callOllama(inputMessages, options));
   }
 
-  // Route to Gemini if configured
+  // Route to Gemini if configured (with circuit breaker)
   if (AI_PROVIDER === 'gemini') {
-    return callGemini(inputMessages, options);
+    return geminiCircuit.exec(() => callGemini(inputMessages, options));
   }
 
   // Try fine-tuned cacc-appraiser model before falling back to OpenAI.
@@ -260,6 +293,8 @@ export async function callAI(inputMessages, options = {}) {
   if (options.temperature != null) apiParams.temperature       = options.temperature;
   if (options.maxTokens   != null) apiParams.max_output_tokens = options.maxTokens;
 
+  // Wrap in circuit breaker — if OpenAI is persistently down, fail fast
+  return openaiCircuit.exec(async () => {
   let lastError = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -313,6 +348,7 @@ export async function callAI(inputMessages, options = {}) {
   // All retries exhausted
   log.error('openai:retries-exhausted', { model, attempts: maxRetries + 1, error: lastError?.message });
   throw lastError;
+  }); // end openaiCircuit.exec
 }
 
 /**

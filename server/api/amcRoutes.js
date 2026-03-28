@@ -5,11 +5,36 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
 import { registerConnection, getConnections, processWebhookOrder } from '../integrations/amcConnector.js';
 import express from 'express';
 
 const router = Router();
+
+// Zod schemas
+const connectionIdSchema = z.string().min(1, 'connectionId is required');
+const connectionBodySchema = z.object({}).strict();
+const webhookBodySchema = z.object({}).strict();
+
+// Validation middleware
+const validateParams = (schema) => (req, res, next) => {
+  try {
+    req.validatedParams = schema.parse(req.params);
+    next();
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.errors[0].message });
+  }
+};
+
+const validateBody = (schema) => (req, res, next) => {
+  try {
+    req.validated = schema.parse(req.body);
+    next();
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.errors[0].message });
+  }
+};
 
 // GET /amc/connections — list user's AMC connections
 router.get('/amc/connections', authMiddleware, (req, res) => {
@@ -18,9 +43,9 @@ router.get('/amc/connections', authMiddleware, (req, res) => {
 });
 
 // POST /amc/connections — register new AMC connection
-router.post('/amc/connections', authMiddleware, (req, res) => {
+router.post('/amc/connections', authMiddleware, validateBody(connectionBodySchema), (req, res) => {
   try {
-    const result = registerConnection(req.user.userId, req.body);
+    const result = registerConnection(req.user.userId, req.validated);
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
@@ -31,10 +56,12 @@ router.post('/amc/connections', authMiddleware, (req, res) => {
 // Uses raw body for signature verification
 router.post('/amc/webhook/:connectionId',
   express.json({ limit: '5mb' }),
+  validateParams(z.object({ connectionId: connectionIdSchema })),
+  validateBody(webhookBodySchema),
   async (req, res) => {
     try {
       const signature = req.headers['x-webhook-signature'] || req.headers['x-hub-signature-256'] || '';
-      const result = await processWebhookOrder(req.params.connectionId, req.body, signature);
+      const result = await processWebhookOrder(req.validatedParams.connectionId, req.validated, signature);
       res.json({ ok: true, ...result });
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message });

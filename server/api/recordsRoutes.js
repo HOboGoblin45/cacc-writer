@@ -15,13 +15,29 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { z } from 'zod';
 
 import { casePath } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
+import { validateBody, validateParams, CommonSchemas } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const pullRecordsParamsSchema = CommonSchemas.caseId;
+
+const pullRecordsBodySchema = z.object({
+  address: z.string().min(1).optional(),
+});
+
+const recordsParamsSchema = CommonSchemas.caseId;
+
+const geocodeBodySchema = z.object({
+  address: z.string().min(1),
+});
 
 // ── Geocoding helper ──────────────────────────────────────────────────────────
 
@@ -251,14 +267,14 @@ function extractSubjectAddress(projection) {
  * Auto-pull public records for the case's subject property address.
  * Hits Census geocoder, FEMA NFHL, and derives associated geographic data.
  */
-router.post('/cases/:caseId/pull-records', async (req, res) => {
+router.post('/cases/:caseId/pull-records', validateParams(pullRecordsParamsSchema), validateBody(pullRecordsBodySchema), async (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     // Get address — allow override from request body
-    const address = req.body?.address || extractSubjectAddress(projection);
+    const address = req.validated?.address || extractSubjectAddress(projection);
     if (!address) {
       return res.status(400).json({
         ok: false,
@@ -390,9 +406,9 @@ router.post('/cases/:caseId/pull-records', async (req, res) => {
 /**
  * Retrieve cached public records for a case.
  */
-router.get('/cases/:caseId/records', (req, res) => {
+router.get('/cases/:caseId/records', validateParams(recordsParamsSchema), (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -420,12 +436,9 @@ router.get('/cases/:caseId/records', (req, res) => {
  * Body: { address: string }
  * Returns: { lat, lng, matchedAddress, censusTract, county, state, fips }
  */
-router.post('/geocode', async (req, res) => {
+router.post('/geocode', validateBody(geocodeBodySchema), async (req, res) => {
   try {
-    const { address } = req.body || {};
-    if (!address) {
-      return res.status(400).json({ ok: false, error: 'Body must include "address" string' });
-    }
+    const { address } = req.validated;
 
     const geoData = await fetchCensusGeographies(address);
     if (!geoData) {

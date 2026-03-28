@@ -27,6 +27,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { createRequire } from 'module';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
@@ -62,23 +63,75 @@ const pdfParse = require('pdf-parse');
 
 const router = Router();
 const SUPPORTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.tif', '.tiff'];
-const classifyDocumentSchema = z.object({
-  docType: z.string().max(60),
-}).passthrough();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+/** Validate route params that include caseId */
+const caseIdParamsSchema = z.object({
+  caseId: z.string().min(1),
+});
+
+/** Validate route params with caseId + docId */
+const caseIdDocIdParamsSchema = z.object({
+  caseId: z.string().min(1),
+  docId: z.string().min(1),
+});
+
+/** Validate route params with caseId + jobId */
+const caseIdJobIdParamsSchema = z.object({
+  caseId: z.string().min(1),
+  jobId: z.string().min(1),
+});
+
+/** Validate route params with caseId + sectionId */
+const caseIdSectionIdParamsSchema = z.object({
+  caseId: z.string().min(1),
+  id: z.string().min(1),
+});
+
+/** Upload document metadata */
 const uploadMetadataSchema = z.object({
   docType: z.string().max(60).optional(),
 }).passthrough();
+
+/** Classify/reclassify document request body */
+const classifyDocumentSchema = z.object({
+  docType: z.string().min(1).max(60),
+}).passthrough();
+
+/** Ingest job retry request body */
 const ingestRetrySchema = z.object({
   step: z.string().max(40).optional(),
 }).passthrough();
+
+/** Review a fact (accept/reject) */
 const reviewFactSchema = z.object({
-  factId: z.string().max(80),
+  factId: z.string().min(1).max(80),
   action: z.enum(['accepted', 'rejected']),
 }).passthrough();
+
+/** Merge multiple facts */
 const mergeFactsSchema = z.object({
-  factIds: z.array(z.string().max(80)).min(1).max(200),
+  factIds: z.array(z.string().min(1).max(80)).min(1).max(200),
 }).passthrough();
+
+/** Empty mutation request body (no data expected) */
 const emptyMutationSchema = z.object({}).strict();
+
+/** Query parameters for extracted-facts */
+const extractedFactsQuerySchema = z.object({
+  status: z.string().optional(),
+});
+
+/** Query parameters for extracted-sections */
+const extractedSectionsQuerySchema = z.object({
+  status: z.string().optional(),
+});
+
+/** Query parameters for ingest-jobs list */
+const ingestJobsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -192,10 +245,14 @@ router.param('caseId', (req, res, next, caseId) => {
  *
  * Body (multipart): file, docType (optional legacy docType hint)
  */
-router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req, res) => {
-  let ingestJobId = null;
-  const body = parsePayload(uploadMetadataSchema, req.body || {}, res);
-  if (!body) return;
+router.post(
+  '/cases/:caseId/documents/upload',
+  validateParams(caseIdParamsSchema),
+  upload.single('file'),
+  validateBody(uploadMetadataSchema),
+  async (req, res) => {
+    let ingestJobId = null;
+    const body = req.validated;
 
   try {
     const cd = req.caseDir;
@@ -212,7 +269,7 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
       });
     }
 
-    const caseId = req.params.caseId;
+    const caseId = req.validatedParams.caseId;
     const legacyDocType = body.docType || null;
     const originalFilename = req.file.originalname || 'document.pdf';
     const fileHash = crypto.createHash('sha256').update(uploadedBytes).digest('hex');
@@ -484,145 +541,171 @@ router.post('/cases/:caseId/documents/upload', upload.single('file'), async (req
 });
 
 // ── GET /cases/:caseId/documents ─────────────────────────────────────────────
-router.get('/cases/:caseId/documents', (req, res) => {
-  try {
-    const docs = getCaseDocuments(req.params.caseId);
-    res.json({
-      ok: true,
-      documents: docs.map(d => ({
-        ...d,
-        label: DOC_TYPE_LABELS[d.doc_type] || d.doc_type,
-        tags: safeParseJSON(d.tags_json, []),
-        quality: scoreDocumentQuality(d),
-      })),
-    });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.get(
+  '/cases/:caseId/documents',
+  validateParams(caseIdParamsSchema),
+  (req, res) => {
+    try {
+      const docs = getCaseDocuments(req.validatedParams.caseId);
+      res.json({
+        ok: true,
+        documents: docs.map(d => ({
+          ...d,
+          label: DOC_TYPE_LABELS[d.doc_type] || d.doc_type,
+          tags: safeParseJSON(d.tags_json, []),
+          quality: scoreDocumentQuality(d),
+        })),
+      });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── GET /cases/:caseId/documents/:docId ──────────────────────────────────────
-router.get('/cases/:caseId/documents/:docId', (req, res) => {
-  try {
-    const doc = getDocument(req.params.docId);
-    if (!doc || doc.case_id !== req.params.caseId) {
-      return res.status(404).json({ error: 'Document not found' });
+router.get(
+  '/cases/:caseId/documents/:docId',
+  validateParams(caseIdDocIdParamsSchema),
+  (req, res) => {
+    try {
+      const doc = getDocument(req.validatedParams.docId);
+      if (!doc || doc.case_id !== req.validatedParams.caseId) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+      const extractions = getDocumentExtractions(req.validatedParams.docId);
+      res.json({
+        ok: true,
+        document: {
+          ...doc,
+          label: DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type,
+          quality: scoreDocumentQuality(doc),
+        },
+        extractions,
+      });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-    const extractions = getDocumentExtractions(req.params.docId);
-    res.json({
-      ok: true,
-      document: {
-        ...doc,
-        label: DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type,
-        quality: scoreDocumentQuality(doc),
-      },
-      extractions,
-    });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
 // ── DELETE /cases/:caseId/documents/:docId ───────────────────────────────────
-router.delete('/cases/:caseId/documents/:docId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+router.delete(
+  '/cases/:caseId/documents/:docId',
+  validateParams(caseIdDocIdParamsSchema),
+  validateBody(emptyMutationSchema),
+  (req, res) => {
+    try {
+      const doc = getDocument(req.validatedParams.docId);
+      if (!doc || doc.case_id !== req.validatedParams.caseId) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
 
-  try {
-    const doc = getDocument(req.params.docId);
-    if (!doc || doc.case_id !== req.params.caseId) {
-      return res.status(404).json({ error: 'Document not found' });
+      // Delete file from disk
+      const filePath = path.join(req.caseDir, 'documents', doc.stored_filename);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+      deleteDocument(req.validatedParams.docId);
+      res.json({ ok: true });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-
-    // Delete file from disk
-    const filePath = path.join(req.caseDir, 'documents', doc.stored_filename);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-
-    deleteDocument(req.params.docId);
-    res.json({ ok: true });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
 // ── PATCH /cases/:caseId/documents/:docId/classify ───────────────────────────
-router.patch('/cases/:caseId/documents/:docId/classify', (req, res) => {
-  const body = parsePayload(classifyDocumentSchema, req.body || {}, res);
-  if (!body) return;
-
-  try {
-    const docType = body.docType;
-    if (!docType || !DOC_TYPES.includes(docType)) {
-      return res.status(400).json({ error: `Invalid doc type. Must be one of: ${DOC_TYPES.join(', ')}` });
+router.patch(
+  '/cases/:caseId/documents/:docId/classify',
+  validateParams(caseIdDocIdParamsSchema),
+  validateBody(classifyDocumentSchema),
+  (req, res) => {
+    try {
+      const docType = req.validated.docType;
+      if (!docType || !DOC_TYPES.includes(docType)) {
+        return res.status(400).json({ error: `Invalid doc type. Must be one of: ${DOC_TYPES.join(', ')}` });
+      }
+      reclassifyDocument(req.validatedParams.docId, docType);
+      res.json({ ok: true, docType, label: DOC_TYPE_LABELS[docType] });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-    reclassifyDocument(req.params.docId, docType);
-    res.json({ ok: true, docType, label: DOC_TYPE_LABELS[docType] });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
 // ── POST /cases/:caseId/documents/:docId/extract ─────────────────────────────
-router.post('/cases/:caseId/documents/:docId/extract', async (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
+router.post(
+  '/cases/:caseId/documents/:docId/extract',
+  validateParams(caseIdDocIdParamsSchema),
+  validateBody(emptyMutationSchema),
+  async (req, res) => {
+    try {
+      const doc = getDocument(req.validatedParams.docId);
+      if (!doc || doc.case_id !== req.validatedParams.caseId) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
 
-  try {
-    const doc = getDocument(req.params.docId);
-    if (!doc || doc.case_id !== req.params.caseId) {
-      return res.status(404).json({ error: 'Document not found' });
+      // Get extracted text from canonical docText projection or re-read from file
+      const runtime = getCaseRuntime(req.validatedParams.caseId);
+      const docText = runtime?.docText || {};
+      const text = await loadDocumentTextForExtraction({
+        doc,
+        caseDir: req.caseDir,
+        runtimeDocText: docText,
+      });
+
+      if (!text || text.length < 20) {
+        return res.status(400).json({ error: 'No text available for extraction. Re-upload the document.' });
+      }
+
+      const result = await runDocumentExtraction(req.validatedParams.docId, text, { aiClient: client, model: MODEL });
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-
-    // Get extracted text from canonical docText projection or re-read from file
-    const runtime = getCaseRuntime(req.params.caseId);
-    const docText = runtime?.docText || {};
-    const text = await loadDocumentTextForExtraction({
-      doc,
-      caseDir: req.caseDir,
-      runtimeDocText: docText,
-    });
-
-    if (!text || text.length < 20) {
-      return res.status(400).json({ error: 'No text available for extraction. Re-upload the document.' });
-    }
-
-    const result = await runDocumentExtraction(req.params.docId, text, { aiClient: client, model: MODEL });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
 // ── GET /cases/:caseId/extraction-summary ────────────────────────────────────
 // Ingestion job status endpoints (Phase C)
-router.get('/cases/:caseId/ingest-jobs', (req, res) => {
-  try {
-    const limit = Math.min(200, Math.max(1, Number(req.query.limit || 50)));
-    const jobs = listCaseDocumentIngestJobs(req.params.caseId, limit);
-    res.json({ ok: true, jobs });
-  } catch (err) {
-    return sendErrorResponse(res, err);
-  }
-});
-
-router.get('/cases/:caseId/ingest-jobs/:jobId', (req, res) => {
-  try {
-    const job = getDocumentIngestJob(req.params.jobId);
-    if (!job || job.caseId !== req.params.caseId) {
-      return res.status(404).json({ error: 'Ingest job not found' });
+router.get(
+  '/cases/:caseId/ingest-jobs',
+  validateParams(caseIdParamsSchema),
+  validateQuery(ingestJobsQuerySchema),
+  (req, res) => {
+    try {
+      const limit = req.validatedQuery.limit;
+      const jobs = listCaseDocumentIngestJobs(req.validatedParams.caseId, limit);
+      res.json({ ok: true, jobs });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-    res.json({ ok: true, job });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
-router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
-  const body = parsePayload(ingestRetrySchema, req.body || {}, res);
-  if (!body) return;
+router.get(
+  '/cases/:caseId/ingest-jobs/:jobId',
+  validateParams(caseIdJobIdParamsSchema),
+  (req, res) => {
+    try {
+      const job = getDocumentIngestJob(req.validatedParams.jobId);
+      if (!job || job.caseId !== req.validatedParams.caseId) {
+        return res.status(404).json({ error: 'Ingest job not found' });
+      }
+      res.json({ ok: true, job });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
+  }
+);
 
-  try {
-    const step = String(body.step || 'extract').toLowerCase();
-    const job = getDocumentIngestJob(req.params.jobId);
-    if (!job || job.caseId !== req.params.caseId) {
+router.post(
+  '/cases/:caseId/ingest-jobs/:jobId/retry',
+  validateParams(caseIdJobIdParamsSchema),
+  validateBody(ingestRetrySchema),
+  async (req, res) => {
+    try {
+      const step = String(req.validated.step || 'extract').toLowerCase();
+      const job = getDocumentIngestJob(req.validatedParams.jobId);
+      if (!job || job.caseId !== req.validatedParams.caseId) {
       return res.status(404).json({
         ok: false,
         code: 'INGEST_JOB_NOT_FOUND',
@@ -662,7 +745,7 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
     }
 
     const doc = getDocument(job.documentId);
-    if (!doc || doc.case_id !== req.params.caseId) {
+    if (!doc || doc.case_id !== req.validatedParams.caseId) {
       return res.status(404).json({
         ok: false,
         code: 'INGEST_DOCUMENT_NOT_FOUND',
@@ -670,7 +753,7 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
       });
     }
 
-    const runtime = getCaseRuntime(req.params.caseId);
+    const runtime = getCaseRuntime(req.validatedParams.caseId);
     const text = await loadDocumentTextForExtraction({
       doc,
       caseDir: req.caseDir,
@@ -706,101 +789,127 @@ router.post('/cases/:caseId/ingest-jobs/:jobId/retry', async (req, res) => {
       }
     );
 
-    const finalized = finalizeDocumentIngestJob(job.id);
-    res.json({
-      ok: true,
-      retry: stepRun.ok,
-      attempts: stepRun.attempts,
-      job: finalized,
-      extraction: stepRun.result?.result || null,
-    });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+      const finalized = finalizeDocumentIngestJob(job.id);
+      res.json({
+        ok: true,
+        retry: stepRun.ok,
+        attempts: stepRun.attempts,
+        job: finalized,
+        extraction: stepRun.result?.result || null,
+      });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
-router.get('/cases/:caseId/extraction-summary', (req, res) => {
-  try {
-    const summary = getCaseExtractionSummary(req.params.caseId);
-    res.json({ ok: true, ...summary });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+);
+
+router.get(
+  '/cases/:caseId/extraction-summary',
+  validateParams(caseIdParamsSchema),
+  (req, res) => {
+    try {
+      const summary = getCaseExtractionSummary(req.validatedParams.caseId);
+      res.json({ ok: true, ...summary });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── GET /cases/:caseId/extracted-facts ───────────────────────────────────────
-router.get('/cases/:caseId/extracted-facts', (req, res) => {
-  try {
-    const status = req.query.status || null;
-    const facts = getExtractedFacts(req.params.caseId, status);
-    res.json({ ok: true, facts });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.get(
+  '/cases/:caseId/extracted-facts',
+  validateParams(caseIdParamsSchema),
+  validateQuery(extractedFactsQuerySchema),
+  (req, res) => {
+    try {
+      const status = req.validatedQuery.status || null;
+      const facts = getExtractedFacts(req.validatedParams.caseId, status);
+      res.json({ ok: true, facts });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── POST /cases/:caseId/extracted-facts/review ───────────────────────────────
-router.post('/cases/:caseId/extracted-facts/review', (req, res) => {
-  const body = parsePayload(reviewFactSchema, req.body || {}, res);
-  if (!body) return;
-
-  try {
-    reviewFact(body.factId, body.action);
-    res.json({ ok: true });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.post(
+  '/cases/:caseId/extracted-facts/review',
+  validateParams(caseIdParamsSchema),
+  validateBody(reviewFactSchema),
+  (req, res) => {
+    try {
+      reviewFact(req.validated.factId, req.validated.action);
+      res.json({ ok: true });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── POST /cases/:caseId/extracted-facts/merge ────────────────────────────────
-router.post('/cases/:caseId/extracted-facts/merge', (req, res) => {
-  const body = parsePayload(mergeFactsSchema, req.body || {}, res);
-  if (!body) return;
-
-  try {
-    const result = acceptAndMergeFacts(req.params.caseId, body.factIds);
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.post(
+  '/cases/:caseId/extracted-facts/merge',
+  validateParams(caseIdParamsSchema),
+  validateBody(mergeFactsSchema),
+  (req, res) => {
+    try {
+      const result = acceptAndMergeFacts(req.validatedParams.caseId, req.validated.factIds);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── GET /cases/:caseId/extracted-sections ────────────────────────────────────
-router.get('/cases/:caseId/extracted-sections', (req, res) => {
-  try {
-    const status = req.query.status || null;
-    const sections = getExtractedSections(req.params.caseId, status);
-    res.json({ ok: true, sections });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.get(
+  '/cases/:caseId/extracted-sections',
+  validateParams(caseIdParamsSchema),
+  validateQuery(extractedSectionsQuerySchema),
+  (req, res) => {
+    try {
+      const status = req.validatedQuery.status || null;
+      const sections = getExtractedSections(req.validatedParams.caseId, status);
+      res.json({ ok: true, sections });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── POST /cases/:caseId/extracted-sections/:id/approve ───────────────────────
-router.post('/cases/:caseId/extracted-sections/:id/approve', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
-  try {
-    const result = approveSection(req.params.id);
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.post(
+  '/cases/:caseId/extracted-sections/:id/approve',
+  validateParams(caseIdSectionIdParamsSchema),
+  validateBody(emptyMutationSchema),
+  (req, res) => {
+    try {
+      const result = approveSection(req.validatedParams.id);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── POST /cases/:caseId/extracted-sections/:id/reject ────────────────────────
-router.post('/cases/:caseId/extracted-sections/:id/reject', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
-  try {
-    rejectSection(req.params.id);
-    res.json({ ok: true });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+router.post(
+  '/cases/:caseId/extracted-sections/:id/reject',
+  validateParams(caseIdSectionIdParamsSchema),
+  validateBody(emptyMutationSchema),
+  (req, res) => {
+    try {
+      rejectSection(req.validatedParams.id);
+      res.json({ ok: true });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
 // ── GET /documents/types ─────────────────────────────────────────────────────
-router.get('/documents/types', (_req, res) => {
+router.get('/documents/types', (req, res) => {
   res.json({
     ok: true,
     types: DOC_TYPES.map(t => ({ id: t, label: DOC_TYPE_LABELS[t] || t })),

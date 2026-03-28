@@ -12,6 +12,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { parseOrderText, buildFactsFromOrder } from '../intake/orderParser.js';
@@ -34,14 +35,49 @@ import { randomUUID } from 'crypto';
 
 const router = Router();
 
+// Validation schemas
+const fullPipelineBodySchema = z.object({
+  formType: z.string().optional(),
+  provider: z.string().optional(),
+}).passthrough();
+
+const quickGenerateBodySchema = z.object({
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  county: z.string().optional(),
+  neighborhood: z.string().optional(),
+  yearBuilt: z.string().optional(),
+  gla: z.string().optional(),
+  bedrooms: z.string().optional(),
+  bathrooms: z.string().optional(),
+  condition: z.string().optional(),
+  quality: z.string().optional(),
+  design: z.string().optional(),
+  stories: z.string().optional(),
+  lotSize: z.string().optional(),
+  salePrice: z.string().optional(),
+  sections: z.array(z.string()).optional(),
+}).passthrough();
+
+// Validation middleware
+const validateBody = (schema) => (req, res, next) => {
+  try {
+    req.validated = schema.parse(req.body || {});
+    next();
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.errors[0]?.message || 'Invalid request body' });
+  }
+};
+
 /**
  * POST /api/demo/full-pipeline
  * Upload a PDF order sheet → auto-create case → generate all sections → return results.
- * 
+ *
  * Body (multipart): file (PDF) + optional formType, provider
  * Returns: { caseId, address, sections: {...}, exportLinks: {...} }
  */
-router.post('/demo/full-pipeline', upload.single('file'), async (req, res) => {
+router.post('/demo/full-pipeline', upload.single('file'), validateBody(fullPipelineBodySchema), async (req, res) => {
   const startTime = Date.now();
   const steps = [];
 
@@ -59,7 +95,7 @@ router.post('/demo/full-pipeline', upload.single('file'), async (req, res) => {
 
     // Step 3: Create case
     const caseId = randomUUID().slice(0, 8);
-    const formType = normalizeFormType(req.body?.formType || orderData.formType || '1004');
+    const formType = normalizeFormType(req.validated?.formType || orderData.formType || '1004');
     const facts = buildFactsFromOrder(orderData);
     const meta = extractMetaFields(orderData);
 
@@ -173,11 +209,11 @@ router.post('/demo/full-pipeline', upload.single('file'), async (req, res) => {
  * Body: { address, city, state, yearBuilt, gla, bedrooms, bathrooms, ... }
  * Returns: { sections: { neighborhood_description: "...", ... } }
  */
-router.post('/demo/quick-generate', async (req, res) => {
+router.post('/demo/quick-generate', validateBody(quickGenerateBodySchema), async (req, res) => {
   const startTime = Date.now();
 
   try {
-    const input = req.body || {};
+    const input = req.validated;
     const facts = {
       subject: {
         address: input.address || '',

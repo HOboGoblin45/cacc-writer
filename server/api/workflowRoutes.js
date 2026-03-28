@@ -16,6 +16,7 @@ import { Router } from 'express';
 import path from 'path';
 import { z } from 'zod';
 
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import {
   CASES_DIR,
   resolveCaseDir,
@@ -110,7 +111,8 @@ function toSectionIds(fields) {
 }
 
 function requestedGateBypass(req) {
-  return Boolean(req.body?.forceGateBypass || req.body?.options?.forceGateBypass);
+  const body = req.validated || req.body;
+  return Boolean(body?.forceGateBypass || body?.options?.forceGateBypass);
 }
 
 function shouldBypassPreDraftGate(req) {
@@ -185,12 +187,11 @@ function persistWorkflowOutputs(caseId, projection, results = {}) {
   });
 }
 
-router.post('/workflow/run', ensureAI, async (req, res) => {
+router.post('/workflow/run', ensureAI, validateBody(workflowRunSchema), async (req, res) => {
   try {
     res.setHeader('X-Deprecated', 'true');
     res.setHeader('X-Deprecation-Notice', 'Use POST /api/cases/:caseId/generate-full-draft instead');
-    const body = parsePayload(workflowRunSchema, req.body || {}, res);
-    if (!body) return;
+    const body = req.validated;
     if (rejectBypassWhenDisabled(req, res)) return;
     const { caseId, fields, twoPass = false, saveOutputs = true } = body;
     const requestedFt = String(body.formType || '').trim().toLowerCase();
@@ -306,12 +307,11 @@ router.post('/workflow/run', ensureAI, async (req, res) => {
   }
 });
 
-router.post('/workflow/run-batch', ensureAI, async (req, res) => {
+router.post('/workflow/run-batch', ensureAI, validateBody(workflowRunBatchSchema), async (req, res) => {
   try {
     res.setHeader('X-Deprecated', 'true');
     res.setHeader('X-Deprecation-Notice', 'Use POST /api/cases/:caseId/generate-full-draft instead');
-    const body = parsePayload(workflowRunBatchSchema, req.body || {}, res);
-    if (!body) return;
+    const body = req.validated;
     if (rejectBypassWhenDisabled(req, res)) return;
     const { cases, fields, twoPass = false } = body;
     const requestedFt = String(body.formType || '').trim().toLowerCase();

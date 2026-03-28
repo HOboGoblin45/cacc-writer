@@ -11,6 +11,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import path from 'path';
 import fs from 'fs';
 
@@ -19,6 +20,7 @@ import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { callAI } from '../openaiClient.js';
 import log from '../logger.js';
+import { validateParams, CommonSchemas } from '../middleware/validateRequest.js';
 
 const router = Router();
 
@@ -110,9 +112,9 @@ function truncateForPrompt(obj, maxChars = 12000) {
  * Checks USPAP compliance, internal consistency, data accuracy, UAD compliance,
  * logical flow, missing elements, and lender flags.
  */
-router.post('/cases/:caseId/qc-review', async (req, res) => {
+router.post('/cases/:caseId/qc-review', validateParams(CommonSchemas.caseId), async (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
@@ -256,9 +258,9 @@ readyToSubmit should be true only if grade is A or B with no critical issues.`;
 /**
  * Retrieve the last QC review result for a case.
  */
-router.get('/cases/:caseId/qc-review/latest', (req, res) => {
+router.get('/cases/:caseId/qc-review/latest', validateParams(CommonSchemas.caseId), (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 

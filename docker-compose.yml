@@ -1,13 +1,29 @@
+# docker-compose.yml — CACC Writer
+# Usage:
+#   Development:  docker compose up --build
+#   Production:   docker compose --env-file .env.production up -d --build
+
 services:
-  server:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "5178:5178"
-    volumes:
-      - ./data:/app/data
-      - ./cases:/app/cases
-      - ./logs:/app/logs
-      - ./knowledge_base:/app/knowledge_base
+      - "${APP_PORT:-5178}:5178"
     env_file:
       - .env
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    volumes:
+      # Persist data across container restarts
+      - ./data:/app/data
+      - ./exports:/app/exports
+      - ./knowledge_base:/app/knowledge_base
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5178/api/health').then(r=>r.json()).then(d=>process.exit(d.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
     restart: unless-stopped

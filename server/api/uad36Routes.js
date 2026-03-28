@@ -14,10 +14,12 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { z } from 'zod';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { readJSON } from '../utils/fileUtils.js';
 import { callAI } from '../openaiClient.js';
 import { buildPromptMessages } from '../promptBuilder.js';
+import { validateParams, validateBody, CommonSchemas } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 import {
   UAD36_SECTIONS,
@@ -29,6 +31,20 @@ import {
 } from '../config/uad36FormConfig.js';
 
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const uad36StatusParamsSchema = CommonSchemas.caseId;
+
+const convertToUad36ParamsSchema = CommonSchemas.caseId;
+
+const generateUad36ParamsSchema = CommonSchemas.caseId;
+
+const generateUad36BodySchema = z.object({
+  sectionsToGenerate: z.array(z.string()).nullable().optional(),
+  forceRegenerate: z.boolean().optional(),
+  streamProgress: z.boolean().optional(),
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -100,14 +116,14 @@ function buildPropertyContext(facts) {
 
 // ── GET /cases/:caseId/uad36-status ──────────────────────────────────────────
 
-router.get('/cases/:caseId/uad36-status', (req, res) => {
-  const caseDir = resolveCaseDir(req.params.caseId);
+router.get('/cases/:caseId/uad36-status', validateParams(uad36StatusParamsSchema), (req, res) => {
+  const caseDir = resolveCaseDir(req.validatedParams.caseId);
   if (!caseDir) {
     return res.status(400).json({ error: 'Invalid case ID' });
   }
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
+    const { facts, meta, outputs } = loadCase(caseDir, req.validatedParams.caseId);
 
     // Check each UAD 3.6 section
     const sectionStatus = {};
@@ -166,7 +182,7 @@ router.get('/cases/:caseId/uad36-status', (req, res) => {
     }));
 
     return res.json({
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       formType: meta.formType || '1004',
       uad36Coverage: `${coveragePct}%`,
       coveragePct,
@@ -181,21 +197,21 @@ router.get('/cases/:caseId/uad36-status', (req, res) => {
       mandatoryDate: '2026-11-02',
     });
   } catch (err) {
-    log.error('[uad36Routes] uad36-status error', { caseId: req.params.caseId, err: err.message });
+    log.error('[uad36Routes] uad36-status error', { caseId: req.validatedParams.caseId, err: err.message });
     return res.status(500).json({ error: 'Failed to check UAD 3.6 status', details: err.message });
   }
 });
 
 // ── POST /cases/:caseId/convert-to-uad36 ─────────────────────────────────────
 
-router.post('/cases/:caseId/convert-to-uad36', (req, res) => {
-  const caseDir = resolveCaseDir(req.params.caseId);
+router.post('/cases/:caseId/convert-to-uad36', validateParams(convertToUad36ParamsSchema), (req, res) => {
+  const caseDir = resolveCaseDir(req.validatedParams.caseId);
   if (!caseDir) {
     return res.status(400).json({ error: 'Invalid case ID' });
   }
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
+    const { facts, meta, outputs } = loadCase(caseDir, req.validatedParams.caseId);
 
     const converted = {};    // sectionId → carried-over text
     const alreadyPresent = []; // sectionIds that already have UAD 3.6 content
@@ -260,7 +276,7 @@ router.post('/cases/:caseId/convert-to-uad36', (req, res) => {
     const coveragePct = Math.round((coveredCount / totalNarrative) * 100);
 
     log.info('[uad36Routes] convert-to-uad36 complete', {
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       converted: Object.keys(converted).length,
       alreadyPresent: alreadyPresent.length,
       missing: missing.length,
@@ -268,7 +284,7 @@ router.post('/cases/:caseId/convert-to-uad36', (req, res) => {
 
     return res.json({
       success: true,
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       converted,
       alreadyPresent,
       missing,
@@ -280,27 +296,27 @@ router.post('/cases/:caseId/convert-to-uad36', (req, res) => {
         .map(s => ({ id: s.id, title: s.title, type: s.type })),
     });
   } catch (err) {
-    log.error('[uad36Routes] convert-to-uad36 error', { caseId: req.params.caseId, err: err.message });
+    log.error('[uad36Routes] convert-to-uad36 error', { caseId: req.validatedParams.caseId, err: err.message });
     return res.status(500).json({ error: 'Conversion failed', details: err.message });
   }
 });
 
 // ── POST /cases/:caseId/generate-uad36 ───────────────────────────────────────
 
-router.post('/cases/:caseId/generate-uad36', async (req, res) => {
-  const caseDir = resolveCaseDir(req.params.caseId);
+router.post('/cases/:caseId/generate-uad36', validateParams(generateUad36ParamsSchema), validateBody(generateUad36BodySchema), async (req, res) => {
+  const caseDir = resolveCaseDir(req.validatedParams.caseId);
   if (!caseDir) {
     return res.status(400).json({ error: 'Invalid case ID' });
   }
 
   const {
-    sectionsToGenerate = null, // null = generate all missing; or array of section IDs
-    forceRegenerate = false,   // if true, regenerate even if content exists
-    streamProgress = false,    // future: SSE streaming
-  } = req.body || {};
+    sectionsToGenerate = null,
+    forceRegenerate = false,
+    streamProgress = false,
+  } = req.validated;
 
   try {
-    const { facts, meta, outputs } = loadCase(caseDir, req.params.caseId);
+    const { facts, meta, outputs } = loadCase(caseDir, req.validatedParams.caseId);
     const propertyContext = buildPropertyContext(facts);
     const now = new Date().toISOString();
 
@@ -326,7 +342,7 @@ router.post('/cases/:caseId/generate-uad36', async (req, res) => {
     }
 
     log.info('[uad36Routes] generate-uad36 starting', {
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       sectionsCount: sectionsToProcess.length,
     });
 
@@ -379,7 +395,7 @@ router.post('/cases/:caseId/generate-uad36', async (req, res) => {
     const coveragePct = Math.round((nowComplete / totalNarrative) * 100);
 
     log.info('[uad36Routes] generate-uad36 complete', {
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       generated: Object.keys(generated).length,
       errors: Object.keys(errors).length,
       coverage: `${coveragePct}%`,
@@ -387,7 +403,7 @@ router.post('/cases/:caseId/generate-uad36', async (req, res) => {
 
     return res.json({
       success: true,
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       generated,
       errors,
       coverage: `${coveragePct}%`,
@@ -397,7 +413,7 @@ router.post('/cases/:caseId/generate-uad36', async (req, res) => {
       message: `Generated ${Object.keys(generated).length} UAD 3.6 sections. Coverage: ${coveragePct}%.`,
     });
   } catch (err) {
-    log.error('[uad36Routes] generate-uad36 error', { caseId: req.params.caseId, err: err.message });
+    log.error('[uad36Routes] generate-uad36 error', { caseId: req.validatedParams.caseId, err: err.message });
     return res.status(500).json({ error: 'Generation failed', details: err.message });
   }
 });

@@ -12,12 +12,39 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { generateMismo, validateMismoOutput } from '../export/mismoExportService.js';
 import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.js';
 import { renderPdf } from '../export/pdfRenderer.js';
 import { fillForm1004 } from '../export/pdfFormFiller.js';
 import { dbGet, dbAll } from '../db/database.js';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import log from '../logger.js';
+
+const caseIdParam = z.object({ caseId: z.string().min(1, 'caseId is required') });
+
+const mismoBodySchema = z.object({
+  version: z.enum(['mismo_2_6', 'mismo_3_4']).default('mismo_3_4'),
+}).default({});
+
+const uad36BodySchema = z.object({
+  validateOnly: z.boolean().default(false),
+}).default({});
+
+const pdfBodySchema = z.object({
+  includePhotos: z.boolean().default(false),
+  includeComps: z.boolean().default(false),
+}).default({});
+
+const bundleBodySchema = z.object({
+  format: z.enum(['mismo', 'uad36']).default('mismo'),
+  includePhotos: z.boolean().default(true),
+}).default({});
+
+const downloadFormatParam = z.object({
+  caseId: z.string().min(1, 'caseId is required'),
+  format: z.enum(['mismo', 'uad36', 'pdf', 'bundle']),
+});
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
 import fs from 'fs';
@@ -73,10 +100,10 @@ function loadCaseForExport(caseId) {
 
 // â”€â”€ POST /cases/:caseId/export/mismo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-router.post('/cases/:caseId/export/mismo', async (req, res) => {
+router.post('/cases/:caseId/export/mismo', validateParams(caseIdParam), validateBody(mismoBodySchema), async (req, res) => {
   try {
-    const { version } = req.body || {};
-    const result = generateMismo(req.params.caseId, { version: version || 'mismo_3_4' });
+    const { version } = req.validated;
+    const result = generateMismo(req.validatedParams.caseId, { version });
 
     res.set('Content-Type', 'application/xml');
     res.set('Content-Disposition', `attachment; filename="${result.job.fileName}"`);
@@ -89,17 +116,18 @@ router.post('/cases/:caseId/export/mismo', async (req, res) => {
 
 // â”€â”€ POST /cases/:caseId/export/uad36 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-router.post('/cases/:caseId/export/uad36', async (req, res) => {
+router.post('/cases/:caseId/export/uad36', validateParams(caseIdParam), validateBody(uad36BodySchema), async (req, res) => {
   try {
-    const caseData = loadCaseForExport(req.params.caseId);
+    const { caseId } = req.validatedParams;
+    const caseData = loadCaseForExport(caseId);
     if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const xml = buildUad36Document(caseData);
     const validation = validateUad36(xml);
 
-    const fileName = `${req.params.caseId}_uad36_${Date.now()}.xml`;
+    const fileName = `${caseId}_uad36_${Date.now()}.xml`;
 
-    if (req.body?.validateOnly) {
+    if (req.validated.validateOnly) {
       return res.json({ ok: true, validation, fileName });
     }
 
@@ -114,12 +142,13 @@ router.post('/cases/:caseId/export/uad36', async (req, res) => {
 
 // â”€â”€ POST /cases/:caseId/export/pdf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-router.post('/cases/:caseId/export/pdf', async (req, res) => {
+router.post('/cases/:caseId/export/pdf', validateParams(caseIdParam), validateBody(pdfBodySchema), async (req, res) => {
   try {
-    const { includePhotos, includeComps } = req.body || {};
-    const pdfBuffer = await renderPdf(req.params.caseId, { includePhotos, includeComps });
+    const { caseId } = req.validatedParams;
+    const { includePhotos, includeComps } = req.validated;
+    const pdfBuffer = await renderPdf(caseId, { includePhotos, includeComps });
 
-    const fileName = `${req.params.caseId}_appraisal_${Date.now()}.pdf`;
+    const fileName = `${caseId}_appraisal_${Date.now()}.pdf`;
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `attachment; filename="${fileName}"`);
     res.send(pdfBuffer);
@@ -132,10 +161,10 @@ router.post('/cases/:caseId/export/pdf', async (req, res) => {
 // â”€â”€ POST /cases/:caseId/export/bundle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // UAD 3.6 delivery format: ZIP containing XML + PDF + photos
 
-router.post('/cases/:caseId/export/bundle', async (req, res) => {
+router.post('/cases/:caseId/export/bundle', validateParams(caseIdParam), validateBody(bundleBodySchema), async (req, res) => {
   try {
-    const caseId = req.params.caseId;
-    const { format, includePhotos } = req.body || {};
+    const { caseId } = req.validatedParams;
+    const { format, includePhotos } = req.validated;
     const isUad36 = format === 'uad36';
 
     const caseData = loadCaseForExport(caseId);
@@ -209,8 +238,8 @@ router.post('/cases/:caseId/export/bundle', async (req, res) => {
 // Download a previously generated export or generate on the fly.
 // Formats: mismo, uad36, pdf, bundle
 
-router.get('/cases/:caseId/export/download/:format', async (req, res) => {
-  const { caseId, format } = req.params;
+router.get('/cases/:caseId/export/download/:format', validateParams(downloadFormatParam), async (req, res) => {
+  const { caseId, format } = req.validatedParams;
   try {
     switch (format) {
       case 'mismo': {
@@ -264,8 +293,8 @@ router.get('/cases/:caseId/export/download/:format', async (req, res) => {
 // â”€â”€ GET /cases/:caseId/export/pdf-form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Generate a filled Fannie Mae Form 1004 PDF using the official fillable template.
 
-router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
-  const { caseId } = req.params;
+router.get('/cases/:caseId/export/pdf-form', validateParams(caseIdParam), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     // Use getCaseProjection — same as the main API, handles DB + filesystem
     const { getCaseProjection } = await import('../caseRecord/caseRecordService.js');
@@ -312,9 +341,9 @@ router.get('/cases/:caseId/export/pdf-form', async (req, res) => {
 
 // â”€â”€ GET /cases/:caseId/export/preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-router.get('/cases/:caseId/export/preview', async (req, res) => {
+router.get('/cases/:caseId/export/preview', validateParams(caseIdParam), async (req, res) => {
   try {
-    const caseData = loadCaseForExport(req.params.caseId);
+    const caseData = loadCaseForExport(req.validatedParams.caseId);
     if (!caseData) return res.status(404).json({ ok: false, error: 'Case not found' });
 
     const subject = caseData.facts.subject || {};
@@ -356,8 +385,8 @@ router.get('/cases/:caseId/export/preview', async (req, res) => {
 
 
 // DEBUG endpoint
-router.get('/cases/:caseId/export/pdf-debug', async (req, res) => {
-  const { caseId } = req.params;
+router.get('/cases/:caseId/export/pdf-debug', validateParams(caseIdParam), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     const { readJSON } = await import('../utils/fileUtils.js');
     const { casePath: getCasePath } = await import('../utils/caseUtils.js');

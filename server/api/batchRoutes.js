@@ -11,23 +11,46 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { batchGenerate, getSectionsForForm } from '../generation/batchGenerator.js';
 import { analyzeComps, scoreCompSimilarity, suggestAdjustments } from '../comparables/compAnalyzer.js';
 import { dbGet } from '../db/database.js';
 import { authMiddleware } from '../auth/authService.js';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const router = Router();
+
+// ── Zod Validation Schemas ────────────────────────────────────────────────────
+
+/** POST /cases/:caseId/batch/generate body */
+const batchGenerateBodySchema = z.object({
+  formType: z.string().optional(),
+  skipExisting: z.boolean().optional(),
+});
+
+/** Path params with caseId */
+const caseIdParamsSchema = CommonSchemas.caseId;
+
+/** Query params for batch/sections */
+const batchSectionsQuerySchema = z.object({
+  formType: z.string().optional(),
+});
 
 // Active batch jobs (for SSE progress)
 const activeJobs = new Map();
 
 // ── POST /cases/:caseId/batch/generate ───────────────────────────────────────
 
-router.post('/cases/:caseId/batch/generate', authMiddleware, async (req, res) => {
-  const caseId = req.params.caseId;
-  const { formType, skipExisting } = req.body || {};
-  const userId = req.user?.userId || 'default';
+router.post(
+  '/cases/:caseId/batch/generate',
+  authMiddleware,
+  validateParams(caseIdParamsSchema),
+  validateBody(batchGenerateBodySchema),
+  async (req, res) => {
+    const caseId = req.validatedParams.caseId;
+    const { formType, skipExisting } = req.validated || {};
+    const userId = req.user?.userId || 'default';
 
   // Check if already running
   if (activeJobs.has(caseId)) {
@@ -70,56 +93,75 @@ router.post('/cases/:caseId/batch/generate', authMiddleware, async (req, res) =>
 
 // ── GET /cases/:caseId/batch/sections ────────────────────────────────────────
 
-router.get('/cases/:caseId/batch/sections', (req, res) => {
-  const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [req.params.caseId]);
-  const formType = req.query.formType || caseRecord?.form_type || '1004';
-  const sections = getSectionsForForm(formType);
-  res.json({ ok: true, formType, sections });
-});
+router.get(
+  '/cases/:caseId/batch/sections',
+  validateParams(caseIdParamsSchema),
+  validateQuery(batchSectionsQuerySchema),
+  (req, res) => {
+    const caseId = req.validatedParams.caseId;
+    const queryData = req.validatedQuery || {};
+    const caseRecord = dbGet('SELECT * FROM case_records WHERE case_id = ?', [caseId]);
+    const formType = queryData.formType || caseRecord?.form_type || '1004';
+    const sections = getSectionsForForm(formType);
+    res.json({ ok: true, formType, sections });
+  }
+);
 
 // ── POST /cases/:caseId/comps/analyze ────────────────────────────────────────
 
-router.post('/cases/:caseId/comps/analyze', authMiddleware, async (req, res) => {
-  try {
-    const result = await analyzeComps(req.params.caseId);
-    if (result.error) {
-      return res.status(400).json({ ok: false, error: result.error });
+router.post(
+  '/cases/:caseId/comps/analyze',
+  authMiddleware,
+  validateParams(caseIdParamsSchema),
+  async (req, res) => {
+    try {
+      const caseId = req.validatedParams.caseId;
+      const result = await analyzeComps(caseId);
+      if (result.error) {
+        return res.status(400).json({ ok: false, error: result.error });
+      }
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      const caseId = req.validatedParams.caseId;
+      log.error('comp-analysis:api-error', { caseId, error: err.message });
+      res.status(500).json({ ok: false, error: err.message });
     }
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('comp-analysis:api-error', { caseId: req.params.caseId, error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
   }
-});
+);
 
 // ── GET /cases/:caseId/comps/ranking ─────────────────────────────────────────
 
-router.get('/cases/:caseId/comps/ranking', (req, res) => {
-  try {
-    // Lightweight version — just scores, no AI calls
-    const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [req.params.caseId]);
-    const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
-    const subject = { ...facts.subject, ...facts.improvements, ...facts.site };
-
-    let comps = [];
+router.get(
+  '/cases/:caseId/comps/ranking',
+  validateParams(caseIdParamsSchema),
+  (req, res) => {
     try {
-      const { dbAll } = require('../db/database.js');
-      comps = dbAll('SELECT * FROM comp_candidates WHERE case_id = ? AND is_active = 1', [req.params.caseId]);
-    } catch { /* ok */ }
+      const caseId = req.validatedParams.caseId;
+      // Lightweight version — just scores, no AI calls
+      const caseFacts = dbGet('SELECT * FROM case_facts WHERE case_id = ?', [caseId]);
+      const facts = caseFacts ? JSON.parse(caseFacts.facts_json || '{}') : {};
+      const subject = { ...facts.subject, ...facts.improvements, ...facts.site };
 
-    const ranked = comps.map(comp => {
-      const data = JSON.parse(comp.candidate_json || '{}');
-      return {
-        id: comp.id,
-        address: data.address || comp.source_key,
-        ...scoreCompSimilarity(subject, data),
-      };
-    }).sort((a, b) => b.totalScore - a.totalScore);
+      let comps = [];
+      try {
+        const { dbAll } = require('../db/database.js');
+        comps = dbAll('SELECT * FROM comp_candidates WHERE case_id = ? AND is_active = 1', [caseId]);
+      } catch { /* ok */ }
 
-    res.json({ ok: true, comps: ranked });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+      const ranked = comps.map(comp => {
+        const data = JSON.parse(comp.candidate_json || '{}');
+        return {
+          id: comp.id,
+          address: data.address || comp.source_key,
+          ...scoreCompSimilarity(subject, data),
+        };
+      }).sort((a, b) => b.totalScore - a.totalScore);
+
+      res.json({ ok: true, comps: ranked });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
   }
-});
+);
 
 export default router;

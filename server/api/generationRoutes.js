@@ -20,6 +20,8 @@
 import { Router } from 'express';
 import path from 'path';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
+import { rateLimitMiddleware } from '../security/rateLimiter.js';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
@@ -231,7 +233,7 @@ router.param('caseId', (req, res, next, caseId) => {
 });
 
 // ── POST /generate (legacy compat, now modular) ──────────────────────────────
-router.post('/generate', ensureAI, async (req, res) => {
+router.post('/generate', rateLimitMiddleware('ai'), ensureAI, async (req, res) => {
   try {
     const { fieldId, formType, caseId, facts: bodyFacts } = req.body;
     const prompt = trimText(req.body?.prompt, 24000);
@@ -309,7 +311,7 @@ router.post('/generate', ensureAI, async (req, res) => {
 });
 
 // ── POST /generate-batch (legacy compat, now modular) ────────────────────────
-router.post('/generate-batch', ensureAI, async (req, res) => {
+router.post('/generate-batch', rateLimitMiddleware('ai'), ensureAI, async (req, res) => {
   try {
     const { fields, caseId, twoPass = false } = req.body;
     if (!Array.isArray(fields) || !fields.length) {
@@ -451,7 +453,19 @@ const generateCoreSchema = z.object({
   options: z.record(z.unknown()).optional(),
 }).passthrough();
 
+const generateCoreRouteSchema = z.object({
+  fields: z.array(z.string().max(80)).max(200).optional(),
+  forceGateBypass: z.boolean().optional(),
+  options: z.record(z.unknown()).optional(),
+}).passthrough();
+
 const generateCompCommentarySchema = z.object({
+  comps: z.array(z.unknown()).max(100).optional(),
+  compFocus: z.string().max(40).optional(),
+  forceGateBypass: z.boolean().optional(),
+}).passthrough();
+
+const generateCompCommentaryRouteSchema = z.object({
   comps: z.array(z.unknown()).max(100).optional(),
   compFocus: z.string().max(40).optional(),
   forceGateBypass: z.boolean().optional(),
@@ -462,12 +476,21 @@ const generateAllSchema = z.object({
   options: z.record(z.unknown()).optional(),
 }).passthrough();
 
-router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
-  const body = parseGenPayload(generateCoreSchema, req.body || {}, res);
-  if (!body) return;
+const generateAllRouteSchema = z.object({
+  forceGateBypass: z.boolean().optional(),
+  options: z.record(z.unknown()).optional(),
+}).passthrough();
+
+router.post('/cases/:caseId/generate-core',
+  validateParams(caseIdParamsSchema),
+  validateBody(generateCoreRouteSchema),
+  ensureAI,
+  async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
-    const runtime = loadCaseRuntime(req.params.caseId);
+    const runtime = loadCaseRuntime(caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
     const { projection, caseDir, formType, formConfig, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
@@ -507,7 +530,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
       return res.status(400).json({ ok: false, error: 'No core sections defined for form type: ' + formType });
     }
     if (!enforcePreDraftGate(req, res, {
-      caseId: req.params.caseId,
+      caseId,
       formType,
       sectionIds: targetFields.map(section => section.id),
     })) return;
@@ -549,7 +572,7 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
 
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, targetFields.length) }, runSection));
     persistGeneratedOutputs({
-      caseId: req.params.caseId,
+      caseId,
       projection,
       results,
       statuses,
@@ -578,12 +601,16 @@ router.post('/cases/:caseId/generate-core', ensureAI, async (req, res) => {
   }
 });
 
-router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res) => {
-  const body = parseGenPayload(generateCompCommentarySchema, req.body || {}, res);
-  if (!body) return;
+router.post('/cases/:caseId/generate-comp-commentary',
+  validateParams(caseIdParamsSchema),
+  validateBody(generateCompCommentaryRouteSchema),
+  ensureAI,
+  async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const body = req.validated;
 
   try {
-    const runtime = loadCaseRuntime(req.params.caseId);
+    const runtime = loadCaseRuntime(caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
     const { projection, formType, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
@@ -599,11 +626,11 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
     }
 
     if (!enforcePreDraftGate(req, res, {
-      caseId: req.params.caseId,
+      caseId,
       formType,
       sectionIds: ['sca_summary'],
     })) return;
-    const comps = asArray(req.body?.comps || facts?.comps || []);
+    const comps = asArray(req.validated?.comps || facts?.comps || []);
     if (!comps.length) return res.status(400).json({ ok: false, error: 'No comparables provided' });
 
     const results = [];
@@ -638,12 +665,12 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
       }
     }
 
-    const compFocus = trimText(req.body?.compFocus, 40) || 'all';
+    const compFocus = trimText(req.validated?.compFocus, 40) || 'all';
     const combinedText = results.map(result => result.compLabel + ': ' + result.text).join('\n\n');
     if (results.length) {
       const generatedAt = new Date().toISOString();
       persistGeneratedOutputs({
-        caseId: req.params.caseId,
+        caseId,
         projection,
         results: {
           comp_commentary: { comps: results, generatedAt },
@@ -674,12 +701,15 @@ router.post('/cases/:caseId/generate-comp-commentary', ensureAI, async (req, res
   }
 });
 
-router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
-  const body = parseGenPayload(generateAllSchema, req.body || {}, res);
-  if (!body) return;
+router.post('/cases/:caseId/generate-all',
+  validateParams(caseIdParamsSchema),
+  validateBody(generateAllRouteSchema),
+  ensureAI,
+  async (req, res) => {
+  const { caseId } = req.validatedParams;
 
   try {
-    const runtime = loadCaseRuntime(req.params.caseId);
+    const runtime = loadCaseRuntime(caseId);
     if (!runtime) return res.status(404).json({ ok: false, error: 'Case not found' });
     const { projection, caseDir, formType, formConfig, facts, assignmentMeta } = runtime;
     if (isDeferredForm(formType)) {
@@ -741,7 +771,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
       return res.status(400).json({ ok: false, error: 'No fields configured for form type: ' + formType });
     }
     if (!enforcePreDraftGate(req, res, {
-      caseId: req.params.caseId,
+      caseId,
       formType,
       sectionIds: toSectionIds(allFields),
     })) return;
@@ -753,7 +783,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
     // 30K TPM limit with ~3-4K tokens per field = max ~8 fields/min safely.
     // 3s gap keeps us under the limit even for longer fields like reconciliation.
     const INTER_FIELD_DELAY_MS = 5000;
-    const caseIdForEvents = req.params.caseId;
+    const caseIdForEvents = caseId;
 
     generationBus.emit('generation', {
       caseId: caseIdForEvents, type: 'started',
@@ -812,7 +842,7 @@ router.post('/cases/:caseId/generate-all', ensureAI, async (req, res) => {
       resultsCount: Object.keys(results).length, errorsCount: Object.keys(errors).length,
     });
     persistGeneratedOutputs({
-      caseId: req.params.caseId,
+      caseId,
       projection,
       results,
       statuses,
@@ -851,6 +881,32 @@ const regenerateSectionSchema = z.object({
   caseId: z.string().regex(/^[a-f0-9]{8}$/i),
 }).strict();
 
+// ── URL parameter schemas ─────────────────────────────────────────────────────
+const caseIdParamsSchema = z.object({
+  caseId: z.string().min(1).max(100),
+});
+
+const runIdParamsSchema = z.object({
+  runId: z.string().min(1).max(120),
+});
+
+const runIdSectionIdParamsSchema = z.object({
+  runId: z.string().min(1).max(120),
+  sectionId: z.string().min(1).max(120),
+});
+
+// ── Request body schemas for PATCH/POST ───────────────────────────────────────
+const patchSectionBodySchema = z.object({
+  text: z.string().min(1).max(16000),
+  sectionStatus: z.enum(['approved', 'reviewed']).optional(),
+}).strict();
+
+const regenerateSectionBodySchema = z.object({
+  runId: z.string().min(1).max(120),
+  sectionId: z.string().min(1).max(120),
+  caseId: z.string().regex(/^[a-f0-9]{8}$/i),
+}).strict();
+
 function parseGenPayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
   if (parsed.success) return parsed.data;
@@ -873,12 +929,13 @@ function parseGenPayload(schema, payload, res) {
  * Body:    { formType?: string, options?: object }
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
-router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
-  const { caseId }           = req.params;
-  // Validate payload first
-  const parsedBody = parseGenPayload(generateFullDraftSchema, req.body || {}, res);
-  if (!parsedBody) return;
-  const { formType, options = {} } = parsedBody;
+router.post('/cases/:caseId/generate-full-draft',
+  rateLimitMiddleware('ai'),
+  validateParams(caseIdParamsSchema),
+  validateBody(generateFullDraftSchema),
+  async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const { formType, options = {} } = req.validated;
 
   // Scope enforcement — deferred forms blocked
   const resolvedFormType = formType || 'unknown';
@@ -966,16 +1023,10 @@ router.post('/cases/:caseId/generate-full-draft', async (req, res) => {
  * Body:    { caseId, formType?: string, options?: object }
  * Returns: { ok, runId, status, estimatedDurationMs, message }
  */
-router.post('/generation/full-draft', async (req, res) => {
-  // Validate payload first
-  const parsedBody = parseGenPayload(generateFullDraftBodySchema, req.body || {}, res);
-  if (!parsedBody) return;
-
-  const { caseId, formType, options = {} } = parsedBody;
-
-  if (!caseId) {
-    return res.status(400).json({ ok: false, code: 'INVALID_PAYLOAD', error: 'caseId is required in request body' });
-  }
+router.post('/generation/full-draft',
+  validateBody(generateFullDraftBodySchema),
+  async (req, res) => {
+  const { caseId, formType, options = {} } = req.validated;
 
   // Delegate to the canonical route handler by forwarding to the same logic
   req.params.caseId = caseId;
@@ -1067,8 +1118,10 @@ router.post('/generation/full-draft', async (req, res) => {
  * Returns: { ok, runId, status, phase, sectionsCompleted, sectionsTotal,
  *            elapsedMs, sectionStatuses, phaseTimings, retrieval, warnings }
  */
-router.get('/generation/runs/:runId/status', (req, res) => {
-  const { runId } = req.params;
+router.get('/generation/runs/:runId/status',
+  validateParams(runIdParamsSchema),
+  (req, res) => {
+  const { runId } = req.validatedParams;
   try {
     const status = getRunStatus(runId);
     if (!status) {
@@ -1091,8 +1144,10 @@ router.get('/generation/runs/:runId/status', (req, res) => {
  *
  * Returns: { ok, runId, draftPackage, metrics, warnings, sections, fromCache }
  */
-router.get('/generation/runs/:runId/result', (req, res) => {
-  const { runId } = req.params;
+router.get('/generation/runs/:runId/result',
+  validateParams(runIdParamsSchema),
+  (req, res) => {
+  const { runId } = req.validatedParams;
   try {
     // ── 1. In-memory store (fastest path — run just completed this session) ──
     const cached = _runResults.get(runId);
@@ -1196,16 +1251,15 @@ router.get('/generation/runs/:runId/result', (req, res) => {
  * Body:    { runId, sectionId, caseId }
  * Returns: { ok, sectionId, text, metrics }
  */
-router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
-  const runId = trimText(req.params.runId, 80);
-  const sectionId = trimText(req.params.sectionId, 80);
-  const text = trimText(req.body?.text, 16000);
-  const requestedStatus = trimText(req.body?.sectionStatus, 40).toLowerCase();
-  const sectionStatus = ['approved', 'reviewed'].includes(requestedStatus) ? requestedStatus : 'reviewed';
-
-  if (!runId || !sectionId || !text) {
-    return res.status(400).json({ ok: false, error: 'runId, sectionId, and text are required' });
-  }
+router.patch('/generation/runs/:runId/sections/:sectionId',
+  validateParams(runIdSectionIdParamsSchema),
+  validateBody(patchSectionBodySchema),
+  (req, res) => {
+  const runId = req.validatedParams.runId;
+  const sectionId = req.validatedParams.sectionId;
+  const text = req.validated.text;
+  const requestedStatus = (req.validated.sectionStatus || 'reviewed').toLowerCase();
+  const sectionStatus = requestedStatus === 'approved' ? 'approved' : 'reviewed';
 
   try {
     const run = getRunById(runId);
@@ -1304,12 +1358,10 @@ router.patch('/generation/runs/:runId/sections/:sectionId', (req, res) => {
   }
 });
 
-router.post('/generation/regenerate-section', async (req, res) => {
-  // Validate payload
-  const parsedBody = parseGenPayload(regenerateSectionSchema, req.body || {}, res);
-  if (!parsedBody) return;
-
-  const { runId, sectionId, caseId } = parsedBody;
+router.post('/generation/regenerate-section',
+  validateBody(regenerateSectionBodySchema),
+  async (req, res) => {
+  const { runId, sectionId, caseId } = req.validated;
 
   try {
     // Check run exists

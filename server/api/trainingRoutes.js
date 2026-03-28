@@ -4,10 +4,26 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
 import { getTrainingReadiness, exportOpenAIFormat, exportHuggingFaceFormat, exportLoraFormat } from '../ai/trainingDataExporter.js';
 
 const router = Router();
+
+// Validation schemas
+const paramsSchema = z.object({
+  caseId: z.string().min(1, 'caseId is required'),
+});
+
+// Validation middleware
+const validateParams = (schema) => (req, res, next) => {
+  try {
+    req.validatedParams = schema.parse(req.params);
+    next();
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.errors[0]?.message || 'Invalid parameters' });
+  }
+};
 
 // GET /training/readiness — check if enough data for fine-tuning
 router.get('/training/readiness', authMiddleware, (req, res) => {

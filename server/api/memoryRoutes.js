@@ -24,6 +24,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 import { normalizeFormType } from '../utils/caseUtils.js';
@@ -46,10 +47,32 @@ const KB_DIR       = path.join(__dirname, '..', '..', 'knowledge_base');
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const router = Router();
+
+// ── Validation Schemas ─────────────────────────────────────────────────────────
+
+// Body schemas
 const emptyMutationSchema = z.object({}).strict();
 const voiceImportFolderSchema = z.object({
   formType: z.string().max(40).optional(),
 }).strict();
+
+// Query schemas
+const voiceExamplesQuerySchema = z.object({
+  formType: z.string().max(40).optional(),
+});
+
+const voiceFolderStatusQuerySchema = z.object({
+  formType: z.string().max(40).optional(),
+});
+
+// Parameter schemas
+const importIdParamSchema = z.object({
+  importId: z.string().min(1).max(20),
+});
+
+const voiceExampleIdParamSchema = z.object({
+  id: z.string().min(1).max(20),
+});
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -84,9 +107,7 @@ router.get('/kb/status', (_req, res) => {
 });
 
 // ── POST /kb/reindex ──────────────────────────────────────────────────────────
-router.post('/kb/reindex', (_req, res) => {
-  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
-
+router.post('/kb/reindex', validateBody(emptyMutationSchema), (_req, res) => {
   try {
     const index = indexExamples();
     res.json({
@@ -100,9 +121,7 @@ router.post('/kb/reindex', (_req, res) => {
 });
 
 // ── POST /kb/migrate-voice ────────────────────────────────────────────────────
-router.post('/kb/migrate-voice', (_req, res) => {
-  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
-
+router.post('/kb/migrate-voice', validateBody(emptyMutationSchema), (_req, res) => {
   try {
     const voiceEntries = readJSON(VOICE_FILE, []);
     if (!voiceEntries.length) {
@@ -133,9 +152,7 @@ router.post('/kb/migrate-voice', (_req, res) => {
 // ── POST /kb/ingest-to-pinecone ───────────────────────────────────────────────
 // One-time migration: ingest all local KB examples into Pinecone.
 // Requires PINECONE_API_KEY and PINECONE_INDEX_NAME to be set.
-router.post('/kb/ingest-to-pinecone', async (_req, res) => {
-  if (!parsePayload(emptyMutationSchema, _req.body || {}, res)) return;
-
+router.post('/kb/ingest-to-pinecone', validateBody(emptyMutationSchema), async (_req, res) => {
   try {
     let ingestLocalKBToPinecone;
     try {
@@ -240,9 +257,9 @@ router.post('/voice/import-pdf', ensureAI, upload.single('file'), async (req, re
 });
 
 // ── GET /voice/examples ───────────────────────────────────────────────────────
-router.get('/voice/examples', (req, res) => {
+router.get('/voice/examples', validateQuery(voiceExamplesQuerySchema), (req, res) => {
   try {
-    const requested = req.query?.formType ? normalizeFormType(req.query.formType) : null;
+    const requested = req.validatedQuery?.formType ? normalizeFormType(req.validatedQuery.formType) : null;
     const examples  = readJSON(VOICE_FILE, []).filter(
       e => !requested || normalizeFormType(e.formType) === requested,
     );
@@ -292,24 +309,19 @@ function deleteVoiceExamplesBy(field, rawValue, res) {
 }
 
 // ── DELETE /voice/examples/import/:importId ───────────────────────────────────
-router.delete('/voice/examples/import/:importId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-  deleteVoiceExamplesBy('importId', req.params.importId, res);
+router.delete('/voice/examples/import/:importId', validateParams(importIdParamSchema), (req, res) => {
+  deleteVoiceExamplesBy('importId', req.validatedParams.importId, res);
 });
 
 // ── DELETE /voice/examples/:id ────────────────────────────────────────────────
-router.delete('/voice/examples/:id', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-  deleteVoiceExamplesBy('id', req.params.id, res);
+router.delete('/voice/examples/:id', validateParams(voiceExampleIdParamSchema), (req, res) => {
+  deleteVoiceExamplesBy('id', req.validatedParams.id, res);
 });
 
 // ── POST /voice/import-folder ─────────────────────────────────────────────────
-router.post('/voice/import-folder', ensureAI, async (req, res) => {
-  const body = parsePayload(voiceImportFolderSchema, req.body || {}, res);
-  if (!body) return;
-
+router.post('/voice/import-folder', ensureAI, validateBody(voiceImportFolderSchema), async (req, res) => {
   try {
-    const requestedFormType = normalizeFormType(body.formType || DEFAULT_FORM_TYPE);
+    const requestedFormType = normalizeFormType(req.validated?.formType || DEFAULT_FORM_TYPE);
     const formConfig        = getFormConfig(requestedFormType);
     const voiceFields       = asArray(formConfig.voiceFields);
     if (!voiceFields.length) {
@@ -435,9 +447,9 @@ router.post('/voice/import-folder', ensureAI, async (req, res) => {
 });
 
 // ── GET /voice/folder-status ──────────────────────────────────────────────────
-router.get('/voice/folder-status', (req, res) => {
+router.get('/voice/folder-status', validateQuery(voiceFolderStatusQuerySchema), (req, res) => {
   try {
-    const requestedFormType = normalizeFormType(req.query?.formType || DEFAULT_FORM_TYPE);
+    const requestedFormType = normalizeFormType(req.validatedQuery?.formType || DEFAULT_FORM_TYPE);
     const folderPath        = path.join(VOICE_PDFS_DIR, requestedFormType);
 
     if (!fs.existsSync(folderPath)) {
