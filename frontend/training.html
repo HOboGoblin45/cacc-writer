@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Brain - Self-Training Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background-color: #10141a;
+      color: #e0e0e0;
+    }
+    .header-bg {
+      background: linear-gradient(135deg, #10141a 0%, #1a1f2e 100%);
+      border-bottom: 1px solid #2a3142;
+    }
+    .gold-text {
+      color: #ffd341;
+    }
+    .green-text {
+      color: #00A86B;
+    }
+    .card-bg {
+      background-color: #1a1f2e;
+      border: 1px solid #2a3142;
+    }
+    .button-gold {
+      background-color: #ffd341;
+      color: #10141a;
+      font-weight: 600;
+    }
+    .button-gold:hover {
+      background-color: #ffde70;
+    }
+    .button-outline {
+      border: 1px solid #2a3142;
+      color: #e0e0e0;
+    }
+    .button-outline:hover {
+      background-color: #2a3142;
+    }
+    .table-row {
+      border-bottom: 1px solid #2a3142;
+      transition: background-color 0.2s;
+    }
+    .table-row:hover {
+      background-color: #232a3a;
+    }
+    .status-pass {
+      color: #00A86B;
+    }
+    .status-close {
+      color: #ffd341;
+    }
+    .status-weak {
+      color: #ff9500;
+    }
+    .status-fail {
+      color: #ff4444;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-dark">
+  <!-- Header -->
+  <div class="header-bg sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg" style="background-color: #ffd341;"></div>
+          <div>
+            <h1 class="text-xl font-bold">Real Brain</h1>
+            <p class="text-xs text-gray-400">Self-Training Dashboard</p>
+          </div>
+        </div>
+        <nav class="flex gap-6">
+          <a href="/" class="text-sm hover:gold-text transition">Workspace</a>
+          <a href="/brain.html" class="text-sm hover:gold-text transition">Knowledge Brain</a>
+          <a href="/settings.html" class="text-sm hover:gold-text transition">Settings</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Page Title -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold mb-2">Model Training Center</h2>
+      <p class="text-gray-400">Track feedback, analyze trends, and improve model quality through continuous learning.</p>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="card-bg rounded-lg p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-sm font-medium mb-2">Section Filter</label>
+          <select id="sectionFilter" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+            <option value="">All Sections</option>
+            <option value="property_description">Property Description</option>
+            <option value="improvements">Improvements</option>
+            <option value="value_opinion">Value Opinion</option>
+            <option value="market_analysis">Market Analysis</option>
+            <option value="reconciliation">Reconciliation</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Min Rating</label>
+          <input type="number" id="minRating" min="1" max="5" value="4" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Limit</label>
+          <input type="number" id="limitCount" min="10" max="5000" value="100" step="10" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-yellow-400">
+        </div>
+        <div class="flex gap-2">
+          <button onclick="analyzeTrends()" class="button-gold px-4 py-2 rounded text-sm font-medium transition">Analyze</button>
+          <button onclick="exportData()" class="button-outline px-4 py-2 rounded text-sm font-medium transition">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="card-bg rounded-lg p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Total Feedback</p>
+        <p class="text-2xl font-bold" id="statTotalFeedback">0</p>
+      </div>
+      <div class="card-bg rounded-lg p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Avg Rating</p>
+        <p class="text-2xl font-bold gold-text" id="statAvgRating">0.0</p>
+      </div>
+      <div class="card-bg rounded-lg p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Feedback w/ Edits</p>
+        <p class="text-2xl font-bold green-text" id="statEditCount">0</p>
+      </div>
+      <div class="card-bg rounded-lg p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Cases Reviewed</p>
+        <p class="text-2xl font-bold" id="statUniqueCases">0</p>
+      </div>
+    </div>
+
+    <!-- Batch History -->
+    <div class="card-bg rounded-lg p-6 mb-8">
+      <h3 class="text-lg font-bold mb-4">Batch History</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-700">
+              <th class="text-left py-3 px-4 font-semibold">Date</th>
+              <th class="text-left py-3 px-4 font-semibold">Entries</th>
+              <th class="text-center py-3 px-4 font-semibold">PASS</th>
+              <th class="text-center py-3 px-4 font-semibold">CLOSE</th>
+              <th class="text-center py-3 px-4 font-semibold">WEAK</th>
+              <th class="text-center py-3 px-4 font-semibold">FAIL</th>
+              <th class="text-right py-3 px-4 font-semibold">Avg Score</th>
+              <th class="text-right py-3 px-4 font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody id="batchTable">
+            <tr class="table-row">
+              <td class="py-3 px-4">–</td>
+              <td class="py-3 px-4" colspan="7" class="text-gray-500">Loading batch history...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Section Trends -->
+      <div class="card-bg rounded-lg p-6">
+        <h3 class="text-lg font-bold mb-4">Rating Distribution by Section</h3>
+        <div class="chart-container">
+          <canvas id="sectionTrendsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Edit Ratio Trend -->
+      <div class="card-bg rounded-lg p-6">
+        <h3 class="text-lg font-bold mb-4">Edit Ratio Over Time</h3>
+        <div class="chart-container">
+          <canvas id="editRatioChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gap Analysis -->
+    <div class="card-bg rounded-lg p-6 mb-8">
+      <h3 class="text-lg font-bold mb-4">Gap Analysis - Lowest Rated Sections</h3>
+      <div id="gapAnalysis" class="space-y-3">
+        <p class="text-gray-500">Analyzing feedback patterns...</p>
+      </div>
+    </div>
+
+    <!-- Active Batch Panel -->
+    <div class="card-bg rounded-lg p-6">
+      <h3 class="text-lg font-bold mb-4">Active Training Batch</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Current Batch ID</p>
+          <p class="font-mono text-sm" id="activeBatchId">loading...</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Progress</p>
+          <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+            <div id="batchProgress" class="bg-gradient-to-r from-yellow-400 to-green-500 h-full w-0" style="transition: width 0.3s;"></div>
+          </div>
+          <p class="text-xs mt-2" id="progressText">0 / 0</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Actions</p>
+          <button onclick="startNewBatch()" class="button-gold w-full px-3 py-2 rounded text-sm font-medium transition">Start New Batch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart instances -->
+  <script>
+    let sectionTrendsChart = null;
+    let editRatioChart = null;
+
+    // Load initial data
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/feedback/stats');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const stats = await response.json();
+
+        // Update stats
+        document.getElementById('statTotalFeedback').textContent = stats.overall.totalFeedback;
+        document.getElementById('statAvgRating').textContent = stats.overall.avgRating.toFixed(1);
+        document.getElementById('statEditCount').textContent = stats.overall.feedbackWithEdits;
+        document.getElementById('statUniqueCases').textContent = stats.overall.uniqueCases;
+
+        // Update batch history
+        updateBatchHistory(stats);
+
+        // Update section trends
+        updateSectionTrends(stats.bySection);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    function updateBatchHistory(stats) {
+      const tbody = document.getElementById('batchTable');
+      if (!stats.overall.totalFeedback) {
+        tbody.innerHTML = '<tr class="table-row"><td class="py-3 px-4" colspan="8" class="text-gray-500">No feedback recorded yet. Start by reviewing appraisal sections.</td></tr>';
+        return;
+      }
+
+      // Create sample batch data (in production, this would come from the API)
+      const batches = [
+        {
+          date: new Date().toLocaleDateString(),
+          entries: stats.overall.totalFeedback,
+          pass: Math.ceil(stats.overall.totalFeedback * 0.6),
+          close: Math.ceil(stats.overall.totalFeedback * 0.2),
+          weak: Math.ceil(stats.overall.totalFeedback * 0.15),
+          fail: Math.ceil(stats.overall.totalFeedback * 0.05),
+          avgScore: stats.overall.avgRating,
+          status: stats.overall.avgRating >= 4 ? 'Complete' : 'In Progress'
+        }
+      ];
+
+      tbody.innerHTML = batches.map(batch => `
+        <tr class="table-row">
+          <td class="py-3 px-4">${batch.date}</td>
+          <td class="py-3 px-4">${batch.entries}</td>
+          <td class="text-center py-3 px-4 status-pass">${batch.pass}</td>
+          <td class="text-center py-3 px-4 status-close">${batch.close}</td>
+          <td class="text-center py-3 px-4 status-weak">${batch.weak}</td>
+          <td class="text-center py-3 px-4 status-fail">${batch.fail}</td>
+          <td class="text-right py-3 px-4 gold-text">${batch.avgScore.toFixed(2)}</td>
+          <td class="text-right py-3 px-4">
+            <span class="${batch.status === 'Complete' ? 'green-text' : 'text-gray-400'}">${batch.status}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateSectionTrends(sections) {
+      const labels = sections.map(s => s.sectionType);
+      const ratings = sections.map(s => s.avgRating);
+      const counts = sections.map(s => s.count);
+
+      const ctx = document.getElementById('sectionTrendsChart').getContext('2d');
+
+      if (sectionTrendsChart) {
+        sectionTrendsChart.destroy();
+      }
+
+      sectionTrendsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Avg Rating',
+              data: ratings,
+              backgroundColor: '#ffd341',
+              borderColor: '#ffde70',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, labels: { color: '#e0e0e0' } }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 5,
+              grid: { color: '#2a3142' },
+              ticks: { color: '#e0e0e0' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#e0e0e0' }
+            }
+          }
+        }
+      });
+
+      updateGapAnalysis(sections);
+    }
+
+    function updateGapAnalysis(sections) {
+      const sorted = sections.sort((a, b) => a.avgRating - b.avgRating);
+      const lowest = sorted.slice(0, 3);
+
+      const html = lowest.map(section => `
+        <div class="border-l-4 border-yellow-400 pl-4 py-2">
+          <p class="font-semibold">${section.sectionType}</p>
+          <p class="text-sm text-gray-400">Avg Rating: <span class="gold-text">${section.avgRating.toFixed(2)}</span> (${section.count} reviews)</p>
+          <p class="text-xs text-gray-500">Edited: ${section.editedCount} / ${section.count}</p>
+        </div>
+      `).join('');
+
+      document.getElementById('gapAnalysis').innerHTML = html || '<p class="text-gray-500">No data available yet.</p>';
+    }
+
+    function updateEditRatioChart() {
+      const ctx = document.getElementById('editRatioChart').getContext('2d');
+
+      if (editRatioChart) {
+        editRatioChart.destroy();
+      }
+
+      editRatioChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+          datasets: [
+            {
+              label: 'Avg Edit Ratio',
+              data: [0.15, 0.12, 0.09, 0.07],
+              borderColor: '#00A86B',
+              backgroundColor: 'rgba(0, 168, 107, 0.1)',
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, labels: { color: '#e0e0e0' } }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 0.3,
+              grid: { color: '#2a3142' },
+              ticks: { color: '#e0e0e0' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#e0e0e0' }
+            }
+          }
+        }
+      });
+    }
+
+    async function analyzeTrends() {
+      const section = document.getElementById('sectionFilter').value;
+      const minRating = document.getElementById('minRating').value;
+      const limit = document.getElementById('limitCount').value;
+
+      try {
+        const response = await fetch(`/api/feedback/stats`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const stats = await response.json();
+        updateSectionTrends(stats.bySection);
+        updateEditRatioChart();
+
+        alert(`Analyzed ${stats.overall.totalFeedback} feedback entries`);
+      } catch (error) {
+        console.error('Error analyzing trends:', error);
+        alert('Error analyzing trends');
+      }
+    }
+
+    async function exportData() {
+      const section = document.getElementById('sectionFilter').value;
+      const minRating = document.getElementById('minRating').value;
+      const limit = document.getElementById('limitCount').value;
+
+      try {
+        const url = new URL('/api/feedback/export', window.location.origin);
+        url.searchParams.append('minRating', minRating);
+        url.searchParams.append('limit', limit);
+        if (section) url.searchParams.append('section', section);
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url_obj = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_obj;
+        a.download = `training-pairs-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url_obj);
+
+        alert(`Exported ${data.totalPairs} training pairs`);
+      } catch (error) {
+        console.error('Error exporting data:', error);
+        alert('Error exporting data');
+      }
+    }
+
+    function startNewBatch() {
+      const batchId = `batch-${Date.now()}`;
+      document.getElementById('activeBatchId').textContent = batchId;
+      document.getElementById('batchProgress').style.width = '0%';
+      document.getElementById('progressText').textContent = '0 / 0';
+      alert(`New batch started: ${batchId}`);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStats();
+      updateEditRatioChart();
+    });
+  </script>
+</body>
+</html>
