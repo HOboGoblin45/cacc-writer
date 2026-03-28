@@ -45,6 +45,7 @@ import { initPhase17Schema } from '../migration/phase17Schema.js';
 import { initPhase18Schema } from '../migration/phase18Schema.js';
 import { initPhase19Schema } from '../migration/phase19Schema.js';
 import { initPhase20Schema } from '../migration/phase20Schema.js';
+import { initPhase21Schema } from '../migration/phase21Schema.js';
 import { initPipelineSchema } from '../migration/pipelineSchema.js';
 import { initBrainSchema } from '../migration/brainSchema.js';
 
@@ -861,6 +862,13 @@ export function initSchema(db) {
     initPhase20Schema(db);
   } catch (err) {
     log.error('schema:phase20-init', { error: err.message });
+  }
+
+  // Run Phase 21 schema additions (Scale & Commercial Readiness)
+  try {
+    initPhase21Schema(db);
+  } catch (err) {
+    log.error('schema:phase21-init', { error: err.message });
   }
 
   // Run Pipeline schema additions (Cloudflare data pipeline)

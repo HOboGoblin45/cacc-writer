@@ -1,88 +1,330 @@
 {
-  "_comment": "Field map for FNMA Form 1073 \u00e2\u20ac\u201d Individual Condominium Unit Appraisal.",
-  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1073 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py \u00e2\u20ac\u201d copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1073 to verify.",
+  "_comment": "Field map for FNMA Form 1073 — Individual Condominium Unit Appraisal. Updated for Phase 5.",
+  "_phase": "Phase 5 - Desktop Agent Calibration for 1073 Condo Units",
+  "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1073 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py — copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1073 to verify.",
   "_schema": {
     "label": "Human-readable field label (used for label-match fallback)",
-    "automation_id": "UIA AutomationId \u00e2\u20ac\u201d MOST RELIABLE. Fill in from /calibrate output.",
+    "automation_id": "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
     "class_name": "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
     "class_index": "0-based index among controls of this class_name. Fill in from /calibrate output.",
     "control_index": "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
+    "max_chars": "Maximum character limit for the field (ACI enforces strict limits)",
+    "field_type": "text | dropdown | checkbox | numeric",
     "notes": "Human notes about this field"
   },
-  "neighborhood_description": {
-    "label": "Neighborhood Description",
-    "tab_name": "Neig",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Neighborhood section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Neig...",
-    "live_calibration_status": "live_confirmed",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
+  "narratives": {
+    "_comment": "Main narrative sections for 1073 report (AI-generated text fields). Inherits from 1004, plus condo-specific sections.",
+    "offering_history": {
+      "label": "Offering History",
+      "tab_name": "Contr",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Contract section — narrative about prior listing/offering history specific to condo unit"
+    },
+    "contract_analysis": {
+      "label": "Contract Analysis",
+      "tab_name": "Contr",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Contract section — analysis of agreement of sale, financing, seller concessions"
+    },
+    "neighborhood_boundaries": {
+      "label": "Neighborhood Boundaries",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 500,
+      "field_type": "text",
+      "notes": "Neighborhood section — cardinal direction boundaries. Inherits from 1004."
+    },
+    "neighborhood_description": {
+      "label": "Neighborhood Description",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Neighborhood section — description. Inherits from 1004. Field mapping calibrated at 1004, reused for 1073."
+    },
+    "market_conditions": {
+      "label": "Market Conditions Addendum",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Neighborhood section — market conditions. Inherits from 1004."
+    },
+    "site_comments": {
+      "label": "Site Description",
+      "tab_name": "Site",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Site section — for condo unit, typically describes project site and unit location. Inherits from 1004."
+    },
+    "improvements_condition": {
+      "label": "Improvements / Condition Narrative",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Improvements section — condition rating, construction details, unit-specific features, common elements accessibility. Inherits from 1004."
+    },
+    "adverse_conditions": {
+      "label": "Adverse Conditions / External Factors",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1500,
+      "field_type": "text",
+      "notes": "Improvements section — adverse conditions specific to unit or project (HOA violations, common area issues, etc.)"
+    },
+    "condo_project_analysis": {
+      "label": "Condo Project Analysis",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 3000,
+      "field_type": "text",
+      "notes": "Subject section — critical for 1073: HOA health, reserve fund adequacy, owner-occupancy ratio, special assessments, legal compliance, common elements"
+    },
+    "sales_comparison_commentary": {
+      "label": "Sales Comparison Commentary",
+      "tab_name": "Sales",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Sales section — comparable selection rationale emphasizing same-project vs. competing-project comps and condo premium/discount"
+    },
+    "reconciliation": {
+      "label": "Reconciliation",
+      "tab_name": "Reco",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Reconciliation section — reconciliation of three approaches with final value conclusion. HIGH PRIORITY. Inherits from 1004."
+    }
   },
-  "site_comments": {
-    "label": "Site Description",
-    "tab_name": "Site",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Site section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Site",
-    "live_calibration_status": "live_confirmed",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
+  "project_level_fields": {
+    "_comment": "Condo project-specific data fields extracted from 1076 Condo Questionnaire or HOA documentation",
+    "hoa_dues": {
+      "label": "HOA Monthly Dues",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 8,
+      "notes": "Subject section — monthly HOA dues amount"
+    },
+    "reserve_fund_adequacy": {
+      "label": "Reserve Fund Adequacy",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 50,
+      "notes": "Subject section — reserve fund status: adequate, marginally adequate, inadequate"
+    },
+    "owner_occupancy_ratio": {
+      "label": "Owner-Occupancy Ratio",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 3,
+      "notes": "Subject section — percentage of units owner-occupied (critical for financing eligibility)"
+    },
+    "special_assessments": {
+      "label": "Special Assessments",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 500,
+      "notes": "Subject section — any planned or pending special assessments and amounts"
+    },
+    "total_units_in_project": {
+      "label": "Total Units in Project",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 4,
+      "notes": "Subject section — total number of units in the condominium project"
+    },
+    "project_legal_compliance": {
+      "label": "Project Legal Compliance",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 50,
+      "notes": "Subject section — 1076 questionnaire findings: compliant, minor violations, major violations"
+    },
+    "pending_litigation": {
+      "label": "Pending Litigation / Liens",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "checkbox",
+      "max_chars": 1,
+      "notes": "Subject section — any pending HOA litigation or liens affecting property"
+    }
   },
-  "improvements_condition": {
-    "label": "Improvements",
-    "tab_name": "Impro",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Improvements section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Impro...",
-    "live_calibration_status": "live_confirmed",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
+  "unit_level_fields": {
+    "_comment": "Individual unit data fields (typically inherited from 1004 structure)",
+    "subject_address": {
+      "label": "Unit Address",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 200,
+      "notes": "Subject section — full address including unit number"
+    },
+    "unit_number": {
+      "label": "Unit Number",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 50,
+      "notes": "Subject section — unit identifier (e.g., 304, C-7, Unit 12)"
+    },
+    "year_built": {
+      "label": "Year Built",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 4,
+      "notes": "Improvements section — year of project construction"
+    },
+    "bedrooms": {
+      "label": "Bedrooms",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 2,
+      "notes": "Improvements section — number of bedrooms in subject unit"
+    },
+    "bathrooms": {
+      "label": "Bathrooms",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 4,
+      "notes": "Improvements section — number of bathrooms (format: X or X.X for half baths)"
+    },
+    "unit_gla": {
+      "label": "Unit GLA",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 5,
+      "notes": "Improvements section — gross living area of subject unit"
+    },
+    "condition_rating": {
+      "label": "Condition Rating",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 2,
+      "notes": "Improvements section — UAD condition rating (C1-C6)"
+    },
+    "quality_rating": {
+      "label": "Quality Rating",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 2,
+      "notes": "Improvements section — UAD quality rating (Q1-Q6)"
+    }
   },
-  "condo_project_analysis": {
-    "label": "Project Information",
-    "tab_name": "Subj",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Condo project analysis \u00e2\u20ac\u201d in Subject section. Tab: Subj...",
-    "live_calibration_status": "corpus_backed_pending_navigation_fix"
+  "_tab_positions": {
+    "_note": "Tab navigation positions (to be filled in from ACI calibration). Same as 1004 since 1073 uses same ACI form template.",
+    "Subj": {
+      "index": 0,
+      "click_ratio": 0.04,
+      "note": "Subject section — includes condo project analysis fields"
+    },
+    "Contr": {
+      "index": 1,
+      "click_ratio": 0.14,
+      "note": "Contract section"
+    },
+    "Neig": {
+      "index": 2,
+      "click_ratio": 0.21,
+      "note": "Neighborhood section"
+    },
+    "Site": {
+      "index": 3,
+      "click_ratio": 0.27,
+      "note": "Site section — for condo, describes project site"
+    },
+    "Impro": {
+      "index": 4,
+      "click_ratio": 0.33,
+      "note": "Improvements section — unit-specific features and project common elements"
+    },
+    "Sales": {
+      "index": 5,
+      "click_ratio": 0.40,
+      "note": "Sales comparison section"
+    },
+    "Reco": {
+      "index": 6,
+      "click_ratio": 0.47,
+      "note": "Reconciliation section"
+    },
+    "Addit": {
+      "index": 7,
+      "click_ratio": 0.54,
+      "note": "Addendum section"
+    }
   },
-  "sales_comparison_commentary": {
-    "label": "Sales Comparison Analysis",
-    "tab_name": "Sales",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Sales comparison section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Sales...",
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
-  },
-  "reconciliation": {
-    "label": "Reconciliation",
-    "tab_name": "Reco",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Reconciliation section \u00e2\u20ac\u201d TX32 addendum editor. Tab: Reco... HIGH PRIORITY.",
-    "live_calibration_status": "insertion_ok_readback_unreliable",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
-  },
-  "market_conditions": {
-    "label": "Market Conditions",
-    "tab_name": "Neig",
-    "automation_id": "",
-    "class_name": "",
-    "class_index": null,
-    "control_index": null,
-    "notes": "Market conditions \u00e2\u20ac\u201d in Neighborhood section. Tab: Neig...",
-    "live_calibration_status": "live_confirmed",
-    "calibration_note": "Inherits calibration from 1004 - same ACI field"
+  "_1073_specific_guidance": {
+    "condo_project_analysis": "CRITICAL: Must address HOA financial health, reserve fund adequacy, owner-occupancy ratio (critical for fannie mae financing), pending litigation, legal compliance. This is the primary differentiator of 1073 vs 1004.",
+    "comparable_selection": "1073 comps should include (1) same project units if available (best comp), (2) competing project units in similar location, (3) bracketing of subject condition/quality/size. Note any condo premium or discount.",
+    "hoa_impact_on_value": "Condo comps with different HOA dues, reserve fund adequacy, or legal issues will require adjustments. Document the impact of each factor on the subject's market position.",
+    "common_area_access": "Describe subject's access to and benefit from common elements (parking, recreation, security, maintenance). Comment on condition and functionality of shared facilities.",
+    "financing_considerations": "1073 properties with low owner-occupancy, high HOA dues, inadequate reserves, or legal issues are difficult to finance. Note any financing implications in reconciliation."
   }
 }

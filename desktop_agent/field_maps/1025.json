@@ -1,85 +1,308 @@
 {
-  "_comment": "Field map for FNMA Form 1025 — Small Residential Income Property (2-4 units).",
+  "_comment": "Field map for FNMA Form 1025 — Small Residential Income Property (2-4 units). Updated for Phase 5.",
+  "_phase": "Phase 5 - Desktop Agent Calibration for 1025",
   "_calibration": "HOW TO CALIBRATE: 1) Open ACI with a 1025 report loaded. 2) Start desktop_agent/agent.py. 3) Run: python desktop_agent/calibrate_aci.py — copy automation_id and class_name/class_index values from the output. 4) POST http://localhost:5180/reload-maps to apply. 5) Run: python _test_aci_live.py 1025 to verify.",
   "_schema": {
-    "label":          "Human-readable field label (used for label-match fallback)",
-    "automation_id":  "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
-    "class_name":     "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
-    "class_index":    "0-based index among controls of this class_name. Fill in from /calibrate output.",
-    "control_index":  "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
-    "notes":          "Human notes about this field"
+    "label": "Human-readable field label (used for label-match fallback)",
+    "automation_id": "UIA AutomationId — MOST RELIABLE. Fill in from /calibrate output.",
+    "class_name": "Windows class name for RichEdit controls (e.g. 'RichEdit20W'). Fill in from /calibrate output.",
+    "class_index": "0-based index among controls of this class_name. Fill in from /calibrate output.",
+    "control_index": "0-based index among ALL text-input controls. Fill in from /calibrate output as fallback.",
+    "max_chars": "Maximum character limit for the field (ACI enforces strict limits)",
+    "field_type": "text | dropdown | checkbox | numeric",
+    "notes": "Human notes about this field"
   },
-
-  "neighborhood_description": {
-    "label":          "Neighborhood Description",
-    "tab_name":       "Neig",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Neighborhood section — TX32 addendum editor. Tab: Neig..."
+  "narratives": {
+    "_comment": "Main narrative sections for 1025 report (AI-generated text fields)",
+    "offering_history": {
+      "label": "Offering History",
+      "tab_name": "Contr",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Contract/offering section — narrative about prior listing/offering history and current contract terms"
+    },
+    "contract_analysis": {
+      "label": "Contract Analysis",
+      "tab_name": "Contr",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Contract section — analysis of agreement of sale, financing, seller concessions, lease assumptions"
+    },
+    "concessions": {
+      "label": "Concessions / Financial Assistance",
+      "tab_name": "Contr",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1000,
+      "field_type": "text",
+      "notes": "Financial assistance and concessions narrative — market context for seller concessions"
+    },
+    "neighborhood_boundaries": {
+      "label": "Neighborhood Boundaries",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 500,
+      "field_type": "text",
+      "notes": "Neighborhood section — cardinal direction boundaries (north, south, east, west)"
+    },
+    "neighborhood_description": {
+      "label": "Neighborhood Description",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Neighborhood section — description with emphasis on rental market and multi-family prevalence"
+    },
+    "market_conditions": {
+      "label": "Market Conditions Addendum",
+      "tab_name": "Neig",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2000,
+      "field_type": "text",
+      "notes": "Neighborhood section — market conditions with emphasis on rental market data and vacancy rates"
+    },
+    "site_comments": {
+      "label": "Site / Utilities / Adverse Conditions",
+      "tab_name": "Site",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Site section — site description, utilities, zoning, adverse conditions for multi-unit property"
+    },
+    "improvements_condition": {
+      "label": "Improvements / Condition Narrative",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Improvements section — condition rating, unit mix, kitchen/bath status, common areas for rental property"
+    },
+    "adverse_conditions": {
+      "label": "Adverse Conditions / External Factors",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1500,
+      "field_type": "text",
+      "notes": "Improvements section — adverse conditions affecting rental viability (environmental, neighborhood, zoning)"
+    },
+    "functional_utility": {
+      "label": "Functional Utility",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1500,
+      "field_type": "text",
+      "notes": "Improvements section — unit configuration, layout efficiency for rental operations"
+    },
+    "functional_utility_conformity": {
+      "label": "Functional Utility / Conformity",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1000,
+      "field_type": "text",
+      "notes": "Improvements section — subject conformity to neighborhood as rental property"
+    },
+    "income_approach": {
+      "label": "Income Approach Narrative",
+      "tab_name": "Income",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 4000,
+      "field_type": "text",
+      "notes": "Income section — comprehensive income approach with market rent, GRM, cap rate analysis"
+    },
+    "sales_comparison_commentary": {
+      "label": "Sales Comparison Commentary",
+      "tab_name": "Sales",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Sales section — comparable selection rationale and adjustment justification"
+    },
+    "sca_summary": {
+      "label": "Sales Comp Analysis Summary",
+      "tab_name": "Sales",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 1000,
+      "field_type": "text",
+      "notes": "Sales section — summary of comparable analysis findings"
+    },
+    "reconciliation": {
+      "label": "Reconciliation",
+      "tab_name": "Reco",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 2500,
+      "field_type": "text",
+      "notes": "Reconciliation section — reconciliation of three approaches with final value conclusion. HIGH PRIORITY."
+    },
+    "exposure_time": {
+      "label": "Exposure Time / Marketing Time",
+      "tab_name": "Reco",
+      "automation_id": "",
+      "class_name": "",
+      "class_index": null,
+      "control_index": null,
+      "max_chars": 500,
+      "field_type": "text",
+      "notes": "Reconciliation section — typical marketing time for similar multi-unit properties"
+    }
   },
-  "site_comments": {
-    "label":          "Site Description",
-    "tab_name":       "Site",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Site section — TX32 addendum editor. Tab: Site"
+  "data_fields": {
+    "_comment": "Key data entry fields (drop-down, checkbox, numeric) that may be populated from extracted data",
+    "subject_address": {
+      "label": "Subject Address",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 200,
+      "notes": "Subject section — full property address"
+    },
+    "unit_count": {
+      "label": "Number of Units",
+      "tab_name": "Subj",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 2,
+      "notes": "Subject section — for 1025: 2-4 units"
+    },
+    "year_built": {
+      "label": "Year Built",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 4,
+      "notes": "Improvements section — year of construction"
+    },
+    "zoning": {
+      "label": "Zoning Classification",
+      "tab_name": "Site",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 100,
+      "notes": "Site section — zoning that permits multi-family use"
+    },
+    "site_area": {
+      "label": "Site Area / Lot Size",
+      "tab_name": "Site",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "text",
+      "max_chars": 100,
+      "notes": "Site section — lot size in square feet or acres"
+    },
+    "total_gla": {
+      "label": "Total GLA",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "numeric",
+      "max_chars": 6,
+      "notes": "Improvements section — gross living area for entire property"
+    },
+    "condition_rating": {
+      "label": "Condition Rating",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 2,
+      "notes": "Improvements section — UAD condition rating (C1-C6)"
+    },
+    "quality_rating": {
+      "label": "Quality Rating",
+      "tab_name": "Impro",
+      "automation_id": "",
+      "class_name": "",
+      "field_type": "dropdown",
+      "max_chars": 2,
+      "notes": "Improvements section — UAD quality rating (Q1-Q6)"
+    }
   },
-  "improvements_condition": {
-    "label":          "Improvements",
-    "tab_name":       "Impro",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Improvements section — TX32 addendum editor. Tab: Impro..."
-  },
-  "sales_comparison_commentary": {
-    "label":          "Sales Comparison Analysis",
-    "tab_name":       "Sales",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Sales comparison section — TX32 addendum editor. Tab: Sales..."
-  },
-  "income_approach": {
-    "label":          "Income Approach",
-    "tab_name":       "Income",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Income approach section — TX32 addendum editor. Tab: Income"
-  },
-  "reconciliation": {
-    "label":          "Reconciliation",
-    "tab_name":       "Reco",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Reconciliation section — TX32 addendum editor. Tab: Reco... HIGH PRIORITY."
-  },
-  "market_conditions": {
-    "label":          "Market Conditions",
-    "tab_name":       "Neig",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Market conditions — in Neighborhood section. Tab: Neig..."
-  },
-  "rental_analysis": {
-    "label":          "Rental Analysis",
-    "tab_name":       "Income",
-    "automation_id":  "",
-    "class_name":     "",
-    "class_index":    null,
-    "control_index":  null,
-    "notes":          "Rental analysis — in Income section. Tab: Income"
+  "_tab_positions": {
+    "_note": "Tab navigation positions (to be filled in from ACI calibration)",
+    "Subj": {
+      "index": 0,
+      "click_ratio": 0.04
+    },
+    "Contr": {
+      "index": 1,
+      "click_ratio": 0.14
+    },
+    "Neig": {
+      "index": 2,
+      "click_ratio": 0.21
+    },
+    "Site": {
+      "index": 3,
+      "click_ratio": 0.27
+    },
+    "Impro": {
+      "index": 4,
+      "click_ratio": 0.33
+    },
+    "Sales": {
+      "index": 5,
+      "click_ratio": 0.40
+    },
+    "Income": {
+      "index": 6,
+      "click_ratio": 0.47
+    },
+    "Reco": {
+      "index": 7,
+      "click_ratio": 0.54
+    },
+    "Addit": {
+      "index": 8,
+      "click_ratio": 0.61
+    }
   }
 }
