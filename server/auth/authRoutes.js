@@ -14,7 +14,10 @@ const router = Router();
 
 router.post('/auth/register', async (req, res) => {
   try {
-    const { username, email, password, displayName } = req.body || {};
+    const { email, password, name, displayName: dn } = req.body || {};
+    // Accept either username or derive it from email's local part
+    const username = req.body.username || (email ? email.split('@')[0].replace(/[^a-z0-9_]/gi, '_') : undefined);
+    const displayName = dn || name;
     const result = await registerUser({ username, email, password, displayName });
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
@@ -27,7 +30,9 @@ router.post('/auth/register', async (req, res) => {
 
 router.post('/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body || {};
+    // Accept username or email as the login identifier
+    const { password } = req.body || {};
+    const username = req.body.username || req.body.email;
     const result = await loginUser({ username, password });
     res.json({ ok: true, ...result });
   } catch (err) {

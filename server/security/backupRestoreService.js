@@ -163,39 +163,14 @@ export function listBackups() {
 
 /**
  * Restore from a backup file.
- * Writes a pending-restore marker; actual restore happens on next server startup.
+ * Not yet implemented — requires manual intervention by support.
  */
-export function restoreFromBackup(backupId) {
-  const record = dbGet('SELECT * FROM backup_records WHERE id = ?', [backupId]);
-  if (!record) return { error: 'Backup not found' };
-  if (!record.file_path || !fs.existsSync(record.file_path)) {
-    return { error: 'Backup file not found on disk' };
-  }
-
-  // Verify hash before accepting the restore request
-  const currentHash = computeFileHash(record.file_path);
-  if (currentHash !== record.file_hash) {
-    log.error('backup:restore-hash-mismatch', { backupId, expected: record.file_hash, actual: currentHash });
-    return { error: 'Backup file integrity check failed — hash mismatch' };
-  }
-
-  const DATA_DIR = path.join(__dirname, '..', '..', 'data');
-  const markerPath = path.join(DATA_DIR, 'pending-restore.json');
-  const marker = {
-    backupId,
-    filePath: record.file_path,
-    expectedHash: record.file_hash,
-    requestedAt: new Date().toISOString(),
-  };
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(markerPath, JSON.stringify(marker, null, 2));
-
-  log.info('backup:restore-requested', { backupId, filePath: record.file_path });
+export function restoreFromBackup(_backupId) {
   return {
-    backupId,
-    filePath: record.file_path,
-    status: 'restore_pending',
-    message: 'Restore marker written. Application restart required to complete restore.',
+    notImplemented: true,
+    ok: false,
+    error: 'Restore not yet implemented — contact support',
+    status: 'not_implemented',
   };
 }
 
