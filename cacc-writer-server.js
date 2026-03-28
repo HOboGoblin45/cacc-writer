@@ -28,6 +28,10 @@ import { MODEL } from './server/openaiClient.js';
 import { requireAuth } from './server/middleware/authMiddleware.js';
 import { requestIdMiddleware } from './server/middleware/requestId.js';
 import { errorHandler } from './server/middleware/errorHandler.js';
+import { aiTimeout, apiTimeout } from './server/middleware/requestTimeout.js';
+import cookieParser from 'cookie-parser';
+import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrfProtection.js';
+import { validateEnvAndLog } from './server/config/envValidator.js';
 
 import healthRouter from './server/api/healthRoutes.js';
 import casesRouter from './server/api/casesRoutes.js';
@@ -144,11 +148,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 5178;
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
 
-// ── SaaS production guards ──────────────────────────────────────────────────
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.error('[FATAL] JWT_SECRET is required in production. Exiting.');
-  process.exit(1);
-}
+// ── Environment Validation ──────────────────────────────────────────────────
+validateEnvAndLog();
 
 // ── Apply pending restore before startup checks ─────────────────────────────
 try {
@@ -192,7 +193,7 @@ const CORS_ORIGINS = process.env.NODE_ENV === 'production'
 app.use(cors({
   origin: CORS_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization', 'X-CSRF-Token'],
 }));
 
 // ── Request ID ──────────────────────────────────────────────────────────────
@@ -242,6 +243,10 @@ const demoLimiter = rateLimit({
 app.use('/api/demo', demoLimiter);
 
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
+
+// ── CSRF Protection ─────────────────────────────────────────────────────────
+app.use(csrfProtection({ enabled: process.env.NODE_ENV === 'production' }));
 
 log.info('server:start', { model: MODEL, port: PORT });
 
@@ -299,6 +304,7 @@ app.get('/questionnaire', (_q, r) => r.sendFile(path.join(__dirname, 'frontend',
 
 // Auth schema + public auth routes (mounted BEFORE auth wall)
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
+app.get('/api/auth/csrf-token', csrfTokenEndpoint);
 app.use('/api', authRouter);
 app.use('/api', billingRouter); // billing webhook needs raw body before auth
 
@@ -348,8 +354,8 @@ app.use('/api', dataEnrichRouter);
 app.use('/api', mobileRouter);
 app.use('/api', businessIntelRouter);
 app.use('/api', deliveryRouter);
-app.use('/api', aiRouter);
-app.use('/api', aiAdvancedRouter);
+app.use('/api', aiTimeout, aiRouter);
+app.use('/api', aiTimeout, aiAdvancedRouter);
 app.use('/api', automationRouter);
 app.use('/api', trainingRouter);
 app.use('/api', platformAIRouter);
@@ -379,8 +385,8 @@ app.use('/api', exportRouter);
 app.use('/api', sseRouter);
 app.use('/api/cases', casesRouter);
 app.use('/api/cases', caseCompatRouter);
-app.use('/api', generationRouter);
-app.use('/api', workflowRouter);
+app.use('/api', aiTimeout, generationRouter);
+app.use('/api', aiTimeout, workflowRouter);
 app.use('/api', memoryRouter);
 app.use('/api', agentsRouter);
 app.use('/api', intelligenceRouter);
@@ -411,7 +417,7 @@ app.use('/api', uad36Router);
 app.use('/api', formDataRouter);
 app.use('/api', photoAddendumRouter);
 app.use('/api', questionnaireRouter);
-app.use('/api', brainRouter);
+app.use('/api', aiTimeout, brainRouter);
 
 // ── Global Error Handler ────────────────────────────────────────────────────
 // Structured error responses with request ID correlation, circuit breaker
