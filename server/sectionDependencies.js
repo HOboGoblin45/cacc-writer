@@ -176,18 +176,21 @@ export const SECTION_DEPENDENCIES = {
     ],
   },
 
-  // ── DEFERRED: 1025-specific sections ─────────────────────────────────────────
-  // DEFERRED — 1025 form type not in active production scope.
-  // See SCOPE.md. Do not extend these until 1025 lane is activated.
+  // ── 1025-specific sections ──────────────────────────────────────────────────────
 
-  prior_sales: {
+  prior_sales_subject: {
     required:    ['subject.address'],
     recommended: ['contract.contractPrice', 'contract.contractDate', 'contract.offeringHistory'],
   },
 
   income_approach: {
-    required:    ['subject.gla'],
-    recommended: ['subject.condition', 'income.grossRent', 'income.vacancyRate', 'income.capRate'],
+    required:    ['subject.gla', 'subject.beds', 'subject.baths'],
+    recommended: [
+      'income.marketRent', 'income.contractRent', 'income.vacancyRate',
+      'income.grossRent', 'income.operatingExpenses', 'income.noi',
+      'income.grmIndication', 'income.grmSource', 'income.capRate',
+      'subject.condition', 'market.trend',
+    ],
   },
 
   // ── DEFERRED: 1073-specific sections ─────────────────────────────────────────

@@ -1,0 +1,111 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "UAD condition language templates and narrative guidance for 1025 URAR small residential income property appraisals (2-4 unit properties).",
+    "source": "Fannie Mae UAD Appendix D — Condition Ratings, adapted for income-producing residential properties",
+    "lastUpdated": "2026-03-28"
+  },
+
+  "condition": {
+    "C1": {
+      "uadDefinition": "The improvements have been very recently constructed and have not previously been occupied. The entire structure and all components are new and the property features no physical depreciation. All rental units and common areas are brand new with no prior occupancy.",
+      "narrativeGuidance": "Describe the subject as newly constructed with no prior occupancy. All units and components are new. No physical depreciation is present. Note that all rental units are ready for immediate occupancy. Use language consistent with new construction multi-family property.",
+      "promptInstruction": "The subject is rated C1 (new construction, no prior occupancy). Describe all components and units as new. Do not reference any deferred maintenance, wear, or depreciation in any units or common areas. Note that all rental units are in move-in-ready condition. Use new construction language throughout."
+    },
+    "C2": {
+      "uadDefinition": "The improvements feature no deferred maintenance, little or no physical depreciation, and require no repairs. Virtually all building components are new or have been recently repaired, refinished, or rehabilitated. All rental units and common areas have been recently updated. All outdated components and finishes have been updated and/or replaced with components that meet current standards.",
+      "narrativeGuidance": "Describe the subject as near-new or recently fully renovated. No deferred maintenance in any unit or common area. All components updated to current standards. Minimal physical depreciation. All units are in excellent condition with updated finishes.",
+      "promptInstruction": "The subject is rated C2 (near-new or recently fully renovated). Describe the property as having no deferred maintenance in any rental unit or common area and little or no physical depreciation. All major components are new or recently updated. All units feature current finishes and systems. Avoid language suggesting wear, aging, or needed repairs in any area of the property."
+    },
+    "C3": {
+      "uadDefinition": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. All rental units and common areas have been well maintained. This is the most common condition rating for income properties of this type.",
+      "narrativeGuidance": "Describe the subject as well maintained with limited physical depreciation from normal wear and tear. Some components may be updated in individual units or common areas. The structure and units are well maintained overall. This is typical condition for income-producing residential properties. Note routine maintenance where appropriate.",
+      "promptInstruction": "The subject is rated C3 (well maintained, limited depreciation from normal wear and tear). Describe the property as well maintained across all units and common areas. Note that some components may be updated or recently rehabilitated in individual units, but not all systems require updating. Avoid overstating condition issues — this is average-to-good condition for an income property. Do not imply significant deferred maintenance or needed repairs in units unless explicitly stated in the facts."
+    },
+    "C4": {
+      "uadDefinition": "The improvements feature some deferred maintenance and physical deterioration due to normal wear and tear. The property has been adequately maintained and requires only minimal repairs to building components, mechanical systems, unit interiors, and cosmetic repairs. All major building components have been adequately maintained and are functionally adequate for rental operation.",
+      "narrativeGuidance": "Describe the subject as adequately maintained with some deferred maintenance and physical deterioration from normal wear and tear in units and common areas. Minimal repairs needed to building components, mechanical systems, and cosmetic items. All major components are functionally adequate for continued rental income production. Be specific about deferred maintenance items if provided in facts.",
+      "promptInstruction": "The subject is rated C4 (adequately maintained, some deferred maintenance and physical deterioration from normal wear and tear). Describe the property as adequately maintained but note specific deferred maintenance items in individual units or common areas if provided in the facts. Minimal repairs are needed to building components, mechanical systems, and cosmetic items. All major building components are functionally adequate and capable of supporting continued rental operations. Use measured, factual language — do not overstate condition issues beyond what the facts support."
+    },
+    "C5": {
+      "uadDefinition": "The improvements feature obvious deferred maintenance and are in need of some significant repairs. Some building components, unit interiors, or systems need repairs, rehabilitation, or updating. The functional utility and overall rental income potential is somewhat diminished due to condition, but the property remains useable and capable of generating income.",
+      "narrativeGuidance": "Describe the subject as having obvious deferred maintenance in units and/or common areas requiring significant repairs. Some building components or unit systems need repair, rehabilitation, or updating. Functional utility and rental income potential are somewhat diminished but the property remains useable and income-producing. Be specific about items needing repair if provided in facts.",
+      "promptInstruction": "The subject is rated C5 (obvious deferred maintenance, significant repairs needed). Describe specific building components, unit systems, or common areas that need repair, rehabilitation, or updating based on the facts provided. Note that functional utility and rental income potential are somewhat diminished but the property remains useable and capable of generating income. Use [INSERT] for specific repair items not provided in facts."
+    },
+    "C6": {
+      "uadDefinition": "The improvements have substantial damage or deferred maintenance with deficiencies or defects that are severe enough to affect the safety, soundness, or structural integrity of the improvements. The property is in need of substantial repairs and rehabilitation, including many or most major components. The property's ability to generate reliable income is significantly impaired.",
+      "narrativeGuidance": "Describe the subject as having substantial damage or deferred maintenance affecting safety, soundness, or structural integrity. Substantial repairs and rehabilitation are needed including many or most major components. Ability to generate reliable rental income is significantly impaired. Be specific about deficiencies if provided in facts.",
+      "promptInstruction": "The subject is rated C6 (substantial damage or deferred maintenance affecting safety, soundness, or structural integrity). Describe the specific deficiencies and defects based on the facts provided. Note that substantial repairs and rehabilitation are needed including many or most major components. Note the significant impact on income-generating capability. Use [INSERT] for specific items not provided in facts. This rating requires careful, factual language — do not speculate beyond what the facts support."
+    }
+  },
+
+  "market_conditions": {
+    "stable": {
+      "definition": "Rental market conditions are stable with balanced supply and demand for rental units. Rental rates are stable with minimal appreciation or depreciation. Vacancy rates are typical for the area and property type.",
+      "narrativeGuidance": "Describe rental market conditions as stable. Supply of and demand for rental units are in balance. Rental rates are stable. Vacancy rates are typical for the area. Tenant demand is consistent. Market fundamentals support continued income production at current levels.",
+      "promptInstruction": "Rental market conditions are stable. Describe supply and demand for rental units as balanced. Rental rates in the area are stable with minimal change. Vacancy rates are typical for the area and property type. Reference the market statistics chart if a market_stat is provided in the facts. Note that the stable rental market supports the subject property's income-generating capacity."
+    },
+    "appreciating": {
+      "definition": "Rental market conditions are appreciating with demand for rental units exceeding supply. Rental rates are increasing. Vacancy rates are below typical levels for the area. Tenant demand is strong.",
+      "narrativeGuidance": "Describe rental market conditions as appreciating. Demand for rental units exceeds supply. Rental rates are increasing in the area. Vacancy rates are below typical levels, indicating strong tenant demand. The appreciating market supports rental rate growth and reduced tenant turnover.",
+      "promptInstruction": "Rental market conditions are appreciating. Describe demand for rental units as exceeding available supply. Rental rates are increasing. Vacancy rates are below typical levels for the area and property type. Strong tenant demand may be noted. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific appreciation percentages unless provided in facts. Note how appreciating conditions support subject property's rental income."
+    },
+    "declining": {
+      "definition": "Rental market conditions are declining with supply of rental units exceeding demand. Rental rates are decreasing or under downward pressure. Vacancy rates are above typical levels for the area. Tenant demand is weak.",
+      "narrativeGuidance": "Describe rental market conditions as declining. Supply of rental units exceeds demand. Rental rates are under downward pressure or declining in the area. Vacancy rates are above typical levels, indicating weak tenant demand. Market fundamentals pose challenges to maintaining current rental income levels.",
+      "promptInstruction": "Rental market conditions are declining. Describe supply of rental units as exceeding demand. Rental rates are under downward pressure or declining. Vacancy rates are above typical levels for the area and property type. Weak tenant demand may result in longer marketing periods for vacancies. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific decline percentages unless provided in facts. Note the impact on subject property's income-generating capacity."
+    }
+  },
+
+  "neighborhood_description": {
+    "suburban": {
+      "definition": "A suburban neighborhood with mixed residential land use including single-family homes and multi-family rental properties. Convenient proximity to employment centers, schools, shopping, and services. Typical built-up percentage and moderate growth rate.",
+      "narrativeGuidance": "Describe a suburban neighborhood suitable for rental properties. Cover proximity to employment, schools, shopping, and services. Note prevalence of both owner-occupied and rental properties. Note built-up percentage and growth rate where supported by facts. Comment on rental market demand drivers such as proximity to employment and schools.",
+      "promptInstruction": "Describe a suburban neighborhood. Cover proximity to employment centers, schools, shopping, and services. Note the prevalence of multi-family and rental properties in the area. Note land use mix and built-up percentage if provided in facts. Comment on factors supporting rental demand such as school quality or employment proximity. Use direct, factual language consistent with appraisal standards."
+    },
+    "urban": {
+      "definition": "An urban neighborhood with high density and mixed residential and commercial land use. Multi-family and rental properties are prevalent. Strong proximity to urban employment, transit, and amenities. May feature neighborhood transition or gentrification trends.",
+      "narrativeGuidance": "Describe an urban neighborhood with high density suitable for rental properties. Cover prevalence of multi-family rental properties. Note proximity to employment, public transit, and urban amenities. Comment on rental market dynamics and tenant demand drivers. Note any neighborhood transition trends if supported by facts.",
+      "promptInstruction": "Describe an urban neighborhood. Cover density and prevalence of multi-family rental properties. Note proximity to employment centers, public transit, and urban amenities. Comment on factors supporting rental demand such as transit access or job centers. Note any neighborhood transition or gentrification trends if supported by facts. Use direct, factual language."
+    },
+    "rural": {
+      "definition": "A rural neighborhood with low density and primarily agricultural or open land use. Multi-family properties are less prevalent. Limited urban services but may serve regional employment or lifestyle markets.",
+      "narrativeGuidance": "Describe a rural neighborhood where the subject property operates. Cover low density, land use characteristics, and distance to employment and services. Note the rental market context for rural areas and tenant demand drivers.",
+      "promptInstruction": "Describe a rural neighborhood. Cover low density, land use characteristics (agricultural or open land), and distance to employment and services. Note tenant demand drivers such as lifestyle factors or proximity to regional employment. Use direct, factual language."
+    }
+  },
+
+  "highest_best_use": {
+    "multi_family_improved": {
+      "definition": "For a 1025 small residential income property, highest and best use as improved is continued use as a multi-family rental property, assuming the use is legally permissible (zoning), physically possible (structure and site), financially feasible (market rental demand), and maximally productive (current income-producing use).",
+      "narrativeGuidance": "For highest and best use as improved, conclude that continued use as a multi-family rental property is the highest and best use. Reference the four tests: legally permissible zoning, physically possible given the structure, financially feasible given rental market demand, and maximally productive as a current income-producing property.",
+      "promptInstruction": "For the highest and best use as improved, conclude that continued use as a small multi-family rental property (specifically, [INSERT: number] units) is the highest and best use, supported by the four tests: legally permissible (zoning for multi-family rental use), physically possible (existing structure designed for rental units), financially feasible (market demand for rental units as evidenced by comparable rents), and maximally productive (current use generates income superior to conversion or alternative uses). Use [INSERT] for zoning details if not provided in facts."
+    }
+  },
+
+  "income_approach": {
+    "grm_analysis": {
+      "definition": "Gross Rent Multiplier (GRM) analysis applies a market-derived multiplier to the subject property's gross rental income to arrive at a value indication. GRM = Sale Price / Gross Annual Rent.",
+      "narrativeGuidance": "The Gross Rent Multiplier approach derives a market-based multiplier from comparable income properties and applies it to the subject's rental income. This approach is direct and market-supported but does not account for operating expenses. Document comparable rental properties used to derive the multiplier.",
+      "promptInstruction": "Apply the Gross Rent Multiplier (GRM) approach: Identify comparable income properties with known sale prices and rental income. Calculate GRM for each comparable (Sale Price / Annual Gross Rental Income). Derive a subject GRM by averaging or selecting the most appropriate comparable GRM. Apply the GRM to the subject property's gross annual rental income to estimate value. Note the GRM range and the selected GRM used. Document comparable properties and the rationale for the selected GRM. Example: If subject annual rent is $48,000 and market GRM is 6.0, indicated value = $48,000 × 6.0 = $288,000."
+    },
+    "direct_capitalization": {
+      "definition": "Direct Capitalization approach converts income into value by applying a capitalization rate: Value = Net Operating Income (NOI) / Capitalization Rate.",
+      "narrativeGuidance": "Direct Capitalization analyzes the property's net operating income by deducting operating expenses (repairs, maintenance, management, taxes, insurance, utilities, vacancy) from gross rental income. The resulting NOI is divided by a market-derived capitalization rate to estimate value. This method accounts for both income and expenses but requires reliable expense data.",
+      "promptInstruction": "Apply Direct Capitalization: Calculate Gross Rental Income from all units. Document rental rates for each unit or use market rental comparable data. Deduct operating expenses (vacancy allowance, repairs/maintenance, property management, property taxes, insurance, utilities if landlord-paid, other expenses) to arrive at Net Operating Income (NOI). Research market capitalization rates from comparable income properties or lending sources. Calculate Value = NOI / Cap Rate. Show all components clearly. Use [INSERT: expense item] for any expenses not provided in facts. Document the cap rate source and rationale."
+    },
+    "rent_comparable_analysis": {
+      "definition": "Rental Comparable Analysis identifies comparable rental properties in the market and analyzes their rental rates to support the subject property's rental income assumptions.",
+      "narrativeGuidance": "Identify comparable rental properties similar in size, location, condition, and amenities. Document their rental rates per unit or per square foot. Adjust for significant differences (unit size, condition, amenities, location). Document the range of comparable rental rates and how the subject's rental assumptions compare. This supports the income approach by validating rental income assumptions.",
+      "promptInstruction": "Identify rental comparable properties with the following similarities to the subject: similar number of units, similar size/layout, similar condition, similar location/neighborhood, similar amenities and features. Document rental rates for each comparable. Analyze for key differences (unit size, condition, amenities) and adjust subject rental assumptions as appropriate. Example: If comparable 1-bedroom units rent for $1,200-$1,400 and subject is $1,350, the subject rate is supported by comparables. Present the comparable rental rate range and explain how subject rents align with the market."
+    }
+  },
+
+  "reconciliation": {
+    "dual_approach_balance": {
+      "definition": "For a 1025 small residential income property appraisal, both the Sales Comparison Approach and the Income Approach provide valid value indications. Reconciliation balances both approaches based on their respective reliability and applicability.",
+      "narrativeGuidance": "Both the Sales Comparison Approach and the Income Approach are applicable and provide supportable value indications. In reconciliation, evaluate the reliability of each approach: Sales Comparison is direct market evidence but income properties have fewer comparable sales. Income Approach is grounded in the property's income-generating capacity but depends on reliable income and expense data and cap rate assumptions. Provide justification for the weight assigned to each approach based on data quality and market conditions.",
+      "promptInstruction": "In reconciliation, present both the Sales Comparison Approach value indication and the Income Approach value indication. Discuss the reliability and applicability of each: Sales Comparison Approach uses comparable property sales and is direct market evidence; however, [note any challenges with comparable data if applicable - e.g., few comparable sales, significant adjustments required]. Income Approach values the property based on its income-generating capacity and accounts for operating expenses; however, [note any reliance on assumptions - e.g., cap rate assumptions, expense estimates]. State the percentage weight given to each approach and explain the rationale. Example: 'The Sales Comparison Approach is weighted [X]% and the Income Approach is weighted [Y]% because [explanation of relative reliability].' Conclude with [INSERT final value opinion] as a placeholder. Do not invent a final value — the appraiser's judgment on weighting should drive this conclusion."
+    }
+  }
+}
