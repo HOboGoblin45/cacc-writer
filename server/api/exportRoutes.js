@@ -12,12 +12,16 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { generateMismo, validateMismoOutput } from '../export/mismoExportService.js';
 import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.js';
 import { renderPdf } from '../export/pdfRenderer.js';
 import { fillForm1004 } from '../export/pdfFormFiller.js';
 import { dbGet, dbAll } from '../db/database.js';
+import { validateParams } from '../middleware/validateRequest.js';
 import log from '../logger.js';
+
+const caseIdParam = z.object({ caseId: z.string().min(1, 'caseId is required') });
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
 import fs from 'fs';

@@ -6,8 +6,10 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
 import { getDb } from '../db/database.js';
+import { validateBody, validateParams } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const router = Router();
