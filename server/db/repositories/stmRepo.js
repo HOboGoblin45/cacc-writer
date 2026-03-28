@@ -8,8 +8,8 @@
  *   - Track preamble/postamble stripping
  *   - Aggregate statistics per user/form
  *
- * All functions are synchronous (better-sqlite3).
- * Functions take db as first parameter for tenant isolation.
+ * All functions are async and use DatabaseAdapter for database-agnostic operations.
+ * Functions take adapter as first parameter for tenant isolation.
  */
 
 import log from '../../logger.js';
@@ -27,12 +27,13 @@ function now() {
 /**
  * Log a normalization operation.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {Object} entry
- * @returns {number} log entry ID
+ * @returns {Promise<number>} log entry ID
  */
-export function logNormalization(db, entry) {
-  if (!db) throw new Error('db is required');
+export async function logNormalization(adapter, entry) {
+  if (!adapter) throw new Error('adapter is required');
   if (!entry) throw new Error('entry is required');
 
   const {
@@ -52,16 +53,16 @@ export function logNormalization(db, entry) {
     throw new Error('sectionId and formType are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     INSERT INTO stm_normalization_log (
       section_id, form_type, original_length, cleaned_length,
       regex_changes, llm_pass_used, preamble_stripped, postamble_stripped,
       truncated, user_id, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+  `;
 
   try {
-    const result = statement.run(
+    const result = await adapter.run(sql, [
       sectionId,
       formType,
       originalLength ?? null,
@@ -72,8 +73,8 @@ export function logNormalization(db, entry) {
       postambleStripped ? 1 : 0,
       truncated ? 1 : 0,
       userId ?? null,
-      now()
-    );
+      now(),
+    ]);
     log.info(`[STM] Logged normalization for section ${sectionId}, form ${formType}`);
     return result.lastInsertRowid;
   } catch (err) {
@@ -85,18 +86,19 @@ export function logNormalization(db, entry) {
 /**
  * Get aggregated statistics for a user and form type.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} userId
  * @param {string} formType
- * @returns {Object} aggregate statistics
+ * @returns {Promise<Object>} aggregate statistics
  */
-export function getStats(db, userId, formType) {
-  if (!db) throw new Error('db is required');
+export async function getStats(adapter, userId, formType) {
+  if (!adapter) throw new Error('adapter is required');
   if (!userId || !formType) {
     throw new Error('userId and formType are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT
       COUNT(*) as total_normalizations,
       SUM(original_length) as total_original_bytes,
@@ -110,10 +112,10 @@ export function getStats(db, userId, formType) {
       AVG(cleaned_length) as avg_cleaned_length
     FROM stm_normalization_log
     WHERE user_id = ? AND form_type = ?
-  `);
+  `;
 
   try {
-    const row = statement.get(userId, formType);
+    const row = await adapter.get(sql, [userId, formType]);
     if (!row) {
       return {
         totalNormalizations: 0,
@@ -150,24 +152,25 @@ export function getStats(db, userId, formType) {
 /**
  * Get recent normalization logs for a user.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} userId
  * @param {number} limit — max number of logs to return
- * @returns {Object[]}
+ * @returns {Promise<Object[]>}
  */
-export function getRecentLogs(db, userId, limit = 50) {
-  if (!db) throw new Error('db is required');
+export async function getRecentLogs(adapter, userId, limit = 50) {
+  if (!adapter) throw new Error('adapter is required');
   if (!userId) throw new Error('userId is required');
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT * FROM stm_normalization_log
     WHERE user_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `);
+  `;
 
   try {
-    const rows = statement.all(userId, limit);
+    const rows = await adapter.all(sql, [userId, limit]);
     return rows.map(row => ({
       id: row.id,
       sectionId: row.section_id,
