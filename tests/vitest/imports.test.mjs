@@ -11,8 +11,8 @@ const CRITICAL_MODULES = [
   ['server/middleware/authMiddleware.js', ['requireAuth', 'requireRole']],
   ['server/db/repositories/brainRepo.js', ['getActiveModel', 'getFullGraph', 'saveChatMessage']],
   ['server/migration/brainSchema.js', ['initBrainSchema']],
-  ['server/security/encryptionService.js', ['encrypt', 'decrypt']],
-  ['server/promptBuilder.js', ['buildMessages']],
+  ['server/security/encryptionService.js', ['encryptField', 'decryptField']],
+  ['server/promptBuilder.js', ['buildPromptMessages', 'buildReviewMessages']],
   ['server/logger.js', ['default']],
 ];
 

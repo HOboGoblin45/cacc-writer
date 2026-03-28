@@ -246,9 +246,11 @@ export function getSupportBundleData() {
 
   // DB table counts
   try {
+    const SAFE_TABLE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all();
     for (const t of tables) {
       try {
+        if (!SAFE_TABLE_RE.test(t.name)) { data.dbStats[t.name] = -1; continue; }
         const row = db.prepare(`SELECT COUNT(*) as cnt FROM "${t.name}"`).get();
         data.dbStats[t.name] = row?.cnt || 0;
       } catch { data.dbStats[t.name] = -1; }

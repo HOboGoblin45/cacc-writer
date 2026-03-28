@@ -14,6 +14,14 @@ import log from '../logger.js';
 
 const router = Router();
 
+// -- Zod schemas for admin routes --
+const userIdParam = z.object({ userId: z.string().min(1, 'userId is required') });
+
+const planUpdateBody = z.object({
+  plan: z.enum(['free', 'starter', 'professional', 'enterprise']),
+  reportsLimit: z.number().int().min(0).optional(),
+});
+
 /**
  * Admin guard — only admin or appraiser (owner) can access.
  * In single-user mode (CACC_AUTH_ENABLED=false), userId is 'default' which passes.
@@ -97,14 +105,10 @@ router.get('/admin/stats', authMiddleware, adminGuard, (req, res) => {
 
 // ── PATCH /admin/users/:userId/plan ──────────────────────────────────────────
 
-router.patch('/admin/users/:userId/plan', authMiddleware, adminGuard, (req, res) => {
+router.patch('/admin/users/:userId/plan', authMiddleware, adminGuard, validateParams(userIdParam), validateBody(planUpdateBody), (req, res) => {
   const db = getDb();
-  const { plan, reportsLimit } = req.body || {};
-
-  const VALID_PLANS = ['free', 'starter', 'professional', 'enterprise'];
-  if (!VALID_PLANS.includes(plan)) {
-    return res.status(400).json({ ok: false, error: `Invalid plan. Must be: ${VALID_PLANS.join(', ')}` });
-  }
+  const { plan, reportsLimit } = req.validated;
+  const { userId } = req.validatedParams;
 
   const limits = { free: 5, starter: 30, professional: 100, enterprise: 999999 };
   const limit = reportsLimit || limits[plan];
@@ -113,10 +117,10 @@ router.patch('/admin/users/:userId/plan', authMiddleware, adminGuard, (req, res)
     db.prepare(`
       UPDATE subscriptions SET plan = ?, reports_limit = ?, updated_at = datetime('now')
       WHERE user_id = ?
-    `).run(plan, limit, req.params.userId);
+    `).run(plan, limit, userId);
 
-    log.info('admin:plan-changed', { userId: req.params.userId, plan, limit });
-    res.json({ ok: true, userId: req.params.userId, plan, reportsLimit: limit });
+    log.info('admin:plan-changed', { userId, plan, limit });
+    res.json({ ok: true, userId, plan, reportsLimit: limit });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -124,9 +128,9 @@ router.patch('/admin/users/:userId/plan', authMiddleware, adminGuard, (req, res)
 
 // ── DELETE /admin/users/:userId ──────────────────────────────────────────────
 
-router.delete('/admin/users/:userId', authMiddleware, adminGuard, (req, res) => {
+router.delete('/admin/users/:userId', authMiddleware, adminGuard, validateParams(userIdParam), (req, res) => {
   const db = getDb();
-  const userId = req.params.userId;
+  const { userId } = req.validatedParams;
 
   try {
     db.prepare('UPDATE users SET status = ? WHERE id = ?').run('disabled', userId);
