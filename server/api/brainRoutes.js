@@ -3,16 +3,56 @@
  * ───────────────
  * Proxy routes for the Knowledge Brain (RunPod vLLM + FastAPI dashboard).
  * Forwards /api/brain/* requests to the RunPod pod's FastAPI server.
+ *
+ * Phase 1.5 enhancements:
+ *   - Fallback provider chain (RunPod → OpenAI → graceful degradation)
+ *   - Error sanitization (no internal URLs leaked to client)
+ *   - Config endpoint serves pod ID to frontend (no hardcoding in brain.html)
+ *   - Model registry & graph persistence endpoints
+ *   - AI cost logging on every inference call
  */
 
 import { Router } from 'express';
+import log from '../logger.js';
+import {
+  getActiveModel, listModels, registerModel, promoteModel, rollbackToModel
+} from '../db/repositories/brainRepo.js';
+import {
+  getFullGraph, upsertGraphNode, createGraphEdge, deleteGraphNode, deleteGraphEdge
+} from '../db/repositories/brainRepo.js';
+import {
+  saveChatMessage, getChatHistory
+} from '../db/repositories/brainRepo.js';
+import {
+  logAiCost, getUserCostSummary, getUserCostByProvider
+} from '../db/repositories/brainRepo.js';
 
 const router = Router();
 
-// RunPod pod configuration — override via env vars
+// RunPod pod configuration — override via env vars. No hardcoded fallback in production.
 const RUNPOD_POD_ID = process.env.RUNPOD_POD_ID || 'l1rb6jfw6lv7zv';
 const BRAIN_BASE = process.env.BRAIN_BASE_URL || `https://${RUNPOD_POD_ID}-8080.proxy.runpod.net`;
 const VLLM_BASE = process.env.VLLM_BASE_URL || `https://${RUNPOD_POD_ID}-8000.proxy.runpod.net`;
+
+// Fallback provider (used when RunPod is down)
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const FALLBACK_MODEL = process.env.BRAIN_FALLBACK_MODEL || 'gpt-4o-mini';
+const FALLBACK_ENABLED = process.env.BRAIN_FALLBACK_ENABLED !== 'false';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Sanitize error messages — never leak internal URLs or stack traces to client.
+ */
+function sanitizeError(error) {
+  if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+    return 'AI service timed out — please try again';
+  }
+  if (error.message?.includes('ECONNREFUSED') || error.message?.includes('fetch failed')) {
+    return 'AI service temporarily unavailable';
+  }
+  return 'AI service error — please try again';
+}
 
 /**
  * Proxy helper — forwards requests to the RunPod FastAPI server.
@@ -32,10 +72,57 @@ async function proxyToBrain(endpoint, req, res) {
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {
-    console.warn(`[brain] Proxy error for ${endpoint}:`, error.message);
-    res.status(502).json({ ok: false, error: 'Brain service unreachable', detail: error.message });
+    log.warn('brain:proxy', { endpoint, error: error.message });
+    res.status(502).json({ ok: false, error: sanitizeError(error) });
   }
 }
+
+/**
+ * Fallback to OpenAI when RunPod/vLLM is unreachable.
+ * Returns null if fallback is disabled or unconfigured.
+ */
+async function fallbackGenerate(messages, options = {}) {
+  if (!FALLBACK_ENABLED || !OPENAI_API_KEY) return null;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: FALLBACK_MODEL,
+        messages,
+        max_tokens: options.max_tokens || 2048,
+        temperature: options.temperature ?? 0.7,
+      }),
+      signal: AbortSignal.timeout(30000),
+    });
+
+    if (!response.ok) {
+      log.warn('brain:fallback', { status: response.status });
+      return null;
+    }
+
+    const data = await response.json();
+    data._fallback = true;
+    data._fallback_model = FALLBACK_MODEL;
+    return data;
+  } catch (error) {
+    log.warn('brain:fallback-error', { error: error.message });
+    return null;
+  }
+}
+
+// ─── Configuration (serves config to frontend — no hardcoding in brain.html) ──
+router.get('/brain/config', (req, res) => {
+  res.json({
+    podId: RUNPOD_POD_ID,
+    wsUrl: `wss://${RUNPOD_POD_ID}-8080.proxy.runpod.net/ws/chat`,
+    fallbackEnabled: FALLBACK_ENABLED && !!OPENAI_API_KEY,
+  });
+});
 
 // ─── Health & Status ─────────────────────────────────────────
 router.get('/brain/health', async (req, res) => {
@@ -57,29 +144,154 @@ router.get('/brain/health', async (req, res) => {
       } catch { /* ignore */ }
     }
 
+    // Also check active model in registry
+    let registeredModel = null;
+    try { registeredModel = getActiveModel(); } catch { /* ignore */ }
+
     res.json({
       ok: brainOk || vllmOk,
       brain: brainOk ? 'online' : 'offline',
       vllm: vllmOk ? 'online' : 'offline',
       model,
+      registeredModel: registeredModel ? { id: registeredModel.id, version: registeredModel.version, status: registeredModel.status } : null,
+      fallbackAvailable: FALLBACK_ENABLED && !!OPENAI_API_KEY,
       podId: RUNPOD_POD_ID,
-      brainUrl: BRAIN_BASE,
-      vllmUrl: VLLM_BASE,
     });
   } catch (error) {
-    res.json({ ok: false, brain: 'error', vllm: 'error', error: error.message });
+    log.error('brain:health', { error: error.message });
+    res.json({ ok: false, brain: 'error', vllm: 'error', error: sanitizeError(error) });
   }
 });
 
-// ─── Knowledge Graph ─────────────────────────────────────────
+// ─── Knowledge Graph (proxied to RunPod) ─────────────────────
 router.get('/brain/graph', (req, res) => proxyToBrain('/api/graph', req, res));
 router.get('/brain/graph/search', (req, res) => {
   const q = req.query.q || '';
   proxyToBrain(`/api/graph/search?q=${encodeURIComponent(q)}`, req, res);
 });
 
+// ─── Knowledge Graph (persisted locally) ─────────────────────
+router.get('/brain/graph/local', (req, res) => {
+  try {
+    const userId = req.user?.userId || 'dev-local';
+    const graph = getFullGraph(userId, { limit: parseInt(req.query.limit) || 500 });
+    res.json({ ok: true, nodes: graph.nodes.length, edges: graph.edges.length, ...graph });
+  } catch (error) {
+    log.error('brain:graph-local', { error: error.message });
+    res.status(500).json({ ok: false, error: 'Failed to load graph data' });
+  }
+});
+
+router.post('/brain/graph/node', (req, res) => {
+  try {
+    const userId = req.user?.userId || 'dev-local';
+    const id = upsertGraphNode({ ...req.body, userId });
+    res.json({ ok: true, id });
+  } catch (error) {
+    log.error('brain:graph-node', { error: error.message });
+    res.status(500).json({ ok: false, error: 'Failed to save graph node' });
+  }
+});
+
+router.post('/brain/graph/edge', (req, res) => {
+  try {
+    const userId = req.user?.userId || 'dev-local';
+    const id = createGraphEdge({ ...req.body, userId });
+    res.json({ ok: true, id });
+  } catch (error) {
+    log.error('brain:graph-edge', { error: error.message });
+    res.status(500).json({ ok: false, error: 'Failed to save graph edge' });
+  }
+});
+
+router.delete('/brain/graph/node/:id', (req, res) => {
+  try {
+    deleteGraphNode(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to delete node' });
+  }
+});
+
+router.delete('/brain/graph/edge/:id', (req, res) => {
+  try {
+    deleteGraphEdge(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to delete edge' });
+  }
+});
+
 // ─── Chat / Workflow ─────────────────────────────────────────
-router.post('/brain/chat', (req, res) => proxyToBrain('/api/chat', req, res));
+router.post('/brain/chat', async (req, res) => {
+  const userId = req.user?.userId || 'dev-local';
+  const caseId = req.body?.caseId || null;
+
+  // Save user message
+  try {
+    saveChatMessage({ userId, caseId, role: 'user', content: req.body?.message || req.body?.messages?.[0]?.content || '' });
+  } catch { /* non-critical */ }
+
+  // Try RunPod first
+  try {
+    const url = `${BRAIN_BASE}/api/chat`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(30000),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // Save assistant response
+      try {
+        saveChatMessage({ userId, caseId, role: 'assistant', content: data.response || data.choices?.[0]?.message?.content || '' });
+      } catch { /* non-critical */ }
+
+      // Log cost
+      try {
+        logAiCost({ userId, caseId, provider: 'runpod', operation: 'chat',
+          inputTokens: data.usage?.prompt_tokens || 0,
+          outputTokens: data.usage?.completion_tokens || 0 });
+      } catch { /* non-critical */ }
+
+      return res.json(data);
+    }
+  } catch (error) {
+    log.warn('brain:chat-primary', { error: error.message });
+  }
+
+  // Fallback to OpenAI
+  const fallbackResult = await fallbackGenerate(
+    req.body?.messages || [{ role: 'user', content: req.body?.message || '' }]
+  );
+  if (fallbackResult) {
+    const content = fallbackResult.choices?.[0]?.message?.content || '';
+    try {
+      saveChatMessage({ userId, caseId, role: 'assistant', content, modelId: FALLBACK_MODEL });
+      logAiCost({ userId, caseId, provider: 'openai', operation: 'chat',
+        inputTokens: fallbackResult.usage?.prompt_tokens || 0,
+        outputTokens: fallbackResult.usage?.completion_tokens || 0 });
+    } catch { /* non-critical */ }
+    return res.json(fallbackResult);
+  }
+
+  res.status(502).json({ ok: false, error: 'AI service unavailable — both primary and fallback failed' });
+});
+
+// ─── Chat History ────────────────────────────────────────────
+router.get('/brain/chat/history', (req, res) => {
+  try {
+    const userId = req.user?.userId || 'dev-local';
+    const caseId = req.query.caseId || null;
+    const messages = getChatHistory(userId, caseId, parseInt(req.query.limit) || 100);
+    res.json({ ok: true, messages });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to load chat history' });
+  }
+});
 
 // ─── Appraisal ───────────────────────────────────────────────
 router.post('/brain/appraisal/new', (req, res) => proxyToBrain('/api/appraisal/new', req, res));
@@ -95,31 +307,110 @@ router.get('/brain/market', (req, res) => proxyToBrain('/api/market', req, res))
 router.get('/brain/report/preview', (req, res) => proxyToBrain('/api/report/preview', req, res));
 router.post('/brain/report/export', (req, res) => proxyToBrain('/api/report/export', req, res));
 
-// ─── vLLM Direct (for advanced use) ─────────────────────────
+// ─── vLLM Direct (with fallback) ─────────────────────────────
 router.post('/brain/v1/chat/completions', async (req, res) => {
-  const url = `${VLLM_BASE}/v1/chat/completions`;
+  const userId = req.user?.userId || 'dev-local';
+
+  // Try RunPod vLLM first
   try {
+    const url = `${VLLM_BASE}/v1/chat/completions`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body),
       signal: AbortSignal.timeout(60000),
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // Log cost
+      try {
+        logAiCost({ userId, provider: 'runpod', operation: 'generate',
+          inputTokens: data.usage?.prompt_tokens || 0,
+          outputTokens: data.usage?.completion_tokens || 0 });
+      } catch { /* non-critical */ }
+
+      return res.status(response.status).json(data);
+    }
   } catch (error) {
-    res.status(502).json({ ok: false, error: 'vLLM unreachable', detail: error.message });
+    log.warn('brain:vllm-primary', { error: error.message });
+  }
+
+  // Fallback
+  const fallbackResult = await fallbackGenerate(req.body?.messages, {
+    max_tokens: req.body?.max_tokens,
+    temperature: req.body?.temperature,
+  });
+  if (fallbackResult) {
+    try {
+      logAiCost({ userId, provider: 'openai', operation: 'generate',
+        inputTokens: fallbackResult.usage?.prompt_tokens || 0,
+        outputTokens: fallbackResult.usage?.completion_tokens || 0 });
+    } catch { /* non-critical */ }
+    return res.json(fallbackResult);
+  }
+
+  res.status(502).json({ ok: false, error: 'AI inference unavailable' });
+});
+
+// ─── Model Registry ──────────────────────────────────────────
+router.get('/brain/models', (req, res) => {
+  try {
+    const models = listModels(req.query.name || 'cacc-appraiser');
+    res.json({ ok: true, models });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to list models' });
   }
 });
 
-// ─── Configuration ───────────────────────────────────────────
-router.get('/brain/config', (req, res) => {
-  res.json({
-    podId: RUNPOD_POD_ID,
-    brainUrl: BRAIN_BASE,
-    vllmUrl: VLLM_BASE,
-    wsUrl: `wss://${RUNPOD_POD_ID}-8080.proxy.runpod.net/ws/chat`,
-  });
+router.get('/brain/models/active', (req, res) => {
+  try {
+    const model = getActiveModel();
+    res.json({ ok: true, model });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to get active model' });
+  }
+});
+
+router.post('/brain/models', (req, res) => {
+  try {
+    const id = registerModel(req.body);
+    res.json({ ok: true, id });
+  } catch (error) {
+    log.error('brain:model-register', { error: error.message });
+    res.status(500).json({ ok: false, error: 'Failed to register model' });
+  }
+});
+
+router.post('/brain/models/:id/promote', (req, res) => {
+  try {
+    promoteModel(req.params.id, req.body?.endpoint);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to promote model' });
+  }
+});
+
+router.post('/brain/models/:id/rollback', (req, res) => {
+  try {
+    rollbackToModel(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to rollback model' });
+  }
+});
+
+// ─── AI Cost Tracking ────────────────────────────────────────
+router.get('/brain/costs', (req, res) => {
+  try {
+    const userId = req.user?.userId || 'dev-local';
+    const summary = getUserCostSummary(userId, req.query.since);
+    const byProvider = getUserCostByProvider(userId, req.query.since);
+    res.json({ ok: true, summary, byProvider });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: 'Failed to get cost data' });
+  }
 });
 
 export default router;

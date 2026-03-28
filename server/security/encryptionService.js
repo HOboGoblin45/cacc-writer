@@ -23,7 +23,17 @@ const AUTH_TAG_LENGTH = 16;
 const PBKDF2_ITERATIONS = 100000;
 const SALT_LENGTH = 32;
 
-const MASTER_KEY = process.env.CACC_ENCRYPTION_KEY || 'cacc-dev-encryption-key-not-for-production';
+// Production REQUIRES CACC_ENCRYPTION_KEY — no fallback allowed.
+// Dev mode uses a deterministic dev-only key with a loud warning.
+const MASTER_KEY = (() => {
+  if (process.env.CACC_ENCRYPTION_KEY) return process.env.CACC_ENCRYPTION_KEY;
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[FATAL] CACC_ENCRYPTION_KEY is required in production. Exiting.');
+    process.exit(1);
+  }
+  log.warn('[encryption] ⚠ Using insecure dev-only encryption key — set CACC_ENCRYPTION_KEY for production');
+  return 'cacc-dev-encryption-key-not-for-production';
+})();
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

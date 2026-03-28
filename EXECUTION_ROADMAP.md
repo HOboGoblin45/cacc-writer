@@ -38,6 +38,21 @@ Stripe checkout, webhook (with signature verification), subscription status, and
 
 Signup and login pages. Auth guard in `app.js` intercepts fetch() calls with JWT. Step 5 converted from "Insert" to "Export" with PDF/DOCX download and clipboard copy. ACI insertion preserved but gated behind `window.DESKTOP_MODE`.
 
+## Phase 4.5 — ★ Proprietary AI Engine & Brain Visualization (PRIORITY)
+
+Harden and productionize the proprietary fine-tuned Llama 3.1 8B model (RunPod vLLM) and 3D Knowledge Brain dashboard. This is the platform's core differentiator.
+
+**Existing (built):** Fine-tuned `cacc-appraiser-v6` on RunPod RTX 4090, D3.js knowledge graph in `brain.html`, FastAPI backend with NetworkX graph engine, WebSocket AI chat, Express proxy routes in `brainRoutes.js`.
+
+**Next steps:**
+- Model versioning & automated eval framework
+- 3D graph upgrade (Three.js or d3-force-3d) with per-user graph isolation
+- Persist graph data to database (survives pod restarts)
+- Context-aware AI chat with current case data
+- Fallback to OpenAI/Gemini when proprietary model unavailable
+- RunPod production serverless endpoint with auto-scaling
+- GPU cost tracking per user
+
 ## Phase 5 — Cloud Deployment
 
 Docker containerization, managed hosting (AWS/GCP/Railway), HTTPS, production environment variables, health check endpoints.

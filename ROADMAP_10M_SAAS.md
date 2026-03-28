@@ -12,20 +12,21 @@ Philosophy: Nothing gets cut. Every module that exists was envisioned for a reas
 
 1. Architecture Overview — The Complete Product Vision
 2. Phase 1: Foundation Hardening (Months 1–3)
-3. Phase 2: Multi-Tenant Infrastructure (Months 3–6)
-4. Phase 3: AI Engine Perfection (Months 6–9)
-5. Phase 4: Voice Generalization & Onboarding (Months 9–11)
-6. Phase 5: Desktop Agent Universalization (Months 11–14)
-7. Phase 6: Business & Revenue Layer (Months 14–17)
-8. Phase 7: Intelligence & Learning Platform (Months 17–20)
-9. Phase 8: Integrations Ecosystem (Months 20–23)
-10. Phase 9: Enterprise & Scale (Months 23–27)
-11. Phase 10: Marketplace & Community (Months 27–30)
-12. Phase 11: Mobile & Field Platform (Months 30–33)
-13. Phase 12: Perfection & Market Dominance (Months 33–36)
-14. Cross-Cutting Concerns (Continuous)
-15. Feature Module Completion Matrix
-16. Revenue Model & Growth Targets
+3. **Phase 1.5: Proprietary AI Engine & Brain Visualization (Months 2–5) ★ PRIORITY**
+4. Phase 2: Multi-Tenant Infrastructure (Months 3–6)
+5. Phase 3: AI Engine Perfection (Months 6–9)
+6. Phase 4: Voice Generalization & Onboarding (Months 9–11)
+7. Phase 5: Desktop Agent Universalization (Months 11–14)
+8. Phase 6: Business & Revenue Layer (Months 14–17)
+9. Phase 7: Intelligence & Learning Platform (Months 17–20)
+10. Phase 8: Integrations Ecosystem (Months 20–23)
+11. Phase 9: Enterprise & Scale (Months 23–27)
+12. Phase 10: Marketplace & Community (Months 27–30)
+13. Phase 11: Mobile & Field Platform (Months 30–33)
+14. Phase 12: Perfection & Market Dominance (Months 33–36)
+15. Cross-Cutting Concerns (Continuous)
+16. Feature Module Completion Matrix
+17. Revenue Model & Growth Targets
 
 ---
 
@@ -49,6 +50,7 @@ CACC Writer at 100% is a full-lifecycle appraisal production platform with 14 ma
 | 12. Platform Features | auth, billing, notifications, analytics, automation rules | 15% — scaffolding only |
 | 13. Enterprise | whitelabel, collaboration, teams, public API, compliance | 10% — schema stubs |
 | 14. Marketplace & Growth | template marketplace, referrals, education center | 5% — vision + schema only |
+| **15. Proprietary AI Engine & Brain Visualization** | **fine-tuned Llama 3.1 8B on RunPod, vLLM inference, D3.js 3D knowledge graph, Knowledge Brain dashboard, NetworkX graph engine, WebSocket real-time chat** | **45% — model deployed, dashboard integrated, graph + chat functional** |
 
 ### Target Architecture at 100%
 
@@ -57,21 +59,28 @@ CACC Writer at 100% is a full-lifecycle appraisal production platform with 14 ma
 │                    Next.js Frontend (SSR)                        │
 │  Landing │ Dashboard │ Case Workspace │ Settings │ Analytics     │
 │  Mobile Web │ Client Portal │ Admin Panel │ Marketplace          │
+│  ★ Knowledge Brain Dashboard (3D Graph) │ AI Chat/Copilot       │
 ├─────────────────────────────────────────────────────────────────┤
 │                    API Gateway (Express + Auth)                  │
 │  JWT Auth │ RBAC │ Rate Limiting │ Tenant Isolation │ API Keys   │
 ├────────────┬───────────────┬────────────────┬───────────────────┤
-│ AI Engine  │ Automation    │ Intelligence   │ Business Ops      │
-│ Generation │ ACI Agent     │ Comp Selection │ Pipeline Mgmt     │
-│ Voice      │ RQ Agent      │ Adjustments    │ Invoicing         │
-│ QC/Review  │ PDF Filling   │ Market Analysis│ Scheduling        │
-│ Templates  │ MISMO Export  │ Learning       │ Analytics         │
+│ ★ Propri-  │ AI Engine     │ Intelligence   │ Business Ops      │
+│ etary AI   │ Generation    │ Comp Selection │ Pipeline Mgmt     │
+│ Fine-tuned │ Voice         │ Adjustments    │ Invoicing         │
+│ Llama 3.1  │ QC/Review     │ Market Analysis│ Scheduling        │
+│ vLLM+RunPod│ Templates     │ Learning       │ Analytics         │
+│ Brain Graph│               │                │                   │
+├────────────┼───────────────┼────────────────┼───────────────────┤
+│ Automation │               │                │                   │
+│ ACI Agent  │ PDF Filling   │ MISMO Export   │                   │
+│ RQ Agent   │               │                │                   │
 ├────────────┴───────────────┴────────────────┴───────────────────┤
 │              PostgreSQL + Redis + Pinecone + S3                  │
 │  Tenant-isolated │ Connection pooled │ Vector search │ CDN      │
 ├─────────────────────────────────────────────────────────────────┤
-│              Infrastructure (AWS/GCP/Cloudflare)                │
+│         Infrastructure (AWS/GCP/Cloudflare + RunPod GPU)        │
 │  Docker │ K8s │ CI/CD │ Monitoring │ Backups │ CDN │ Secrets    │
+│  ★ RunPod RTX 4090 │ vLLM Inference │ FastAPI + NetworkX       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -137,6 +146,80 @@ Goal: Make everything that exists today reliable, clean, and tested. Zero new fe
 - [ ] 1004 golden path passes 95% of the time
 - [ ] 70+ unit tests passing in Vitest
 - [ ] Every API endpoint has input validation
+
+---
+
+## 2.5. ★ PHASE 1.5: PROPRIETARY AI ENGINE & BRAIN VISUALIZATION (Months 2–5) — PRIORITY
+
+Goal: Productionize and harden the proprietary AI engine (fine-tuned Llama 3.1 8B) and interactive 3D Knowledge Brain dashboard as the platform's core differentiator. This is a competitive moat — no other appraisal tool has an appraiser-specific fine-tuned LLM with a visual knowledge graph.
+
+> **Why Priority:** The proprietary AI engine and 3D brain visualization are the features that make CACC Writer fundamentally different from template-based competitors. Elevating this to Phase 1.5 ensures the core differentiator is production-ready before scaling infrastructure.
+
+### Existing Assets (Built)
+
+| Asset | Status | Location |
+|-------|--------|----------|
+| Fine-tuned Llama 3.1 8B model (`cacc-appraiser-v6`) | ✅ Deployed on RunPod RTX 4090 | vLLM on port 8000 |
+| FastAPI backend (knowledge graph, comps, market, chat) | ✅ Running | RunPod port 8080 (`appraisal_agent/server.py`) |
+| Knowledge Brain dashboard (D3.js force-directed graph) | ✅ Integrated into main UI | `brain.html` (897 lines) |
+| Brain proxy routes (Express → RunPod) | ✅ Wired | `server/api/brainRoutes.js` (125 lines) |
+| NetworkX knowledge graph engine | ✅ Functional | RunPod FastAPI server |
+| WebSocket real-time AI chat | ✅ Functional | `wss://{pod}-8080.proxy.runpod.net/ws/chat` |
+
+### 1.5.1 — AI Model Hardening (Weeks 1–4)
+
+| Task | Detail | Priority |
+|------|--------|----------|
+| Model versioning & registry | Track model versions (v6, v7, ...) with metadata: training data hash, hyperparameters, eval scores. Store in `model_registry` table. Enable rollback to prior version. | HIGH |
+| Training data pipeline | Automated pipeline: collect user-approved narratives → clean → format → upload to training corpus. Track provenance (which cases, which appraiser's voice). | HIGH |
+| Continuous fine-tuning schedule | Monthly retraining cadence with accumulated approved narratives. A/B test new model vs current on held-out eval set before promoting to production. | HIGH |
+| Multi-GPU inference scaling | Move from single RTX 4090 to multi-GPU or multi-pod for concurrent users. Configure vLLM tensor parallelism or deploy multiple replicas behind a load balancer. | MEDIUM |
+| Fallback provider chain | If RunPod/vLLM is down, gracefully fall back to OpenAI/Gemini with a warning banner. Ensure generation never hard-fails due to proprietary model downtime. | CRITICAL |
+| Latency optimization | Profile end-to-end latency: API call → vLLM inference → response. Target <3s for typical section generation. Implement KV cache warming, continuous batching tuning. | MEDIUM |
+| Model evaluation framework | Automated eval suite: BLEU/ROUGE against golden examples, USPAP compliance scoring, hallucination detection rate, voice similarity scoring per user. Run on every candidate model before promotion. | HIGH |
+
+### 1.5.2 — Knowledge Brain Dashboard Hardening (Weeks 2–5)
+
+| Task | Detail | Priority |
+|------|--------|----------|
+| 3D graph rendering upgrade | Migrate from D3.js 2D force-directed to full 3D with Three.js or d3-force-3d. Add depth, rotation, zoom, camera controls for true 3D knowledge exploration. | HIGH |
+| Graph data persistence | Store knowledge graph state in the database (nodes, edges, weights, metadata). Currently lives only in RunPod memory — must survive pod restarts. | CRITICAL |
+| Per-user knowledge graphs | Each tenant gets their own knowledge graph layer on top of the shared base graph. User-specific nodes (their cases, their comps, their patterns) isolated. | HIGH |
+| Real-time graph updates | When a user completes a case, new nodes/edges automatically appear in their brain visualization. WebSocket push from server on case completion events. | MEDIUM |
+| Graph search & filtering | Search nodes by keyword, filter by type (case, comp, market area, pattern), highlight connected subgraphs. Add a search bar and filter panel to the brain UI. | MEDIUM |
+| Brain insights panel | AI-powered insight cards: "Your most common adjustment pattern is...", "You've appraised 12 properties in this subdivision", "Market trend: prices up 4% in 60645". Generated from graph analysis. | HIGH |
+| Offline/cached mode | Cache the last-loaded graph state in IndexedDB so the brain dashboard loads instantly even when RunPod is cold-starting. Show "live" vs "cached" indicator. | MEDIUM |
+
+### 1.5.3 — AI Chat & Copilot Integration (Weeks 3–6)
+
+| Task | Detail | Priority |
+|------|--------|----------|
+| Context-aware chat | The AI chat should have access to the currently open case's facts, comps, and generated sections. Ask questions like "Why did you adjust the comp at 123 Main St by -$5,000?" and get a case-specific answer. | HIGH |
+| Chat history persistence | Store chat history per case in the database. Users can resume conversations across sessions. | MEDIUM |
+| Copilot suggestions | While the user edits a generated section, the AI proactively suggests improvements, catches inconsistencies, and offers alternative phrasing. Display as subtle inline suggestions (like GitHub Copilot). | HIGH |
+| Voice-aware responses | The AI chat should respond in the user's trained voice style when generating or suggesting narrative text. Pull voice profile from the user's KB. | MEDIUM |
+| Multi-modal input | Accept photo uploads in chat (e.g., inspection photos) and have the AI describe property conditions, identify features, suggest narrative language. Uses the fine-tuned model's vision capabilities or a separate vision model. | MEDIUM |
+
+### 1.5.4 — Infrastructure & Deployment (Weeks 4–8)
+
+| Task | Detail | Priority |
+|------|--------|----------|
+| RunPod production hardening | Move from single dev pod to production serverless endpoint. Auto-scaling based on request volume. Health checks and auto-restart on failure. | CRITICAL |
+| SSL/TLS for all AI endpoints | Ensure all RunPod proxy routes use HTTPS. Validate SSL certificates. Pin RunPod pod IDs via environment variables, not hardcoded. | HIGH |
+| API key rotation for RunPod | Rotate RunPod API keys on a schedule. Store in secrets manager (AWS Secrets Manager, Doppler, or Vault). | MEDIUM |
+| Cost monitoring & alerting | Track GPU-hours consumed per user, per case. Set budget alerts. Display cost dashboard in admin panel. Implement usage-based billing tie-in for enterprise tier. | HIGH |
+| Monitoring & observability | Prometheus metrics from vLLM (tokens/sec, queue depth, latency p50/p95/p99). Grafana dashboard for AI engine health. Alert on degraded performance. | MEDIUM |
+
+### Phase 1.5 Exit Criteria
+
+- [ ] Fine-tuned model serving with <3s latency for section generation
+- [ ] Model versioning with automated eval and rollback capability
+- [ ] 3D knowledge graph rendering with per-user isolation
+- [ ] Graph data persisted to database (survives pod restarts)
+- [ ] AI chat context-aware with current case data
+- [ ] Fallback to cloud provider when proprietary model unavailable
+- [ ] RunPod production endpoint with auto-scaling and health monitoring
+- [ ] GPU cost tracking per user operational
 
 ---
 
@@ -206,6 +289,8 @@ Goal: Two appraisers can safely use the system without seeing each other's data.
 ## 4. PHASE 3: AI ENGINE PERFECTION (Months 6–9)
 
 Goal: The AI generates lender-ready narratives for every section of every form type, every time.
+
+> **Note:** This phase builds on the proprietary AI foundation established in Phase 1.5. The fine-tuned Llama model, Knowledge Brain dashboard, and 3D graph infrastructure are already production-hardened by this point. Phase 3 focuses on prompt engineering, section coverage, QC, and provider abstraction on top of that foundation.
 
 ### 3.1 — Prompt Engineering Hardening
 
@@ -492,6 +577,9 @@ Dependency scanning (every CI run), pen testing (annually), security audit (ever
 | `server/business/` | 3,026 | 15% | Phase 6 |
 | `server/integrations/` | 2,477 | 15% | Phase 8 |
 | `server/marketplace/` | 246 | 5% | Phase 10 |
+| **`brain.html` + `brainRoutes.js` (Proprietary AI)** | **~1,020** | **45%** | **Phase 1.5 ★** |
+| **RunPod FastAPI (`appraisal_agent/server.py`)** | **~800** | **50%** | **Phase 1.5 ★** |
+| **Fine-tuned model pipeline (training + eval)** | **~200** | **25%** | **Phase 1.5 ★** |
 
 ---
 
@@ -530,6 +618,8 @@ Dependency scanning (every CI run), pen testing (annually), security audit (ever
 
 ## FINAL NOTE
 
-Every feature in this codebase was envisioned because it solves a real problem appraisers face. The marketplace creates a community moat. The learning system creates a data moat. The voice engine creates a switching cost moat. The automation rules create a workflow dependency moat. Together, they make CACC Writer not just a tool, but the operating system for the appraisal profession.
+Every feature in this codebase was envisioned because it solves a real problem appraisers face. The **proprietary AI engine** (fine-tuned Llama 3.1 8B) creates a technology moat that no template-based competitor can replicate. The **3D Knowledge Brain** creates a visualization moat — appraisers can see their expertise growing as a living knowledge graph. The marketplace creates a community moat. The learning system creates a data moat. The voice engine creates a switching cost moat. The automation rules create a workflow dependency moat. Together, they make CACC Writer not just a tool, but the operating system for the appraisal profession.
+
+The proprietary AI and brain visualization are elevated to Phase 1.5 because they are the features that make this product fundamentally different. Every competitor uses generic GPT wrappers. CACC Writer has its own appraiser-trained model, its own knowledge graph, and its own 3D brain interface. That's the moat.
 
 The $10M product is not a fantasy. It's an engineering plan with a clear sequence. Build it right, in order, and every phase funds the next.

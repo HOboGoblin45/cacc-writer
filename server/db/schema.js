@@ -45,6 +45,7 @@ import { initPhase17Schema } from '../migration/phase17Schema.js';
 import { initPhase18Schema } from '../migration/phase18Schema.js';
 import { initPhase19Schema } from '../migration/phase19Schema.js';
 import { initPipelineSchema } from '../migration/pipelineSchema.js';
+import { initBrainSchema } from '../migration/brainSchema.js';
 
 function runMigrations(db) {
   const migrations = [
@@ -859,6 +860,13 @@ export function initSchema(db) {
     initPipelineSchema(db);
   } catch (err) {
     log.error('schema:pipeline-init', { error: err.message });
+  }
+
+  // Phase 1.5 — Proprietary AI Engine & Knowledge Brain
+  try {
+    initBrainSchema(db);
+  } catch (err) {
+    log.error('schema:brain-init', { error: err.message });
   }
 }
 

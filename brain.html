@@ -534,10 +534,10 @@ Market Trend Chart (Ready for D3 implementation)
 </div>
 
 <script>
-// Configuration
-const RUNPOD_POD_ID = localStorage.getItem('aa-runpod-pod') || 'l1rb6jfw6lv7zv';
+// Configuration — fetched from server (no hardcoded pod IDs)
 const BRAIN_API = '/api/brain';
-const BRAIN_WS = `wss://${RUNPOD_POD_ID}-8080.proxy.runpod.net/ws/chat`;
+let BRAIN_WS = '';
+let BRAIN_CONFIG = {};
 
 // Global State
 let graphData = { nodes: [], links: [] };
@@ -551,8 +551,15 @@ let selectedNode = null;
 let chatMessages = [];
 let currentTab = 'chat';
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize — fetch config from server first, then boot UI
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const resp = await fetch(`${BRAIN_API}/config`);
+        BRAIN_CONFIG = await resp.json();
+        BRAIN_WS = BRAIN_CONFIG.wsUrl || '';
+    } catch (e) {
+        console.warn('[brain] Could not fetch config, chat may be limited:', e.message);
+    }
     initializeGraph();
     initializeTabSystem();
     initializeChat();
