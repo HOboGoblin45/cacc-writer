@@ -33,6 +33,7 @@ import cookieParser from 'cookie-parser';
 import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrfProtection.js';
 import { validateEnvAndLog } from './server/config/envValidator.js';
 import { registerShutdownHandlers, isShuttingDown } from './server/utils/gracefulShutdown.js';
+import { apiVersionMiddleware } from './server/middleware/apiVersion.js';
 
 import healthRouter from './server/api/healthRoutes.js';
 import casesRouter from './server/api/casesRoutes.js';
@@ -199,6 +200,9 @@ app.use(cors({
 
 // ── Request ID ──────────────────────────────────────────────────────────────
 app.use(requestIdMiddleware());
+
+// ── API Versioning ──────────────────────────────────────────────────────────
+app.use('/api', apiVersionMiddleware());
 
 // ── Rate Limiting ────────────────────────────────────────────────────────────
 
