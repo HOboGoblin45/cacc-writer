@@ -18,7 +18,7 @@ import { buildUad36Document, validateUad36 } from '../export/uad36ExportService.
 import { renderPdf } from '../export/pdfRenderer.js';
 import { fillForm1004 } from '../export/pdfFormFiller.js';
 import { dbGet, dbAll } from '../db/database.js';
-import { validateBody, validateParams } from '../middleware/validateRequest.js';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const caseIdParam = z.object({ caseId: z.string().min(1, 'caseId is required') });
@@ -385,8 +385,8 @@ router.get('/cases/:caseId/export/preview', validateParams(caseIdParam), async (
 
 
 // DEBUG endpoint
-router.get('/cases/:caseId/export/pdf-debug', async (req, res) => {
-  const { caseId } = req.params;
+router.get('/cases/:caseId/export/pdf-debug', validateParams(caseIdParam), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     const { readJSON } = await import('../utils/fileUtils.js');
     const { casePath: getCasePath } = await import('../utils/caseUtils.js');

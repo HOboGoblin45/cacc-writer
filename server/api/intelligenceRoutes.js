@@ -17,6 +17,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import { resolveCaseDir } from '../utils/caseUtils.js';
 import { getCaseProjection } from '../caseRecord/caseRecordService.js';
 import {
@@ -58,6 +59,18 @@ const benchmarkThresholdOverrideSchema = z.object({
 const runBenchmarksSchema = z.object({
   thresholds: benchmarkThresholdOverrideSchema.optional(),
 }).passthrough();
+
+// ── Route parameter schemas ──────────────────────────────────────────────────
+
+const caseIdParamSchema = z.object({
+  caseId: z.string().min(1, 'Case ID is required'),
+});
+
+// ── Route query schemas ──────────────────────────────────────────────────────
+
+const persistQuerySchema = z.object({
+  persist: z.enum(['true', 'false']).default('true').optional(),
+}).strict();
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -192,13 +205,13 @@ router.param('caseId', (req, res, next, caseId) => {
  * Reads canonical case projection (meta + facts), runs all Phase 4 subsystems,
  * persists the result to SQLite, and returns the bundle.
  */
-router.post('/cases/:caseId/intelligence/build', async (req, res) => {
+router.post('/cases/:caseId/intelligence/build', validateParams(caseIdParamSchema), async (req, res) => {
   try {
     const t0 = Date.now();
-    const bundle = await buildIntelligenceBundle(req.params.caseId);
+    const bundle = await buildIntelligenceBundle(req.validatedParams.caseId);
 
     log.info('[intelligence] Built bundle', {
-      caseId:     req.params.caseId,
+      caseId:     req.validatedParams.caseId,
       formType:   bundle.context.formType,
       flags:      bundle.flagSummary.count,
       fields:     bundle.canonicalFields.totalApplicable,
@@ -211,7 +224,7 @@ router.post('/cases/:caseId/intelligence/build', async (req, res) => {
       bundle,
     });
   } catch (err) {
-    log.error('[intelligence] Build failed', { caseId: req.params.caseId, error: err.message });
+    log.error('[intelligence] Build failed', { caseId: req.validatedParams.caseId, error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -221,9 +234,9 @@ router.post('/cases/:caseId/intelligence/build', async (req, res) => {
  * Retrieve the persisted intelligence bundle for a case.
  * Returns 404 if no bundle has been built yet.
  */
-router.get('/cases/:caseId/intelligence', (req, res) => {
+router.get('/cases/:caseId/intelligence', validateParams(caseIdParamSchema), (req, res) => {
   try {
-    const bundle = getIntelligenceBundle(req.params.caseId);
+    const bundle = getIntelligenceBundle(req.validatedParams.caseId);
     if (!bundle) {
       return res.status(404).json({
         error: 'No intelligence bundle found. Call POST /cases/:caseId/intelligence/build first.',
@@ -240,9 +253,9 @@ router.get('/cases/:caseId/intelligence', (req, res) => {
  * Get deterministic required/optional section matrix for a case.
  * Auto-builds intelligence if bundle does not exist yet.
  */
-router.get('/cases/:caseId/intelligence/requirements', async (req, res) => {
+router.get('/cases/:caseId/intelligence/requirements', validateParams(caseIdParamSchema), async (req, res) => {
   try {
-    const { bundle, rebuilt } = await loadOrBuildBundle(req.params.caseId);
+    const { bundle, rebuilt } = await loadOrBuildBundle(req.validatedParams.caseId);
     res.json({
       ok: true,
       rebuilt,
@@ -260,9 +273,9 @@ router.get('/cases/:caseId/intelligence/requirements', async (req, res) => {
  * Get deterministic hard-rule compliance findings for a case.
  * Auto-builds intelligence if bundle does not exist yet.
  */
-router.get('/cases/:caseId/intelligence/compliance-check', async (req, res) => {
+router.get('/cases/:caseId/intelligence/compliance-check', validateParams(caseIdParamSchema), async (req, res) => {
   try {
-    const { bundle, rebuilt } = await loadOrBuildBundle(req.params.caseId);
+    const { bundle, rebuilt } = await loadOrBuildBundle(req.validatedParams.caseId);
     res.json({
       ok: true,
       rebuilt,
@@ -378,35 +391,37 @@ router.get('/intelligence/benchmarks/phase-c', async (_req, res) => {
  * Force-run Phase C benchmarks and optionally persist the snapshot.
  * Query param: ?persist=false to skip file write.
  */
-router.post('/intelligence/benchmarks/phase-c/run', async (req, res) => {
-  const body = parsePayload(runBenchmarksSchema, req.body || {}, res);
-  if (!body) return;
+router.post(
+  '/intelligence/benchmarks/phase-c/run',
+  validateBody(runBenchmarksSchema),
+  validateQuery(persistQuerySchema),
+  async (req, res) => {
+    try {
+      const persist = req.validatedQuery.persist !== 'false';
+      const thresholdOverrides = normalizeThresholdOverrides(req.validated.thresholds);
+      const thresholdSource = thresholdOverrides ? 'request' : 'default';
+      const run = await runPhaseCBenchmarksFromFile();
+      const gateEnvelope = buildBenchmarkGateEnvelope(
+        run.results,
+        thresholdOverrides || DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
+        thresholdSource,
+      );
+      if (persist) writePhaseCBenchmarkResults(run.results);
 
-  try {
-    const persist = String(req.query.persist || 'true').toLowerCase() !== 'false';
-    const thresholdOverrides = normalizeThresholdOverrides(body.thresholds);
-    const thresholdSource = thresholdOverrides ? 'request' : 'default';
-    const run = await runPhaseCBenchmarksFromFile();
-    const gateEnvelope = buildBenchmarkGateEnvelope(
-      run.results,
-      thresholdOverrides || DEFAULT_PHASE_C_BENCHMARK_THRESHOLDS,
-      thresholdSource,
-    );
-    if (persist) writePhaseCBenchmarkResults(run.results);
-
-    res.json({
-      ok: true,
-      persisted: persist,
-      results: run.results,
-      ...gateEnvelope,
-    });
-  } catch (err) {
-    res.status(500).json({
-      ok: false,
-      code: 'PHASE_C_BENCHMARK_RUN_FAILED',
-      error: err.message,
-    });
+      res.json({
+        ok: true,
+        persisted: persist,
+        results: run.results,
+        ...gateEnvelope,
+      });
+    } catch (err) {
+      res.status(500).json({
+        ok: false,
+        code: 'PHASE_C_BENCHMARK_RUN_FAILED',
+        error: err.message,
+      });
+    }
   }
-});
+);
 
 export default router;
