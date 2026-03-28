@@ -1,0 +1,96 @@
+You are writing the HIGHEST AND BEST USE ANALYSIS section of a UAD 3.6 URAR.
+
+This section applies the four-test HBU framework required by USPAP and UAD 3.6 standards. You must evaluate both the property "as vacant" and "as improved."
+
+FOUR-TEST HBU FRAMEWORK:
+
+The highest and best use must meet four criteria, applied in this order:
+1. LEGALLY PERMISSIBLE
+2. PHYSICALLY POSSIBLE
+3. FINANCIALLY FEASIBLE
+4. MAXIMALLY PRODUCTIVE
+
+Test each use against all four criteria. Only uses that pass all four tests are viable.
+
+REQUIRED CONTENT:
+
+1. Highest and Best Use "As Vacant"
+   - Analyze the subject land as if vacant and available for development
+
+   A. Legally Permissible?
+      - Zoning designation: [zoning code, e.g., "R-1 Single-Family Residential"]
+      - Permitted uses under zoning: [list the allowed uses]
+      - Does current use conform to zoning? [yes/no]
+      - Are there deed restrictions, covenants, easements affecting development?
+      - Conclusion for "as vacant": "The property zoning permits [list uses]. The legally permissible uses are [use 1], [use 2], [use 3]."
+
+   B. Physically Possible?
+      - Lot size: [size in SF or acres]
+      - Topography: [level, sloping, etc.] — constraints?
+      - Utilities available: water, sewer, electric, gas [all adequate for development?]
+      - Environmental factors: flood zone, soil conditions, wetlands?
+      - Infrastructure: road access, utilities, drainage?
+      - Physically possible uses: "Given lot size of [X] SF and [topography/utilities/access], the physically possible uses are [use 1], [use 2], [use 3]."
+
+   C. Financially Feasible?
+      - For each viable use, estimate development cost and achievable market value
+      - Single-family residence: would new construction cost and selling price support development?
+      - Multi-family or commercial: would rents/income support development cost?
+      - Example: "A new single-family residence of similar quality to surrounding properties would cost approximately $[amount] to construct. Current market evidence suggests comparable homes sell for $[amount]. The [positive/negative] spread indicates [financially feasible/not feasible]."
+      - "A small commercial building would require [amount] in development costs but could generate [X]% cap rate on rental income of $[amount]. This [does/does not] justify development."
+      - Financially feasible uses: "Of the physically possible uses, those that are financially feasible given current market conditions are [use 1], [use 2]."
+
+   D. Maximally Productive (Highest Value)?
+      - Compare the financially feasible uses by their income potential or market value
+      - Which use generates the highest return to the land and improvements?
+      - Example: "Single-family development would yield $[amount] per unit. Multi-family development (if permitted) would yield $[amount] per unit. Commercial development (if permitted) would yield a cap-rate-based value of $[amount]. The highest-value use is [use]."
+
+   Conclusion for "As Vacant": "The highest and best use of the subject property as vacant is [use], which [description of justification]."
+
+2. Highest and Best Use "As Improved"
+   - Now analyze the subject property with its current structure
+
+   A. Legally Permissible?
+      - Current use: [description, e.g., "Single-family dwelling"]
+      - Zoning conformity: [yes/no and explanation]
+      - Could property be converted to another use? [non-conforming use evaluation]
+      - Conclusion: "The subject's current use as a [property type] is [legally/non-legally] permissible under [zoning code]."
+
+   B. Physically Possible?
+      - Can existing structure be renovated, adapted, or converted?
+      - Structural limitations? Architectural/design constraints?
+      - Example: "The existing single-family dwelling could be converted to a duplex only with substantial structural modifications and is not physically practical."
+      - Example: "The building could accommodate a different residential use (condo conversion, apartment conversion) with renovation."
+      - Conclusion: "Given the existing improvements, the physically possible uses are [use 1], [use 2]."
+
+   C. Financially Feasible?
+      - Cost of conversion/renovation vs. value created?
+      - For current use: does market support current use valuation?
+      - For alternative uses: would conversion costs be justified by increased value?
+      - Example: "The cost to convert this single-family home to a small office building would exceed $[amount], which would not be recovered through increased rental income. This conversion is not financially feasible."
+      - Example: "The subject is an owner-occupied residence with market value supporting its continued use as a single-family dwelling."
+      - Conclusion: "The financially feasible uses for this property with its current improvements are [use 1], [use 2]."
+
+   D. Maximally Productive?
+      - Current use value: owner-occupied residence, valued at $[amount]
+      - Alternative use value: [describe if applicable]
+      - Which use produces highest value?
+      - Example: "Current use as single-family dwelling generates market value of $[amount]. Conversion to rental apartments would require $[renovation cost] and generate NOI of $[amount] capitalized at [cap rate]% = $[amount]. The current use is more productive."
+
+   Conclusion for "As Improved": "The highest and best use of the subject property as improved is [current use or alternative], which generates the maximum value given the existing structure and improvements."
+
+3. Final HBU Conclusion
+   - Summary of HBU findings for both "as vacant" and "as improved"
+   - Confirmation that the property's current use aligns with HBU or explanation if not
+   - Impact on value opinion (if HBU is other than current use, this is a major value indicator)
+
+   Example Conclusion:
+   "The highest and best use of the subject property as vacant is single-family residential development, consistent with the neighborhood character and zoning. As improved, the highest and best use is continued owner-occupied single-family residential use, which maximizes the property's utility and market value. The property's current use as a single-family dwelling is consistent with its highest and best use, and the value opinion of $[amount] reflects this use."
+
+CRITICAL RULES:
+- Address BOTH "as vacant" AND "as improved" — this is required
+- Apply all four tests (legally permissible, physically possible, financially feasible, maximally productive) systematically
+- Use specific dollar amounts, percentages, and zoning codes (not vague generalizations)
+- Do NOT invent development costs or market data — use [INSERT cost estimate] if unavailable
+- Professional, technical appraisal voice
+- Keep to 8-10 paragraphs total (4-5 for "as vacant," 4-5 for "as improved")

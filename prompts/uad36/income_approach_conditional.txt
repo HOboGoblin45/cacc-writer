@@ -1,0 +1,85 @@
+You are writing the INCOME APPROACH section of a UAD 3.6 URAR.
+
+The income approach is CONDITIONAL and applies only to income-producing properties (2-4 unit buildings, investment single-family homes, small apartments, etc.). For owner-occupied single-family residential, this section is marked as "not developed" with brief justification.
+
+IF INCOME APPROACH IS APPLICABLE (investment property):
+
+REQUIRED CONTENT:
+1. Market Rent Analysis
+   - Distinguish between contract rent (actual rent being paid) and market rent (competitive rent)
+   - Market rent sources: comparable rental properties, market surveys, property manager data
+   - Monthly market rent per unit (if multi-unit): $[amount]
+   - Total monthly market rent (all units): $[amount]
+   - Annual gross rental income: $[amount]
+   - Justification: "Market rent is estimated at $[X] per month based on [number] comparable rental properties in the subject market area, including [specific comparables or range]."
+
+2. Vacancy and Collection Loss
+   - Typical vacancy rate for property type and market: [X]%
+   - Collection loss (bad debt): [X]%
+   - Total vacancy/collection loss: [X]%
+   - Annual vacancy loss in dollars: $[amount] ([X]% of gross rental income)
+   - Example: "Market vacancy for 2-bedroom apartments in this area is currently 6%, based on [source]. Collection loss is estimated at 1% based on historical performance. Total vacancy and collection loss: 7% of gross rental income, or $[amount]."
+
+3. Effective Gross Income (EGI)
+   - Gross potential income: $[amount]
+   - Less: Vacancy & collection loss: -$[amount]
+   - Effective Gross Income (EGI): $[amount]
+
+4. Operating Expenses
+   - Property tax: $[amount] per year (or [X]% of EGI)
+   - Insurance (hazard/liability): $[amount] per year
+   - Maintenance and repairs: $[amount] per year or [X]% of EGI (typical: 5-10%)
+   - Management fees: [X]% of EGI (typical: 5-10%), or $[amount]
+   - Utilities (if landlord responsibility): $[amount] per year
+   - Trash, sewer, water (if landlord responsibility): $[amount]
+   - HOA fees (if applicable): $[amount] per month
+   - Reserves for capital replacement (roof, HVAC, appliances, etc.): [X]% of EGI or $[amount]
+   - Other expenses: [list as applicable]
+   - Total Operating Expenses (OE): $[amount] or [X]% of EGI
+
+5. Net Operating Income (NOI)
+   - EGI: $[amount]
+   - Less: Operating Expenses: -$[amount]
+   - Net Operating Income (NOI): $[amount]
+   - NOI as % of EGI: [X]%
+
+6. Capitalization Rate Selection
+   - Cap rate definition: NOI ÷ Property Value, or the discount rate for income stream
+   - Market cap rates for comparable income properties: [X]% to [X]%
+   - Selected cap rate for subject: [X]%
+   - Source/justification: "[Number] comparable [property type] properties analyzed. Direct cap rates range from [X]% to [X]%, with an average of [X]%. Subject property selected cap rate: [X]% based on [specific factors: condition, location, tenant quality, lease terms, etc.]"
+
+7. Income Approach Value Indication (Direct Capitalization)
+   - NOI ÷ Cap Rate = Value
+   - $[amount] ÷ [X]% = $[amount]
+   - "The income approach indicates a value of $[amount]."
+
+8. Gross Rent Multiplier (GRM) Analysis (if applicable)
+   - GRM = Property Value ÷ Gross Rental Income
+   - Market GRM for comparable properties: [X.X] to [X.X]
+   - Selected GRM: [X.X]
+   - Subject: $[annual GRI] x [X.X] GRM = $[indicated value]
+   - GRM used as cross-check to direct capitalization method
+
+9. Analysis and Reconciliation
+   - Does the NOI reflect typical market conditions or are there unusual lease terms?
+   - Is the selected cap rate appropriate for this property's risk profile, condition, and location?
+   - How does income approach value compare to sales comparison approach?
+   - Income approach may be weighted heavily for pure investment properties, less for mixed-use or single-family rentals
+
+IF INCOME APPROACH IS NOT APPLICABLE (owner-occupied, etc.):
+
+State clearly:
+"The income approach is not developed for this appraisal. The subject is an owner-occupied single-family residential property. Income approach methodology is applicable only to investment or income-producing properties, which generate rental income. Owner-occupied properties are valued through the sales comparison approach, which is the most reliable and direct indicator of market value for this property type."
+
+OR for rarely-rented single-family:
+"The income approach is not developed for this appraisal. While the subject could potentially be rented, it is currently owner-occupied and was not designed or built as an income property. For properties primarily used for owner occupancy, the income approach has limited applicability. The sales comparison approach is the appropriate method for valuation."
+
+CRITICAL RULES:
+- If developed, use specific dollar amounts and percentages from market data
+- Do NOT invent rent amounts or operating expense percentages
+- Use [INSERT market rent], [INSERT cap rate], etc. if data is unavailable
+- Cap rate selection is CRITICAL — must be justified with comparable property analysis
+- Professional, technical appraiser voice
+- If not developed, keep to 1-2 paragraphs with clear justification
+- If developed, 6-10 paragraphs with full support for all inputs

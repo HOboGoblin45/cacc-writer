@@ -1,0 +1,89 @@
+You are writing the COST APPROACH section of a UAD 3.6 URAR.
+
+The cost approach is conditional — it may be developed or marked as "not developed" depending on property type and market conditions.
+
+IF THE PROPERTY IS APPROPRIATE FOR COST APPROACH DEVELOPMENT:
+
+REQUIRED CONTENT:
+1. Land Value Estimate
+   - Methodology used: comparable land sales, allocation method, abstraction method, etc.
+   - Comparable vacant land sales or land allocations used
+   - Estimated land value: $[amount]
+   - Justification: per square foot ($[X] SF x [SF] = $[amount]), or per lot, etc.
+
+2. Reproduction/Replacement Cost of Improvements
+   - Method used: cost manual (Marshall & Swift, RSMeans, etc.), quantity survey, unit method
+   - Total reproduction cost new: $[amount]
+   - Or total replacement cost new: $[amount]
+   - Per square foot cost: $[X.XX] per SF x [SF] = $[amount]
+   - Note: reproduction = exact replica; replacement = functionally equivalent but with current standards
+
+3. Accrued Depreciation (CRITICAL — all three types)
+   - Total depreciation is the difference between reproduction cost new and current depreciated value
+
+   A. Physical Deterioration
+      - Curable physical: Items that are economically feasible to cure
+        Example: "Roof at end of life, estimated replacement cost $15,000"
+      - Incurable physical: Items too expensive or impossible to cure
+        Example: "Foundation settlement has caused minor cracking. Cost to remedy exceeds value added. Estimated depreciation: $8,000"
+      - Total curable physical: $[amount]
+      - Total incurable physical: $[amount]
+      - Total physical: $[amount] or [X]% of reproduction cost
+
+   B. Functional Obsolescence
+      - Inadequate or outdated design, systems, or layout
+      - Curable functional: Can be economically remedied
+        Example: "Kitchen fixtures and finishes are outdated but functional. Replacement would cost $20,000 and add $20,000 in value (curable 1:1)"
+      - Incurable functional: Cannot be economically corrected
+        Example: "Basement ceiling height is 7 feet, below modern standards. Remedy would require structural changes. Estimated depreciation: $12,000"
+      - Total curable functional: $[amount]
+      - Total incurable functional: $[amount]
+      - Total functional: $[amount] or [X]% of reproduction cost
+
+   C. External Obsolescence
+      - Loss in value due to external factors beyond the property
+      - Example: "High-voltage power lines in nearby easement reduce property value. Market data suggests 3-5% reduction. Estimated depreciation: $18,000"
+      - Example: "Heavy traffic on adjacent highway. Noise impact estimated at 7% of value: $[amount]"
+      - Total external: $[amount] or [X]%
+
+4. Summary of Depreciation Calculation
+   - Reproduction cost new: $[amount]
+   - Less: Physical deterioration: -$[amount]
+   - Less: Functional obsolescence: -$[amount]
+   - Less: External obsolescence: -$[amount]
+   - Total depreciation: $[amount] or [X]%
+   - Depreciated improvement value: $[amount]
+
+5. Cost Approach Value Conclusion
+   - Land value: $[amount]
+   - Plus: Depreciated improvement value: +$[amount]
+   - Equals: Cost Approach Indication: $[amount]
+
+6. Entrepreneurial Profit
+   - Include appropriate entrepreneurial profit for new construction, if applicable
+   - Typical range: 10-25% of land and cost
+   - Amount: $[amount]
+   - Adjusted Cost Approach Indication: $[amount]
+
+7. Analysis and Reconciliation
+   - How does cost approach compare to sales comparison approach indication?
+   - Is cost approach reliable for this property type? Why or why not?
+   - Typical for older existing residences: cost approach may be less reliable than sales comparison (land can be worth more than cost of old structure)
+   - Note any unusual factors affecting the cost approach
+
+IF THE COST APPROACH IS NOT DEVELOPED:
+
+State clearly and provide justification:
+"The cost approach is not developed for this appraisal. The subject is [property type] built in [year], now [X] years old. For existing residential properties of this age and market context, the cost approach generally provides less reliable value indication than the sales comparison and [income] approaches. The subject property's land value can be better estimated through comparable land sales analysis, which is incorporated in the sales comparison approach. Information to complete a cost approach analysis is retained in the appraiser's file if required by the user in the future."
+
+OR if income-producing:
+"The cost approach is not developed for this appraisal. As the subject is an income-producing property, the income capitalization approach better reflects how investors value the property. The cost approach has limited applicability to income-producing residential properties."
+
+CRITICAL RULES:
+- If developed, MUST address all three depreciation types: physical, functional, external
+- Use specific dollar amounts, NOT vague percentages alone
+- Cite cost source (Marshall & Swift edition, RSMeans, etc.)
+- Do NOT invent cost data — use [INSERT cost estimate] if unavailable
+- Justify all depreciation estimates with specific observations or market data
+- Professional, technical appraisal voice
+- Keep to 5-8 paragraphs if developed; 1-2 paragraphs if not developed

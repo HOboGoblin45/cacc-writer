@@ -46,6 +46,7 @@ import { initPhase18Schema } from '../migration/phase18Schema.js';
 import { initPhase19Schema } from '../migration/phase19Schema.js';
 import { initPhase20Schema } from '../migration/phase20Schema.js';
 import { initPhase21Schema } from '../migration/phase21Schema.js';
+import { initPhase22Schema } from '../migration/phase22Schema.js';
 import { initPipelineSchema } from '../migration/pipelineSchema.js';
 import { initBrainSchema } from '../migration/brainSchema.js';
 
@@ -869,6 +870,13 @@ export function initSchema(db) {
     initPhase21Schema(db);
   } catch (err) {
     log.error('schema:phase21-init', { error: err.message });
+  }
+
+  // Run Phase 22 schema additions (Wave 1 Go-To-Market Infrastructure)
+  try {
+    initPhase22Schema(db);
+  } catch (err) {
+    log.error('schema:phase22-init', { error: err.message });
   }
 
   // Run Pipeline schema additions (Cloudflare data pipeline)

@@ -1,7 +1,9 @@
-# CLAUDE.md — Project Intelligence for CACC Writer
+# CLAUDE.md — Project Intelligence for Real Brain
 
 ## What is this project?
-CACC Writer is a full-lifecycle AI-powered appraisal report production platform. It generates lender-ready narrative text for residential and commercial real estate appraisal forms (URAR 1004, 1025, 1073, commercial). Cloud SaaS with optional desktop automation agents for field insertion into ACI and Real Quantum appraisal software.
+**Real Brain** is a full-lifecycle AI-powered appraisal report production platform. It generates lender-ready narrative text for residential and commercial real estate appraisal forms (URAR 1004, 1025, 1073, commercial). Cloud SaaS with optional desktop automation agents for field insertion into ACI and Real Quantum appraisal software.
+
+*(Formerly known as CACC Writer / Appraisal Agent)*
 
 ## Architecture
 

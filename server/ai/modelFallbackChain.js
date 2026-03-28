@@ -190,6 +190,8 @@ class FallbackChain {
       return await this._callRunPod(provider, messages, options);
     } else if (provider.name === 'openai') {
       return await this._callOpenAI(provider, messages, options);
+    } else if (provider.name === 'anthropic') {
+      return await this._callAnthropic(provider, messages, options);
     } else if (provider.name === 'gemini') {
       return await this._callGemini(provider, messages, options);
     } else if (provider.name === 'ollama') {
@@ -288,6 +290,62 @@ class FallbackChain {
       const inputTokens = usage.prompt_tokens || 0;
       const outputTokens = usage.completion_tokens || 0;
       const cost = this._estimateOpenAICost(provider.model, inputTokens, outputTokens);
+      provider.recordCall(inputTokens, outputTokens, cost);
+
+      return text;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  /**
+   * Call Anthropic Claude API.
+   */
+  async _callAnthropic(provider, messages, options) {
+    // Convert messages to Anthropic format
+    const formattedMessages = Array.isArray(messages)
+      ? messages
+      : [{ role: 'user', content: messages }];
+
+    const payload = {
+      model: options.model || provider.model,
+      max_tokens: options.maxTokens || provider.maxTokens,
+      messages: formattedMessages,
+      temperature: options.temperature ?? 0.7,
+    };
+
+    const controller = new AbortController();
+    const timeout = options.timeout || provider.timeout;
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': provider.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const err = new Error(`Anthropic error ${response.status}`);
+        err.status = response.status;
+        throw err;
+      }
+
+      const data = await response.json();
+      const text = data.content?.[0]?.type === 'text'
+        ? data.content[0].text
+        : '';
+      const usage = data.usage || {};
+
+      // Record cost
+      const inputTokens = usage.input_tokens || 0;
+      const outputTokens = usage.output_tokens || 0;
+      const cost = this._estimateAnthropicCost(provider.model, inputTokens, outputTokens);
       provider.recordCall(inputTokens, outputTokens, cost);
 
       return text;
@@ -426,6 +484,19 @@ class FallbackChain {
     return (inputTokens * 0.0000005) + (outputTokens * 0.0000015);
   }
 
+  _estimateAnthropicCost(model, inputTokens, outputTokens) {
+    // Claude Sonnet 4: $3/M input, $15/M output
+    if (model.includes('sonnet')) {
+      return (inputTokens * 3 / 1000000) + (outputTokens * 15 / 1000000);
+    }
+    // Claude Opus 4: $15/M input, $75/M output
+    if (model.includes('opus')) {
+      return (inputTokens * 15 / 1000000) + (outputTokens * 75 / 1000000);
+    }
+    // Default to Sonnet pricing
+    return (inputTokens * 3 / 1000000) + (outputTokens * 15 / 1000000);
+  }
+
   _estimateGeminiCost(inputTokens, outputTokens) {
     // Gemini 2.5 Flash: $0.15/M input, $0.60/M output
     return (inputTokens * 0.15 / 1000000) + (outputTokens * 0.60 / 1000000);
@@ -536,6 +607,23 @@ export function createDefaultChain() {
     );
   }
 
+  // Anthropic Claude
+  const anthropicEnabled = process.env.ANTHROPIC_API_KEY;
+  if (anthropicEnabled) {
+    chain.addProvider(
+      new ModelProvider({
+        name: 'anthropic',
+        endpoint: 'https://api.anthropic.com/v1',
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+        maxTokens: 4000,
+        timeout: 30000,
+        priority: 3,
+        enabled: true,
+      })
+    );
+  }
+
   // Gemini
   const geminiEnabled = process.env.GEMINI_API_KEY;
   if (geminiEnabled) {
@@ -547,7 +635,7 @@ export function createDefaultChain() {
         model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
         maxTokens: 4000,
         timeout: 30000,
-        priority: 3,
+        priority: 4,
         enabled: true,
       })
     );
@@ -563,7 +651,7 @@ export function createDefaultChain() {
         model: process.env.OLLAMA_MODEL || 'llama2',
         maxTokens: 4000,
         timeout: 60000,
-        priority: 4,
+        priority: 5,
         enabled: true,
       })
     );

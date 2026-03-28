@@ -1,6 +1,6 @@
 const API_BASE = window.location.origin;
 const API_KEY = 'cacc-local-key-2026';
-const APP_NAME = 'Appraisal Agent';
+const APP_NAME = 'Real Brain';
 
 // ── Auth guard ──────────────────────────────────────────────────────────────
 // Intercept all fetch() calls to attach JWT and handle 401s.

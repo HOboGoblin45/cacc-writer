@@ -1,5 +1,5 @@
 {
-  "name": "appraisal-agent",
+  "name": "real-brain",
   "version": "3.1.0",
   "type": "module",
   "main": "desktop/electron/main.cjs",

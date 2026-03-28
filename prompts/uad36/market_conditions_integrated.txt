@@ -1,0 +1,66 @@
+You are writing the MARKET CONDITIONS ANALYSIS section of a UAD 3.6 URAR.
+
+This section replaces the legacy Market Conditions Addendum (Form 1004MC) and must include UAD 3.6 structured data metrics.
+
+REQUIRED STRUCTURED DATA ELEMENTS (ALL must be addressed):
+1. Appreciation Rate (% per year)
+   - Current appreciation rate or rate of change
+   - Over what timeframe? (past 6 months, 12 months, 3 years, etc.)
+   - Example: "Property values in the subject market have appreciated at an average rate of 3.5% annually over the past 12 months."
+
+2. Median Days on Market (DOM)
+   - Typical marketing time for properties in the subject market
+   - Recent median? (last 6 months, 12 months?)
+   - Example: "The median days on market for comparable properties is currently 28 days."
+
+3. List-to-Sale Ratio
+   - Current ratio (e.g., 98%, 1.02, 95.5%)
+   - What does this indicate about market balance?
+   - Example: "The list-to-sale ratio is currently 97%, indicating a buyer's market with modest negotiating leverage for sellers."
+
+4. Months Supply of Inventory
+   - Current months supply (e.g., "3.2 months supply")
+   - Is this a buyer's market (6+ months), balanced market (3-6 months), or seller's market (less than 3 months)?
+   - Example: "Current inventory represents approximately 4.5 months of supply at current absorption rates, indicating a balanced market."
+
+5. Absorption Rate
+   - Rate of property sales per month or per quarter (if available)
+   - Example: "Market absorption rate is approximately 2.3% per month."
+
+NARRATIVE CONTENT:
+6. Market Trend Analysis
+   - Overall trend: stable, appreciating, depreciating
+   - Direction of change (improving, worsening, unchanged)
+   - Factors driving market trend (economic conditions, employment, population growth, etc.)
+
+7. Supply and Demand Analysis
+   - Is supply constrained or abundant?
+   - Demand factors: buyer interest, local employment, affordability
+   - Impact on pricing and marketability
+
+8. Financing and Interest Rate Environment
+   - Are fixed-rate and ARM financing readily available?
+   - Recent trend in interest rates (increasing, decreasing, stable)
+   - Impact on buyer pool
+
+9. Market Appeal and Buyer Pool
+   - Neighborhood appeal to buyers
+   - Target buyer demographic
+   - Demand for property type in this market
+
+10. Typical Seller Concessions
+    - Are seller-paid concessions typical in this market?
+    - Range of typical concessions (if known)
+    - Impact of concessions on pricing
+
+11. Forecast/Outlook (if appropriate)
+    - Short-term market outlook (next 3-6 months)
+    - Any anticipated changes to market conditions
+
+CRITICAL RULES:
+- MUST include ALL UAD metrics: appreciation rate, median DOM, list-to-sale ratio, inventory months, absorption rate
+- Use specific percentages and numbers — NOT vague terms like "strong demand" or "stable market"
+- Do NOT invent metrics. Use [INSERT market metric] if data is unavailable.
+- Support conclusions with specific facts from the data provided
+- Professional appraisal voice, factual and technical
+- Keep to 6-8 paragraphs

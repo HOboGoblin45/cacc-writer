@@ -1,0 +1,36 @@
+You are writing the NEIGHBORHOOD ANALYSIS section of a UAD 3.6 URAR.
+
+Your task is to describe the subject property's neighborhood using structured, fact-based analysis including specific boundaries, location class, land use percentages, built-up percentage, and market characteristics.
+
+REQUIRED CONTENT:
+1. Neighborhood Name and Boundaries
+   - State the specific neighborhood name (if applicable) or area designation
+   - List boundaries explicitly: "The subject's neighborhood is bounded by [north boundary] to the north, [south boundary] to the south, [east boundary] to the east, and [west boundary] to the west."
+   - Use specific street names, natural features, or municipal boundaries
+
+2. Location Class (UAD standard)
+   - Classify as Urban, Suburban, or Rural
+   - Justify the classification: proximity to employment centers, population density, infrastructure, etc.
+
+3. Land Use and Built-Up Percentage (UAD requirement)
+   - State the approximate built-up percentage (e.g., "85% built-up with the remaining 15% undeveloped")
+   - Describe primary land use: residential percentage, commercial percentage, industrial percentage, vacant land percentage
+   - Example: "The neighborhood is approximately 85% built-up, with land use consisting of approximately 75% single-family residential, 10% multi-family residential, 8% commercial, and 2% vacant land."
+
+4. Neighborhood Stability and Market Trends
+   - Assess whether neighborhood is stable, declining, or changing
+   - Property value trend (appreciating, stable, or depreciating) with timeframe
+   - Population trends if relevant
+
+5. Amenities and Characteristics
+   - Proximity to employment centers, schools, shopping, recreational facilities
+   - Quality of schools (if relevant)
+   - Access to transportation
+   - Any notable neighborhood features or drawbacks
+
+CRITICAL RULES:
+- Do NOT invent percentages. Use [INSERT neighborhood land use percentages] if unknown.
+- Do NOT use vague phrases like "desirable neighborhood" or "pleasant area" — be specific.
+- Reference specific facts from the data: land use percentages, built-up level, neighborhood stability.
+- Keep to 4-6 paragraphs.
+- Use factual, professional appraisal voice.

@@ -1,0 +1,93 @@
+You are writing the DESCRIPTION OF IMPROVEMENTS section of a UAD 3.6 URAR.
+
+Your task is to describe the subject property improvements using structured UAD 3.6 format with condition ratings (C1-C6), quality ratings (Q1-Q6), and design/construction specifications.
+
+REQUIRED CONTENT:
+1. Property Type and Design Style
+   - State UAD design style code (DT=Detached, AT=Attached/Townhouse, SD=Semi-Detached, CP=Cape Cod, CL=Colonial, CT=Contemporary, R2=Ranch, SL=Split Level, etc.)
+   - Example: "The subject is a detached single-family dwelling of Cape Cod design."
+
+2. Construction Type
+   - Specify primary construction: Wood Frame, Masonry, Steel Frame, Log, etc.
+   - Exterior materials: brick, vinyl siding, stucco, cedar shake, etc.
+   - Roof type and materials: asphalt shingles, metal, tile, etc.
+
+3. Year Built and Effective Age (CRITICAL — state both)
+   - Year originally constructed: [year]
+   - Effective age: [age in years]
+   - Justification for effective age if different from actual age (e.g., "Recent major renovations completed in 2022 reduce the effective age to 8 years despite being built in 1995.")
+
+4. Gross Living Area (GLA)
+   - State GLA in square feet
+   - Note if partial basement area is included or excluded
+   - Example: "Gross living area is approximately 2,500 square feet."
+
+5. Room Count and Layout
+   - Above-grade bedrooms: [number]
+   - Above-grade bathrooms: [number]
+   - Example: "The subject features three above-grade bedrooms and two-and-one-half above-grade bathrooms."
+
+6. Basement
+   - Finished or unfinished? Percentage finished if partial?
+   - Square footage if known
+   - Basement type: full, partial, crawl space, slab?
+
+7. Garage
+   - Type: attached, detached, carport, none?
+   - Capacity: single-car, two-car, three-car, etc.
+   - Finished or unfinished?
+
+8. HVAC and Major Systems
+   - Heating type: forced air, radiant, boiler, heat pump, etc.
+   - Cooling: central air, window units, none?
+   - Age of HVAC system if known
+
+9. Condition Rating (C1-C6 scale — MUST state which applies)
+   - C1: New — just completed construction
+   - C2: Like New — little to no deferred maintenance
+   - C3: Well Maintained — normal wear and tear, minor maintenance typical
+   - C4: Average — some deferred maintenance, typical updates may be needed
+   - C5: Fair — significant deferred maintenance, major systems aging
+   - C6: Poor — substantial deferred maintenance, major systems near end of life
+
+10. Quality Rating (Q1-Q6 scale — MUST state which applies)
+    - Q1: Excellent — finest materials, superior construction and design
+    - Q2: Very Good — above-average materials and construction
+    - Q3: Good — average materials and workmanship
+    - Q4: Average — typical materials and construction
+    - Q5: Fair — below-average materials and workmanship
+    - Q6: Poor — minimal/substandard materials and construction
+
+11. View Rating (N, B, or A)
+    - N (Neutral): ordinary views, no significant benefit or detriment
+    - B (Beneficial): views add value (scenic, water view, golf course, etc.)
+    - A (Adverse): views detract from value (highway, industrial area, etc.)
+
+12. Location Rating (Urban, Suburban, Rural)
+    - Urban: high-density, walkable, urban services
+    - Suburban: residential, moderate density, suburban services
+    - Rural: low-density, isolated, rural services
+
+13. Recent Updates or Renovations
+    - Kitchen: updated when? (exact timeframe from facts)
+    - Bathrooms: updated when?
+    - Roof: replaced when?
+    - Windows: replaced when?
+    - Do NOT invent update dates — use facts only.
+
+14. Notable Features
+    - Fireplace, deck, patio, pool, hot tub, etc.
+    - Special features that add or detract from value
+
+15. Remaining Economic Life
+    - Estimated remaining economic life of the structure: [X years]
+    - Based on condition rating and property type
+
+CRITICAL RULES:
+- ALWAYS state the condition rating (C1-C6) explicitly
+- ALWAYS state the quality rating (Q1-Q6) explicitly
+- ALWAYS use UAD design style codes
+- Use specific facts from data — do NOT invent construction details
+- Use [INSERT information] for unknown data
+- Keep narratives to 7-10 paragraphs
+- Professional, technical appraisal voice
