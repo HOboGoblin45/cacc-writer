@@ -30,7 +30,11 @@
     "benchmark:phase-c:check": "node scripts/checkPhaseCBenchmarkThresholds.mjs",
     "test:all": "vitest run && npm run test:smoke",
     "ci:check": "npm run typecheck && vitest run && npm run benchmark:phase-c:check && npm run test:smoke",
-    "test:ci": "node scripts/ci-local.mjs"
+    "test:ci": "node scripts/ci-local.mjs",
+    "test:load": "node tests/load/loadTest.mjs",
+    "test:load:smoke": "node tests/load/smokeTest.mjs",
+    "test:peak": "node tests/load/scenarios/peakHours.mjs",
+    "test:soak": "node tests/load/scenarios/soak.mjs"
   },
   "dependencies": {
     "@langchain/core": "^1.1.31",
