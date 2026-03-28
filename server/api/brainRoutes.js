@@ -15,6 +15,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import log from '../logger.js';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import {
   getActiveModel, listModels, registerModel, promoteModel, rollbackToModel
 } from '../db/repositories/brainRepo.js';
@@ -77,17 +78,40 @@ const registerModelSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
-/**
- * Validate request body with a Zod schema. Returns parsed data or sends 400.
- */
-function validate(schema, req, res) {
-  const result = schema.safeParse(req.body);
-  if (!result.success) {
-    res.status(400).json({ ok: false, error: 'Validation failed', details: result.error.issues });
-    return null;
-  }
-  return result.data;
-}
+// ── URL Parameter Schemas ────────────────────────────────────────────────────
+const graphNodeIdSchema = z.object({
+  id: z.string().min(1),
+});
+
+const graphEdgeIdSchema = z.object({
+  id: z.string().min(1),
+});
+
+const modelIdSchema = z.object({
+  id: z.string().min(1),
+});
+
+// ── Query Parameter Schemas ──────────────────────────────────────────────────
+const graphSearchQuerySchema = z.object({
+  q: z.string().max(500).optional().default(''),
+});
+
+const graphLocalQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(1000).optional().default(500),
+});
+
+const chatHistoryQuerySchema = z.object({
+  caseId: z.string().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional().default(100),
+});
+
+const listModelsQuerySchema = z.object({
+  name: z.string().max(100).optional().default('cacc-appraiser'),
+});
+
+const costSummaryQuerySchema = z.object({
+  since: z.string().datetime().optional(),
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -215,16 +239,16 @@ router.get('/brain/health', async (req, res) => {
 
 // ─── Knowledge Graph (proxied to RunPod) ─────────────────────
 router.get('/brain/graph', (req, res) => proxyToBrain('/api/graph', req, res));
-router.get('/brain/graph/search', (req, res) => {
-  const q = req.query.q || '';
+router.get('/brain/graph/search', validateQuery(graphSearchQuerySchema), (req, res) => {
+  const q = req.validatedQuery.q || '';
   proxyToBrain(`/api/graph/search?q=${encodeURIComponent(q)}`, req, res);
 });
 
 // ─── Knowledge Graph (persisted locally) ─────────────────────
-router.get('/brain/graph/local', (req, res) => {
+router.get('/brain/graph/local', validateQuery(graphLocalQuerySchema), (req, res) => {
   try {
     const userId = req.user?.userId || 'dev-local';
-    const graph = getFullGraph(userId, { limit: parseInt(req.query.limit) || 500 });
+    const graph = getFullGraph(userId, { limit: req.validatedQuery.limit });
     res.json({ ok: true, nodes: graph.nodes.length, edges: graph.edges.length, ...graph });
   } catch (error) {
     log.error('brain:graph-local', { error: error.message });
@@ -232,12 +256,10 @@ router.get('/brain/graph/local', (req, res) => {
   }
 });
 
-router.post('/brain/graph/node', (req, res) => {
-  const data = validate(graphNodeSchema, req, res);
-  if (!data) return;
+router.post('/brain/graph/node', validateBody(graphNodeSchema), (req, res) => {
   try {
     const userId = req.user?.userId || 'dev-local';
-    const id = upsertGraphNode({ ...data, userId });
+    const id = upsertGraphNode({ ...req.validated, userId });
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:graph-node', { error: error.message });
@@ -245,12 +267,10 @@ router.post('/brain/graph/node', (req, res) => {
   }
 });
 
-router.post('/brain/graph/edge', (req, res) => {
-  const data = validate(graphEdgeSchema, req, res);
-  if (!data) return;
+router.post('/brain/graph/edge', validateBody(graphEdgeSchema), (req, res) => {
   try {
     const userId = req.user?.userId || 'dev-local';
-    const id = createGraphEdge({ ...data, userId });
+    const id = createGraphEdge({ ...req.validated, userId });
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:graph-edge', { error: error.message });
@@ -258,18 +278,18 @@ router.post('/brain/graph/edge', (req, res) => {
   }
 });
 
-router.delete('/brain/graph/node/:id', (req, res) => {
+router.delete('/brain/graph/node/:id', validateParams(graphNodeIdSchema), (req, res) => {
   try {
-    deleteGraphNode(req.params.id);
+    deleteGraphNode(req.validatedParams.id);
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to delete node' });
   }
 });
 
-router.delete('/brain/graph/edge/:id', (req, res) => {
+router.delete('/brain/graph/edge/:id', validateParams(graphEdgeIdSchema), (req, res) => {
   try {
-    deleteGraphEdge(req.params.id);
+    deleteGraphEdge(req.validatedParams.id);
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to delete edge' });
@@ -321,9 +341,8 @@ router.post('/brain/graph/sync', async (req, res) => {
 });
 
 // ─── Chat / Workflow ─────────────────────────────────────────
-router.post('/brain/chat', async (req, res) => {
-  const data = validate(chatSchema, req, res);
-  if (!data) return;
+router.post('/brain/chat', validateBody(chatSchema), async (req, res) => {
+  const data = req.validated;
   const userId = req.user?.userId || 'dev-local';
   const caseId = data.caseId || null;
 
@@ -408,11 +427,11 @@ router.post('/brain/chat', async (req, res) => {
 });
 
 // ─── Chat History ────────────────────────────────────────────
-router.get('/brain/chat/history', (req, res) => {
+router.get('/brain/chat/history', validateQuery(chatHistoryQuerySchema), (req, res) => {
   try {
     const userId = req.user?.userId || 'dev-local';
-    const caseId = req.query.caseId || null;
-    const messages = getChatHistory(userId, caseId, parseInt(req.query.limit) || 100);
+    const caseId = req.validatedQuery.caseId || null;
+    const messages = getChatHistory(userId, caseId, req.validatedQuery.limit);
     res.json({ ok: true, messages });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to load chat history' });
@@ -481,9 +500,9 @@ router.post('/brain/v1/chat/completions', async (req, res) => {
 });
 
 // ─── Model Registry ──────────────────────────────────────────
-router.get('/brain/models', (req, res) => {
+router.get('/brain/models', validateQuery(listModelsQuerySchema), (req, res) => {
   try {
-    const models = listModels(req.query.name || 'cacc-appraiser');
+    const models = listModels(req.validatedQuery.name);
     res.json({ ok: true, models });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to list models' });
@@ -499,11 +518,9 @@ router.get('/brain/models/active', (req, res) => {
   }
 });
 
-router.post('/brain/models', (req, res) => {
-  const data = validate(registerModelSchema, req, res);
-  if (!data) return;
+router.post('/brain/models', validateBody(registerModelSchema), (req, res) => {
   try {
-    const id = registerModel(data);
+    const id = registerModel(req.validated);
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:model-register', { error: error.message });
@@ -511,18 +528,18 @@ router.post('/brain/models', (req, res) => {
   }
 });
 
-router.post('/brain/models/:id/promote', (req, res) => {
+router.post('/brain/models/:id/promote', validateParams(modelIdSchema), validateBody(z.object({ endpoint: z.string().optional() })), (req, res) => {
   try {
-    promoteModel(req.params.id, req.body?.endpoint);
+    promoteModel(req.validatedParams.id, req.validated?.endpoint);
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to promote model' });
   }
 });
 
-router.post('/brain/models/:id/rollback', (req, res) => {
+router.post('/brain/models/:id/rollback', validateParams(modelIdSchema), (req, res) => {
   try {
-    rollbackToModel(req.params.id);
+    rollbackToModel(req.validatedParams.id);
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to rollback model' });
@@ -530,11 +547,11 @@ router.post('/brain/models/:id/rollback', (req, res) => {
 });
 
 // ─── AI Cost Tracking ────────────────────────────────────────
-router.get('/brain/costs', (req, res) => {
+router.get('/brain/costs', validateQuery(costSummaryQuerySchema), (req, res) => {
   try {
     const userId = req.user?.userId || 'dev-local';
-    const summary = getUserCostSummary(userId, req.query.since);
-    const byProvider = getUserCostByProvider(userId, req.query.since);
+    const summary = getUserCostSummary(userId, req.validatedQuery.since);
+    const byProvider = getUserCostByProvider(userId, req.validatedQuery.since);
     res.json({ ok: true, summary, byProvider });
   } catch (error) {
     res.status(500).json({ ok: false, error: 'Failed to get cost data' });

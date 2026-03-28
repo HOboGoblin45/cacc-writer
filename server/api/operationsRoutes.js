@@ -35,6 +35,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import {
   queryAuditEvents,
   countAuditEvents,
@@ -70,25 +71,66 @@ import log from '../logger.js';
 
 const router = Router();
 
+// ── Zod Schemas ────────────────────────────────────────────────────────────────
+
 const emptyMutationSchema = z.object({}).strict();
+
 const metricsDailySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be in YYYY-MM-DD format').optional(),
 }).strict();
 
-function parsePayload(schema, payload, res) {
-  const parsed = schema.safeParse(payload);
-  if (parsed.success) return parsed.data;
-  res.status(400).json({
-    ok: false,
-    code: 'INVALID_PAYLOAD',
-    error: 'Invalid request payload',
-    details: parsed.error.issues.map(i => ({
-      path: i.path.join('.') || '(root)',
-      message: i.message,
-    })),
-  });
-  return null;
-}
+const auditQuerySchema = z.object({
+  caseId: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
+  eventType: z.string().min(1).optional(),
+  entityType: z.string().min(1).optional(),
+  entityId: z.string().min(1).optional(),
+  severity: z.string().min(1).optional(),
+  since: z.string().optional(),
+  until: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+const auditCountsQuerySchema = z.object({
+  since: z.string().optional(),
+});
+
+const auditIdParamsSchema = z.object({
+  id: z.string().min(1),
+});
+
+const timelineParamsSchema = z.object({
+  caseId: z.string().min(1),
+});
+
+const timelineQuerySchema = z.object({
+  category: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+  since: z.string().optional(),
+  until: z.string().optional(),
+  includePreAudit: z.coerce.boolean().default(true),
+});
+
+const metricsQuerySchema = z.object({
+  metricType: z.string().optional(),
+  since: z.string().optional(),
+  until: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(30),
+});
+
+const caseIdParamsSchema = z.object({
+  caseId: z.string().min(1),
+});
+
+const runIdParamsSchema = z.object({
+  runId: z.string().min(1),
+});
+
+const jobIdParamsSchema = z.object({
+  jobId: z.string().min(1),
+});
 
 // ── Audit Events ──────────────────────────────────────────────────────────────
 
@@ -102,9 +144,9 @@ router.get('/operations/audit/types', (req, res) => {
   }
 });
 
-router.get('/operations/audit/counts', (req, res) => {
+router.get('/operations/audit/counts', validateQuery(auditCountsQuerySchema), (req, res) => {
   try {
-    const since = req.query.since || undefined;
+    const since = req.validatedQuery.since || undefined;
     const counts = getAuditCountsByCategory(since);
     res.json({ counts });
   } catch (err) {
@@ -113,9 +155,9 @@ router.get('/operations/audit/counts', (req, res) => {
   }
 });
 
-router.get('/operations/audit/:id', (req, res) => {
+router.get('/operations/audit/:id', validateParams(auditIdParamsSchema), (req, res) => {
   try {
-    const event = getAuditEvent(req.params.id);
+    const event = getAuditEvent(req.validatedParams.id);
     if (!event) return res.status(404).json({ error: 'Audit event not found' });
     res.json(event);
   } catch (err) {
@@ -124,19 +166,19 @@ router.get('/operations/audit/:id', (req, res) => {
   }
 });
 
-router.get('/operations/audit', (req, res) => {
+router.get('/operations/audit', validateQuery(auditQuerySchema), (req, res) => {
   try {
     const opts = {
-      caseId: req.query.caseId || undefined,
-      category: req.query.category || undefined,
-      eventType: req.query.eventType || undefined,
-      entityType: req.query.entityType || undefined,
-      entityId: req.query.entityId || undefined,
-      severity: req.query.severity || undefined,
-      since: req.query.since || undefined,
-      until: req.query.until || undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : 100,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : 0,
+      caseId: req.validatedQuery.caseId,
+      category: req.validatedQuery.category,
+      eventType: req.validatedQuery.eventType,
+      entityType: req.validatedQuery.entityType,
+      entityId: req.validatedQuery.entityId,
+      severity: req.validatedQuery.severity,
+      since: req.validatedQuery.since,
+      until: req.validatedQuery.until,
+      limit: req.validatedQuery.limit,
+      offset: req.validatedQuery.offset,
     };
 
     const events = queryAuditEvents(opts);
@@ -151,9 +193,9 @@ router.get('/operations/audit', (req, res) => {
 
 // ── Case Timeline ─────────────────────────────────────────────────────────────
 
-router.get('/operations/timeline/:caseId/summary', (req, res) => {
+router.get('/operations/timeline/:caseId/summary', validateParams(timelineParamsSchema), (req, res) => {
   try {
-    const summary = getCaseTimelineSummary(req.params.caseId);
+    const summary = getCaseTimelineSummary(req.validatedParams.caseId);
     res.json(summary);
   } catch (err) {
     log.error('api:timeline-summary', { error: err.message });
@@ -161,18 +203,18 @@ router.get('/operations/timeline/:caseId/summary', (req, res) => {
   }
 });
 
-router.get('/operations/timeline/:caseId', (req, res) => {
+router.get('/operations/timeline/:caseId', validateParams(timelineParamsSchema), validateQuery(timelineQuerySchema), (req, res) => {
   try {
     const opts = {
-      category: req.query.category || undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : 50,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : 0,
-      since: req.query.since || undefined,
-      until: req.query.until || undefined,
-      includePreAudit: req.query.includePreAudit !== 'false',
+      category: req.validatedQuery.category,
+      limit: req.validatedQuery.limit,
+      offset: req.validatedQuery.offset,
+      since: req.validatedQuery.since,
+      until: req.validatedQuery.until,
+      includePreAudit: req.validatedQuery.includePreAudit,
     };
 
-    const timeline = buildCaseTimeline(req.params.caseId, opts);
+    const timeline = buildCaseTimeline(req.validatedParams.caseId, opts);
     res.json(timeline);
   } catch (err) {
     log.error('api:timeline', { error: err.message });
@@ -182,13 +224,13 @@ router.get('/operations/timeline/:caseId', (req, res) => {
 
 // ── Metrics ───────────────────────────────────────────────────────────────────
 
-router.get('/operations/metrics', (req, res) => {
+router.get('/operations/metrics', validateQuery(metricsQuerySchema), (req, res) => {
   try {
     const opts = {
-      metricType: req.query.metricType || undefined,
-      since: req.query.since || undefined,
-      until: req.query.until || undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : 30,
+      metricType: req.validatedQuery.metricType,
+      since: req.validatedQuery.since,
+      until: req.validatedQuery.until,
+      limit: req.validatedQuery.limit,
     };
 
     const metrics = queryMetrics(opts);
@@ -199,9 +241,7 @@ router.get('/operations/metrics', (req, res) => {
   }
 });
 
-router.post('/operations/metrics/compute', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.post('/operations/metrics/compute', validateBody(emptyMutationSchema), (req, res) => {
   try {
     const results = computeAllMetrics();
     res.json({ ok: true, results });
@@ -211,12 +251,9 @@ router.post('/operations/metrics/compute', (req, res) => {
   }
 });
 
-router.post('/operations/metrics/daily', (req, res) => {
-  const payload = parsePayload(metricsDailySchema, req.body || {}, res);
-  if (!payload) return;
-
+router.post('/operations/metrics/daily', validateBody(metricsDailySchema), (req, res) => {
   try {
-    const date = payload.date || undefined;
+    const date = req.validated.date || undefined;
     const summary = computeDailySummary(date);
     res.json({ ok: true, summary });
   } catch (err) {
@@ -248,11 +285,9 @@ router.get('/operations/health/quick', async (req, res) => {
 
 // ── Archival / Retention ──────────────────────────────────────────────────────
 
-router.post('/operations/archive/:caseId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.post('/operations/archive/:caseId', validateParams(caseIdParamsSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    const result = archiveCase(req.params.caseId);
+    const result = archiveCase(req.validatedParams.caseId);
     res.json(result);
   } catch (err) {
     log.error('api:archive', { error: err.message });
@@ -260,11 +295,9 @@ router.post('/operations/archive/:caseId', (req, res) => {
   }
 });
 
-router.post('/operations/restore/:caseId', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.post('/operations/restore/:caseId', validateParams(caseIdParamsSchema), validateBody(emptyMutationSchema), (req, res) => {
   try {
-    const result = restoreCase(req.params.caseId);
+    const result = restoreCase(req.validatedParams.caseId);
     res.json(result);
   } catch (err) {
     log.error('api:restore', { error: err.message });
@@ -291,9 +324,7 @@ router.get('/operations/retention', (req, res) => {
   }
 });
 
-router.post('/operations/cleanup', (req, res) => {
-  if (!parsePayload(emptyMutationSchema, req.body || {}, res)) return;
-
+router.post('/operations/cleanup', validateBody(emptyMutationSchema), (req, res) => {
   try {
     const result = runTransientCleanup();
     res.json({ ok: true, result });
@@ -305,9 +336,9 @@ router.post('/operations/cleanup', (req, res) => {
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
-router.get('/operations/export/:caseId', async (req, res) => {
+router.get('/operations/export/:caseId', validateParams(caseIdParamsSchema), async (req, res) => {
   try {
-    const manifest = await buildCaseExportManifest(req.params.caseId);
+    const manifest = await buildCaseExportManifest(req.validatedParams.caseId);
     res.json(manifest);
   } catch (err) {
     log.error('api:export-manifest', { error: err.message });
@@ -315,9 +346,9 @@ router.get('/operations/export/:caseId', async (req, res) => {
   }
 });
 
-router.get('/operations/export/:caseId/download', async (req, res) => {
+router.get('/operations/export/:caseId/download', validateParams(caseIdParamsSchema), async (req, res) => {
   try {
-    const result = await exportCaseManifest(req.params.caseId);
+    const result = await exportCaseManifest(req.validatedParams.caseId);
     res.json({ ok: true, path: result.path, sizeBytes: result.sizeBytes });
   } catch (err) {
     log.error('api:export-download', { error: err.message });
@@ -413,22 +444,22 @@ router.get('/operations/stuck-states', (req, res) => {
   }
 });
 
-router.post('/operations/stuck-states/fail-run/:runId', (req, res) => {
+router.post('/operations/stuck-states/fail-run/:runId', validateParams(runIdParamsSchema), (req, res) => {
   try {
-    const result = failStuckGenerationRun(req.params.runId);
+    const result = failStuckGenerationRun(req.validatedParams.runId);
     res.json({ ok: true, ...result });
   } catch (err) {
-    log.error('api:fail-stuck-run', { runId: req.params.runId, error: err.message });
+    log.error('api:fail-stuck-run', { runId: req.validatedParams.runId, error: err.message });
     res.status(400).json({ ok: false, error: err.message });
   }
 });
 
-router.post('/operations/stuck-states/fail-extraction/:jobId', (req, res) => {
+router.post('/operations/stuck-states/fail-extraction/:jobId', validateParams(jobIdParamsSchema), (req, res) => {
   try {
-    const result = failStuckExtractionJob(req.params.jobId);
+    const result = failStuckExtractionJob(req.validatedParams.jobId);
     res.json({ ok: true, ...result });
   } catch (err) {
-    log.error('api:fail-stuck-extraction', { jobId: req.params.jobId, error: err.message });
+    log.error('api:fail-stuck-extraction', { jobId: req.validatedParams.jobId, error: err.message });
     res.status(400).json({ ok: false, error: err.message });
   }
 });

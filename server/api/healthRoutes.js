@@ -63,6 +63,7 @@ import {
   listExports,
 } from '../backupExport.js';
 import { MODEL, probeOpenAIAuth, getCircuitBreakerStats } from '../openaiClient.js';
+import { isShuttingDown } from '../utils/gracefulShutdown.js';
 import { getDb } from '../db/database.js';
 import { detectStuckStates } from '../operations/stuckStateDetector.js';
 import { probeAciAgent, probeRqAgent } from './agentHealth.js';
@@ -118,6 +119,11 @@ router.get('/health', (_req, res) => {
 // Readiness probe — returns 200 only if the server is ready to handle requests.
 // Checks: DB connection, AI provider circuit not OPEN.
 router.get('/health/ready', (_req, res) => {
+  // Immediately report not-ready during graceful shutdown
+  if (isShuttingDown()) {
+    return res.status(503).json({ ok: false, ready: false, reason: 'shutting_down', checkedAt: new Date().toISOString() });
+  }
+
   const checks = { db: false, ai: true };
   let ready = true;
 

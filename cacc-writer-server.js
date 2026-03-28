@@ -32,6 +32,7 @@ import { aiTimeout, apiTimeout } from './server/middleware/requestTimeout.js';
 import cookieParser from 'cookie-parser';
 import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrfProtection.js';
 import { validateEnvAndLog } from './server/config/envValidator.js';
+import { registerShutdownHandlers, isShuttingDown } from './server/utils/gracefulShutdown.js';
 
 import healthRouter from './server/api/healthRoutes.js';
 import casesRouter from './server/api/casesRoutes.js';
@@ -473,36 +474,6 @@ server.on('error', (err) => {
 });
 
 // ── Graceful shutdown ──────────────────────────────────────────────────────────
-let _shuttingDown = false;
-
-function gracefulShutdown(signal) {
-  if (_shuttingDown) return;
-  _shuttingDown = true;
-  console.log(`\n${signal} received — shutting down gracefully…`);
-
-  server.close(() => {
-    console.log('HTTP server closed.');
-    try {
-      const db = getDb();
-      if (db && db.open) {
-        db.pragma('wal_checkpoint(TRUNCATE)');
-      }
-      closeAllUserDbs();
-      closeDb();
-      console.log('SQLite WAL checkpointed and all connections closed.');
-    } catch (e) {
-      console.warn('DB shutdown warning:', e.message);
-    }
-    console.log('Shutdown complete.');
-    process.exit(0);
-  });
-
-  // Force exit if server hasn't closed in 10 seconds
-  setTimeout(() => {
-    console.error('Forced exit after timeout.');
-    process.exit(1);
-  }, 10000).unref();
-}
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+// Handles SIGTERM, SIGINT, uncaught exceptions, and unhandled rejections.
+// Drains connections, closes databases, and exits cleanly.
+registerShutdownHandlers(server);
