@@ -66,11 +66,13 @@ const log = {
    * Log an HTTP request with method, path, status, and duration.
    * Use as Express middleware or call manually after res.send().
    */
-  request: (method, path, status, durationMs) => emit('info', 'http', {
+  request: (method, path, status, durationMs, extra = {}) => emit('info', 'http', {
     method: String(method).toUpperCase(),
     path:   String(path),
     status: Number(status),
     ms:     Number(durationMs),
+    ...(extra.requestId ? { requestId: extra.requestId } : {}),
+    ...(extra.userId ? { userId: extra.userId } : {}),
   }),
 
   /**

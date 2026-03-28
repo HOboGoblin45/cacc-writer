@@ -698,7 +698,41 @@ export async function runFullDraftOrchestrator({ caseId, formType, options = {} 
       durationMs: phaseMs.parallelDraftMs,
     });
 
-    // â”€â”€ 8. Execute dependent synthesis sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── 7b. Orchestrator-level retry of failed independent sections ──────────
+    // If any parallel sections failed, retry them once before proceeding.
+    // This catches transient AI provider failures that the section-level retry missed.
+    const failedParallelIds = Object.entries(parallelResults)
+      .filter(([, r]) => !r.ok)
+      .map(([id]) => id);
+
+    if (failedParallelIds.length > 0 && failedParallelIds.length < parallelDefs.length) {
+      log('info', 'orchestrator-retry', runId, {
+        failedSections: failedParallelIds,
+        retryCount: failedParallelIds.length,
+      });
+
+      const retryDefs = parallelDefs.filter(s => failedParallelIds.includes(s.id));
+
+      // Brief pause before retrying to let transient issues resolve
+      await new Promise(r => setTimeout(r, 2000));
+
+      const { results: retryResults, durationMs: retryMs } =
+        await runParallelSections(retryDefs, jobParams, jobMap, runId);
+
+      // Merge retried results — only replace if the retry succeeded
+      for (const [sectionId, result] of Object.entries(retryResults)) {
+        if (result.ok) {
+          parallelResults[sectionId] = result;
+          log('info', 'orchestrator-retry-success', runId, { sectionId });
+        } else {
+          log('info', 'orchestrator-retry-still-failed', runId, { sectionId });
+        }
+      }
+
+      phaseMs.parallelDraftMs += retryMs;
+    }
+
+    // ── 8. Execute dependent synthesis sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const dependentDefs = plan.sections.filter(s => s.dependsOn.length > 0);
     let allResults = { ...parallelResults };
 

@@ -250,7 +250,10 @@ app.use((req, res, next) => {
   const skip = ['/favicon.ico', '/app.js', '/phase8.css', '/index.html', '/'].includes(req.path);
   res.on('finish', () => {
     if (!skip) {
-      log.request(req.method, req.path, res.statusCode, Date.now() - start);
+      log.request(req.method, req.path, res.statusCode, Date.now() - start, {
+        requestId: req.id,
+        userId: req.user?.userId,
+      });
     }
   });
   next();
