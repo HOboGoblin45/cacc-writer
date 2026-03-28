@@ -79,9 +79,10 @@ def insert():
 
     if not inserter.PYWINAUTO_AVAILABLE:
         return jsonify({
-            'ok': True, 'inserted': False, 'method': 'stub',
-            'message': 'pywinauto not available',
-        })
+            'ok': False,
+            'error': 'ACI insertion not available in SaaS mode',
+            'method': 'stub',
+        }), 503
 
     aci_hwnd = inserter.find_aci_hwnd()
     if not aci_hwnd:
