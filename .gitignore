@@ -67,3 +67,12 @@ benchmarks/phase-c/latest-results.json
 
 # IDE
 .vscode/settings.json
+
+# Root-level test file copies (canonical versions in tests/integration/)
+/_test_*.mjs
+/fill_test.mjs
+/test_pb.mjs
+/test_*.xml
+
+# Claude agent worktrees
+.claude/worktrees/
