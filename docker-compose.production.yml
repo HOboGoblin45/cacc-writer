@@ -1,0 +1,57 @@
+# docker-compose.production.yml — CACC Writer Production
+#
+# Usage:
+#   cp .env.production.template .env
+#   # Fill in .env with production values
+#   docker compose -f docker-compose.production.yml up -d --build
+#
+# Features:
+#   - Read-only root filesystem (except data volumes)
+#   - Resource limits (CPU + memory)
+#   - Security options (no new privileges)
+#   - Named volumes for persistence
+#   - Readiness probe on /api/health/ready
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cacc-writer
+    ports:
+      - "${APP_PORT:-5178}:5178"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - cacc-data:/app/data
+      - cacc-exports:/app/exports
+      - cacc-kb:/app/knowledge_base
+      - cacc-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5178/api/health/ready').then(r=>{if(r.status!==200)throw 1;return r.json()}).then(d=>process.exit(d.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+
+volumes:
+  cacc-data:
+  cacc-exports:
+  cacc-kb:
+  cacc-logs:
