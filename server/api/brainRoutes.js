@@ -13,6 +13,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import log from '../logger.js';
 import {
   getActiveModel, listModels, registerModel, promoteModel, rollbackToModel
@@ -38,6 +39,55 @@ const VLLM_BASE = process.env.VLLM_BASE_URL || `https://${RUNPOD_POD_ID}-8000.pr
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const FALLBACK_MODEL = process.env.BRAIN_FALLBACK_MODEL || 'gpt-4o-mini';
 const FALLBACK_ENABLED = process.env.BRAIN_FALLBACK_ENABLED !== 'false';
+
+// ── Zod Schemas ─────────────────────────────────────────────────────────────
+
+const graphNodeSchema = z.object({
+  id: z.string().optional(),
+  nodeType: z.enum(['case', 'property', 'comp', 'market_area', 'pattern', 'concept', 'appraiser', 'adjustment', 'section']),
+  label: z.string().min(1).max(500),
+  properties: z.record(z.unknown()).optional(),
+  embedding: z.array(z.number()).optional(),
+  weight: z.number().min(0).max(100).optional(),
+});
+
+const graphEdgeSchema = z.object({
+  id: z.string().optional(),
+  sourceId: z.string().min(1),
+  targetId: z.string().min(1),
+  edgeType: z.enum(['related_to', 'comparable_to', 'located_in', 'derived_from', 'adjusted_by', 'generated_for', 'similar_pattern', 'market_trend', 'appraised_by']),
+  weight: z.number().min(0).max(100).optional(),
+  properties: z.record(z.unknown()).optional(),
+});
+
+const chatSchema = z.object({
+  message: z.string().max(10000).optional(),
+  messages: z.array(z.object({ role: z.string(), content: z.string() })).optional(),
+  caseId: z.string().optional(),
+}).refine(data => data.message || data.messages, { message: 'Either message or messages is required' });
+
+const registerModelSchema = z.object({
+  modelName: z.string().min(1).max(100).optional(),
+  version: z.string().min(1).max(50),
+  baseModel: z.string().optional(),
+  status: z.enum(['training', 'evaluating', 'staged', 'active', 'retired', 'failed']).optional(),
+  trainingSamples: z.number().int().min(0).optional(),
+  hyperparams: z.record(z.unknown()).optional(),
+  evalScores: z.record(z.unknown()).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+/**
+ * Validate request body with a Zod schema. Returns parsed data or sends 400.
+ */
+function validate(schema, req, res) {
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ ok: false, error: 'Validation failed', details: result.error.issues });
+    return null;
+  }
+  return result.data;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -183,9 +233,11 @@ router.get('/brain/graph/local', (req, res) => {
 });
 
 router.post('/brain/graph/node', (req, res) => {
+  const data = validate(graphNodeSchema, req, res);
+  if (!data) return;
   try {
     const userId = req.user?.userId || 'dev-local';
-    const id = upsertGraphNode({ ...req.body, userId });
+    const id = upsertGraphNode({ ...data, userId });
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:graph-node', { error: error.message });
@@ -194,9 +246,11 @@ router.post('/brain/graph/node', (req, res) => {
 });
 
 router.post('/brain/graph/edge', (req, res) => {
+  const data = validate(graphEdgeSchema, req, res);
+  if (!data) return;
   try {
     const userId = req.user?.userId || 'dev-local';
-    const id = createGraphEdge({ ...req.body, userId });
+    const id = createGraphEdge({ ...data, userId });
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:graph-edge', { error: error.message });
@@ -224,8 +278,10 @@ router.delete('/brain/graph/edge/:id', (req, res) => {
 
 // ─── Chat / Workflow ─────────────────────────────────────────
 router.post('/brain/chat', async (req, res) => {
+  const data = validate(chatSchema, req, res);
+  if (!data) return;
   const userId = req.user?.userId || 'dev-local';
-  const caseId = req.body?.caseId || null;
+  const caseId = data.caseId || null;
 
   // Save user message
   try {
@@ -374,8 +430,10 @@ router.get('/brain/models/active', (req, res) => {
 });
 
 router.post('/brain/models', (req, res) => {
+  const data = validate(registerModelSchema, req, res);
+  if (!data) return;
   try {
-    const id = registerModel(req.body);
+    const id = registerModel(data);
     res.json({ ok: true, id });
   } catch (error) {
     log.error('brain:model-register', { error: error.message });
@@ -412,5 +470,31 @@ router.get('/brain/costs', (req, res) => {
     res.status(500).json({ ok: false, error: 'Failed to get cost data' });
   }
 });
+
+// ─── Startup: Seed model registry with current deployed model ────
+(function seedModelRegistry() {
+  try {
+    const active = getActiveModel();
+    if (!active && RUNPOD_POD_ID) {
+      const id = registerModel({
+        modelName: 'cacc-appraiser',
+        version: 'v6',
+        baseModel: 'meta-llama/Llama-3.1-8B',
+        status: 'active',
+        deployedEndpoint: `${VLLM_BASE}/v1/chat/completions`,
+        trainingSamples: 0,
+        hyperparams: { quantization: 'none', maxSeqLen: 8192, gpuMemory: '24GB' },
+        evalScores: { note: 'Pre-eval — baseline model deployed on RunPod RTX 4090' },
+        notes: 'Initial fine-tuned model (cacc-appraiser-v6). Auto-seeded on first startup.',
+      });
+      // Promote it immediately
+      promoteModel(id, `${VLLM_BASE}/v1/chat/completions`);
+      log.info('brain:seed', `Registered and promoted initial model: ${id}`);
+    }
+  } catch (err) {
+    // Non-critical — model registry may not be initialized yet
+    log.warn('brain:seed', { error: err.message });
+  }
+})();
 
 export default router;

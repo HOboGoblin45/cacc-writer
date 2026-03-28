@@ -11,6 +11,7 @@ dotenv.config();
 import express from 'express';
 import './server/utils/patchExpressAsync.js';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -166,25 +167,69 @@ runStartupChecks({
 });
 
 const app = express();
+
+// ── Security Headers (Helmet) ────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://d3js.org", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "wss://*.proxy.runpod.net", "https://*.proxy.runpod.net", "https://api.openai.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow loading external CDN resources
+}));
+
+// ── CORS — environment-conditional ───────────────────────────────────────────
+const CORS_ORIGINS = process.env.NODE_ENV === 'production'
+  ? ['https://appraisal-agent.com', 'https://www.appraisal-agent.com', process.env.APP_URL].filter(Boolean)
+  : ['http://localhost:5178', 'http://127.0.0.1:5178', 'https://appraisal-agent.com', 'https://www.appraisal-agent.com'];
 app.use(cors({
-  origin: ['http://localhost:5178', 'http://127.0.0.1:5178', 'https://appraisal-agent.com', 'https://www.appraisal-agent.com'],
+  origin: CORS_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
 }));
 
-// Rate limit only the AI generation endpoints to prevent runaway API costs.
-// Cases/CRUD endpoints are not limited — this is a single-user local tool.
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+
+// Global write rate limit — prevents abuse on all POST/PUT/PATCH/DELETE endpoints
+const writeLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  message: { ok: false, error: 'Rate limit exceeded — too many write requests' },
+  skip: (req) => req.method === 'GET',
+  keyGenerator: (req) => req.user?.userId || req.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', writeLimiter);
+
+// AI generation endpoints — tighter limit to prevent runaway API costs
 const genLimiter = rateLimit({
   windowMs: 60_000,
   max: 60,
   message: { ok: false, error: 'Rate limit exceeded' },
-  skip: (req) => req.method === 'GET', // Only limit write/generate operations
+  skip: (req) => req.method === 'GET',
 });
 app.use('/api/generate', genLimiter);
 
-// Rate limit demo endpoint: 5 requests per hour per IP (prevents abuse)
+// Brain/AI endpoints — separate limit for GPU-intensive operations
+const brainLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  message: { ok: false, error: 'AI rate limit exceeded — please wait' },
+  skip: (req) => req.method === 'GET',
+  keyGenerator: (req) => req.user?.userId || req.ip,
+});
+app.use('/api/brain/chat', brainLimiter);
+app.use('/api/brain/v1', brainLimiter);
+
+// Demo endpoint: 5 requests per hour per IP (prevents abuse)
 const demoLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 5,
   message: { ok: false, error: 'Demo limit reached. Sign up for unlimited access!', upgrade: true },
   keyGenerator: (req) => req.ip,
