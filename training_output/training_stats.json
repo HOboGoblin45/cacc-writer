@@ -1,0 +1,27 @@
+{
+  "filesProcessed": 395,
+  "filesErrored": 0,
+  "examplesByType": {
+    "narrative_writing": 517,
+    "adjustment_reasoning": 1697,
+    "comp_selection": 364,
+    "reconciliation": 357,
+    "condition_quality": 333,
+    "full_appraisal": 382
+  },
+  "totalExamples": 3650,
+  "valueDistribution": {
+    "min": 20000,
+    "max": 1407750,
+    "sum": 99179650,
+    "count": 382,
+    "avg": 259633
+  },
+  "conditionDistribution": {
+    "C3": 279,
+    "C4": 49,
+    "C1": 18,
+    "C2": 2
+  },
+  "errors": []
+}

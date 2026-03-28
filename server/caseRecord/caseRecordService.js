@@ -23,6 +23,7 @@ import {
   listCaseAggregates,
   deleteCaseAggregate,
 } from '../db/repositories/caseRecordRepo.js';
+import { getUserDb } from '../db/database.js';
 
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
@@ -100,8 +101,8 @@ function readFactSources(caseId) {
   return readJSON(path.join(casePath(caseId), 'fact_sources.json'), {});
 }
 
-function loadRawCaseFromDb(caseId) {
-  const agg = getCaseAggregate(caseId);
+function loadRawCaseFromDb(caseId, opts = {}) {
+  const agg = getCaseAggregate(caseId, opts);
   if (!agg) return null;
 
   return normalizeRawCase({
@@ -155,7 +156,7 @@ function writeCompatibilityFiles(raw) {
   }
 }
 
-function persistRawCase(raw, { writeLegacyFiles = false } = {}) {
+function persistRawCase(raw, { writeLegacyFiles = false, db } = {}) {
   const normalized = normalizeRawCase(raw);
 
   saveCaseAggregate({
@@ -165,7 +166,7 @@ function persistRawCase(raw, { writeLegacyFiles = false } = {}) {
     provenance: normalized.provenance,
     outputs: normalized.outputs,
     history: normalized.history,
-  });
+  }, db ? { db } : {});
 
   if (writeLegacyFiles) {
     writeCompatibilityFiles(normalized);
@@ -197,6 +198,10 @@ export function saveCaseProjection({
   history = {},
   docText = {},
 }, options = {}) {
+  // Support userId-based tenant isolation
+  if (options.userId && !options.db) {
+    options.db = getUserDb(options.userId);
+  }
   const normalized = persistRawCase({ caseId, meta, facts, provenance, outputs, history, docText }, options);
   return toProjection(normalized);
 }
@@ -208,20 +213,22 @@ export function syncCaseRecordFromFilesystem(caseId) {
   return toProjection(raw);
 }
 
-export function getCaseProjection(caseId) {
-  const dbRaw = loadRawCaseFromDb(caseId);
+export function getCaseProjection(caseId, options = {}) {
+  const dbOptsObj = options.userId ? { db: getUserDb(options.userId) } : {};
+  const dbRaw = loadRawCaseFromDb(caseId, dbOptsObj);
   if (dbRaw) return toProjection(dbRaw);
 
   const fsRaw = loadRawCaseFromFilesystem(caseId);
   if (!fsRaw) return null;
 
   // One-time backfill for legacy cases not yet in canonical tables.
-  persistRawCase(fsRaw, { writeLegacyFiles: false });
+  persistRawCase(fsRaw, { writeLegacyFiles: false, ...dbOptsObj });
   return toProjection(fsRaw);
 }
 
-export function listCaseProjections() {
-  const fromDb = listCaseAggregates(1000)
+export function listCaseProjections(options = {}) {
+  const dbOptsObj = options.userId ? { db: getUserDb(options.userId) } : {};
+  const fromDb = listCaseAggregates(1000, dbOptsObj)
     .map(agg => normalizeRawCase({
       caseId: agg.caseId,
       meta: agg.meta,
@@ -251,8 +258,9 @@ export function listCaseProjections() {
   return projections;
 }
 
-export function deleteCanonicalCaseRecord(caseId) {
-  deleteCaseAggregate(caseId);
+export function deleteCanonicalCaseRecord(caseId, options = {}) {
+  const dbOptsObj = options.userId ? { db: getUserDb(options.userId) } : {};
+  deleteCaseAggregate(caseId, dbOptsObj);
 }
 
 export function updateCaseFactProvenance(caseId, incoming = {}, { replace = false } = {}) {

@@ -618,6 +618,7 @@ router.post('/security/backups/:backupId/verify', (req, res) => {
 router.post('/security/backups/:backupId/restore', (req, res) => {
   try {
     const result = restoreFromBackup(req.params.backupId);
+    if (result.notImplemented) return res.status(501).json({ ok: false, error: result.error, status: result.status });
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {

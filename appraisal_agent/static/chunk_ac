@@ -1,0 +1,341 @@
+                </div>
+                    </div>
+                </div>
+
+                <!-- Report Preview Tab -->
+                <div id="report-tab" class="tab-content">
+                    <div class="report-container">
+                        <div class="report-section">
+                            <div class="report-section-title">Subject Property</div>
+                            <div class="report-item">
+                                <span class="report-label">Address</span>
+                                <span class="report-value" id="report-subject-address">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Property Type</span>
+                                <span class="report-value" id="report-subject-type">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Square Footage</span>
+                                <span class="report-value" id="report-subject-sqft">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bedrooms</span>
+                                <span class="report-value" id="report-subject-beds">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bathrooms</span>
+                                <span class="report-value" id="report-subject-baths">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Neighborhood</div>
+                            <div class="report-item">
+                                <span class="report-label">Market Area</span>
+                                <span class="report-value" id="report-neighborhood">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">School District</span>
+                                <span class="report-value" id="report-school-district">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Property Condition</span>
+                                <span class="report-value" id="report-condition">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Market Conditions</div>
+                            <div class="report-item">
+                                <span class="report-label">Market Type</span>
+                                <span class="report-value" id="report-market-type">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Median Price</span>
+                                <span class="report-value" id="report-median-price">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Days on Market</span>
+                                <span class="report-value" id="report-days-market">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Value Reconciliation</div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 1 (Comp)</span>
+                                <span class="report-value" id="report-approach1">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 2 (Cost)</span>
+                                <span class="report-value" id="report-approach2">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 3 (Income)</span>
+                                <span class="report-value" id="report-approach3">--</span>
+                            </div>
+                            <div class="report-item" style="border-top: 2px solid #e94560; margin-top: 12px; padding-top: 12px;">
+                                <span class="report-label" style="color: #ff6b9d; font-weight: 700;">Final Opinion of Value</span>
+                                <span class="report-value" style="color: #ff6b9d; font-size: 16px; font-weight: 700;" id="report-final-value">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-footer">
+                            <button class="btn" id="confirm-export-btn">Confirm & Export PDF</button>
+                            <button class="btn secondary" id="cancel-export-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Details Panel -->
+    <div class="node-details-panel" id="node-details-panel">
+        <div class="node-details-header">
+            <div class="node-details-title">
+                <div class="node-details-type" id="node-details-type">Type</div>
+                <div class="node-details-name" id="node-details-name">Node Name</div>
+            </div>
+            <button class="close-panel-btn" id="close-panel-btn">✕</button>
+        </div>
+        <div class="node-details-content">
+            <div class="details-section" id="node-details-properties"></div>
+            <div class="details-section">
+                <div class="details-section-title">Connected Nodes</div>
+                <div class="connections-list" id="node-connections"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ Global State ============
+        let graphData = { nodes: [], edges: [] };
+        let selectedNode = null;
+        let isPhysicsEnabled = true;
+        let areLabelsShown = true;
+        let is3DMode = false;
+        let simulation = null;
+        let zoomLevel = 1;
+        const nodeTypeColors = {
+            concept: "#FF6B6B",
+            property: "#4ECDC4",
+            comparable: "#45B7D1",
+            market_area: "#FFA07A",
+            standard: "#98D8C8",
+            data_source: "#F7DC6F",
+            user_knowledge: "#BB8FCE",
+        };
+
+        // ============ API Utilities ============
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                return null;
+            }
+        }
+
+        // ============ Initialization ============
+        async function initializeApp() {
+            // Load initial graph
+            await loadGraph();
+
+            // Setup WebSocket connection
+            setupWebSocket();
+
+            // Update connection status
+            updateConnectionStatus();
+
+            // Load market data
+            await loadMarketData();
+
+            // Setup UI event listeners
+            setupUIEventListeners();
+
+            // Load initial chat message
+            addChatMessage('agent', 'Welcome to CACC Appraiser! I\'m ready to help you complete a property appraisal. What property would you like to appraise today?');
+        }
+
+        // ============ Graph Loading & Management ============
+        async function loadGraph() {
+            const data = await apiCall('/api/graph');
+            if (data) {
+                graphData = data;
+                renderGraph();
+                updateStats();
+                updateLegend();
+            }
+        }
+
+        function updateStats() {
+            const nodes = graphData.nodes || [];
+            const edges = graphData.edges || [];
+            const nodeCount = nodes.length;
+            const edgeCount = edges.length;
+            const avgConnections = nodeCount > 0 ? (edgeCount * 2 / nodeCount).toFixed(1) : 0;
+            const density = nodeCount > 1 ? (edgeCount / (nodeCount * (nodeCount - 1) / 2)).toFixed(2) : 0;
+
+            document.getElementById('node-count').textContent = nodeCount;
+            document.getElementById('edge-count').textContent = edgeCount;
+            document.getElementById('stat-nodes').textContent = nodeCount;
+            document.getElementById('stat-edges').textContent = edgeCount;
+            document.getElementById('stat-density').textContent = density;
+            document.getElementById('stat-avg-conn').textContent = avgConnections;
+        }
+
+        function updateLegend() {
+            const legendContainer = document.getElementById('legend-container');
+            legendContainer.innerHTML = '';
+            Object.entries(nodeTypeColors).forEach(([type, color]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-dot" style="background: ${color};"></div>
+                    <span class="legend-label">${type.replace(/_/g, ' ').toUpperCase()}</span>
+                `;
+                item.onclick = () => filterByNodeType(type);
+                legendContainer.appendChild(item);
+            });
+        }
+
+        // ============ D3 Graph Rendering ============
+        function renderGraph() {
+            const svg = d3.select('svg#graph');
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+
+            // Clear previous
+            svg.selectAll('*').remove();
+
+            // Create container groups
+            const g = svg.append('g');
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    zoomLevel = event.transform.k;
+                });
+            svg.call(zoom);
+
+            // Create force simulation
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.edges)
+                    .id(d => d.id)
+                    .distance(80)
+                    .strength(0.5))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('collide', d3.forceCollide().radius(30))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw links
+            const link = g.selectAll('line')
+                .data(graphData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 1);
+
+            // Draw nodes
+            const node = g.selectAll('circle')
+                .data(graphData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => 5 + (d.connections || 0) * 1.5)
+                .attr('fill', d => nodeTypeColors[d.type] || '#888')
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded))
+                .on('click', (event, d) => selectNode(d))
+                .on('mouseover', (event, d) => showTooltip(event, d))
+                .on('mouseout', hideTooltip);
+
+            // Draw labels
+            const labels = g.selectAll('.node-label')
+                .data(graphData.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .attr('dy', '.3em')
+                .text(d => d.name)
+                .style('display', areLabelsShown ? 'block' : 'none');
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            // Setup zoom buttons
+            document.getElementById('zoom-in-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    1.3
+                );
+            };
+
+            document.getElementById('zoom-out-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    0.7
+                );
+            };
+
+            document.getElementById('toggle-labels-btn').onclick = () => {
+                areLabelsShown = !areLabelsShown;
+                labels.style('display', areLabelsShown ? 'block' : 'none');
+                document.getElementById('toggle-labels-btn').classList.toggle('active');
+            };
+
+            document.getElementById('toggle-physics-btn').onclick = () => {
+                isPhysicsEnabled = !isPhysicsEnabled;
+                if (isPhysicsEnabled) {
+                    simulation.alpha(1).restart();
+                } else {
+                    simulation.stop();
+                }
+                document.getElementById('toggle-physics-btn').classList.toggle('active');
+            };
+
+            document.getElementById('reset-view-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity.translate(20, 20)
+                );
+            };
+
+            document.getElementById('toggle-3d-btn').onclick = () => {
+                is3DMode = !is3DMode;
+                document.getElementById('toggle-3d-btn').classList.toggle('active');
+                if (is3DMode) {
+                    // Apply pseudo-3D perspective
+                    g.style('transform-style', 'preserve-3d');
+                } else {
+                    g.style('transform-style', 'flat');
+                }
+            };
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).rest

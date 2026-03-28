@@ -1,0 +1,204 @@
+     }
+
+        // ============ D3 Graph Rendering ============
+        function renderGraph() {
+            const svg = d3.select('svg#graph');
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+
+            // Clear previous
+            svg.selectAll('*').remove();
+
+            // Create container groups
+            const g = svg.append('g');
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    zoomLevel = event.transform.k;
+                });
+            svg.call(zoom);
+
+            // Create force simulation
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.edges)
+                    .id(d => d.id)
+                    .distance(80)
+                    .strength(0.5))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('collide', d3.forceCollide().radius(30))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw links
+            const link = g.selectAll('line')
+                .data(graphData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 1);
+
+            // Draw nodes
+            const node = g.selectAll('circle')
+                .data(graphData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => 5 + (d.connections || 0) * 1.5)
+                .attr('fill', d => nodeTypeColors[d.type] || '#888')
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded))
+                .on('click', (event, d) => selectNode(d))
+                .on('mouseover', (event, d) => showTooltip(event, d))
+                .on('mouseout', hideTooltip);
+
+            // Draw labels
+            const labels = g.selectAll('.node-label')
+                .data(graphData.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .attr('dy', '.3em')
+                .text(d => d.name)
+                .style('display', areLabelsShown ? 'block' : 'none');
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            // Setup zoom buttons
+            document.getElementById('zoom-in-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    1.3
+                );
+            };
+
+            document.getElementById('zoom-out-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    0.7
+                );
+            };
+
+            document.getElementById('toggle-labels-btn').onclick = () => {
+                areLabelsShown = !areLabelsShown;
+                labels.style('display', areLabelsShown ? 'block' : 'none');
+                document.getElementById('toggle-labels-btn').classList.toggle('active');
+            };
+
+            document.getElementById('toggle-physics-btn').onclick = () => {
+                isPhysicsEnabled = !isPhysicsEnabled;
+                if (isPhysicsEnabled) {
+                    simulation.alpha(1).restart();
+                } else {
+                    simulation.stop();
+                }
+                document.getElementById('toggle-physics-btn').classList.toggle('active');
+            };
+
+            document.getElementById('reset-view-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity.translate(20, 20)
+                );
+            };
+
+            document.getElementById('toggle-3d-btn').onclick = () => {
+                is3DMode = !is3DMode;
+                document.getElementById('toggle-3d-btn').classList.toggle('active');
+                if (is3DMode) {
+                    // Apply pseudo-3D perspective
+                    g.style('transform-style', 'preserve-3d');
+                } else {
+                    g.style('transform-style', 'flat');
+                }
+            };
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function selectNode(node) {
+            selectedNode = node;
+            d3.selectAll('.node').classed('selected', d => d.id === node.id);
+            showNodeDetails(node);
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = document.getElementById('tooltip');
+            document.getElementById('tooltip-title').textContent = d.name;
+            document.getElementById('tooltip-content').innerHTML = `
+                <strong>Type:</strong> ${d.type}<br>
+                <strong>Connections:</strong> ${d.connections || 0}<br>
+                ${d.description ? `<strong>Description:</strong> ${d.description}` : ''}
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY + 10 + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        function showNodeDetails(node) {
+            const panel = document.getElementById('node-details-panel');
+            document.getElementById('node-details-type').textContent = node.type;
+            document.getElementById('node-details-name').textContent = node.name;
+
+            // Properties
+            const propsDiv = document.getElementById('node-details-properties');
+            propsDiv.innerHTML = '<div class="details-section-title">Properties</div>';
+            if (node.properties) {
+                Object.entries(node.properties).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'details-item';
+                    item.innerHTML = `<span class="details-label">${key}:</span><span class="details-value">${value}</span>`;
+                    propsDiv.appendChild(item);
+                });
+            }
+
+            // Connections
+            const connections = graphData.edges.filter(e => e.source.id === node.id || e.target.id === node.id);
+            const connDiv = document.getElementById('node-connections');
+            connDiv.innerHTML = '';
+            connections.forEach(edge => {
+                const related = edge.source.id === node.id ? edge.target : edge.source;
+                const item = document.createElement('div');
+                item.className = 'connection-item';
+                item.innerHTML = `
+                    <div class="connection-relation">${edge.relation || 'connected'}</div>
+                    <div class="connection-target">${related.name}</div>
+                `;
+                item.onclick = () => selectNode(related);
+                connDiv.appendChild(i

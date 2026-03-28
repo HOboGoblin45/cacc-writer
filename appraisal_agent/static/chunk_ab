@@ -1,0 +1,438 @@
+, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .market-card {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.4) 0%, rgba(9, 30, 66, 0.2) 100%);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .market-card-label {
+            color: #888;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .market-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff6b9d;
+        }
+
+        .market-card-change {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .market-card-change.positive {
+            color: #0f0;
+        }
+
+        .market-card-change.negative {
+            color: #f00;
+        }
+
+        .chart-placeholder {
+            background: rgba(15, 52, 96, 0.2);
+            border: 1px dashed #0f3460;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Report Preview Tab */
+        .report-container {
+            flex: 1;
+            overflow-y: auto;
+            background: #0a0e27;
+        }
+
+        .report-section {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.3) 0%, rgba(9, 30, 66, 0.1) 100%);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .report-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b9d;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e94560;
+        }
+
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(15, 52, 96, 0.3);
+            font-size: 12px;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-label {
+            color: #888;
+        }
+
+        .report-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .report-footer {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .report-footer .btn {
+            flex: 1;
+        }
+
+        /* Node Details Panel */
+        .node-details-panel {
+            position: fixed;
+            right: 0;
+            top: 70px;
+            width: 350px;
+            height: calc(100vh - 70px);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-left: 2px solid #e94560;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            z-index: 500;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .node-details-panel.open {
+            transform: translateX(0);
+        }
+
+        .node-details-header {
+            padding: 20px;
+            border-bottom: 2px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .node-details-title {
+            flex: 1;
+        }
+
+        .node-details-type {
+            display: inline-block;
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid #e94560;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            color: #ff6b9d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .node-details-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .close-panel-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .close-panel-btn:hover {
+            color: #e94560;
+        }
+
+        .node-details-content {
+            padding: 20px;
+        }
+
+        .details-section {
+            margin-bottom: 20px;
+        }
+
+        .details-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .details-item {
+            font-size: 12px;
+            padding: 6px 0;
+            color: #ccc;
+        }
+
+        .details-label {
+            color: #888;
+            margin-right: 8px;
+        }
+
+        .details-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .connections-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .connection-item {
+            background: rgba(15, 52, 96, 0.4);
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .connection-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        .connection-relation {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        .connection-target {
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 52, 96, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 69, 96, 0.7);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .market-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .message {
+                max-width: 80%;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 250px 1fr;
+            }
+
+            .node-details-panel {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">
+                <div class="header-brand-icon">⟡</div>
+                <span>CACC Appraiser v3.1.0</span>
+            </div>
+            <div class="header-spacer"></div>
+            <div class="header-status">
+                <div class="knowledge-brain">
+                    <div class="knowledge-brain-pulse"></div>
+                    <span><span id="node-count">0</span> nodes • <span id="edge-count">0</span> edges</span>
+                </div>
+                <div class="connection-status">
+                    <div class="status-dot" id="connection-status"></div>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <input type="text" id="search-input" class="search-box" placeholder="Search nodes...">
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Graph Statistics</div>
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Nodes</span>
+                        <span class="stat-value" id="stat-nodes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Edges</span>
+                        <span class="stat-value" id="stat-edges">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Graph Density</span>
+                        <span class="stat-value" id="stat-density">0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Avg Connections</span>
+                        <span class="stat-value" id="stat-avg-conn">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Node Types</div>
+                <div class="node-legend" id="legend-container"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <button class="btn" style="width: 100%;" id="new-appraisal-btn">New Appraisal</button>
+                <button class="btn secondary" style="width: 100%; margin-top: 8px;" id="refresh-graph-btn">Refresh Graph</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Graph Section -->
+            <div class="graph-section">
+                <div id="graph-container">
+                    <svg id="graph"></svg>
+                </div>
+                <div class="graph-controls">
+                    <button class="control-btn" id="zoom-in-btn" title="Zoom In">⊕</button>
+                    <button class="control-btn" id="zoom-out-btn" title="Zoom Out">⊖</button>
+                    <button class="control-btn" id="toggle-labels-btn" title="Toggle Labels">A</button>
+                    <button class="control-btn" id="toggle-physics-btn" title="Toggle Physics">⚙</button>
+                    <button class="control-btn" id="reset-view-btn" title="Reset View">⟲</button>
+                    <button class="control-btn" id="toggle-3d-btn" title="3D View">3D</button>
+                </div>
+                <div class="tooltip" id="tooltip" style="display: none;">
+                    <div class="tooltip-title" id="tooltip-title"></div>
+                    <div class="tooltip-content" id="tooltip-content"></div>
+                </div>
+            </div>
+
+            <!-- Tabs Section -->
+            <div class="tabs-section">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="chat-tab">Chat & Workflow</button>
+                    <button class="tab-btn" data-tab="comps-tab">Comparable Sales</button>
+                    <button class="tab-btn" data-tab="market-tab">Market Data</button>
+                    <button class="tab-btn" data-tab="report-tab">Report Preview</button>
+                </div>
+
+                <!-- Chat Tab -->
+                <div id="chat-tab" class="tab-content active">
+                    <div class="workflow-stage" id="workflow-stage">Stage: Starting Appraisal</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type your response...">
+                        <button id="chat-send-btn" class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+
+                <!-- Comps Tab -->
+                <div id="comps-tab" class="tab-content">
+                    <div class="comps-button-group">
+                        <button class="btn" id="gather-comps-btn">Gather Comparable Sales</button>
+                        <button class="btn secondary" id="export-comps-btn">Export as CSV</button>
+                    </div>
+                    <div class="comps-table-wrapper">
+                        <table class="comps-table">
+                            <thead>
+                                <tr>
+                                    <th>Address</th>
+                                    <th>Sale Price</th>
+                                    <th>Sale Date</th>
+                                    <th>Sq Ft</th>
+                                    <th>Beds</th>
+                                    <th>Baths</th>
+                                    <th>Distance</th>
+                                    <th>Adjustments</th>
+                                    <th>Adjusted Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comps-table-body">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; color: #666; padding: 40px;">
+                                        No comparable sales gathered yet. Click "Gather Comparable Sales" to begin.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Market Data Tab -->
+                <div id="market-tab" class="tab-content">
+                    <div class="market-cards">
+                        <div class="market-card">
+                            <div class="market-card-label">Median Price</div>
+                            <div class="market-card-value" id="market-median">--</div>
+                            <div class="market-card-change" id="market-median-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Days on Market</div>
+                            <div class="market-card-value" id="market-dom">--</div>
+                            <div class="market-card-change" id="market-dom-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Active Inventory</div>
+                            <div class="market-card-value" id="market-inventory">--</div>
+                            <div class="market-card-change" id="market-inventory-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Price Trend</div>
+                            <div class="market-card-value" id="market-trend">--</div>
+                            <div class="market-card-change" id="market-trend-change"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #ff6b9d; margin-bottom: 12px; font-size: 14px;">Market Trend (12 months)</h3>
+                        <div class="chart-placeholder">
+                            <p>📊 Market trend chart will be rendered here</p>
+                            <p style="font-size: 11px; margin-top: 8px; color: #555;">Powered by market data API</p>
+        

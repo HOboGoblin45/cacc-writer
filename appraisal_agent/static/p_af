@@ -1,0 +1,126 @@
+x;
+        }
+
+        .connection-item {
+            background: rgba(15, 52, 96, 0.4);
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .connection-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        .connection-relation {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        .connection-target {
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 52, 96, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 69, 96, 0.7);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .market-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .message {
+                max-width: 80%;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 250px 1fr;
+            }
+
+            .node-details-panel {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">
+                <div class="header-brand-icon">⟡</div>
+                <span>CACC Appraiser v3.1.0</span>
+            </div>
+            <div class="header-spacer"></div>
+            <div class="header-status">
+                <div class="knowledge-brain">
+                    <div class="knowledge-brain-pulse"></div>
+                    <span><span id="node-count">0</span> nodes • <span id="edge-count">0</span> edges</span>
+                </div>
+                <div class="connection-status">
+                    <div class="status-dot" id="connection-status"></div>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <input type="text" id="search-input" class="search-box" placeholder="Search nodes...">
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Graph Statistics</div>
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Nodes</span>
+                        <span class="stat-value" id="stat-nodes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Edges</span>
+                        <span class="stat-value" id="stat-edges">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Graph Density</span>
+                        <span class="stat-value" id="stat-density">0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Avg Connections</span>
+                        <span class="stat-value" id="stat-avg-conn">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Node Types</div>
+                <div class="node-legend" id="legend-container"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <button class="btn" style="width: 100%;" id="new-appraisal-btn">New Appraisal</button>
+                <bu

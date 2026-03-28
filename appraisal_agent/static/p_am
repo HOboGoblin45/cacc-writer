@@ -1,0 +1,103 @@
+tem);
+            });
+
+            panel.classList.add('open');
+        }
+
+        function filterByNodeType(type) {
+            const filtered = graphData.nodes.filter(n => n.type === type);
+            if (filtered.length > 0) {
+                selectNode(filtered[0]);
+            }
+        }
+
+        // ============ Chat & WebSocket ============
+        let ws = null;
+
+        function setupWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const wsUrl = `${protocol}://${window.location.host}/ws/chat`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'message') {
+                    addChatMessage('agent', data.content);
+                } else if (data.type === 'thinking') {
+                    showThinking(data.action);
+                } else if (data.type === 'graph_update') {
+                    loadGraph();
+                }
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+            };
+        }
+
+        function addChatMessage(sender, content) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            messageEl.innerHTML = `<div class="message-bubble">${escapeHtml(content)}</div>`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showThinking(action) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message agent';
+            messageEl.innerHTML = `
+                <div class="thinking-indicator">
+                    <span>${action}...</span>
+                    <div class="thinking-dot"></div>
+                    <div class="thinking-dot"></div>
+                    <div class="thinking-dot"></div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage('user', message);
+            input.value = '';
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'message',
+                    content: message
+                }));
+            }
+        }
+
+        // ============ Market Data ============
+        async function loadMarketData() {
+            const data = await apiCall('/api/market');
+            if (data) {
+                document.getElementById('market-median').textContent = `$${data.median_price?.toLocaleString() || '--'}`;
+                document.getElementById('market-dom').textContent = data.days_on_market || '--';
+                document.getElementById('market-inventory').textContent = data.inventory || '--';
+                document.getElementById('market-trend').textContent = data.price_trend ? `${data.price_trend > 0 ? '+' : ''}${data.price_trend.toFixed(1)}%` : '--';
+
+                if (data.median_change) {
+                    const elem = document.getElementById('market-median-change');
+                    elem.textContent = `${data.median_change > 0 ? '↑' : '↓'} ${Math.abs(data.median_change).toFixed(1)}%`;
+                    elem.className = `market-card-change ${data.median_change > 0 ? 'positive' : 'negative'}`;
+                }
+            }
+        }
+
+        // ============ Comparable Sales ============
+        async function loadComps() {
+  

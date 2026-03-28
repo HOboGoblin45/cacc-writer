@@ -21,6 +21,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { initSchema } from './schema.js';
+export { getUserDb, closeUserDb, closeAllUserDbs } from './userDatabase.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

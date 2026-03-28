@@ -1,21 +1,29 @@
 /**
  * server/middleware/authMiddleware.js
  * ------------------------------------
- * Authentication/authorization middleware scaffold.
+ * Unified authentication middleware (Phase 2 merge).
  *
- * Current mode: single-user (no enforcement).
- * When AUTH_ENABLED=true is set, requires a valid API key via
- * X-API-Key header or Authorization: Bearer <key>.
+ * Auth chain (in priority order):
+ *   1. JWT token (from Authorization: Bearer header) → full user context
+ *   2. API key (from X-API-Key header or ?api_key query) → admin fallback
+ *   3. Dev mode bypass (CACC_AUTH_ENABLED=false) → pass-through
  *
- * Keys are managed through the security routes / users table.
+ * Populates req.user = { userId, username, role, source } on success.
+ * Returns 401 when auth is required but no valid credentials found.
  */
 
 import log from '../logger.js';
+import { verifyToken } from '../auth/authService.js';
+
+// ── Configuration ────────────────────────────────────────────────────────────
 
 const AUTH_ENABLED = ['1', 'true', 'yes'].includes(
   String(process.env.CACC_AUTH_ENABLED || '').trim().toLowerCase()
 );
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// Paths that never require auth (health checks, OAuth callbacks, public endpoints)
 const BYPASS_PATHS = new Set([
   '/api/health',
   '/api/workflow/health',
@@ -23,70 +31,113 @@ const BYPASS_PATHS = new Set([
   '/api/gmail/connect',
   '/api/gmail/callback',
   '/api/mred/callback',
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/plans',
+  '/api/brain/config',
 ]);
 
-function extractToken(req) {
-  const apiKey = req.headers['x-api-key'];
-  if (apiKey) return apiKey;
+// Paths that bypass auth if they START with this prefix
+const BYPASS_PREFIXES = ['/api/auth/'];
 
+// ── Token Extraction ─────────────────────────────────────────────────────────
+
+function extractToken(req) {
+  // Bearer token (JWT or API key)
   const auth = req.headers.authorization || '';
-  if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+  if (auth.startsWith('Bearer ')) return { token: auth.slice(7).trim(), source: 'bearer' };
+
+  // X-API-Key header (legacy)
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey) return { token: apiKey, source: 'api-key' };
+
+  // Query param (for webhooks)
+  if (req.query?.api_key) return { token: req.query.api_key, source: 'query' };
 
   return null;
 }
 
+// ── Main Auth Middleware ─────────────────────────────────────────────────────
+
 /**
- * Authentication middleware.
- * When AUTH_ENABLED is false (default), all requests pass through.
- * When AUTH_ENABLED is true, validates the API key against the users table.
+ * Unified authentication middleware.
+ * Tries JWT first, then API key fallback, then dev-mode bypass.
  */
 export function requireAuth(req, res, next) {
-  if (!AUTH_ENABLED) return next();
-
+  // Always bypass certain paths
   if (BYPASS_PATHS.has(req.path)) return next();
+  if (BYPASS_PREFIXES.some(p => req.path.startsWith(p))) return next();
 
-  const validKey = String(process.env.CACC_API_KEY || '').trim();
-  if (!validKey) {
-    log.error('auth:misconfigured', { path: req.path });
-    return res.status(503).json({
-      ok: false,
-      code: 'AUTH_MISCONFIGURED',
-      error: 'Authentication is enabled but no API key is configured.',
-    });
+  // In dev mode with auth disabled, pass through with dev user context
+  if (!AUTH_ENABLED && !IS_PRODUCTION) {
+    req.user = { userId: 'dev-local', username: 'dev', role: 'admin', source: 'dev-bypass' };
+    return next();
   }
 
-  const token = extractToken(req);
-  if (!token) {
+  // Extract token
+  const extracted = extractToken(req);
+  if (!extracted) {
+    // In non-production with auth disabled, still allow through
+    if (!AUTH_ENABLED) {
+      req.user = { userId: 'dev-local', username: 'dev', role: 'admin', source: 'dev-bypass' };
+      return next();
+    }
     return res.status(401).json({
       ok: false,
       code: 'AUTH_REQUIRED',
-      error: 'Authentication required. Provide X-API-Key header or Authorization: Bearer <key>.',
+      error: 'Authentication required. Provide Authorization: Bearer <token> header.',
     });
   }
 
-  if (token !== validKey) {
-    return res.status(403).json({
-      ok: false,
-      code: 'AUTH_INVALID',
-      error: 'Invalid API key.',
-    });
+  const { token, source } = extracted;
+
+  // Try JWT verification first
+  const decoded = verifyToken(token);
+  if (decoded) {
+    req.user = {
+      userId: decoded.userId || decoded.sub || decoded.id,
+      username: decoded.username || decoded.email,
+      role: decoded.role || 'appraiser',
+      source: 'jwt',
+    };
+    return next();
   }
 
-  req.authenticatedUser = { role: 'admin', source: 'api_key' };
-  next();
+  // Fallback: check API key
+  const validApiKey = String(process.env.CACC_API_KEY || '').trim();
+  if (validApiKey && token === validApiKey) {
+    req.user = {
+      userId: 'api-key-user',
+      username: 'api-key',
+      role: 'admin',
+      source: 'api-key',
+    };
+    // Also set legacy field for backward compatibility
+    req.authenticatedUser = req.user;
+    return next();
+  }
+
+  // Token provided but invalid
+  return res.status(401).json({
+    ok: false,
+    code: 'AUTH_INVALID',
+    error: 'Invalid or expired token.',
+  });
 }
 
 /**
  * Role check middleware factory.
- * Only meaningful when auth is enabled.
+ * Usage: router.get('/admin/users', requireRole('admin'), handler)
  */
-export function requireRole(role) {
+export function requireRole(...roles) {
   return (req, res, next) => {
-    if (!AUTH_ENABLED) return next();
-    if (!req.authenticatedUser) {
+    if (!AUTH_ENABLED && !IS_PRODUCTION) return next();
+    if (!req.user) {
       return res.status(401).json({ ok: false, code: 'AUTH_REQUIRED', error: 'Not authenticated' });
     }
-    // For now, all authenticated users have admin role
+    if (roles.length > 0 && !roles.includes(req.user.role)) {
+      return res.status(403).json({ ok: false, code: 'FORBIDDEN', error: 'Insufficient permissions' });
+    }
     next();
   };
 }

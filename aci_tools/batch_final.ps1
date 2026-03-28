@@ -2,7 +2,7 @@
 # C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File batch_final.ps1
 
 $mismoDir = "C:\Program Files (x86)\Common Files\ACI\Controls\ACI.MISMOTranslator"
-$aciDir = "C:\Users\ccres\OneDrive\Desktop\CACC Appraisals"
+$aciDir = "C:\Users\ccres\OneDrive\Desktop\Trainee Appraisal Files"
 $outputDir = "C:\Users\ccres\OneDrive\Desktop\cacc-writer\training_output\xml_exports"
 $mapFile = "C:\Program Files (x86)\Common Files\ACI\ESERVICES\TRANSLATORS\ACI.XMLMap.MISMO.v2.6gse.xml"
 $logFile = "$outputDir\conversion_log.txt"

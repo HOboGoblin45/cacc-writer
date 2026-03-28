@@ -163,21 +163,95 @@ export function listBackups() {
 
 /**
  * Restore from a backup file.
+ * Not yet implemented — requires manual intervention by support.
  */
-export function restoreFromBackup(backupId) {
-  const record = dbGet('SELECT * FROM backup_records WHERE id = ?', [backupId]);
-  if (!record) return { error: 'Backup not found' };
-  if (!record.file_path || !fs.existsSync(record.file_path)) {
-    return { error: 'Backup file not found on disk' };
+export function restoreFromBackup(_backupId) {
+  return {
+    notImplemented: true,
+    ok: false,
+    error: 'Restore not yet implemented — contact support',
+    status: 'not_implemented',
+  };
+}
+
+/**
+ * Apply a pending restore on server startup.
+ * Reads data/pending-restore.json, verifies the backup hash, creates a safety copy,
+ * replaces the live DB, and deletes the marker.
+ */
+export function applyPendingRestore() {
+  const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+  const markerPath = path.join(DATA_DIR, 'pending-restore.json');
+
+  if (!fs.existsSync(markerPath)) return null;
+
+  let marker;
+  try {
+    marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+  } catch (err) {
+    log.error('backup:restore-marker-corrupt', { error: err.message });
+    fs.unlinkSync(markerPath);
+    return { error: 'Corrupt restore marker — removed' };
   }
 
-  log.info('backup:restore-requested', { backupId, filePath: record.file_path });
-  return {
-    backupId,
-    filePath: record.file_path,
-    status: 'restore_ready',
-    message: 'Restore prepared. Application restart required to complete restore.',
-  };
+  const { backupId, filePath, expectedHash } = marker;
+
+  if (!filePath || !fs.existsSync(filePath)) {
+    fs.unlinkSync(markerPath);
+    return { error: `Backup file not found: ${filePath}` };
+  }
+
+  // Verify hash
+  const actualHash = computeFileHash(filePath);
+  if (actualHash !== expectedHash) {
+    fs.unlinkSync(markerPath);
+    log.error('backup:restore-hash-mismatch', { backupId, expected: expectedHash, actual: actualHash });
+    throw new Error(`Restore aborted: backup hash mismatch (expected ${expectedHash}, got ${actualHash})`);
+  }
+
+  // Safety copy of current DB
+  const dbPath = getDbPath();
+  if (fs.existsSync(dbPath)) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const safetyCopy = `${dbPath}.pre-restore-${timestamp}`;
+    fs.copyFileSync(dbPath, safetyCopy);
+    log.info('backup:safety-copy', { from: dbPath, to: safetyCopy });
+  }
+
+  // Replace live DB with backup
+  fs.copyFileSync(filePath, dbPath);
+
+  // Delete marker
+  fs.unlinkSync(markerPath);
+
+  log.info('backup:restore-completed', { backupId, filePath });
+  return { backupId, filePath, status: 'restored', restoredAt: new Date().toISOString() };
+}
+
+/**
+ * Check if there is a pending restore.
+ */
+export function getPendingRestore() {
+  const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+  const markerPath = path.join(DATA_DIR, 'pending-restore.json');
+  if (!fs.existsSync(markerPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cancel a pending restore.
+ */
+export function cancelPendingRestore() {
+  const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+  const markerPath = path.join(DATA_DIR, 'pending-restore.json');
+  if (!fs.existsSync(markerPath)) return { status: 'no_pending_restore' };
+  fs.unlinkSync(markerPath);
+  log.info('backup:restore-cancelled');
+  return { status: 'cancelled' };
 }
 
 /**
@@ -299,6 +373,9 @@ export default {
   createBackup,
   listBackups,
   restoreFromBackup,
+  applyPendingRestore,
+  getPendingRestore,
+  cancelPendingRestore,
   getBackupSchedule,
   setBackupSchedule,
   verifyBackup,

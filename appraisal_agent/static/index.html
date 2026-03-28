@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CACC Appraiser v3.1.0 - Knowledge Brain Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 70px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            border-bottom: 2px solid #e94560;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .header-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #e94560, #ff6b9d);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            font-size: 18px;
+        }
+
+        .header-spacer {
+            flex: 1;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+        }
+
+        .knowledge-brain {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+
+        .knowledge-brain-pulse {
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #0f0;
+        }
+
+        .status-dot.disconnected {
+            background: #f00;
+            box-shadow: 0 0 4px #f00;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-column: 1;
+            grid-row: 2;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-right: 1px solid #0f3460;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .search-box {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+        }
+
+        .search-box::placeholder {
+            color: #666;
+        }
+
+        .stats-box {
+            background: rgba(15, 52, 96, 0.4);
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .node-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            flex: 1;
+            color: #ccc;
+        }
+
+        /* Main Content */
+        .main-content {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            background: #0a0e27;
+            overflow: hidden;
+        }
+
+        .graph-section {
+            flex: 0 0 60%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 2px solid #0f3460;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(15, 52, 96, 0.8);
+            border: 1px solid #0f3460;
+            color: #e94560;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
+        }
+
+        .control-btn.active {
+            background: rgba(233, 69, 96, 0.3);
+            color: #ff6b9d;
+        }
+
+        #graph-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        svg#graph {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .node:hover {
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 6px rgba(233, 69, 96, 0.6));
+        }
+
+        .node.selected {
+            stroke: #ff6b9d;
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 8px rgba(233, 69, 96, 0.8));
+        }
+
+        .node-label {
+            font-size: 10px;
+            pointer-events: none;
+            text-anchor: middle;
+            fill: #fff;
+            font-weight: 600;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .link {
+            stroke: #444;
+            stroke-width: 1px;
+            pointer-events: none;
+        }
+
+        .link-label {
+            font-size: 8px;
+            fill: #888;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 52, 96, 0.95);
+            border: 1px solid #e94560;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            z-index: 200;
+            pointer-events: none;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip-title {
+            color: #ff6b9d;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-content {
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        /* Tabs Section */
+        .tabs-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0e27;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: linear-gradient(90deg, rgba(15, 52, 96, 0.5) 0%, transparent 100%);
+            border-bottom: 1px solid #0f3460;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            background: none;
+            border: none;
+            color: #888;
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #e94560;
+        }
+
+        .tab-btn.active {
+            color: #ff6b9d;
+            border-bottom-color: #e94560;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat Tab */
+        #chat-tab {
+            flex-direction: column;
+        }
+
+        .workflow-stage {
+            display: inline-block;
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid #e94560;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 11px;
+            color: #ff6b9d;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-right: 4px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.agent .message-bubble {
+            background: rgba(15, 52, 96, 0.6);
+            border: 1px solid #0f3460;
+            color: #e0e0e0;
+        }
+
+        .message.user .message-bubble {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #888;
+            font-size: 12px;
+        }
+
+        .thinking-dot {
+            width: 4px;
+            height: 4px;
+            background: #888;
+            border-radius: 50%;
+            animation: thinking 1.4s infinite;
+        }
+
+        .thinking-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes thinking {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .chat-input-box {
+            display: flex;
+            gap: 8px;
+            background: rgba(15, 52, 96, 0.3);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: #666;
+        }
+
+        .chat-send-btn {
+            background: #e94560;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .chat-send-btn:hover {
+            background: #ff6b9d;
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+        }
+
+        .chat-send-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Comps Tab */
+        .comps-table-wrapper {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .comps-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .comps-table thead {
+            background: rgba(15, 52, 96, 0.5);
+            position: sticky;
+            top: 0;
+        }
+
+        .comps-table th {
+            padding: 12px;
+            text-align: left;
+            color: #ff6b9d;
+            font-weight: 600;
+            border-bottom: 2px solid #0f3460;
+        }
+
+        .comps-table td {
+            padding: 12px;
+            border-bottom: 1px solid #0f3460;
+            color: #e0e0e0;
+        }
+
+        .comps-table tbody tr:hover {
+            background: rgba(233, 69, 96, 0.1);
+        }
+
+        .comps-button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            background: #e94560;
+            border: none;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #ff6b9d;
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn.secondary {
+            background: rgba(15, 52, 96, 0.5);
+            border: 1px solid #0f3460;
+            color: #ff6b9d;
+        }
+
+        .btn.secondary:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        /* Market Data Tab */
+        .market-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .market-card {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.4) 0%, rgba(9, 30, 66, 0.2) 100%);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .market-card-label {
+            color: #888;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .market-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff6b9d;
+        }
+
+        .market-card-change {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .market-card-change.positive {
+            color: #0f0;
+        }
+
+        .market-card-change.negative {
+            color: #f00;
+        }
+
+        .chart-placeholder {
+            background: rgba(15, 52, 96, 0.2);
+            border: 1px dashed #0f3460;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Report Preview Tab */
+        .report-container {
+            flex: 1;
+            overflow-y: auto;
+            background: #0a0e27;
+        }
+
+        .report-section {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.3) 0%, rgba(9, 30, 66, 0.1) 100%);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .report-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b9d;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e94560;
+        }
+
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(15, 52, 96, 0.3);
+            font-size: 12px;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-label {
+            color: #888;
+        }
+
+        .report-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .report-footer {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .report-footer .btn {
+            flex: 1;
+        }
+
+        /* Node Details Panel */
+        .node-details-panel {
+            position: fixed;
+            right: 0;
+            top: 70px;
+            width: 350px;
+            height: calc(100vh - 70px);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-left: 2px solid #e94560;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            z-index: 500;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .node-details-panel.open {
+            transform: translateX(0);
+        }
+
+        .node-details-header {
+            padding: 20px;
+            border-bottom: 2px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .node-details-title {
+            flex: 1;
+        }
+
+        .node-details-type {
+            display: inline-block;
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid #e94560;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            color: #ff6b9d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .node-details-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .close-panel-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .close-panel-btn:hover {
+            color: #e94560;
+        }
+
+        .node-details-content {
+            padding: 20px;
+        }
+
+        .details-section {
+            margin-bottom: 20px;
+        }
+
+        .details-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .details-item {
+            font-size: 12px;
+            padding: 6px 0;
+            color: #ccc;
+        }
+
+        .details-label {
+            color: #888;
+            margin-right: 8px;
+        }
+
+        .details-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .connections-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .connection-item {
+            background: rgba(15, 52, 96, 0.4);
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .connection-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        .connection-relation {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        .connection-target {
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 52, 96, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 69, 96, 0.7);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .market-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .message {
+                max-width: 80%;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 250px 1fr;
+            }
+
+            .node-details-panel {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">
+                <div class="header-brand-icon">⟡</div>
+                <span>CACC Appraiser v3.1.0</span>
+            </div>
+            <div class="header-spacer"></div>
+            <div class="header-status">
+                <div class="knowledge-brain">
+                    <div class="knowledge-brain-pulse"></div>
+                    <span><span id="node-count">0</span> nodes • <span id="edge-count">0</span> edges</span>
+                </div>
+                <div class="connection-status">
+                    <div class="status-dot" id="connection-status"></div>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <input type="text" id="search-input" class="search-box" placeholder="Search nodes...">
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Graph Statistics</div>
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Nodes</span>
+                        <span class="stat-value" id="stat-nodes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Edges</span>
+                        <span class="stat-value" id="stat-edges">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Graph Density</span>
+                        <span class="stat-value" id="stat-density">0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Avg Connections</span>
+                        <span class="stat-value" id="stat-avg-conn">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Node Types</div>
+                <div class="node-legend" id="legend-container"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <button class="btn" style="width: 100%;" id="new-appraisal-btn">New Appraisal</button>
+                <button class="btn secondary" style="width: 100%; margin-top: 8px;" id="refresh-graph-btn">Refresh Graph</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Graph Section -->
+            <div class="graph-section">
+                <div id="graph-container">
+                    <svg id="graph"></svg>
+                </div>
+                <div class="graph-controls">
+                    <button class="control-btn" id="zoom-in-btn" title="Zoom In">⊕</button>
+                    <button class="control-btn" id="zoom-out-btn" title="Zoom Out">⊖</button>
+                    <button class="control-btn" id="toggle-labels-btn" title="Toggle Labels">A</button>
+                    <button class="control-btn" id="toggle-physics-btn" title="Toggle Physics">⚙</button>
+                    <button class="control-btn" id="reset-view-btn" title="Reset View">⟲</button>
+                    <button class="control-btn" id="toggle-3d-btn" title="3D View">3D</button>
+                </div>
+                <div class="tooltip" id="tooltip" style="display: none;">
+                    <div class="tooltip-title" id="tooltip-title"></div>
+                    <div class="tooltip-content" id="tooltip-content"></div>
+                </div>
+            </div>
+
+            <!-- Tabs Section -->
+            <div class="tabs-section">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="chat-tab">Chat & Workflow</button>
+                    <button class="tab-btn" data-tab="comps-tab">Comparable Sales</button>
+                    <button class="tab-btn" data-tab="market-tab">Market Data</button>
+                    <button class="tab-btn" data-tab="report-tab">Report Preview</button>
+                </div>
+
+                <!-- Chat Tab -->
+                <div id="chat-tab" class="tab-content active">
+                    <div class="workflow-stage" id="workflow-stage">Stage: Starting Appraisal</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type your response...">
+                        <button id="chat-send-btn" class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+
+                <!-- Comps Tab -->
+                <div id="comps-tab" class="tab-content">
+                    <div class="comps-button-group">
+                        <button class="btn" id="gather-comps-btn">Gather Comparable Sales</button>
+                        <button class="btn secondary" id="export-comps-btn">Export as CSV</button>
+                    </div>
+                    <div class="comps-table-wrapper">
+                        <table class="comps-table">
+                            <thead>
+                                <tr>
+                                    <th>Address</th>
+                                    <th>Sale Price</th>
+                                    <th>Sale Date</th>
+                                    <th>Sq Ft</th>
+                                    <th>Beds</th>
+                                    <th>Baths</th>
+                                    <th>Distance</th>
+                                    <th>Adjustments</th>
+                                    <th>Adjusted Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comps-table-body">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; color: #666; padding: 40px;">
+                                        No comparable sales gathered yet. Click "Gather Comparable Sales" to begin.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Market Data Tab -->
+                <div id="market-tab" class="tab-content">
+                    <div class="market-cards">
+                        <div class="market-card">
+                            <div class="market-card-label">Median Price</div>
+                            <div class="market-card-value" id="market-median">--</div>
+                            <div class="market-card-change" id="market-median-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Days on Market</div>
+                            <div class="market-card-value" id="market-dom">--</div>
+                            <div class="market-card-change" id="market-dom-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Active Inventory</div>
+                            <div class="market-card-value" id="market-inventory">--</div>
+                            <div class="market-card-change" id="market-inventory-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Price Trend</div>
+                            <div class="market-card-value" id="market-trend">--</div>
+                            <div class="market-card-change" id="market-trend-change"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #ff6b9d; margin-bottom: 12px; font-size: 14px;">Market Trend (12 months)</h3>
+                        <div class="chart-placeholder">
+                            <p>📊 Market trend chart will be rendered here</p>
+                            <p style="font-size: 11px; margin-top: 8px; color: #555;">Powered by market data API</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Preview Tab -->
+                <div id="report-tab" class="tab-content">
+                    <div class="report-container">
+                        <div class="report-section">
+                            <div class="report-section-title">Subject Property</div>
+                            <div class="report-item">
+                                <span class="report-label">Address</span>
+                                <span class="report-value" id="report-subject-address">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Property Type</span>
+                                <span class="report-value" id="report-subject-type">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Square Footage</span>
+                                <span class="report-value" id="report-subject-sqft">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bedrooms</span>
+                                <span class="report-value" id="report-subject-beds">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bathrooms</span>
+                                <span class="report-value" id="report-subject-baths">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Neighborhood</div>
+                            <div class="report-item">
+                                <span class="report-label">Market Area</span>
+                                <span class="report-value" id="report-neighborhood">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">School District</span>
+                                <span class="report-value" id="report-school-district">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Property Condition</span>
+                                <span class="report-value" id="report-condition">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Market Conditions</div>
+                            <div class="report-item">
+                                <span class="report-label">Market Type</span>
+                                <span class="report-value" id="report-market-type">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Median Price</span>
+                                <span class="report-value" id="report-median-price">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Days on Market</span>
+                                <span class="report-value" id="report-days-market">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Value Reconciliation</div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 1 (Comp)</span>
+                                <span class="report-value" id="report-approach1">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 2 (Cost)</span>
+                                <span class="report-value" id="report-approach2">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Approach 3 (Income)</span>
+                                <span class="report-value" id="report-approach3">--</span>
+                            </div>
+                            <div class="report-item" style="border-top: 2px solid #e94560; margin-top: 12px; padding-top: 12px;">
+                                <span class="report-label" style="color: #ff6b9d; font-weight: 700;">Final Opinion of Value</span>
+                                <span class="report-value" style="color: #ff6b9d; font-size: 16px; font-weight: 700;" id="report-final-value">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-footer">
+                            <button class="btn" id="confirm-export-btn">Confirm & Export PDF</button>
+                            <button class="btn secondary" id="cancel-export-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Details Panel -->
+    <div class="node-details-panel" id="node-details-panel">
+        <div class="node-details-header">
+            <div class="node-details-title">
+                <div class="node-details-type" id="node-details-type">Type</div>
+                <div class="node-details-name" id="node-details-name">Node Name</div>
+            </div>
+            <button class="close-panel-btn" id="close-panel-btn">✕</button>
+        </div>
+        <div class="node-details-content">
+            <div class="details-section" id="node-details-properties"></div>
+            <div class="details-section">
+                <div class="details-section-title">Connected Nodes</div>
+                <div class="connections-list" id="node-connections"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ Global State ============
+        let graphData = { nodes: [], edges: [] };
+        let selectedNode = null;
+        let isPhysicsEnabled = true;
+        let areLabelsShown = true;
+        let is3DMode = false;
+        let simulation = null;
+        let zoomLevel = 1;
+        const nodeTypeColors = {
+            concept: "#FF6B6B",
+            property: "#4ECDC4",
+            comparable: "#45B7D1",
+            market_area: "#FFA07A",
+            standard: "#98D8C8",
+            data_source: "#F7DC6F",
+            user_knowledge: "#BB8FCE",
+        };
+
+        // ============ API Utilities ============
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                return null;
+            }
+        }
+
+        // ============ Initialization ============
+        async function initializeApp() {
+            // Load initial graph
+            await loadGraph();
+
+            // Setup WebSocket connection
+            setupWebSocket();
+
+            // Update connection status
+            updateConnectionStatus();
+
+            // Load market data
+            await loadMarketData();
+
+            // Setup UI event listeners
+            setupUIEventListeners();
+
+            // Load initial chat message
+            addChatMessage('agent', 'Welcome to CACC Appraiser! I\'m ready to help you complete a property appraisal. What property would you like to appraise today?');
+        }
+
+        // ============ Graph Loading & Management ============
+        async function loadGraph() {
+            const data = await apiCall('/api/graph');
+            if (data) {
+                graphData = data;
+                renderGraph();
+                updateStats();
+                updateLegend();
+            }
+        }
+
+        function updateStats() {
+            const nodes = graphData.nodes || [];
+            const edges = graphData.edges || [];
+            const nodeCount = nodes.length;
+            const edgeCount = edges.length;
+            const avgConnections = nodeCount > 0 ? (edgeCount * 2 / nodeCount).toFixed(1) : 0;
+            const density = nodeCount > 1 ? (edgeCount / (nodeCount * (nodeCount - 1) / 2)).toFixed(2) : 0;
+
+            document.getElementById('node-count').textContent = nodeCount;
+            document.getElementById('edge-count').textContent = edgeCount;
+            document.getElementById('stat-nodes').textContent = nodeCount;
+            document.getElementById('stat-edges').textContent = edgeCount;
+            document.getElementById('stat-density').textContent = density;
+            document.getElementById('stat-avg-conn').textContent = avgConnections;
+        }
+
+        function updateLegend() {
+            const legendContainer = document.getElementById('legend-container');
+            legendContainer.innerHTML = '';
+            Object.entries(nodeTypeColors).forEach(([type, color]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-dot" style="background: ${color};"></div>
+                    <span class="legend-label">${type.replace(/_/g, ' ').toUpperCase()}</span>
+                `;
+                item.onclick = () => filterByNodeType(type);
+                legendContainer.appendChild(item);
+            });
+        }
+
+        // ============ D3 Graph Rendering ============
+        function renderGraph() {
+            const svg = d3.select('svg#graph');
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+
+            // Clear previous
+            svg.selectAll('*').remove();
+
+            // Create container groups
+            const g = svg.append('g');
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    zoomLevel = event.transform.k;
+                });
+            svg.call(zoom);
+
+            // Create force simulation
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.edges)
+                    .id(d => d.id)
+                    .distance(80)
+                    .strength(0.5))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('collide', d3.forceCollide().radius(30))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw links
+            const link = g.selectAll('line')
+                .data(graphData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 1);
+
+            // Draw nodes
+            const node = g.selectAll('circle')
+                .data(graphData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => 5 + (d.connections || 0) * 1.5)
+                .attr('fill', d => nodeTypeColors[d.type] || '#888')
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded))
+                .on('click', (event, d) => selectNode(d))
+                .on('mouseover', (event, d) => showTooltip(event, d))
+                .on('mouseout', hideTooltip);
+
+            // Draw labels
+            const labels = g.selectAll('.node-label')
+                .data(graphData.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .attr('dy', '.3em')
+                .text(d => d.name)
+                .style('display', areLabelsShown ? 'block' : 'none');
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            // Setup zoom buttons
+            document.getElementById('zoom-in-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    1.3
+                );
+            };
+
+            document.getElementById('zoom-out-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.scaleBy,
+                    0.7
+                );
+            };
+
+            document.getElementById('toggle-labels-btn').onclick = () => {
+                areLabelsShown = !areLabelsShown;
+                labels.style('display', areLabelsShown ? 'block' : 'none');
+                document.getElementById('toggle-labels-btn').classList.toggle('active');
+            };
+
+            document.getElementById('toggle-physics-btn').onclick = () => {
+                isPhysicsEnabled = !isPhysicsEnabled;
+                if (isPhysicsEnabled) {
+                    simulation.alpha(1).restart();
+                } else {
+                    simulation.stop();
+                }
+                document.getElementById('toggle-physics-btn').classList.toggle('active');
+            };
+
+            document.getElementById('reset-view-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity.translate(20, 20)
+                );
+            };
+
+            document.getElementById('toggle-3d-btn').onclick = () => {
+                is3DMode = !is3DMode;
+                document.getElementById('toggle-3d-btn').classList.toggle('active');
+                if (is3DMode) {
+                    // Apply pseudo-3D perspective
+                    g.style('transform-style', 'preserve-3d');
+                } else {
+                    g.style('transform-style', 'flat');
+                }
+            };
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function selectNode(node) {
+            selectedNode = node;
+            d3.selectAll('.node').classed('selected', d => d.id === node.id);
+            showNodeDetails(node);
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = document.getElementById('tooltip');
+            document.getElementById('tooltip-title').textContent = d.name;
+            document.getElementById('tooltip-content').innerHTML = `
+                <strong>Type:</strong> ${d.type}<br>
+                <strong>Connections:</strong> ${d.connections || 0}<br>
+                ${d.description ? `<strong>Description:</strong> ${d.description}` : ''}
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY + 10 + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        function showNodeDetails(node) {
+            const panel = document.getElementById('node-details-panel');
+            document.getElementById('node-details-type').textContent = node.type;
+            document.getElementById('node-details-name').textContent = node.name;
+
+            // Properties
+            const propsDiv = document.getElementById('node-details-properties');
+            propsDiv.innerHTML = '<div class="details-section-title">Properties</div>';
+            if (node.properties) {
+                Object.entries(node.properties).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'details-item';
+                    item.innerHTML = `<span class="details-label">${key}:</span><span class="details-value">${value}</span>`;
+                    propsDiv.appendChild(item);
+                });
+            }
+
+            // Connections
+            const connections = graphData.edges.filter(e => e.source.id === node.id || e.target.id === node.id);
+            const connDiv = document.getElementById('node-connections');
+            connDiv.innerHTML = '';
+            connections.forEach(edge => {
+                const related = edge.source.id === node.id ? edge.target : edge.source;
+                const item = document.createElement('div');
+                item.className = 'connection-item';
+                item.innerHTML = `
+                    <div class="connection-relation">${edge.relation || 'connected'}</div>
+                    <div class="connection-target">${related.name}</div>
+                `;
+                item.onclick = () => selectNode(related);
+                connDiv.appendChild(item);
+            });
+
+            panel.classList.add('open');
+        }
+
+        function filterByNodeType(type) {
+            const filtered = graphData.nodes.filter(n => n.type === type);
+            if (filtered.length > 0) {
+                selectNode(filtered[0]);
+            }
+        }
+
+        // ============ Chat & WebSocket ============
+        let ws = null;
+
+        function setupWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const wsUrl = `${protocol}://${window.location.host}/ws/chat`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'message') {
+                    addChatMessage('agent', data.content);
+                } else if (data.type === 'thinking') {
+                    showThinking(data.action);
+                } else if (data.type === 'graph_update') {
+                    loadGraph();
+                }
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+            };
+        }
+
+        function addChatMessage(sender, content) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            messageEl.innerHTML = `<div class="message-bubble">${escapeHtml(content)}</div>`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showThinking(action) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message agent';
+            messageEl.innerHTML = `
+                <div class="thinking-indicator">
+                    <span>${action}...</span>
+                    <div class="thinking-dot"></div>
+                    <div class="thinking-dot"></div>
+                    <div class="thinking-dot"></div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage('user', message);
+            input.value = '';
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'message',
+                    content: message
+                }));
+            }
+        }
+
+        // ============ Market Data ============
+        async function loadMarketData() {
+            const data = await apiCall('/api/market');
+            if (data) {
+                document.getElementById('market-median').textContent = `$${data.median_price?.toLocaleString() || '--'}`;
+                document.getElementById('market-dom').textContent = data.days_on_market || '--';
+                document.getElementById('market-inventory').textContent = data.inventory || '--';
+                document.getElementById('market-trend').textContent = data.price_trend ? `${data.price_trend > 0 ? '+' : ''}${data.price_trend.toFixed(1)}%` : '--';
+
+                if (data.median_change) {
+                    const elem = document.getElementById('market-median-change');
+                    elem.textContent = `${data.median_change > 0 ? '↑' : '↓'} ${Math.abs(data.median_change).toFixed(1)}%`;
+                    elem.className = `market-card-change ${data.median_change > 0 ? 'positive' : 'negative'}`;
+                }
+            }
+        }
+
+        // ============ Comparable Sales ============
+        async function loadComps() {
+            const data = await apiCall('/api/comps');
+            if (data && data.length > 0) {
+                const tbody = document.getElementById('comps-table-body');
+                tbody.innerHTML = data.map(comp => `
+                    <tr>
+                        <td>${comp.address}</td>
+                        <td>$${comp.sale_price?.toLocaleString()}</td>
+                        <td>${comp.sale_date}</td>
+                        <td>${comp.sqft?.toLocaleString()}</td>
+                        <td>${comp.beds}</td>
+                        <td>${comp.baths}</td>
+                        <td>${comp.distance?.toFixed(1)} mi</td>
+                        <td>$${comp.adjustments?.toLocaleString() || '0'}</td>
+                        <td>$${comp.adjusted_price?.toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // ============ Report Preview ============
+        async function loadReportData() {
+            const data = await apiCall('/api/report/preview');
+            if (data) {
+                // Subject property
+                document.getElementById('report-subject-address').textContent = data.subject?.address || '--';
+                document.getElementById('report-subject-type').textContent = data.subject?.type || '--';
+                document.getElementById('report-subject-sqft').textContent = data.subject?.sqft?.toLocaleString() || '--';
+                document.getElementById('report-subject-beds').textContent = data.subject?.beds || '--';
+                document.getElementById('report-subject-baths').textContent = data.subject?.baths || '--';
+
+                // Neighborhood
+                document.getElementById('report-neighborhood').textContent = data.neighborhood?.market_area || '--';
+                document.getElementById('report-school-district').textContent = data.neighborhood?.school_district || '--';
+                document.getElementById('report-condition').textContent = data.neighborhood?.condition || '--';
+
+                // Market
+                document.getElementById('report-market-type').textContent = data.market?.type || '--';
+                document.getElementById('report-median-price').textContent = `$${data.market?.median_price?.toLocaleString() || '--'}`;
+                document.getElementById('report-days-market').textContent = data.market?.days_on_market || '--';
+
+                // Reconciliation
+                document.getElementById('report-approach1').textContent = `$${data.approaches?.comp_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-approach2').textContent = `$${data.approaches?.cost_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-approach3').textContent = `$${data.approaches?.income_approach?.toLocaleString() || '--'}`;
+                document.getElementById('report-final-value').textContent = `$${data.final_value?.toLocaleString() || '--'}`;
+            }
+        }
+
+        // ============ UI Event Listeners ============
+        function setupUIEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+
+                    if (tabId === 'comps-tab') loadComps();
+                    if (tabId === 'report-tab') loadReportData();
+                });
+            });
+
+            // Chat
+            document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
+            document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+
+            // Comps
+            document.getElementById('gather-comps-btn').addEventListener('click', async () => {
+                showThinking('Searching MLS for comparable properties');
+                const result = await apiCall('/api/comps', { method: 'POST', body: JSON.stringify({}) });
+                loadComps();
+            });
+
+            // Report
+            document.getElementById('confirm-export-btn').addEventListener('click', async () => {
+                const result = await apiCall('/api/report/export', {
+                    method: 'POST',
+                    body: JSON.stringify({ format: 'pdf' })
+                });
+                if (result) {
+                    alert('Report exported successfully!');
+                }
+            });
+
+            // Buttons
+            document.getElementById('new-appraisal-btn').addEventListener('click', async () => {
+                const result = await apiCall('/api/appraisal/new', { method: 'POST', body: JSON.stringify({}) });
+                loadGraph();
+                addChatMessage('agent', 'New appraisal started! Please tell me about the property you\'d like to appraise.');
+            });
+
+            document.getElementById('refresh-graph-btn').addEventListener('click', loadGraph);
+
+            // Node details panel close
+            document.getElementById('close-panel-btn').addEventListener('click', () => {
+                document.getElementById('node-details-panel').classList.remove('open');
+            });
+
+            // Search
+            document.getElementById('search-input').addEventListener('keyup', (e) => {
+                const query = e.target.value;
+                if (query.length > 0) {
+                    searchNodes(query);
+                }
+            });
+        }
+
+        async function searchNodes(query) {
+            const results = await apiCall(`/api/graph/search?q=${encodeURIComponent(query)}`);
+            if (results && results.length > 0) {
+                selectNode(results[0]);
+            }
+        }
+
+        function updateConnectionStatus(connected = false) {
+            const statusDot = document.getElementById('connection-status');
+            const statusText = document.getElementById('connection-text');
+            if (connected) {
+                statusDot.classList.remove('disconnected');
+                statusText.textContent = 'Connected';
+            } else {
+                statusDot.classList.add('disconnected');
+                statusText.textContent = 'Disconnected';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============ Initialize on Load ============
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+         } else {
+                    simulation.stop();
+                }
+                document.getElementById('toggle-physics-btn').classList.toggle('active');
+            };
+
+            document.getElementById('reset-view-btn').onclick = () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity.translate(20, 20)
+                );
+            };
+
+            document.getElementById('toggle-3d-btn').onclick = () => {
+                is3DMode = !is3DMode;
+                document.getElementById('toggle-3d-btn').classList.toggle('active');
+                if (is3DMode) {
+                    // Apply pseudo-3D perspective
+                    g.style('transform-style', 'preserve-3d');
+                } else {
+                    g.style('transform-style', 'flat');
+                }
+            };
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function selectNode(node) {
+            selectedNode = node;
+            d3.selectAll('.node').classed('selected', d => d.id === node.id);
+            showNodeDetails(node);
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = document.getElementById('tooltip');
+            document.getElementById('tooltip-title').textContent = d.name;
+            document.getElementById('tooltip-content').innerHTML = `
+                <strong>Type:</strong> ${d.type}<br>
+                <strong>Connections:</strong> ${d.connections || 0}<br>
+                ${d.description ? `<strong>Description:</strong> ${d.description}` : ''}
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY + 10 + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        function showNodeDetails(node) {
+            const panel = document.getElementById('node-details-panel');
+            document.getElementById('node-details-type').textContent = node.type;
+            document.getElementById('node-details-name').textContent = node.name;
+
+            // Properties
+            const propsDiv = document.getElementById('node-details-properties');
+            propsDiv.innerHTML = '<div class="details-section-title">Properties</div>';
+            if (node.properties) {
+                Object.entries(node.properties).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'details-item';
+                    item.innerHTML = `<span class="details-label">${key}:</span><span class="details-value">${value}</span>`;
+                    propsDiv.appendChild(item);
+                });
+            }
+
+            // Connections
+            const connections = graphData.edges.filter(e => e.source.id === node.id || e.target.id === node.id);
+            const connDiv = document.getElementById('node-connections');
+            connDiv.innerHTML = '';
+            connections.forEach(edge => {
+                const related = edge.source.id === node.id ? edge.target : edge.source;
+                const item = document.createElement('div');
+                item.className = 'connection-item';
+                item.innerHTML = `
+                    <div class="connection-relation">${edge.relation || 'connected'}</div>
+                    <div class="connection-target">${related.name}</div>
+                `;
+                item.onclick = () => selectNode(related);
+                connDiv.appendChild(i

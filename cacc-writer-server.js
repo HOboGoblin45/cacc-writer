@@ -11,6 +11,7 @@ dotenv.config();
 import express from 'express';
 import './server/utils/patchExpressAsync.js';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,7 +23,7 @@ import log, { setFileLogWriter } from './server/logger.js';
 import { runStartupChecks } from './server/config/startupChecks.js';
 import { runTransientCleanup } from './server/operations/retentionManager.js';
 import { initAuditLogger, emitSystemEvent } from './server/operations/auditLogger.js';
-import { getDb } from './server/db/database.js';
+import { getDb, closeDb, closeAllUserDbs } from './server/db/database.js';
 import { MODEL } from './server/openaiClient.js';
 import { requireAuth } from './server/middleware/authMiddleware.js';
 
@@ -132,11 +133,31 @@ import sketchRouter from './server/api/sketchRoutes.js';
 import uad36Router from './server/api/uad36Routes.js';
 import formDataRouter from './server/api/formDataRoutes.js';
 import photoAddendumRouter from './server/api/photoAddendumRoutes.js';
+import questionnaireRouter from './server/api/questionnaireRoutes.js';
+import brainRouter from './server/api/brainRoutes.js';
+import { applyPendingRestore } from './server/security/backupRestoreService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.PORT) || 5178;
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || '').trim();
+
+// ── SaaS production guards ──────────────────────────────────────────────────
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('[FATAL] JWT_SECRET is required in production. Exiting.');
+  process.exit(1);
+}
+
+// ── Apply pending restore before startup checks ─────────────────────────────
+try {
+  const restoreResult = applyPendingRestore();
+  if (restoreResult) {
+    console.log('[startup] Restore result:', restoreResult);
+  }
+} catch (err) {
+  console.error('[FATAL] Restore failed:', err.message);
+  process.exit(1);
+}
 
 runStartupChecks({
   port: PORT,
@@ -146,25 +167,69 @@ runStartupChecks({
 });
 
 const app = express();
+
+// ── Security Headers (Helmet) ────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://d3js.org", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "wss://*.proxy.runpod.net", "https://*.proxy.runpod.net", "https://api.openai.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow loading external CDN resources
+}));
+
+// ── CORS — environment-conditional ───────────────────────────────────────────
+const CORS_ORIGINS = process.env.NODE_ENV === 'production'
+  ? ['https://appraisal-agent.com', 'https://www.appraisal-agent.com', process.env.APP_URL].filter(Boolean)
+  : ['http://localhost:5178', 'http://127.0.0.1:5178', 'https://appraisal-agent.com', 'https://www.appraisal-agent.com'];
 app.use(cors({
-  origin: ['http://localhost:5178', 'http://127.0.0.1:5178', 'https://appraisal-agent.com', 'https://www.appraisal-agent.com'],
+  origin: CORS_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'X-Api-Key', 'Authorization'],
 }));
 
-// Rate limit only the AI generation endpoints to prevent runaway API costs.
-// Cases/CRUD endpoints are not limited — this is a single-user local tool.
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+
+// Global write rate limit — prevents abuse on all POST/PUT/PATCH/DELETE endpoints
+const writeLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  message: { ok: false, error: 'Rate limit exceeded — too many write requests' },
+  skip: (req) => req.method === 'GET',
+  keyGenerator: (req) => req.user?.userId || req.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', writeLimiter);
+
+// AI generation endpoints — tighter limit to prevent runaway API costs
 const genLimiter = rateLimit({
   windowMs: 60_000,
   max: 60,
   message: { ok: false, error: 'Rate limit exceeded' },
-  skip: (req) => req.method === 'GET', // Only limit write/generate operations
+  skip: (req) => req.method === 'GET',
 });
 app.use('/api/generate', genLimiter);
 
-// Rate limit demo endpoint: 5 requests per hour per IP (prevents abuse)
+// Brain/AI endpoints — separate limit for GPU-intensive operations
+const brainLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  message: { ok: false, error: 'AI rate limit exceeded — please wait' },
+  skip: (req) => req.method === 'GET',
+  keyGenerator: (req) => req.user?.userId || req.ip,
+});
+app.use('/api/brain/chat', brainLimiter);
+app.use('/api/brain/v1', brainLimiter);
+
+// Demo endpoint: 5 requests per hour per IP (prevents abuse)
 const demoLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 5,
   message: { ok: false, error: 'Demo limit reached. Sign up for unlimited access!', upgrade: true },
   keyGenerator: (req) => req.ip,
@@ -192,13 +257,17 @@ app.get('/workspace', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')))
 app.get('/index.html', (_q, r) => r.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (_q, r) => r.sendFile(path.join(__dirname, 'landing.html')));
 app.get('/dashboard', (_q, r) => r.sendFile(path.join(__dirname, 'dashboard.html')));
+app.get('/brain', (_q, r) => r.sendFile(path.join(__dirname, 'brain.html')));
 app.get('/admin', (_q, r) => r.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/case', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
 app.get('/case/:id', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'caseworkspace', 'code.html')));
 app.get('/settings', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'settings', 'code.html')));
 app.get('/analytics', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'analytics', 'code.html')));
-app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
-app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'login.html')));
+app.get('/login', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'login.html')));
+app.get('/login.html', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'login.html')));
+app.get('/signup', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'signup.html')));
+app.get('/signup.html', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'signup.html')));
+app.get('/register', (_q, r) => r.redirect('/signup'));
 app.get('/inspection', (_q, r) => r.sendFile(path.join(__dirname, 'inspection.html')));
 app.get('/sketch', (_q, r) => r.sendFile(path.join(__dirname, 'sketch.html')));
 app.get('/demo', (_q, r) => r.sendFile(path.join(__dirname, 'demo.html')));
@@ -218,10 +287,15 @@ app.get('/favicon.ico', (_q, r) => {
   r.send(svg);
 });
 
-app.use(requireAuth);
+app.get('/questionnaire', (_q, r) => r.sendFile(path.join(__dirname, 'frontend', 'questionnaire', 'code.html')));
 
-// Auth schema + routes (before other routes)
+// Auth schema + public auth routes (mounted BEFORE auth wall)
 try { ensureAuthSchema(); } catch (e) { console.warn('Auth schema init:', e.message); }
+app.use('/api', authRouter);
+app.use('/api', billingRouter); // billing webhook needs raw body before auth
+
+// ── Auth Wall — all routes below require authentication ──────────────────────
+app.use(requireAuth);
 try { ensureTemplateSchema(); } catch (e) { console.warn('Template schema init:', e.message); }
 try { ensureAmcSchema(); } catch (e) { console.warn('AMC schema init:', e.message); }
 try { ensureAdjustmentLearnerSchema(); } catch (e) { console.warn('Adj learner schema init:', e.message); }
@@ -247,8 +321,7 @@ try { ensureMlsSchema(); } catch (e) { console.warn('MLS schema init:', e.messag
 try { ensureSignatureSchema(); } catch (e) { console.warn('Signature schema init:', e.message); }
 try { ensureDeliverySchema(); } catch (e) { console.warn('Delivery schema init:', e.message); }
 try { ensureInvoiceSchema(); } catch (e) { console.warn('Invoice schema init:', e.message); }
-app.use('/api', authRouter);
-app.use('/api', billingRouter);
+// authRouter + billingRouter already mounted above the auth wall
 app.use('/api', adminRouter);
 app.use('/api', batchRouter);
 app.use('/api', templateRouter);
@@ -329,6 +402,8 @@ app.use('/api', sketchRouter);
 app.use('/api', uad36Router);
 app.use('/api', formDataRouter);
 app.use('/api', photoAddendumRouter);
+app.use('/api', questionnaireRouter);
+app.use('/api', brainRouter);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
@@ -401,11 +476,43 @@ const server = app.listen(PORT, () => {
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error('Port ' + PORT + ' is already in use. Kill the existing process and restart.');
+    process.exit(1);
   } else {
     console.error('Server error:', err.message);
   }
-  process.exit(1);
 });
 
-export default app;
+// ── Graceful shutdown ──────────────────────────────────────────────────────────
+let _shuttingDown = false;
 
+function gracefulShutdown(signal) {
+  if (_shuttingDown) return;
+  _shuttingDown = true;
+  console.log(`\n${signal} received — shutting down gracefully…`);
+
+  server.close(() => {
+    console.log('HTTP server closed.');
+    try {
+      const db = getDb();
+      if (db && db.open) {
+        db.pragma('wal_checkpoint(TRUNCATE)');
+      }
+      closeAllUserDbs();
+      closeDb();
+      console.log('SQLite WAL checkpointed and all connections closed.');
+    } catch (e) {
+      console.warn('DB shutdown warning:', e.message);
+    }
+    console.log('Shutdown complete.');
+    process.exit(0);
+  });
+
+  // Force exit if server hasn't closed in 10 seconds
+  setTimeout(() => {
+    console.error('Forced exit after timeout.');
+    process.exit(1);
+  }, 10000).unref();
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

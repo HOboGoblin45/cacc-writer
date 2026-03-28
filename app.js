@@ -2,12 +2,34 @@ const API_BASE = window.location.origin;
 const API_KEY = 'cacc-local-key-2026';
 const APP_NAME = 'Appraisal Agent';
 
+// ── Auth guard ──────────────────────────────────────────────────────────────
+// Intercept all fetch() calls to attach JWT and handle 401s.
+const _origFetch = window.fetch;
+window.fetch = async function(url, opts = {}) {
+  const token = sessionStorage.getItem('cacc_token');
+  if (token) {
+    opts.headers = { ...(opts.headers || {}), 'Authorization': `Bearer ${token}` };
+  }
+  const res = await _origFetch(url, opts);
+  if (res.status === 401 && !String(url).includes('/api/auth/')) {
+    sessionStorage.removeItem('cacc_token');
+    sessionStorage.removeItem('cacc_user');
+    window.location.href = '/login';
+  }
+  return res;
+};
+
+// On page load, redirect to login if no token
+if (!sessionStorage.getItem('cacc_token') && !window.DESKTOP_MODE) {
+  window.location.href = '/login';
+}
+
 const STEP_META = [
   { id: 1, label: 'Import', description: 'Load source files' },
   { id: 2, label: 'Facts', description: 'Validate extracted data' },
   { id: 3, label: 'Generate', description: 'Draft narratives' },
   { id: 4, label: 'Review', description: 'Approve or reject sections' },
-  { id: 5, label: 'Insert', description: 'Run QC and send to ACI' }
+  { id: 5, label: 'Export', description: 'Download PDF or DOCX' }
 ];
 
 const FACT_GROUPS = [
@@ -58,12 +80,12 @@ const refs = {};
 const SHORTCUTS = [
   { key: 's', ctrl: true, action: () => { if (S.step === 2) refs.saveFacts.click(); }, label: 'Save facts' },
   { key: 'g', ctrl: true, shift: true, action: () => { if (S.caseId) gotoStep(3); refs.generateButton?.click(); }, label: 'Generate all' },
-  { key: 'Enter', ctrl: true, action: () => { if (S.step === 5) refs.insertButton.click(); }, label: 'Insert all' },
+  { key: 'Enter', ctrl: true, action: () => { if (S.step === 5) refs.exportPdfButton?.click(); }, label: 'Export PDF' },
   { key: '1', alt: true, action: () => gotoStep(1), label: 'Step 1: Import' },
   { key: '2', alt: true, action: () => gotoStep(2), label: 'Step 2: Facts' },
   { key: '3', alt: true, action: () => gotoStep(3), label: 'Step 3: Generate' },
   { key: '4', alt: true, action: () => gotoStep(4), label: 'Step 4: Review' },
-  { key: '5', alt: true, action: () => gotoStep(5), label: 'Step 5: Insert' },
+  { key: '5', alt: true, action: () => gotoStep(5), label: 'Step 5: Export' },
   { key: 'k', ctrl: true, action: () => toggleCommandPalette(), label: 'Command palette' },
   { key: 'Escape', action: () => { if (commandPaletteOpen) toggleCommandPalette(false); }, label: 'Close palette' },
 ];
@@ -101,19 +123,20 @@ function toggleCommandPalette(force) {
       `;
       document.body.appendChild(palette);
       palette.addEventListener('click', (e) => { if (e.target === palette) toggleCommandPalette(false); });
+      const input = palette.querySelector('.command-palette-input');
+      input.addEventListener('input', () => renderCommandPaletteResults(palette, input.value));
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const first = palette.querySelector('.command-palette-item');
+          if (first) first.click();
+        }
+      });
     }
     palette.classList.remove('hidden');
     const input = palette.querySelector('.command-palette-input');
     input.value = '';
     input.focus();
     renderCommandPaletteResults(palette, '');
-    input.addEventListener('input', () => renderCommandPaletteResults(palette, input.value));
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const first = palette.querySelector('.command-palette-item');
-        if (first) first.click();
-      }
-    });
   } else if (palette) {
     palette.classList.add('hidden');
   }
@@ -125,11 +148,11 @@ function renderCommandPaletteResults(palette, query) {
     { label: 'Go to Facts', shortcut: 'Alt+2', action: () => { gotoStep(2); toggleCommandPalette(false); } },
     { label: 'Go to Generate', shortcut: 'Alt+3', action: () => { gotoStep(3); toggleCommandPalette(false); } },
     { label: 'Go to Review', shortcut: 'Alt+4', action: () => { gotoStep(4); toggleCommandPalette(false); } },
-    { label: 'Go to Insert', shortcut: 'Alt+5', action: () => { gotoStep(5); toggleCommandPalette(false); } },
+    { label: 'Go to Export', shortcut: 'Alt+5', action: () => { gotoStep(5); toggleCommandPalette(false); } },
     { label: 'Save facts', shortcut: 'Ctrl+S', action: () => { refs.saveFacts.click(); toggleCommandPalette(false); } },
     { label: 'Generate all narratives', shortcut: 'Ctrl+Shift+G', action: () => { refs.generateButton?.click(); toggleCommandPalette(false); } },
     { label: 'Approve all sections', action: () => { refs.approveAll?.click(); toggleCommandPalette(false); } },
-    { label: 'Insert into ACI', shortcut: 'Ctrl+Enter', action: () => { refs.insertButton?.click(); toggleCommandPalette(false); } },
+    { label: 'Export as PDF', shortcut: 'Ctrl+Enter', action: () => { refs.exportPdfButton?.click(); toggleCommandPalette(false); } },
     { label: 'Refresh cases', action: () => { refreshCases({ restoreSelection: true }); toggleCommandPalette(false); } },
     { label: 'Toggle sidebar', action: () => { toggleSidebar(); toggleCommandPalette(false); } },
     { label: 'Toggle theme (dark/light)', action: () => { toggleTheme(); toggleCommandPalette(false); } },
@@ -153,6 +176,7 @@ function renderCommandPaletteResults(palette, query) {
 
 // ── Auto-refresh polling ─────────────────────────────────────────────────────
 let pollTimer = null;
+let serviceCheckTimer = null;
 
 async function checkServices() {
   try {
@@ -197,12 +221,12 @@ function startPolling() {
       }
     } catch (_) { /* silent */ }
   }, 8000);
-  // Re-check services every 2 minutes
-  window.setInterval(checkServices, 120000);
+  serviceCheckTimer = window.setInterval(checkServices, 120000);
 }
 
 function stopPolling() {
   if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+  if (serviceCheckTimer) { window.clearInterval(serviceCheckTimer); serviceCheckTimer = null; }
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -534,9 +558,9 @@ async function promptNewCase() {
   const address = window.prompt('Property address for new case:', '');
   if (!address || !address.trim()) return;
 
-  const formOptions = ['1004', '1025', '1073', 'commercial'];
-  const formPrompt = window.prompt(`Form type:\n  1. 1004 – Single Family\n  2. 1025 – Small Income\n  3. 1073 – Condo\n  4. commercial\n\nEnter number or form type:`, '1');
-  const formMap = { '1': '1004', '2': '1025', '3': '1073', '4': 'commercial' };
+  const formOptions = ['1004', '1025', '1073', '1004c', 'commercial'];
+  const formPrompt = window.prompt(`Form type:\n  1. 1004 – Single Family\n  2. 1025 – Small Income\n  3. 1073 – Condo\n  4. 1004c – Manufactured Home\n  5. commercial\n\nEnter number or form type:`, '1');
+  const formMap = { '1': '1004', '2': '1025', '3': '1073', '4': '1004c', '5': 'commercial' };
   const formType = formMap[formPrompt] || (formOptions.includes(formPrompt) ? formPrompt : '1004');
 
   try {
@@ -1341,7 +1365,7 @@ async function generateAll() {
 
 var _fullReportAbortController = null;
 
-var FULL_REPORT_SECTIONS_1004 = [
+var FULL_REPORT_SECTIONS_FALLBACK = [
   { id: 'neighborhood_description', title: 'Neighborhood Description' },
   { id: 'site_description', title: 'Site Description' },
   { id: 'improvements_description', title: 'Improvements Description' },
@@ -1355,6 +1379,17 @@ var FULL_REPORT_SECTIONS_1004 = [
   { id: 'contract_analysis', title: 'Contract Analysis' },
   { id: 'prior_sales_subject', title: 'Prior Sales of Subject' },
 ];
+
+async function getFullReportSections() {
+  var formType = getCaseFormType(S.caseMeta) || '1004';
+  try {
+    var config = await api('/api/forms/' + formType);
+    if (config && Array.isArray(config.fields) && config.fields.length > 0) {
+      return config.fields.map(function(f) { return { id: f.id, title: f.title }; });
+    }
+  } catch (_) { /* fall back to default */ }
+  return FULL_REPORT_SECTIONS_FALLBACK;
+}
 
 function openGenerateReportModal(sections) {
   var list = refs.genModalSectionList;
@@ -1424,7 +1459,7 @@ async function generateFullReport() {
     return;
   }
 
-  var sections = FULL_REPORT_SECTIONS_1004;
+  var sections = await getFullReportSections();
   openGenerateReportModal(sections);
 
   var startedAt = Date.now();
@@ -1853,18 +1888,79 @@ function renderInsertSummary() {
     : `
       <div class="empty-state compact">
         <h3>No sections ready</h3>
-        <p>Generate and approve narratives before inserting them into ACI.</p>
+        <p>Generate and approve narratives before exporting.</p>
       </div>
     `;
 
   refs.insertChecklist.innerHTML = `
     <div class="checklist-item ${S.caseId ? 'is-complete' : ''}"><span></span>Case selected</div>
     <div class="checklist-item ${entries.length ? 'is-complete' : ''}"><span></span>Generated sections available</div>
-    <div class="checklist-item ${approved > 0 ? 'is-complete' : ''}"><span></span>Approved sections ready</div>
+    <div class="checklist-item ${approved > 0 ? 'is-complete' : ''}"><span></span>Approved sections ready for export</div>
   `;
 }
 
+// ── Export functions (SaaS cloud mode) ──────────────────────────────────────
+
+async function exportAsPdf() {
+  if (!S.caseId) { showToast('Select a case first.', 'warning'); return; }
+  try {
+    refs.insertResults.innerHTML = '<div class="summary-note loading-note"><div class="spinner spinner-small"></div><span>Generating PDF...</span></div>';
+    const res = await fetch(`${API_BASE}/api/export/${S.caseId}/pdf`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'PDF export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${S.caseId}-report.pdf`; a.click();
+    URL.revokeObjectURL(url);
+    refs.insertResults.innerHTML = '<div class="summary-note success-note"><strong>PDF downloaded successfully.</strong></div>';
+    showToast('PDF exported.', 'success');
+  } catch (err) {
+    refs.insertResults.innerHTML = `<div class="summary-note error-note"><strong>Export failed</strong><span>${escapeHtml(err.message)}</span></div>`;
+    showToast(`Export failed: ${err.message}`, 'error');
+  }
+}
+
+async function exportAsDocx() {
+  if (!S.caseId) { showToast('Select a case first.', 'warning'); return; }
+  try {
+    refs.insertResults.innerHTML = '<div class="summary-note loading-note"><div class="spinner spinner-small"></div><span>Generating DOCX...</span></div>';
+    const res = await fetch(`${API_BASE}/api/export/${S.caseId}/docx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'DOCX export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${S.caseId}-report.docx`; a.click();
+    URL.revokeObjectURL(url);
+    refs.insertResults.innerHTML = '<div class="summary-note success-note"><strong>DOCX downloaded successfully.</strong></div>';
+    showToast('DOCX exported.', 'success');
+  } catch (err) {
+    refs.insertResults.innerHTML = `<div class="summary-note error-note"><strong>Export failed</strong><span>${escapeHtml(err.message)}</span></div>`;
+    showToast(`Export failed: ${err.message}`, 'error');
+  }
+}
+
+function copyToClipboard() {
+  const entries = getSectionEntries();
+  const approved = entries.filter(([, p]) => p.approved);
+  if (!approved.length) { showToast('No approved sections to copy.', 'warning'); return; }
+  const text = approved.map(([key, p]) => `## ${key}\n${p.text || ''}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(
+    () => showToast('Copied to clipboard.', 'success'),
+    () => showToast('Copy failed.', 'error')
+  );
+}
+
+// ── Legacy ACI insertion (desktop mode only) ────────────────────────────────
+
 async function insertAll() {
+  if (!window.DESKTOP_MODE) {
+    showToast('ACI insertion requires the desktop companion app.', 'warning');
+    return;
+  }
   if (!S.caseId) {
     showToast('Select a case first.', 'warning');
     return;

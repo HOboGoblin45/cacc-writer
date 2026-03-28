@@ -7,10 +7,10 @@
 //
 // ACTIVE PRODUCTION SCOPE:
 //   Lane 1: 1004 single-family residential (ACI)
-//   Lane 2: commercial (Real Quantum)
+//   Lane 2: 1025 small residential income (ACI)
 //
 // DEFERRED (preserved, not extended):
-//   1025, 1073, 1004c
+//   1073, commercial, 1004c
 //
 // Last updated: 2025 - Scope correction applied.
 // See SCOPE.md for full scope definition.
@@ -20,10 +20,12 @@ export const CACC_APPRAISALS_ROOT = process.env.CACC_APPRAISALS_ROOT
   || 'C:\\Users\\ccres\\OneDrive\\Desktop\\CACC Appraisals';
 
 // â”€â”€ Active production form types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const ACTIVE_FORMS = ['1004', '1025', '1073', 'commercial'];
+// Only forms with a proven golden-path (import → generate → export) are active.
+export const ACTIVE_FORMS = ['1004', '1025'];
 
 // â”€â”€ Deferred form types (files preserved, not actively extended) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const DEFERRED_FORMS = ['1004c'];
+// 1025/1073 moved here — no proven end-to-end golden path yet.
+export const DEFERRED_FORMS = ['1073', 'commercial', '1004c'];
 
 // â”€â”€ Lane 1: 1004 Single-Family Residential â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_RESIDENTIAL_LANE = {
@@ -34,22 +36,22 @@ export const ACTIVE_RESIDENTIAL_LANE = {
   description: 'ACI desktop automation via pywinauto',
 };
 
-// â”€â”€ Lane 1b: 1025 Small Residential Income â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const ACTIVE_1025_LANE = {
+// â”€â”€ Deferred Lane: 1025 Small Residential Income â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const DEFERRED_1025_LANE = {
   formType:    '1025',
   software:    'aci',
   agentPort:   5180,
-  label:       '1025 Small Residential Income (2-4 Unit)',
-  description: 'ACI desktop automation via pywinauto',
+  label:       '1025 Small Residential Income (2-4 Unit) — DEFERRED',
+  description: 'Not yet proven end-to-end. Deferred from active production.',
 };
 
-// â”€â”€ Lane 1c: 1073 Individual Condo Unit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const ACTIVE_1073_LANE = {
+// â”€â”€ Deferred Lane: 1073 Individual Condo Unit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const DEFERRED_1073_LANE = {
   formType:    '1073',
   software:    'aci',
   agentPort:   5180,
-  label:       '1073 Individual Condominium Unit',
-  description: 'ACI desktop automation via pywinauto',
+  label:       '1073 Individual Condominium Unit — DEFERRED',
+  description: 'Not yet proven end-to-end. Deferred from active production.',
 };
 
 // â”€â”€ Lane 2: Commercial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -86,7 +88,9 @@ export const PRIORITY_SECTIONS_COMMERCIAL = [
 
 // â”€â”€ Deferred form metadata (for UI display and logging) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DEFERRED_FORM_META = {
-  '1004c': { label: '1004C â€“ Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
+  '1073':       { label: '1073 Individual Condominium Unit', reason: 'No proven end-to-end golden path for generation+export' },
+  'commercial': { label: 'Commercial (Real Quantum)', reason: 'Deferred from SaaS v1 active scope' },
+  '1004c':      { label: '1004C — Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
 };
 
 // â”€â”€ Scope check helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

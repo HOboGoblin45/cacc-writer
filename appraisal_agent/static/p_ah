@@ -1,0 +1,68 @@
+   </div>
+                </div>
+
+                <!-- Market Data Tab -->
+                <div id="market-tab" class="tab-content">
+                    <div class="market-cards">
+                        <div class="market-card">
+                            <div class="market-card-label">Median Price</div>
+                            <div class="market-card-value" id="market-median">--</div>
+                            <div class="market-card-change" id="market-median-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Days on Market</div>
+                            <div class="market-card-value" id="market-dom">--</div>
+                            <div class="market-card-change" id="market-dom-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Active Inventory</div>
+                            <div class="market-card-value" id="market-inventory">--</div>
+                            <div class="market-card-change" id="market-inventory-change"></div>
+                        </div>
+                        <div class="market-card">
+                            <div class="market-card-label">Price Trend</div>
+                            <div class="market-card-value" id="market-trend">--</div>
+                            <div class="market-card-change" id="market-trend-change"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #ff6b9d; margin-bottom: 12px; font-size: 14px;">Market Trend (12 months)</h3>
+                        <div class="chart-placeholder">
+                            <p>📊 Market trend chart will be rendered here</p>
+                            <p style="font-size: 11px; margin-top: 8px; color: #555;">Powered by market data API</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Preview Tab -->
+                <div id="report-tab" class="tab-content">
+                    <div class="report-container">
+                        <div class="report-section">
+                            <div class="report-section-title">Subject Property</div>
+                            <div class="report-item">
+                                <span class="report-label">Address</span>
+                                <span class="report-value" id="report-subject-address">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Property Type</span>
+                                <span class="report-value" id="report-subject-type">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Square Footage</span>
+                                <span class="report-value" id="report-subject-sqft">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bedrooms</span>
+                                <span class="report-value" id="report-subject-beds">--</span>
+                            </div>
+                            <div class="report-item">
+                                <span class="report-label">Bathrooms</span>
+                                <span class="report-value" id="report-subject-baths">--</span>
+                            </div>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-section-title">Neighborhood</div>
+                            <div class="report-item">
+                                <span class="report-label">Market Area</span>
+                                
