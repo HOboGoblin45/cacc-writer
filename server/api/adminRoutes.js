@@ -11,6 +11,9 @@ import { authMiddleware } from '../auth/authService.js';
 import { getDb } from '../db/database.js';
 import { validateBody, validateParams } from '../middleware/validateRequest.js';
 import log from '../logger.js';
+import { getDailyCostSummary, getAllUserCosts } from '../middleware/costTracker.js';
+import { getCircuitBreakerStats } from '../openaiClient.js';
+import { getDbHealth, getSlowQueries, getTableStats, runIntegrityCheck, checkpointWal } from '../db/dbMonitor.js';
 
 const router = Router();
 
@@ -139,6 +142,53 @@ router.delete('/admin/users/:userId', authMiddleware, adminGuard, validateParams
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
+});
+
+// ── GET /admin/ai-costs ─────────────────────────────────────────────────────
+// Admin dashboard: AI cost tracking across all users.
+router.get('/admin/ai-costs', authMiddleware, adminGuard, (_req, res) => {
+  const daily = getDailyCostSummary();
+  const users = getAllUserCosts();
+  const circuits = getCircuitBreakerStats();
+
+  res.json({
+    ok: true,
+    daily,
+    topUsers: users.slice(0, 20),
+    totalUsers: users.length,
+    circuits,
+    checkedAt: new Date().toISOString(),
+  });
+});
+
+// ── GET /admin/db-health ─────────────────────────────────────────────────────
+// Admin dashboard: database monitoring.
+router.get('/admin/db-health', authMiddleware, adminGuard, (_req, res) => {
+  const health = getDbHealth();
+  const tables = getTableStats();
+  const slowQueries = getSlowQueries();
+
+  res.json({
+    ok: true,
+    health,
+    tables,
+    slowQueries: slowQueries.slice(-20),
+    slowQueryCount: slowQueries.length,
+  });
+});
+
+// ── POST /admin/db-integrity ────────────────────────────────────────────────
+// Run SQLite integrity check (can be slow on large databases).
+router.post('/admin/db-integrity', authMiddleware, adminGuard, (_req, res) => {
+  const result = runIntegrityCheck();
+  res.json({ ok: result.ok, integrity: result.result });
+});
+
+// ── POST /admin/db-checkpoint ───────────────────────────────────────────────
+// Force WAL checkpoint to reduce WAL file size.
+router.post('/admin/db-checkpoint', authMiddleware, adminGuard, (_req, res) => {
+  const result = checkpointWal();
+  res.json({ ok: result.ok, ...result });
 });
 
 export default router;
