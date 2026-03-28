@@ -2,12 +2,15 @@
  * brainRoutes.js
  * ───────────────
  * Proxy routes for the Knowledge Brain (RunPod vLLM + FastAPI dashboard).
- * Forwards /api/brain/* requests to the RunPod pod's FastAPI server.
+ *
+ * Supports two RunPod modes (set via RUNPOD_MODE env var):
+ *   - 'serverless' → RunPod Serverless (scales to zero, pay-per-second)
+ *   - 'pod'        → Legacy always-on pod
  *
  * Phase 1.5 enhancements:
  *   - Fallback provider chain (RunPod → OpenAI → graceful degradation)
  *   - Error sanitization (no internal URLs leaked to client)
- *   - Config endpoint serves pod ID to frontend (no hardcoding in brain.html)
+ *   - Config endpoint serves RunPod config to frontend (no hardcoding in brain.html)
  *   - Model registry & graph persistence endpoints
  *   - AI cost logging on every inference call
  */
@@ -29,15 +32,22 @@ import {
 import {
   logAiCost, getUserCostSummary, getUserCostByProvider
 } from '../db/repositories/brainRepo.js';
+import {
+  getRunPodMode, isRunPodConfigured, getVllmCompletionsUrl, getVllmModelsUrl,
+  getVllmHealthUrl, getBrainBaseUrl, getAuthHeaders, getTimeout,
+  chatCompletion, checkHealth as checkRunPodHealth,
+  proxyToBrain as serverlessProxyToBrain, getConfigSummary,
+} from '../ai/runpodServerless.js';
 
 const router = Router();
 
-// RunPod pod configuration — override via env vars. No hardcoded fallback in production.
-const RUNPOD_POD_ID = process.env.RUNPOD_POD_ID || 'l1rb6jfw6lv7zv';
-const BRAIN_BASE = process.env.BRAIN_BASE_URL || `https://${RUNPOD_POD_ID}-8080.proxy.runpod.net`;
-const VLLM_BASE = process.env.VLLM_BASE_URL || `https://${RUNPOD_POD_ID}-8000.proxy.runpod.net`;
+// RunPod configuration is now centralized in runpodServerless.js
+// Legacy env vars still work — the adapter reads them automatically.
+const RUNPOD_POD_ID = process.env.RUNPOD_POD_ID || '';
+const BRAIN_BASE = getBrainBaseUrl();
+const VLLM_BASE = getVllmCompletionsUrl().replace(/\/v1\/chat\/completions$/, '').replace(/\/openai\/v1\/chat\/completions$/, '');
 
-// Fallback provider (used when RunPod is down)
+// Fallback provider (used when RunPod is down or cold-starting)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const FALLBACK_MODEL = process.env.BRAIN_FALLBACK_MODEL || 'gpt-4o-mini';
 const FALLBACK_ENABLED = process.env.BRAIN_FALLBACK_ENABLED !== 'false';
@@ -131,25 +141,10 @@ function sanitizeError(error) {
 
 /**
  * Proxy helper — forwards requests to the RunPod FastAPI server.
+ * Delegates to the serverless adapter which handles both modes.
  */
 async function proxyToBrain(endpoint, req, res) {
-  const url = `${BRAIN_BASE}${endpoint}`;
-  try {
-    const fetchOptions = {
-      method: req.method,
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(15000),
-    };
-    if (req.method !== 'GET' && req.body) {
-      fetchOptions.body = JSON.stringify(req.body);
-    }
-    const response = await fetch(url, fetchOptions);
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    log.warn('brain:proxy', { endpoint, error: error.message });
-    res.status(502).json({ ok: false, error: sanitizeError(error) });
-  }
+  return serverlessProxyToBrain(endpoint, req, res);
 }
 
 /**
@@ -192,9 +187,13 @@ async function fallbackGenerate(messages, options = {}) {
 
 // ─── Configuration (serves config to frontend — no hardcoding in brain.html) ──
 router.get('/brain/config', (req, res) => {
+  const config = getConfigSummary();
+  const brainBase = getBrainBaseUrl();
   res.json({
-    podId: RUNPOD_POD_ID,
-    wsUrl: `wss://${RUNPOD_POD_ID}-8080.proxy.runpod.net/ws/chat`,
+    ...config,
+    // Legacy field for backward compatibility with brain.html
+    podId: RUNPOD_POD_ID || config.endpointId || '',
+    wsUrl: brainBase ? `${brainBase.replace(/^https?/, 'wss')}/ws/chat` : null,
     fallbackEnabled: FALLBACK_ENABLED && !!OPENAI_API_KEY,
   });
 });
@@ -202,35 +201,32 @@ router.get('/brain/config', (req, res) => {
 // ─── Health & Status ─────────────────────────────────────────
 router.get('/brain/health', async (req, res) => {
   try {
-    const [brainResp, vllmResp] = await Promise.allSettled([
-      fetch(`${BRAIN_BASE}/api/health`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${VLLM_BASE}/health`, { signal: AbortSignal.timeout(5000) }),
-    ]);
+    // Use centralized health check (works for both serverless and pod modes)
+    const vllmHealth = await checkRunPodHealth();
 
-    const brainOk = brainResp.status === 'fulfilled' && brainResp.value.ok;
-    const vllmOk = vllmResp.status === 'fulfilled' && vllmResp.value.ok;
-
-    let model = null;
-    if (vllmOk) {
+    // Also check Brain FastAPI dashboard
+    let brainOk = false;
+    const brainBase = getBrainBaseUrl();
+    if (brainBase) {
       try {
-        const modelsResp = await fetch(`${VLLM_BASE}/v1/models`, { signal: AbortSignal.timeout(5000) });
-        const models = await modelsResp.json();
-        model = models.data?.[0]?.id || 'unknown';
-      } catch { /* ignore */ }
+        const brainResp = await fetch(`${brainBase}/api/health`, { signal: AbortSignal.timeout(5000) });
+        brainOk = brainResp.ok;
+      } catch { /* brain dashboard offline */ }
     }
 
-    // Also check active model in registry
+    // Check active model in registry
     let registeredModel = null;
     try { registeredModel = getActiveModel(); } catch { /* ignore */ }
 
     res.json({
-      ok: brainOk || vllmOk,
+      ok: brainOk || vllmHealth.ok,
       brain: brainOk ? 'online' : 'offline',
-      vllm: vllmOk ? 'online' : 'offline',
-      model,
+      vllm: vllmHealth.ok ? 'online' : 'offline',
+      mode: getRunPodMode(),
+      model: vllmHealth.model || null,
       registeredModel: registeredModel ? { id: registeredModel.id, version: registeredModel.version, status: registeredModel.status } : null,
       fallbackAvailable: FALLBACK_ENABLED && !!OPENAI_API_KEY,
-      podId: RUNPOD_POD_ID,
+      configured: isRunPodConfigured(),
     });
   } catch (error) {
     log.error('brain:health', { error: error.message });
@@ -378,27 +374,51 @@ router.post('/brain/chat', rateLimitMiddleware('ai'), validateBody(chatSchema), 
     } catch { /* case lookup failed — continue without context */ }
   }
 
-  // Try RunPod first
+  // Try RunPod first (serverless or pod — handled by adapter)
   try {
-    const url = `${BRAIN_BASE}/api/chat`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(chatBody),
-      signal: AbortSignal.timeout(30000),
-    });
+    const brainBase = getBrainBaseUrl();
+    if (brainBase) {
+      // Use Brain FastAPI chat endpoint if available
+      const url = `${brainBase}/api/chat`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(chatBody),
+        signal: AbortSignal.timeout(getTimeout()),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
-      // Save assistant response
+        try {
+          saveChatMessage({ userId, caseId, role: 'assistant', content: data.response || data.choices?.[0]?.message?.content || '' });
+        } catch { /* non-critical */ }
+
+        try {
+          logAiCost({ userId, caseId, provider: `runpod-${getRunPodMode()}`, operation: 'chat',
+            inputTokens: data.usage?.prompt_tokens || 0,
+            outputTokens: data.usage?.completion_tokens || 0 });
+        } catch { /* non-critical */ }
+
+        return res.json(data);
+      }
+    }
+
+    // If no Brain dashboard, try direct vLLM chat completions
+    if (isRunPodConfigured()) {
+      const data = await chatCompletion({
+        model: 'cacc-appraiser-v6',
+        messages: chatBody.messages || [{ role: 'user', content: chatBody.message || '' }],
+        max_tokens: 2048,
+        temperature: 0.7,
+      });
+
+      const content = data.choices?.[0]?.message?.content || '';
       try {
-        saveChatMessage({ userId, caseId, role: 'assistant', content: data.response || data.choices?.[0]?.message?.content || '' });
+        saveChatMessage({ userId, caseId, role: 'assistant', content });
       } catch { /* non-critical */ }
-
-      // Log cost
       try {
-        logAiCost({ userId, caseId, provider: 'runpod', operation: 'chat',
+        logAiCost({ userId, caseId, provider: `runpod-${getRunPodMode()}`, operation: 'chat',
           inputTokens: data.usage?.prompt_tokens || 0,
           outputTokens: data.usage?.completion_tokens || 0 });
       } catch { /* non-critical */ }
@@ -406,7 +426,7 @@ router.post('/brain/chat', rateLimitMiddleware('ai'), validateBody(chatSchema), 
       return res.json(data);
     }
   } catch (error) {
-    log.warn('brain:chat-primary', { error: error.message });
+    log.warn('brain:chat-primary', { error: error.message, mode: getRunPodMode() });
   }
 
   // Fallback to OpenAI
@@ -453,37 +473,29 @@ router.get('/brain/market', (req, res) => proxyToBrain('/api/market', req, res))
 router.get('/brain/report/preview', (req, res) => proxyToBrain('/api/report/preview', req, res));
 router.post('/brain/report/export', (req, res) => proxyToBrain('/api/report/export', req, res));
 
-// ─── vLLM Direct (with fallback) ─────────────────────────────
+// ─── vLLM Direct (with fallback) — works with serverless or pod ─────────
 router.post('/brain/v1/chat/completions', async (req, res) => {
   const userId = req.user?.userId || 'dev-local';
 
-  // Try RunPod vLLM first
-  try {
-    const url = `${VLLM_BASE}/v1/chat/completions`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-      signal: AbortSignal.timeout(60000),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
+  // Try RunPod (serverless or pod — handled by adapter)
+  if (isRunPodConfigured()) {
+    try {
+      const data = await chatCompletion(req.body);
 
       // Log cost
       try {
-        logAiCost({ userId, provider: 'runpod', operation: 'generate',
+        logAiCost({ userId, provider: `runpod-${getRunPodMode()}`, operation: 'generate',
           inputTokens: data.usage?.prompt_tokens || 0,
           outputTokens: data.usage?.completion_tokens || 0 });
       } catch { /* non-critical */ }
 
-      return res.status(response.status).json(data);
+      return res.json(data);
+    } catch (error) {
+      log.warn('brain:vllm-primary', { error: error.message, mode: getRunPodMode() });
     }
-  } catch (error) {
-    log.warn('brain:vllm-primary', { error: error.message });
   }
 
-  // Fallback
+  // Fallback to OpenAI
   const fallbackResult = await fallbackGenerate(req.body?.messages, {
     max_tokens: req.body?.max_tokens,
     temperature: req.body?.temperature,
@@ -563,21 +575,23 @@ router.get('/brain/costs', validateQuery(costSummaryQuerySchema), (req, res) => 
 (function seedModelRegistry() {
   try {
     const active = getActiveModel();
-    if (!active && RUNPOD_POD_ID) {
+    if (!active && isRunPodConfigured()) {
+      const completionsUrl = getVllmCompletionsUrl();
+      const mode = getRunPodMode();
       const id = registerModel({
         modelName: 'cacc-appraiser',
         version: 'v6',
         baseModel: 'meta-llama/Llama-3.1-8B',
         status: 'active',
-        deployedEndpoint: `${VLLM_BASE}/v1/chat/completions`,
+        deployedEndpoint: completionsUrl,
         trainingSamples: 0,
-        hyperparams: { quantization: 'none', maxSeqLen: 8192, gpuMemory: '24GB' },
-        evalScores: { note: 'Pre-eval — baseline model deployed on RunPod RTX 4090' },
-        notes: 'Initial fine-tuned model (cacc-appraiser-v6). Auto-seeded on first startup.',
+        hyperparams: { quantization: 'none', maxSeqLen: 8192, gpuMemory: '24GB', runpodMode: mode },
+        evalScores: { note: `Pre-eval — baseline model deployed on RunPod (${mode})` },
+        notes: `Initial fine-tuned model (cacc-appraiser-v6). RunPod ${mode} mode. Auto-seeded on first startup.`,
       });
       // Promote it immediately
-      promoteModel(id, `${VLLM_BASE}/v1/chat/completions`);
-      log.info('brain:seed', `Registered and promoted initial model: ${id}`);
+      promoteModel(id, completionsUrl);
+      log.info('brain:seed', `Registered and promoted initial model: ${id} (${mode} mode)`);
     }
   } catch (err) {
     // Non-critical — model registry may not be initialized yet

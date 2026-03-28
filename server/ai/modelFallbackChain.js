@@ -20,6 +20,7 @@
 
 import log from '../logger.js';
 import { CircuitBreaker, isRetryableError } from '../utils/retryHelper.js';
+import { getRunPodMode, getVllmCompletionsUrl, getAuthHeaders, getTimeout, isRunPodConfigured } from './runpodServerless.js';
 
 // ─── Provider Configuration ──────────────────────────────────────────────
 
@@ -201,7 +202,8 @@ class FallbackChain {
   }
 
   /**
-   * Call RunPod vLLM endpoint.
+   * Call RunPod vLLM endpoint (supports both serverless and pod modes).
+   * Uses the centralized runpodServerless adapter for URL and auth.
    */
   async _callRunPod(provider, messages, options) {
     const payload = {
@@ -214,22 +216,25 @@ class FallbackChain {
     };
 
     const controller = new AbortController();
-    const timeout = options.timeout || provider.timeout;
+    // Serverless gets longer timeout for cold starts
+    const timeout = options.timeout || getTimeout();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    // Use serverless adapter's URL and auth (works for both modes)
+    const completionsUrl = getVllmCompletionsUrl();
+    const headers = getAuthHeaders();
+
     try {
-      const response = await fetch(`${provider.endpoint}/v1/chat/completions`, {
+      const response = await fetch(completionsUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(provider.apiKey && { 'Authorization': `Bearer ${provider.apiKey}` }),
-        },
+        headers,
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`RunPod error ${response.status}: ${response.statusText}`);
+        const mode = getRunPodMode();
+        throw new Error(`RunPod (${mode}) error ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -573,21 +578,25 @@ class FallbackChain {
 export function createDefaultChain() {
   const chain = new FallbackChain();
 
-  // RunPod (fine-tuned Llama)
-  const runpodEnabled = process.env.RUNPOD_ENDPOINT && process.env.RUNPOD_API_KEY;
-  if (runpodEnabled) {
+  // RunPod (fine-tuned Llama — serverless or pod, via adapter)
+  if (isRunPodConfigured()) {
+    const mode = getRunPodMode();
+    const completionsUrl = getVllmCompletionsUrl();
+    // Strip the /v1/chat/completions or /openai/v1/chat/completions suffix for the base endpoint
+    const endpointBase = completionsUrl.replace(/\/(openai\/)?v1\/chat\/completions$/, '');
     chain.addProvider(
       new ModelProvider({
         name: 'runpod',
-        endpoint: process.env.RUNPOD_ENDPOINT,
-        apiKey: process.env.RUNPOD_API_KEY,
+        endpoint: endpointBase,
+        apiKey: process.env.RUNPOD_API_KEY || '',
         model: process.env.RUNPOD_MODEL || 'cacc-appraiser-v6',
         maxTokens: 4000,
-        timeout: 10000,
-        priority: 1, // Highest priority
+        timeout: getTimeout(),   // Serverless gets longer timeout for cold starts
+        priority: 1,             // Highest priority
         enabled: true,
       })
     );
+    log.info('fallback-chain:runpod', { mode, endpoint: endpointBase });
   }
 
   // OpenAI
