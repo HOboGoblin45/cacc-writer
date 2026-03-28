@@ -14,6 +14,7 @@ import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
+import { validateParams, validateBody, CommonSchemas } from '../middleware/validateRequest.js';
 
 import { resolveCaseDir, normalizeFormType } from '../utils/caseUtils.js';
 import { readJSON, writeJSON } from '../utils/fileUtils.js';
@@ -109,6 +110,13 @@ const insertAllSchema = z.object({
   generationRunId: z.string().max(80).optional(),
   skipQcBlockers: z.boolean().optional(),
 }).passthrough();
+
+// Param validation schemas
+const caseIdParams = CommonSchemas.caseId;
+const caseIdFieldIdParams = z.object({
+  caseId: z.string().min(1),
+  fieldId: z.string().min(1),
+});
 
 function parsePayload(schema, payload, res) {
   const parsed = schema.safeParse(payload);
@@ -467,98 +475,102 @@ router.post('/:caseId/review-section', ensureAI, async (req, res) => {
   }
 });
 
-router.patch('/:caseId/sections/:fieldId/status', (req, res) => {
-  const body = parsePayload(sectionStatusSchema, req.body || {}, res);
-  if (!body) return;
+router.patch(
+  '/:caseId/sections/:fieldId/status',
+  validateParams(caseIdFieldIdParams),
+  validateBody(sectionStatusSchema),
+  (req, res) => {
+    try {
+      const runtime = getCaseRuntime(req, res);
+      if (!runtime) return;
 
-  try {
-    const runtime = getCaseRuntime(req, res);
-    if (!runtime) return;
-
-    const fieldId = trimText(req.params.fieldId, 80);
-    const newStatus = body.status;
-    const now = new Date().toISOString();
-    const outputs = { ...(runtime.outputs || {}) };
-    const hasText = Boolean(outputs[fieldId]?.text);
-    const isApprovedStatus = ['approved', 'inserted', 'verified'].includes(newStatus);
-    if (!outputs[fieldId]) {
-      outputs[fieldId] = {
-        title: fieldId,
-        text: '',
-      };
-    }
-    outputs[fieldId].sectionStatus = newStatus;
-    outputs[fieldId].status = newStatus;
-    outputs[fieldId].updatedAt = now;
-    outputs[fieldId].approved = isApprovedStatus && hasText;
-    if (body.notes) outputs[fieldId].statusNote = trimText(body.notes, 500);
-
-    const meta = { ...(runtime.meta || {}), updatedAt: now };
-    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
-
-    // Save to user's personal KB when approved (multi-tenant voice learning)
-    if (isApprovedStatus && hasText) {
-      try {
-        const userId = req.user?.userId || 'default';
-        const formType = runtime.formType || meta.formType || '1004';
-        saveUserApprovedSection(userId, {
-          caseId: req.params.caseId,
-          fieldId,
-          formType,
-          text: outputs[fieldId].text,
-          county: runtime.facts?.subject?.county?.value,
-          city: runtime.facts?.subject?.city?.value,
-        });
-      } catch (kbErr) {
-        log.warn('user-kb:save-failed', { fieldId, error: kbErr.message });
+      const fieldId = trimText(req.validatedParams.fieldId, 80);
+      const newStatus = req.validated.status;
+      const now = new Date().toISOString();
+      const outputs = { ...(runtime.outputs || {}) };
+      const hasText = Boolean(outputs[fieldId]?.text);
+      const isApprovedStatus = ['approved', 'inserted', 'verified'].includes(newStatus);
+      if (!outputs[fieldId]) {
+        outputs[fieldId] = {
+          title: fieldId,
+          text: '',
+        };
       }
+      outputs[fieldId].sectionStatus = newStatus;
+      outputs[fieldId].status = newStatus;
+      outputs[fieldId].updatedAt = now;
+      outputs[fieldId].approved = isApprovedStatus && hasText;
+      if (req.validated.notes) outputs[fieldId].statusNote = trimText(req.validated.notes, 500);
+
+      const meta = { ...(runtime.meta || {}), updatedAt: now };
+      saveCaseRuntime(req.validatedParams.caseId, runtime, { meta, outputs });
+
+      // Save to user's personal KB when approved (multi-tenant voice learning)
+      if (isApprovedStatus && hasText) {
+        try {
+          const userId = req.user?.userId || 'default';
+          const formType = runtime.formType || meta.formType || '1004';
+          saveUserApprovedSection(userId, {
+            caseId: req.validatedParams.caseId,
+            fieldId,
+            formType,
+            text: outputs[fieldId].text,
+            county: runtime.facts?.subject?.county?.value,
+            city: runtime.facts?.subject?.city?.value,
+          });
+        } catch (kbErr) {
+          log.warn('user-kb:save-failed', { fieldId, error: kbErr.message });
+        }
+      }
+
+      res.json({
+        ok: true,
+        fieldId,
+        status: newStatus,
+        sectionStatus: newStatus,
+        approved: isApprovedStatus && hasText,
+        updatedAt: now,
+      });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-
-    res.json({
-      ok: true,
-      fieldId,
-      status: newStatus,
-      sectionStatus: newStatus,
-      approved: isApprovedStatus && hasText,
-      updatedAt: now,
-    });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
 
-router.post('/:caseId/sections/:fieldId/copy', (req, res) => {
-  const body = parsePayload(copySectionSchema, req.body || {}, res);
-  if (!body) return;
+router.post(
+  '/:caseId/sections/:fieldId/copy',
+  validateParams(caseIdFieldIdParams),
+  validateBody(copySectionSchema),
+  (req, res) => {
+    try {
+      const runtime = getCaseRuntime(req, res);
+      if (!runtime) return;
 
-  try {
-    const runtime = getCaseRuntime(req, res);
-    if (!runtime) return;
+      const fieldId = trimText(req.validatedParams.fieldId, 80);
+      const outputs = { ...(runtime.outputs || {}) };
+      const text = trimText(req.validated.text, 16000) || outputs[fieldId]?.text || '';
+      if (!text) return res.status(400).json({ ok: false, error: 'No text to copy for field: ' + fieldId });
 
-    const fieldId = trimText(req.params.fieldId, 80);
-    const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
-    if (!text) return res.status(400).json({ ok: false, error: 'No text to copy for field: ' + fieldId });
+      const now = new Date().toISOString();
+      outputs[fieldId] = {
+        ...(outputs[fieldId] || { title: fieldId }),
+        text,
+        status: 'copied',
+        sectionStatus: 'copied',
+        copiedAt: now,
+        updatedAt: now,
+      };
+      const meta = { ...(runtime.meta || {}), updatedAt: now };
+      saveCaseRuntime(req.validatedParams.caseId, runtime, { meta, outputs });
 
-    const now = new Date().toISOString();
-    outputs[fieldId] = {
-      ...(outputs[fieldId] || { title: fieldId }),
-      text,
-      status: 'copied',
-      sectionStatus: 'copied',
-      copiedAt: now,
-      updatedAt: now,
-    };
-    const meta = { ...(runtime.meta || {}), updatedAt: now };
-    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
-
-    res.json({ ok: true, fieldId, text, charCount: text.length, status: 'copied', message: 'Text ready for manual paste' });
-  } catch (err) {
-    return sendErrorResponse(res, err);
+      res.json({ ok: true, fieldId, text, charCount: text.length, status: 'copied', message: 'Text ready for manual paste' });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
   }
-});
+);
 
-router.get('/:caseId/sections/status', (req, res) => {
+router.get('/:caseId/sections/status', validateParams(caseIdParams), (req, res) => {
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -593,7 +605,7 @@ router.get('/:caseId/sections/status', (req, res) => {
   }
 });
 
-router.get('/:caseId/destination-registry', (req, res) => {
+router.get('/:caseId/destination-registry', validateParams(caseIdParams), (req, res) => {
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -618,7 +630,7 @@ router.get('/:caseId/destination-registry', (req, res) => {
 
     res.json({
       ok: true,
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       formType,
       software,
       destinations,
@@ -631,7 +643,7 @@ router.get('/:caseId/destination-registry', (req, res) => {
   }
 });
 
-router.get('/:caseId/exceptions', (req, res) => {
+router.get('/:caseId/exceptions', validateParams(caseIdParams), (req, res) => {
   try {
     const runtime = getCaseRuntime(req, res);
     if (!runtime) return;
@@ -672,25 +684,26 @@ router.get('/:caseId/exceptions', (req, res) => {
   }
 });
 
-router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
-  const body = parsePayload(insertSectionSchema, req.body || {}, res);
-  if (!body) return;
+router.post(
+  '/:caseId/sections/:fieldId/insert',
+  validateParams(caseIdFieldIdParams),
+  validateBody(insertSectionSchema),
+  (req, res) => {
+    try {
+      res.setHeader('X-Deprecated', 'true');
+      res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
+      const runtime = getCaseRuntime(req, res);
+      if (!runtime) return;
 
-  try {
-    res.setHeader('X-Deprecated', 'true');
-    res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
-    const runtime = getCaseRuntime(req, res);
-    if (!runtime) return;
+      const fieldId = trimText(req.validatedParams.fieldId, 80);
+      const outputs = { ...(runtime.outputs || {}) };
+      const text = trimText(req.validated.text, 16000) || outputs[fieldId]?.text || '';
+      if (!text) return res.status(400).json({ ok: false, error: 'No text to insert for field: ' + fieldId });
 
-    const fieldId = trimText(req.params.fieldId, 80);
-    const outputs = { ...(runtime.outputs || {}) };
-    const text = trimText(body.text, 16000) || outputs[fieldId]?.text || '';
-    if (!text) return res.status(400).json({ ok: false, error: 'No text to insert for field: ' + fieldId });
-
-    const generationRunId = trimText(body.generationRunId, 80) || null;
-    const skipQcBlockers = Boolean(body.skipQcBlockers);
-    const qcGate = evaluateInsertionQcGate({
-      caseId: req.params.caseId,
+      const generationRunId = trimText(req.validated.generationRunId, 80) || null;
+      const skipQcBlockers = Boolean(req.validated.skipQcBlockers);
+      const qcGate = evaluateInsertionQcGate({
+        caseId: req.validatedParams.caseId,
       generationRunId,
       config: {
         requireQcRun: true,
@@ -724,7 +737,7 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       approved: false,
     };
     const meta = { ...(runtime.meta || {}), updatedAt: now };
-    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
+    saveCaseRuntime(req.validatedParams.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
@@ -739,51 +752,53 @@ router.post('/:caseId/sections/:fieldId/insert', (req, res) => {
       fallback: getFallbackStrategy(formType, fieldId),
       qcGate,
     });
-  } catch (err) {
-    return sendErrorResponse(res, err);
-  }
-});
-
-router.post('/:caseId/insert-all', async (req, res) => {
-  const body = parsePayload(insertAllSchema, req.body || {}, res);
-  if (!body) return;
-
-  try {
-    res.setHeader('X-Deprecated', 'true');
-    res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
-    const runtime = getCaseRuntime(req, res);
-    if (!runtime) return;
-    const { formType } = runtime;
-    if (isDeferredForm(formType)) {
-      logDeferredAccess(formType, 'POST /api/cases/:caseId/insert-all', log);
-      return res.status(400).json({
-        ok: false,
-        supported: false,
-        formType,
-        scope: 'deferred',
-        message: `Insertion is not available for form type "${formType}". Active forms: ${ACTIVE_FORMS.join(', ')}.`,
-      });
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
+  }
+);
 
-    const outputs = { ...(runtime.outputs || {}) };
-    const coreSections = CORE_SECTIONS[formType] || [];
-    const titleMap = Object.fromEntries(coreSections.map(section => [section.id, section.title]));
-    const targetSoftware = inferTargetSoftware(formType);
+router.post(
+  '/:caseId/insert-all',
+  validateParams(caseIdParams),
+  validateBody(insertAllSchema),
+  async (req, res) => {
+    try {
+      res.setHeader('X-Deprecated', 'true');
+      res.setHeader('X-Deprecation-Notice', 'Use POST /api/insertion/run instead');
+      const runtime = getCaseRuntime(req, res);
+      if (!runtime) return;
+      const { formType } = runtime;
+      if (isDeferredForm(formType)) {
+        logDeferredAccess(formType, 'POST /api/cases/:caseId/insert-all', log);
+        return res.status(400).json({
+          ok: false,
+          supported: false,
+          formType,
+          scope: 'deferred',
+          message: `Insertion is not available for form type "${formType}". Active forms: ${ACTIVE_FORMS.join(', ')}.`,
+        });
+      }
 
-    const skipped = [];
-    const errors = [];
+      const outputs = { ...(runtime.outputs || {}) };
+      const coreSections = CORE_SECTIONS[formType] || [];
+      const titleMap = Object.fromEntries(coreSections.map(section => [section.id, section.title]));
+      const targetSoftware = inferTargetSoftware(formType);
 
-    const hasApproved = coreSections.some((section) => {
-      const output = outputs[section.id] || {};
-      const status = output.sectionStatus || output.status || 'not_started';
-      return output.approved || status === 'approved';
-    });
-    if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
+      const skipped = [];
+      const errors = [];
 
-    const generationRunId = trimText(body.generationRunId, 80) || null;
-    const skipQcBlockers = Boolean(body.skipQcBlockers);
-    const qcGate = evaluateInsertionQcGate({
-      caseId: req.params.caseId,
+      const hasApproved = coreSections.some((section) => {
+        const output = outputs[section.id] || {};
+        const status = output.sectionStatus || output.status || 'not_started';
+        return output.approved || status === 'approved';
+      });
+      if (!hasApproved) return res.status(400).json({ ok: false, error: 'No approved sections to insert' });
+
+      const generationRunId = trimText(req.validated.generationRunId, 80) || null;
+      const skipQcBlockers = Boolean(req.validated.skipQcBlockers);
+      const qcGate = evaluateInsertionQcGate({
+        caseId: req.validatedParams.caseId,
       generationRunId,
       config: {
         requireQcRun: true,
@@ -843,7 +858,7 @@ router.post('/:caseId/insert-all', async (req, res) => {
     }
 
     const prepared = prepareInsertionRun({
-      caseId: req.params.caseId,
+      caseId: req.validatedParams.caseId,
       formType,
       generationRunId,
       config: {
@@ -927,7 +942,7 @@ router.post('/:caseId/insert-all', async (req, res) => {
     const meta = { ...(runtime.meta || {}) };
     meta.updatedAt = now;
     if (insertedSections.length > 0) meta.pipelineStage = 'inserting';
-    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs });
+    saveCaseRuntime(req.validatedParams.caseId, runtime, { meta, outputs });
 
     res.json({
       ok: true,
@@ -942,47 +957,50 @@ router.post('/:caseId/insert-all', async (req, res) => {
       runStatus: executedRun?.status || null,
       summary: executedRun?.summaryJson || null,
     });
-  } catch (err) {
-    return sendErrorResponse(res, err);
-  }
-});
-
-router.patch('/:caseId/outputs/:fieldId', (req, res) => {
-  const body = parsePayload(patchOutputSchema, req.body || {}, res);
-  if (!body) return;
-
-  try {
-    const runtime = getCaseRuntime(req, res);
-    if (!runtime) return;
-
-    const fieldId = trimText(req.params.fieldId, 80);
-    const text = trimText(body.text, 16000);
-
-    const outputs = { ...(runtime.outputs || {}) };
-    const history = { ...(runtime.history || {}) };
-    const now = new Date().toISOString();
-    if (outputs[fieldId]?.text) {
-      if (!history[fieldId]) history[fieldId] = [];
-      history[fieldId].unshift({
-        text: outputs[fieldId].text,
-        title: outputs[fieldId].title,
-        savedAt: now,
-      });
-      history[fieldId] = history[fieldId].slice(0, 3);
+    } catch (err) {
+      return sendErrorResponse(res, err);
     }
-
-    outputs[fieldId] = {
-      ...(outputs[fieldId] || {}),
-      text,
-      updatedAt: now,
-    };
-    const meta = { ...(runtime.meta || {}), updatedAt: now };
-    saveCaseRuntime(req.params.caseId, runtime, { meta, outputs, history });
-
-    res.json({ ok: true, fieldId, charCount: text.length });
-  } catch (err) {
-    return sendErrorResponse(res, err);
   }
-});
+);
+
+router.patch(
+  '/:caseId/outputs/:fieldId',
+  validateParams(caseIdFieldIdParams),
+  validateBody(patchOutputSchema),
+  (req, res) => {
+    try {
+      const runtime = getCaseRuntime(req, res);
+      if (!runtime) return;
+
+      const fieldId = trimText(req.validatedParams.fieldId, 80);
+      const text = trimText(req.validated.text, 16000);
+
+      const outputs = { ...(runtime.outputs || {}) };
+      const history = { ...(runtime.history || {}) };
+      const now = new Date().toISOString();
+      if (outputs[fieldId]?.text) {
+        if (!history[fieldId]) history[fieldId] = [];
+        history[fieldId].unshift({
+          text: outputs[fieldId].text,
+          title: outputs[fieldId].title,
+          savedAt: now,
+        });
+        history[fieldId] = history[fieldId].slice(0, 3);
+      }
+
+      outputs[fieldId] = {
+        ...(outputs[fieldId] || {}),
+        text,
+        updatedAt: now,
+      };
+      const meta = { ...(runtime.meta || {}), updatedAt: now };
+      saveCaseRuntime(req.validatedParams.caseId, runtime, { meta, outputs, history });
+
+      res.json({ ok: true, fieldId, charCount: text.length });
+    } catch (err) {
+      return sendErrorResponse(res, err);
+    }
+  }
+);
 
 export default router;

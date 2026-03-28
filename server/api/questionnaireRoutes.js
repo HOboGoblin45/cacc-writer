@@ -2,9 +2,19 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
+import { validateBody } from '../middleware/validateRequest.js';
 import { parseMismoXml } from '../training/aciExtractor.js';
 
 const router = express.Router();
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+const answerSchema = z.object({
+  questionId: z.string().min(1),
+  questionType: z.string().optional(),
+  questionPrompt: z.string().min(1),
+  answer: z.string().min(20),
+});
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ANSWERS_PATH = path.join(__dirname, '../../training_output/expert_reasoning_data.jsonl');
 const XML_DIR = path.join(__dirname, '../../training_output/xml_exports');
@@ -105,11 +115,8 @@ router.get('/questionnaire/next', (req, res) => {
 });
 
 // POST answer
-router.post('/questionnaire/answer', (req, res) => {
-  const { questionId, questionType, questionPrompt, answer } = req.body;
-  if (!questionId || !answer || answer.length < 20) {
-    return res.status(400).json({ ok: false, error: 'Answer must be at least 20 characters' });
-  }
+router.post('/questionnaire/answer', validateBody(answerSchema), (req, res) => {
+  const { questionId, questionType, questionPrompt, answer } = req.validated;
 
   const example = {
     type: questionType || 'expert_reasoning',

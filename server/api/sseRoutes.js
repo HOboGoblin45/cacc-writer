@@ -7,6 +7,10 @@
  *
  * The generation routes emit events via the shared bus, and connected
  * clients receive them in real time.
+ *
+ * NOTE: SSE routes are streaming connections that do not require request body
+ * or query parameter validation. The caseId is extracted directly from the URL
+ * parameters and used as an event filter. No Zod validation middleware is needed.
  */
 
 import { Router } from 'express';

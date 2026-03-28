@@ -5,7 +5,9 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateBody, validateParams, validateQuery, CommonSchemas } from '../middleware/validateRequest.js';
 import { registerMlsConnection, searchComps, importListings, getListingHistory, MLS_PROVIDERS } from '../integrations/mlsConnector.js';
 import { selectComps, recordCompPreference } from '../ai/compSelectionEngine.js';
 import { getDb } from '../db/database.js';
@@ -13,61 +15,125 @@ import log from '../logger.js';
 
 const router = Router();
 
+// ── Zod Schemas ─────────────────────────────────────────────────────────────
+
+const mlsConnectionSchema = z.object({
+  provider: z.string().min(1).optional(),
+  apiKey: z.string().min(1),
+  mlsName: z.string().min(1).optional(),
+});
+
+const mlsSearchSchema = z.object({
+  city: z.string().min(1).optional(),
+  minPrice: z.coerce.number().int().nonnegative().optional().default(100000),
+  status: z.string().min(1).optional().default('Closed'),
+  radius: z.coerce.number().nonnegative().optional(),
+  address: z.string().optional(),
+  filters: z.object({
+    maxPrice: z.coerce.number().int().optional(),
+    bedsMin: z.coerce.number().int().optional(),
+    limit: z.coerce.number().int().optional(),
+  }).optional().default({}),
+});
+
+const mlsImportSchema = z.object({
+  listings: z.array(z.any()).optional().default([]),
+});
+
+const compSelectionSchema = z.object({
+  // AI comp selection payload
+}).passthrough();
+
+const compPreferenceSchema = z.object({
+  mlsNumber: z.string().min(1),
+  action: z.enum(['accept', 'reject']),
+  reason: z.string().optional(),
+});
+
+const historyQuerySchema = z.object({
+  address: z.string().optional().default(''),
+});
+
+const connectionIdSchema = z.object({
+  connectionId: z.string().min(1),
+});
+
+const caseIdSchema = CommonSchemas.caseId;
+
 // GET /mls/providers
 router.get('/mls/providers', (_req, res) => {
   res.json({ ok: true, providers: Object.entries(MLS_PROVIDERS).map(([k, v]) => ({ id: k, ...v })) });
 });
 
 // POST /mls/connections — register MLS connection
-router.post('/mls/connections', authMiddleware, (req, res) => {
+router.post('/mls/connections', authMiddleware, validateBody(mlsConnectionSchema), (req, res) => {
   try {
-    const result = registerMlsConnection(req.user.userId, req.body);
+    const result = registerMlsConnection(req.user.userId, req.validated);
     res.status(201).json({ ok: true, ...result });
   } catch (err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
 // POST /mls/:connectionId/search — search comps from MLS
-router.post('/mls/:connectionId/search', authMiddleware, async (req, res) => {
+router.post('/mls/:connectionId/search', authMiddleware, validateParams(connectionIdSchema), validateBody(mlsSearchSchema), async (req, res) => {
   try {
-    const results = await searchComps(req.params.connectionId, req.body);
+    const results = await searchComps(req.validatedParams.connectionId, req.validated);
     res.json({ ok: true, ...results });
   } catch (err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
 // POST /mls/:connectionId/import — bulk import listings
-router.post('/mls/:connectionId/import', authMiddleware, (req, res) => {
+router.post('/mls/:connectionId/import', authMiddleware, validateParams(connectionIdSchema), validateBody(mlsImportSchema), (req, res) => {
   try {
-    const result = importListings(req.params.connectionId, req.body.listings || []);
+    const result = importListings(req.validatedParams.connectionId, req.validated.listings);
     res.json({ ok: true, ...result });
   } catch (err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
 // GET /mls/:connectionId/history — listing history for an address
-router.get('/mls/:connectionId/history', authMiddleware, (req, res) => {
-  const history = getListingHistory(req.params.connectionId, req.query.address || '');
+router.get('/mls/:connectionId/history', authMiddleware, validateParams(connectionIdSchema), validateQuery(historyQuerySchema), (req, res) => {
+  const history = getListingHistory(req.validatedParams.connectionId, req.validatedQuery.address);
   res.json({ ok: true, history });
 });
 
 // POST /cases/:id/comp-selection — AI comp selection
-router.post('/cases/:id/comp-selection', authMiddleware, async (req, res) => {
+router.post('/cases/:id/comp-selection', authMiddleware, validateParams(CommonSchemas.id), validateBody(compSelectionSchema), async (req, res) => {
   try {
-    const result = await selectComps(req.params.id, req.body);
+    const result = await selectComps(req.validatedParams.id, req.validated);
     res.json({ ok: true, ...result });
   } catch (err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
 // POST /cases/:id/comp-preference — record accept/reject
-router.post('/cases/:id/comp-preference', authMiddleware, (req, res) => {
-  recordCompPreference(req.user.userId, req.params.id, req.body.mlsNumber, req.body.action, req.body.reason);
+router.post('/cases/:id/comp-preference', authMiddleware, validateParams(CommonSchemas.id), validateBody(compPreferenceSchema), (req, res) => {
+  recordCompPreference(req.user.userId, req.validatedParams.id, req.validated.mlsNumber, req.validated.action, req.validated.reason);
   res.json({ ok: true });
 });
 
 // ── MLS Grid Settings ─────────────────────────────────────────────────────────
 
+const settingsMlsSchema = z.object({
+  provider: z.string().min(1).optional().default('mlsgrid'),
+  apiKey: z.string().min(1),
+  mlsName: z.string().min(1).optional().default('MRED'),
+});
+
+const searchCompsSchema = z.object({
+  city: z.string().optional(),
+  minPrice: z.coerce.number().int().nonnegative().optional().default(100000),
+  status: z.string().optional().default('Closed'),
+  radius: z.coerce.number().nonnegative().optional(),
+  address: z.string().optional(),
+  filters: z.object({
+    maxPrice: z.coerce.number().int().optional(),
+    bedsMin: z.coerce.number().int().optional(),
+    limit: z.coerce.number().int().optional(),
+  }).optional().default({}),
+});
+
 // POST /settings/mls — save and validate MLS Grid API key
-router.post('/settings/mls', authMiddleware, async (req, res) => {
+router.post('/settings/mls', authMiddleware, validateBody(settingsMlsSchema), async (req, res) => {
   try {
-    const { provider = 'mlsgrid', apiKey, mlsName = 'MRED' } = req.body || {};
+    const { provider, apiKey, mlsName } = req.validated;
     if (!apiKey) return res.status(400).json({ ok: false, error: 'apiKey is required' });
 
     // Validate by hitting MLS Grid
@@ -145,9 +211,9 @@ router.get('/settings/mls', authMiddleware, (req, res) => {
 });
 
 // POST /cases/:caseId/search-comps — search MLS for comparable sales
-router.post('/cases/:caseId/search-comps', authMiddleware, async (req, res) => {
+router.post('/cases/:caseId/search-comps', authMiddleware, validateParams(caseIdSchema), validateBody(searchCompsSchema), async (req, res) => {
   try {
-    const { city, minPrice = 100000, status = 'Closed', radius, address, filters = {} } = req.body || {};
+    const { city, minPrice, status, radius, address, filters } = req.validated;
 
     // Get stored API key
     const db = getDb();
@@ -196,10 +262,10 @@ router.post('/cases/:caseId/search-comps', authMiddleware, async (req, res) => {
       status: p.StandardStatus,
     }));
 
-    log.info('mls:comp-search', { caseId: req.params.caseId, count: listings.length, filter: filterStr });
+    log.info('mls:comp-search', { caseId: req.validatedParams.caseId, count: listings.length, filter: filterStr });
     res.json({ ok: true, count: listings.length, comps: listings, filter: filterStr });
   } catch (err) {
-    log.error('mls:comp-search-failed', { caseId: req.params.caseId, error: err.message });
+    log.error('mls:comp-search-failed', { caseId: req.validatedParams.caseId, error: err.message });
     res.status(500).json({ ok: false, error: err.message });
   }
 });

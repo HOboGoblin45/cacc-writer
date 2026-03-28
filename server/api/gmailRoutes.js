@@ -13,6 +13,7 @@
  */
 
 import express from 'express';
+import { z } from 'zod';
 import {
   getAuthUrl,
   handleCallback,
@@ -21,9 +22,30 @@ import {
   disconnect,
 } from '../integrations/gmail.js';
 import { renderTemplate, TEMPLATE_NAMES } from '../integrations/emailTemplates.js';
+import { validateBody, validateQuery } from '../middleware/validateRequest.js';
 import log from '../logger.js';
 
 const router = express.Router();
+
+// Schemas
+const callbackQuerySchema = z.object({
+  code: z.string().min(1).optional(),
+  error: z.string().optional(),
+});
+
+const sendEmailSchema = z.object({
+  to: z.string().min(1).email(),
+  subject: z.string().min(1),
+  body: z.string().min(1),
+  cc: z.string().email().optional(),
+});
+
+const sendTemplateSchema = z.object({
+  template: z.string().min(1),
+  params: z.array(z.any()).optional().default([]),
+  to: z.string().email().optional(),
+  cc: z.string().email().optional(),
+});
 
 // â”€â”€ Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -63,8 +85,8 @@ router.get('/gmail/connect', (req, res) => {
  * GET /api/gmail/callback
  * Handles OAuth callback from Google. Saves token and shows success page.
  */
-router.get('/gmail/callback', async (req, res) => {
-  const { code, error } = req.query;
+router.get('/gmail/callback', validateQuery(callbackQuerySchema), async (req, res) => {
+  const { code, error } = req.validatedQuery;
 
   if (error) {
     log.warn('gmail:oauth-error', { error });
@@ -120,12 +142,8 @@ router.post('/gmail/disconnect', (req, res) => {
  * POST /api/gmail/send
  * Body: { to, subject, body, cc? }
  */
-router.post('/gmail/send', async (req, res) => {
-  const { to, subject, body, cc } = req.body || {};
-
-  if (!to || !subject || !body) {
-    return res.status(400).json({ ok: false, error: 'Missing required fields: to, subject, body' });
-  }
+router.post('/gmail/send', validateBody(sendEmailSchema), async (req, res) => {
+  const { to, subject, body, cc } = req.validated;
 
   const result = await sendEmail({ to, subject, body, cc });
   if (!result.ok) {
@@ -145,16 +163,8 @@ router.post('/gmail/send', async (req, res) => {
  * to       - override recipient (some templates have a default)
  * cc       - optional CC
  */
-router.post('/gmail/send-template', async (req, res) => {
-  const { template, params = [], to: toOverride, cc } = req.body || {};
-
-  if (!template) {
-    return res.status(400).json({
-      ok: false,
-      error: 'Missing required field: template',
-      available: TEMPLATE_NAMES,
-    });
-  }
+router.post('/gmail/send-template', validateBody(sendTemplateSchema), async (req, res) => {
+  const { template, params, to: toOverride, cc } = req.validated;
 
   let rendered;
   try {

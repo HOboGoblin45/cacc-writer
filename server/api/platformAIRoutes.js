@@ -10,7 +10,9 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateBody, validateParams, CommonSchemas } from '../middleware/validateRequest.js';
 import {
   isPlatformAIAvailable, platformExtractPdf, platformAnalyzePhoto,
   platformClassifyDocument, platformSmartExtract, platformBatchExtract,
@@ -25,6 +27,25 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const photoWithCaseIdSchema = z.object({
+  caseId: z.string().min(1).optional(),
+}).passthrough();
+
+const sketchWithCaseIdSchema = z.object({
+  caseId: z.string().min(1).optional(),
+}).passthrough();
+
+const compsWithCaseIdSchema = z.object({
+  caseId: z.string().min(1).optional(),
+  maxImport: z.string().optional(),
+}).passthrough();
+
+const formTypeSchema = z.object({
+  formType: z.string().optional(),
+}).passthrough();
 
 // ── GET /platform/status ─────────────────────────────────────────────────────
 
@@ -86,7 +107,7 @@ router.post('/platform/extract-order', authMiddleware, upload.single('file'), as
 
 // ── POST /platform/extract-and-create — Extract order + auto-create case ─────
 
-router.post('/platform/extract-and-create', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/platform/extract-and-create', authMiddleware, upload.single('file'), validateBody(formTypeSchema), async (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
 
   try {
@@ -103,7 +124,7 @@ router.post('/platform/extract-and-create', authMiddleware, upload.single('file'
       // Create case
       const caseId = crypto.randomBytes(4).toString('hex');
       const now = new Date().toISOString();
-      const formType = data.order?.formType || req.body?.formType || '1004';
+      const formType = data.order?.formType || req.validated?.formType || '1004';
 
       // Build internal facts
       const facts = {
@@ -167,7 +188,7 @@ router.post('/platform/extract-and-create', authMiddleware, upload.single('file'
 
 // ── POST /platform/analyze-photo — Analyze inspection photo ──────────────────
 
-router.post('/platform/analyze-photo', authMiddleware, upload.single('photo'), async (req, res) => {
+router.post('/platform/analyze-photo', authMiddleware, upload.single('photo'), validateBody(photoWithCaseIdSchema), async (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, error: 'Photo required' });
 
   try {
@@ -176,8 +197,8 @@ router.post('/platform/analyze-photo', authMiddleware, upload.single('photo'), a
     const analysis = await platformAnalyzePhoto(imageBuffer, mimeType);
 
     // If caseId provided, also save the photo to the case
-    if (req.body.caseId) {
-      const result = addPhoto(req.body.caseId, req.user.userId, {
+    if (req.validated.caseId) {
+      const result = addPhoto(req.validated.caseId, req.user.userId, {
         fileName: req.file.originalname,
         filePath: req.file.path,
         fileSize: req.file.size,
@@ -186,7 +207,7 @@ router.post('/platform/analyze-photo', authMiddleware, upload.single('photo'), a
         label: analysis.caption,
       });
       analysis.photoId = result.photoId;
-      analysis.savedToCase = req.body.caseId;
+      analysis.savedToCase = req.validated.caseId;
     }
 
     res.json({ ok: true, ...analysis });
@@ -235,13 +256,13 @@ router.post('/platform/classify', authMiddleware, upload.single('file'), async (
 
 // ── POST /platform/analyze-sketch — Analyze floor plan sketch ────────────────
 
-router.post('/platform/analyze-sketch', authMiddleware, upload.single('sketch'), async (req, res) => {
+router.post('/platform/analyze-sketch', authMiddleware, upload.single('sketch'), validateBody(sketchWithCaseIdSchema), async (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, error: 'Sketch image required' });
 
   try {
     const imageBuffer = fs.readFileSync(req.file.path);
     const mimeType = req.file.mimetype || 'image/jpeg';
-    const caseId = req.body.caseId;
+    const caseId = req.validated.caseId;
 
     if (caseId) {
       const result = await analyzeSketchForCase(caseId, imageBuffer, mimeType);
@@ -260,15 +281,15 @@ router.post('/platform/analyze-sketch', authMiddleware, upload.single('sketch'),
 
 // ── POST /platform/extract-comps — Extract multiple comps from MLS PDF ───────
 
-router.post('/platform/extract-comps', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/platform/extract-comps', authMiddleware, upload.single('file'), validateBody(compsWithCaseIdSchema), async (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, error: 'PDF file required' });
 
   try {
     const pdfBuffer = fs.readFileSync(req.file.path);
-    const caseId = req.body.caseId;
+    const caseId = req.validated.caseId;
 
     if (caseId) {
-      const result = await extractAndImportComps(caseId, pdfBuffer, { maxImport: parseInt(req.body.maxImport || '6') });
+      const result = await extractAndImportComps(caseId, pdfBuffer, { maxImport: parseInt(req.validated.maxImport || '6') });
       res.json({ ok: true, ...result });
     } else {
       const { extractMultipleComps } = await import('../ai/multiCompExtractor.js');

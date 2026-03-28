@@ -16,12 +16,28 @@ import multer from 'multer';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
 import OpenAI from 'openai';
 import log from '../logger.js';
 import { CASES_DIR } from '../utils/caseUtils.js';
+import { validateParams, validateBody, CommonSchemas } from '../middleware/validateRequest.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const sketchParamsSchema = CommonSchemas.caseId;
+
+const sketchAnalyzeBodySchema = z.object({});
+
+const sketchSaveBodySchema = z.object({
+  rooms: z.array(z.object({}).passthrough()).default([]),
+  canvasData: z.any().nullable().optional(),
+  totalGla: z.number().int().min(0).default(0),
+  stories: z.number().int().min(1).optional(),
+  notes: z.string().optional(),
+});
 
 // Memory storage — we only need the buffer to base64-encode it
 const upload = multer({
@@ -60,8 +76,8 @@ async function saveFacts(caseId, facts) {
 
 // ── POST /cases/:caseId/sketch/analyze ───────────────────────────────────────
 
-router.post('/cases/:caseId/sketch/analyze', upload.single('photo'), async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/sketch/analyze', validateParams(sketchParamsSchema), upload.single('photo'), validateBody(sketchAnalyzeBodySchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
 
   if (!req.file) {
     return res.status(400).json({ ok: false, error: 'No photo uploaded' });
@@ -138,9 +154,9 @@ Include ALL rooms visible in the sketch. Set includeInGla to false for basement,
 
 // ── POST /cases/:caseId/sketch/save ─────────────────────────────────────────
 
-router.post('/cases/:caseId/sketch/save', async (req, res) => {
-  const { caseId } = req.params;
-  const { rooms = [], canvasData = null, totalGla = 0, stories, notes } = req.body;
+router.post('/cases/:caseId/sketch/save', validateParams(sketchParamsSchema), validateBody(sketchSaveBodySchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
+  const { rooms = [], canvasData = null, totalGla = 0, stories, notes } = req.validated;
 
   try {
     await fs.mkdir(caseDir(caseId), { recursive: true });
@@ -175,8 +191,8 @@ router.post('/cases/:caseId/sketch/save', async (req, res) => {
 
 // ── GET /cases/:caseId/sketch ────────────────────────────────────────────────
 
-router.get('/cases/:caseId/sketch', async (req, res) => {
-  const { caseId } = req.params;
+router.get('/cases/:caseId/sketch', validateParams(sketchParamsSchema), async (req, res) => {
+  const { caseId } = req.validatedParams;
   try {
     const raw = await fs.readFile(sketchPath(caseId), 'utf8');
     const data = JSON.parse(raw);

@@ -4,10 +4,20 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import { authMiddleware } from '../auth/authService.js';
+import { validateBody } from '../middleware/validateRequest.js';
 import { buildVoiceProfile, getVoiceProfile, testVoiceAccuracy } from '../ai/voiceCloneTrainer.js';
 
 const router = Router();
+
+// ── Zod Schemas ──────────────────────────────────────────────────────────────
+
+const testVoiceBodySchema = z.object({
+  sectionType: z.string().min(1),
+});
+
+// ── Routes ───────────────────────────────────────────────────────────────────
 
 // POST /voice/build-profile — analyze writing and build voice profile
 router.post('/voice/build-profile', authMiddleware, async (req, res) => {
@@ -27,9 +37,9 @@ router.get('/voice/profile', authMiddleware, (req, res) => {
 });
 
 // POST /voice/test — test voice accuracy
-router.post('/voice/test', authMiddleware, async (req, res) => {
+router.post('/voice/test', authMiddleware, validateBody(testVoiceBodySchema), async (req, res) => {
   try {
-    const result = await testVoiceAccuracy(req.user.userId, req.body.sectionType);
+    const result = await testVoiceAccuracy(req.user.userId, req.validated.sectionType);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {

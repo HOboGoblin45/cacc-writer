@@ -13,6 +13,7 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 import path from 'path';
 import fs from 'fs';
 
@@ -21,8 +22,20 @@ import { readJSON, writeJSON } from '../utils/fileUtils.js';
 import { getCaseProjection, saveCaseProjection } from '../caseRecord/caseRecordService.js';
 import { callAI } from '../openaiClient.js';
 import log from '../logger.js';
+import { validateParams, validateBody, CommonSchemas } from '../middleware/validateRequest.js';
 
 const router = Router();
+
+/**
+ * Zod schemas for request validation
+ */
+const CompSchema = z.record(z.any());
+const AnalyzeCompsBody = z.object({
+  comps: z.array(CompSchema).min(1),
+});
+const SaveCompsBody = z.object({
+  comps: z.array(CompSchema).min(1),
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -62,16 +75,17 @@ function parseNum(v) {
  * Scores each comp 0-100 on similarity to subject, suggests dollar adjustments,
  * calculates adjusted prices, and generates a URAR sales comparison narrative.
  */
-router.post('/cases/:caseId/analyze-comps', async (req, res) => {
-  try {
-    const { caseId } = req.params;
-    const projection = getCaseProjection(caseId);
-    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+router.post(
+  '/cases/:caseId/analyze-comps',
+  validateParams(CommonSchemas.caseId),
+  validateBody(AnalyzeCompsBody),
+  async (req, res) => {
+    try {
+      const { caseId } = req.validatedParams;
+      const projection = getCaseProjection(caseId);
+      if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const { comps } = req.body || {};
-    if (!Array.isArray(comps) || comps.length === 0) {
-      return res.status(400).json({ ok: false, error: 'Body must include a non-empty "comps" array' });
-    }
+      const { comps } = req.validated;
 
     const subject = getSubjectFacts(projection);
     const meta = projection.meta || {};
@@ -204,11 +218,12 @@ Respond with this exact JSON structure:
     log.info('comp-analyzer:complete', { caseId, compCount: enrichedComps.length });
 
     res.json({ ok: true, ...result });
-  } catch (err) {
-    log.error('comp-analyzer:error', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    } catch (err) {
+      log.error('comp-analyzer:error', { error: err.message });
+      res.status(500).json({ ok: false, error: err.message });
+    }
   }
-});
+);
 
 // ── POST /cases/:caseId/comps ─────────────────────────────────────────────────
 
@@ -216,16 +231,17 @@ Respond with this exact JSON structure:
  * Save manually entered or edited comps to the case.
  * Body: { comps: [...] }
  */
-router.post('/cases/:caseId/comps', async (req, res) => {
-  try {
-    const { caseId } = req.params;
-    const projection = getCaseProjection(caseId);
-    if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
+router.post(
+  '/cases/:caseId/comps',
+  validateParams(CommonSchemas.caseId),
+  validateBody(SaveCompsBody),
+  async (req, res) => {
+    try {
+      const { caseId } = req.validatedParams;
+      const projection = getCaseProjection(caseId);
+      if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
-    const { comps } = req.body || {};
-    if (!Array.isArray(comps)) {
-      return res.status(400).json({ ok: false, error: 'Body must include a "comps" array' });
-    }
+      const { comps } = req.validated;
 
     const cd = ensureCaseDir(caseId);
     const payload = {
@@ -249,20 +265,21 @@ router.post('/cases/:caseId/comps', async (req, res) => {
     log.info('comps:saved', { caseId, count: comps.length });
 
     res.json({ ok: true, saved: comps.length, savedAt: payload.savedAt });
-  } catch (err) {
-    log.error('comps:save-error', { error: err.message });
-    res.status(500).json({ ok: false, error: err.message });
+    } catch (err) {
+      log.error('comps:save-error', { error: err.message });
+      res.status(500).json({ ok: false, error: err.message });
+    }
   }
-});
+);
 
 // ── GET /cases/:caseId/comps ──────────────────────────────────────────────────
 
 /**
  * Retrieve saved comps for a case.
  */
-router.get('/cases/:caseId/comps', (req, res) => {
+router.get('/cases/:caseId/comps', validateParams(CommonSchemas.caseId), (req, res) => {
   try {
-    const { caseId } = req.params;
+    const { caseId } = req.validatedParams;
     const projection = getCaseProjection(caseId);
     if (!projection) return res.status(404).json({ ok: false, error: 'Case not found' });
 
