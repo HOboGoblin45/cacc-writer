@@ -76,3 +76,18 @@ benchmarks/phase-c/latest-results.json
 
 # Claude agent worktrees
 .claude/worktrees/
+
+# Stale build/session artifacts
+DELIVERABLES.md
+MARKETING_API_REFERENCE.md
+WAVE2_MARKETING_BUILD.md
+PHASE5_MANIFEST.md
+PHASE_5_IMPLEMENTATION.md
+PHASE_5_SUMMARY.txt
+audit-sync-repos.json
+verify_async_infrastructure.sh
+docs/PHASE5_IMPLEMENTATION.md
+tests/tmp/
+
+# Runtime state files
+data/queue_state.json
