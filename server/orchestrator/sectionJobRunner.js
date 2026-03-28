@@ -45,6 +45,9 @@ import {
   scoreSectionOutput,
 } from '../sectionFactory/sectionPolicyService.js';
 import log  from '../logger.js';
+import { normalizeOutput } from '../ai/stmNormalizer.js';
+import { getOptimizedParams, recordOutcome, classifyContext } from '../ai/autoTuneClassifier.js';
+import { scoreVoiceConsistency } from '../ai/voiceConsistencyScorer.js';
 
 const MAX_RETRIES = 1; // 1 retry per section as specified
 
@@ -439,6 +442,12 @@ export async function runSectionJob({
   // ── Resolve generator profile ──────────────────────────────────────────────
   const profile = getProfile(sectionDef.generatorProfile || 'retrieval-guided');
 
+  // ── Phase 3: AutoTune parameter optimization ────────────────────────────────
+  const contextKey = classifyContext({ sectionId, formType: resolvedFormType, facts }).contextKey;
+  const optimized = getOptimizedParams(sectionId, resolvedFormType, facts, profile);
+  const effectiveTemp = optimized.temperature;
+  const effectiveMaxTokens = optimized.maxTokens;
+
   // ── Build examples from retrieval pack (Phase 3 + Phase 6 enrichment) ────
   const { voiceExamples, otherExamples, sourceIds, voiceHints, disallowedPhrases, compCommentary } =
     buildExamplesFromPack(sectionId, retrievalPack, phase6Pack);
@@ -523,12 +532,30 @@ export async function runSectionJob({
 
     try {
       outputText = await callAI(promptMessages, {
-        temperature: profile.temperature,
-        maxTokens:   profile.maxTokens,
+        temperature: effectiveTemp,
+        maxTokens:   effectiveMaxTokens,
       });
 
       if (!outputText || outputText.trim().length === 0) {
         throw new Error('AI returned empty output');
+      }
+
+      // ── Phase 3: STM Output Normalization ─────────────────────────────────
+      const stmResult = await normalizeOutput(outputText, {
+        sectionId,
+        formType: resolvedFormType,
+        maxChars: sectionDef.maxChars || null,
+        enableLlmPass: profile.id === 'synthesis' || profile.id === 'analysis',
+        userId: context.userId,
+      });
+      outputText = stmResult.text;
+
+      // ── Phase 3: Voice Consistency Scoring ────────────────────────────────
+      let voiceResult = null;
+      try {
+        voiceResult = await scoreVoiceConsistency(outputText, context.userId, resolvedFormType);
+      } catch (voiceErr) {
+        log.warn('sectionJobRunner:voiceScoring', { error: voiceErr.message, sectionId });
       }
 
       // ── Success ────────────────────────────────────────────────────────────
@@ -543,7 +570,20 @@ export async function runSectionJob({
         analysisContextUsed,
         priorSectionsContextUsed,
         retrievalSourceIds: sourceIds,
+        voiceScore: voiceResult?.score ?? null,
       });
+
+      // ── Phase 3: Record AutoTune outcome ──────────────────────────────────
+      try {
+        recordOutcome(contextKey, {
+          qualityScore: quality.score,
+          tokensUsed: outputText.length,
+          wasApproved: quality.score >= 0.7,
+          sectionId,
+        });
+      } catch (autoTuneErr) {
+        log.warn('sectionJobRunner:autoTuneRecord', { error: autoTuneErr.message, sectionId });
+      }
 
       markJobCompleted(jobId, {
         durationMs,
@@ -578,6 +618,12 @@ export async function runSectionJob({
             compCommentaryContext: Boolean(compCommentaryBlock),
           },
           memoryInjectionTrace,
+          stmMetrics: stmResult?.metrics || null,
+          voiceScore: voiceResult?.score ?? null,
+          voiceVerdict: voiceResult?.details?.verdict ?? null,
+          autoTuneContextKey: contextKey,
+          effectiveTemperature: effectiveTemp,
+          effectiveMaxTokens: effectiveMaxTokens,
         },
         qualityScore: quality.score,
         qualityMetadata: quality.metadata,
@@ -596,6 +642,12 @@ export async function runSectionJob({
           promptVersion: sectionPolicy.promptVersion,
           retrievalSourceIds: sourceIds,
           dependencySnapshot,
+          stmMetrics: stmResult?.metrics || null,
+          voiceScore: voiceResult?.score ?? null,
+          voiceVerdict: voiceResult?.details?.verdict ?? null,
+          autoTuneContextKey: contextKey,
+          effectiveTemperature: effectiveTemp,
+          effectiveMaxTokens: effectiveMaxTokens,
         },
         metrics: {
           durationMs,
