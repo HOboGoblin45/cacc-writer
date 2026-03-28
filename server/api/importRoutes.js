@@ -16,8 +16,10 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
 
 import { upload, readUploadedFile, cleanupUploadedFile } from '../utils/middleware.js';
+import { validateParams } from '../middleware/validateRequest.js';
 import { extractPdfText } from '../ingestion/pdfExtractor.js';
 import { parseOrderText, buildFactsFromOrder } from '../intake/orderParser.js';
 import { parseAciXml, buildFactsFromXml, extractAndSavePdf } from '../intake/xmlParser.js';
@@ -31,6 +33,13 @@ import { sendErrorResponse } from '../utils/errorResponse.js';
 import log from '../logger.js';
 
 const router = Router();
+
+// ── Zod validation schemas ───────────────────────────────────────────────────
+
+/** Validation schema for caseId URL parameter */
+const caseIdParamsSchema = z.object({
+  caseId: z.string().min(1, 'caseId is required'),
+});
 
 // ── AI extraction prompt for appraisal order documents ────────────────────────
 
@@ -139,8 +148,8 @@ function mergeFacts(existing = {}, incoming = {}) {
  * Multipart body: file (PDF)
  * Returns: { ok, caseId, extracted, updatedFields, meta }
  */
-router.post('/cases/:caseId/import-order', upload.single('file'), async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/import-order', validateParams(caseIdParamsSchema), upload.single('file'), async (req, res) => {
+  const { caseId } = req.validatedParams;
 
   try {
     // Validate case exists
@@ -251,8 +260,8 @@ router.post('/cases/:caseId/import-order', upload.single('file'), async (req, re
  * Multipart body: file (XML)
  * Returns: { ok, caseId, extracted, comps, narrativeKeys, hasPdf, meta, facts }
  */
-router.post('/cases/:caseId/import-xml', upload.single('file'), async (req, res) => {
-  const { caseId } = req.params;
+router.post('/cases/:caseId/import-xml', validateParams(caseIdParamsSchema), upload.single('file'), async (req, res) => {
+  const { caseId } = req.validatedParams;
 
   try {
     // Validate case exists

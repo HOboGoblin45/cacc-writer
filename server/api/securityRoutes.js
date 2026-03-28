@@ -110,22 +110,39 @@ import {
 } from '../security/backupRestoreService.js';
 
 import { z } from 'zod';
-import { parsePayload } from '../utils/routeUtils.js';
-
+import { validateBody, validateParams, validateQuery } from '../middleware/validateRequest.js';
 import { sendErrorResponse } from '../utils/errorResponse.js';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Zod Schemas
+// ══════════════════════════════════════════════════════════════════════════════
+
+// User Management Schemas
 const createUserSchema = z.object({
   username: z.string().min(1).max(100),
-  email: z.string().max(200).optional(),
+  email: z.string().email().max(200).optional(),
   role: z.string().max(40).optional(),
   displayName: z.string().max(200).optional(),
 }).passthrough();
 
 const updateUserSchema = z.object({}).passthrough();
 
+const userIdParamSchema = z.object({
+  userId: z.string().min(1),
+});
+
 const suspendUserSchema = z.object({
   reason: z.string().max(500).optional(),
 }).passthrough();
 
+const listUsersQuerySchema = z.object({
+  role: z.string().optional(),
+  status: z.string().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
+}).passthrough();
+
+// Access Control Schemas
 const accessCheckSchema = z.object({
   userId: z.string().min(1).max(80),
   resourceType: z.string().min(1).max(80),
@@ -142,12 +159,56 @@ const createPolicySchema = z.object({
 
 const updatePolicySchema = z.object({}).passthrough();
 
+const policyIdParamSchema = z.object({
+  policyId: z.string().min(1),
+});
+
+const listPoliciesQuerySchema = z.object({
+  role: z.string().optional(),
+  resource_type: z.string().optional(),
+  active: z.enum(['true', 'false']).optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
+}).passthrough();
+
+// Access Log Schemas
+const listAccessLogQuerySchema = z.object({
+  userId: z.string().optional(),
+  action: z.string().optional(),
+  resourceType: z.string().optional(),
+  since: z.string().optional(),
+  until: z.string().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
+}).passthrough();
+
+const accessStatsQuerySchema = z.object({
+  since: z.string().optional(),
+}).passthrough();
+
+// Retention Rules Schemas
 const createRetentionRuleSchema = z.object({
   resource_type: z.string().max(80),
   retention_days: z.number().int().positive().optional(),
 }).passthrough();
 
 const updateRetentionRuleSchema = z.object({}).passthrough();
+
+const ruleIdParamSchema = z.object({
+  ruleId: z.string().min(1),
+});
+
+const listRetentionRulesQuerySchema = z.object({
+  resource_type: z.string().optional(),
+  active: z.enum(['true', 'false']).optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
+}).passthrough();
+
+// Compliance Schemas
+const caseIdParamSchema = z.object({
+  caseId: z.string().min(1),
+});
 
 const complianceCheckSchema = z.object({
   complianceType: z.string().min(1).max(80).optional(),
@@ -156,6 +217,21 @@ const complianceCheckSchema = z.object({
   message: 'complianceType is required',
 });
 
+// Encryption Schemas
+const rotateKeySchema = z.object({
+  oldKeyId: z.string().optional(),
+  newKeyId: z.string().optional(),
+}).passthrough();
+
+// Backup Schemas
+const backupIdParamSchema = z.object({
+  backupId: z.string().min(1),
+});
+
+const createBackupSchema = z.object({}).passthrough();
+
+const setBackupScheduleSchema = z.object({}).passthrough();
+
 const router = Router();
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -163,13 +239,13 @@ const router = Router();
 // ══════════════════════════════════════════════════════════════════════════════
 
 // GET /security/users — list users
-router.get('/security/users', (req, res) => {
+router.get('/security/users', validateQuery(listUsersQuerySchema), (req, res) => {
   try {
     const opts = {
-      role: req.query.role || undefined,
-      status: req.query.status || undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : undefined,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
+      role: req.validatedQuery.role || undefined,
+      status: req.validatedQuery.status || undefined,
+      limit: req.validatedQuery.limit || undefined,
+      offset: req.validatedQuery.offset || undefined,
     };
     const result = listUsers(opts);
     res.json({ ok: true, ...result });
@@ -180,11 +256,9 @@ router.get('/security/users', (req, res) => {
 });
 
 // POST /security/users — create user
-router.post('/security/users', (req, res) => {
+router.post('/security/users', validateBody(createUserSchema), (req, res) => {
   try {
-    const body = parsePayload(createUserSchema, req.body || {}, res);
-    if (!body) return;
-    const result = createUser(body);
+    const result = createUser(req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
@@ -194,9 +268,9 @@ router.post('/security/users', (req, res) => {
 });
 
 // GET /security/users/:userId — get user
-router.get('/security/users/:userId', (req, res) => {
+router.get('/security/users/:userId', validateParams(userIdParamSchema), (req, res) => {
   try {
-    const user = getUser(req.params.userId);
+    const user = getUser(req.validatedParams.userId);
     if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
     res.json({ ok: true, user });
   } catch (err) {
@@ -206,11 +280,9 @@ router.get('/security/users/:userId', (req, res) => {
 });
 
 // PUT /security/users/:userId — update user
-router.put('/security/users/:userId', (req, res) => {
+router.put('/security/users/:userId', validateParams(userIdParamSchema), validateBody(updateUserSchema), (req, res) => {
   try {
-    const body = parsePayload(updateUserSchema, req.body || {}, res);
-    if (!body) return;
-    const result = updateUser(req.params.userId, body);
+    const result = updateUser(req.validatedParams.userId, req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -220,9 +292,9 @@ router.put('/security/users/:userId', (req, res) => {
 });
 
 // POST /security/users/:userId/deactivate — deactivate user
-router.post('/security/users/:userId/deactivate', (req, res) => {
+router.post('/security/users/:userId/deactivate', validateParams(userIdParamSchema), (req, res) => {
   try {
-    const result = deactivateUser(req.params.userId);
+    const result = deactivateUser(req.validatedParams.userId);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -232,11 +304,9 @@ router.post('/security/users/:userId/deactivate', (req, res) => {
 });
 
 // POST /security/users/:userId/suspend — suspend user
-router.post('/security/users/:userId/suspend', (req, res) => {
+router.post('/security/users/:userId/suspend', validateParams(userIdParamSchema), validateBody(suspendUserSchema), (req, res) => {
   try {
-    const body = parsePayload(suspendUserSchema, req.body || {}, res);
-    if (!body) return;
-    const result = suspendUser(req.params.userId, body.reason);
+    const result = suspendUser(req.validatedParams.userId, req.validated.reason);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -246,9 +316,9 @@ router.post('/security/users/:userId/suspend', (req, res) => {
 });
 
 // POST /security/users/:userId/reactivate — reactivate user
-router.post('/security/users/:userId/reactivate', (req, res) => {
+router.post('/security/users/:userId/reactivate', validateParams(userIdParamSchema), (req, res) => {
   try {
-    const result = reactivateUser(req.params.userId);
+    const result = reactivateUser(req.validatedParams.userId);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -262,11 +332,9 @@ router.post('/security/users/:userId/reactivate', (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // POST /security/access/check — check access
-router.post('/security/access/check', (req, res) => {
+router.post('/security/access/check', validateBody(accessCheckSchema), (req, res) => {
   try {
-    const body = parsePayload(accessCheckSchema, req.body || {}, res);
-    if (!body) return;
-    const result = checkAccess(body.userId, body.resourceType, body.action, body.context || {});
+    const result = checkAccess(req.validated.userId, req.validated.resourceType, req.validated.action, req.validated.context || {});
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:check-access', { error: err.message });
@@ -275,14 +343,14 @@ router.post('/security/access/check', (req, res) => {
 });
 
 // GET /security/policies — list policies
-router.get('/security/policies', (req, res) => {
+router.get('/security/policies', validateQuery(listPoliciesQuerySchema), (req, res) => {
   try {
     const opts = {
-      role: req.query.role || undefined,
-      resource_type: req.query.resource_type || undefined,
-      active: req.query.active !== undefined ? req.query.active === 'true' : undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : undefined,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
+      role: req.validatedQuery.role || undefined,
+      resource_type: req.validatedQuery.resource_type || undefined,
+      active: req.validatedQuery.active !== undefined ? req.validatedQuery.active === 'true' : undefined,
+      limit: req.validatedQuery.limit || undefined,
+      offset: req.validatedQuery.offset || undefined,
     };
     const result = listPolicies(opts);
     res.json({ ok: true, ...result });
@@ -304,11 +372,9 @@ router.post('/security/policies/seed', (req, res) => {
 });
 
 // POST /security/policies — create policy
-router.post('/security/policies', (req, res) => {
+router.post('/security/policies', validateBody(createPolicySchema), (req, res) => {
   try {
-    const body = parsePayload(createPolicySchema, req.body || {}, res);
-    if (!body) return;
-    const result = createPolicy(body);
+    const result = createPolicy(req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
@@ -318,11 +384,9 @@ router.post('/security/policies', (req, res) => {
 });
 
 // PUT /security/policies/:policyId — update policy
-router.put('/security/policies/:policyId', (req, res) => {
+router.put('/security/policies/:policyId', validateParams(policyIdParamSchema), validateBody(updatePolicySchema), (req, res) => {
   try {
-    const body = parsePayload(updatePolicySchema, req.body || {}, res);
-    if (!body) return;
-    const result = updatePolicy(req.params.policyId, body);
+    const result = updatePolicy(req.validatedParams.policyId, req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -332,9 +396,9 @@ router.put('/security/policies/:policyId', (req, res) => {
 });
 
 // DELETE /security/policies/:policyId — delete policy
-router.delete('/security/policies/:policyId', (req, res) => {
+router.delete('/security/policies/:policyId', validateParams(policyIdParamSchema), (req, res) => {
   try {
-    const result = deletePolicy(req.params.policyId);
+    const result = deletePolicy(req.validatedParams.policyId);
     if (result.error) return res.status(404).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -348,10 +412,9 @@ router.delete('/security/policies/:policyId', (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // GET /security/access-log/stats — access statistics (must be before generic route)
-router.get('/security/access-log/stats', (req, res) => {
+router.get('/security/access-log/stats', validateQuery(accessStatsQuerySchema), (req, res) => {
   try {
-    const since = req.query.since || undefined;
-    const stats = getAccessStats(since);
+    const stats = getAccessStats(req.validatedQuery.since || undefined);
     res.json({ ok: true, stats });
   } catch (err) {
     log.error('api:security:access-stats', { error: err.message });
@@ -360,16 +423,16 @@ router.get('/security/access-log/stats', (req, res) => {
 });
 
 // GET /security/access-log — query access log
-router.get('/security/access-log', (req, res) => {
+router.get('/security/access-log', validateQuery(listAccessLogQuerySchema), (req, res) => {
   try {
     const opts = {
-      userId: req.query.userId || undefined,
-      action: req.query.action || undefined,
-      resourceType: req.query.resourceType || undefined,
-      since: req.query.since || undefined,
-      until: req.query.until || undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : undefined,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
+      userId: req.validatedQuery.userId || undefined,
+      action: req.validatedQuery.action || undefined,
+      resourceType: req.validatedQuery.resourceType || undefined,
+      since: req.validatedQuery.since || undefined,
+      until: req.validatedQuery.until || undefined,
+      limit: req.validatedQuery.limit || undefined,
+      offset: req.validatedQuery.offset || undefined,
     };
     const result = getAccessLog(opts);
     res.json({ ok: true, ...result });
@@ -384,13 +447,13 @@ router.get('/security/access-log', (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // GET /security/retention/rules — list retention rules
-router.get('/security/retention/rules', (req, res) => {
+router.get('/security/retention/rules', validateQuery(listRetentionRulesQuerySchema), (req, res) => {
   try {
     const opts = {
-      resource_type: req.query.resource_type || undefined,
-      active: req.query.active !== undefined ? req.query.active === 'true' : undefined,
-      limit: req.query.limit ? parseInt(req.query.limit, 10) : undefined,
-      offset: req.query.offset ? parseInt(req.query.offset, 10) : undefined,
+      resource_type: req.validatedQuery.resource_type || undefined,
+      active: req.validatedQuery.active !== undefined ? req.validatedQuery.active === 'true' : undefined,
+      limit: req.validatedQuery.limit || undefined,
+      offset: req.validatedQuery.offset || undefined,
     };
     const result = listRetentionRules(opts);
     res.json({ ok: true, ...result });
@@ -401,11 +464,9 @@ router.get('/security/retention/rules', (req, res) => {
 });
 
 // POST /security/retention/rules — create retention rule
-router.post('/security/retention/rules', (req, res) => {
+router.post('/security/retention/rules', validateBody(createRetentionRuleSchema), (req, res) => {
   try {
-    const body = parsePayload(createRetentionRuleSchema, req.body || {}, res);
-    if (!body) return;
-    const result = createRetentionRule(body);
+    const result = createRetentionRule(req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.status(201).json({ ok: true, ...result });
   } catch (err) {
@@ -415,11 +476,9 @@ router.post('/security/retention/rules', (req, res) => {
 });
 
 // PUT /security/retention/rules/:ruleId — update retention rule
-router.put('/security/retention/rules/:ruleId', (req, res) => {
+router.put('/security/retention/rules/:ruleId', validateParams(ruleIdParamSchema), validateBody(updateRetentionRuleSchema), (req, res) => {
   try {
-    const body = parsePayload(updateRetentionRuleSchema, req.body || {}, res);
-    if (!body) return;
-    const result = updateRetentionRule(req.params.ruleId, body);
+    const result = updateRetentionRule(req.validatedParams.ruleId, req.validated);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -440,9 +499,9 @@ router.post('/security/retention/check', (req, res) => {
 });
 
 // POST /security/retention/execute/:ruleId — execute retention rule
-router.post('/security/retention/execute/:ruleId', (req, res) => {
+router.post('/security/retention/execute/:ruleId', validateParams(ruleIdParamSchema), (req, res) => {
   try {
-    const result = executeRetentionRule(req.params.ruleId);
+    const result = executeRetentionRule(req.validatedParams.ruleId);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -467,9 +526,9 @@ router.post('/security/retention/seed', (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // GET /cases/:caseId/compliance — list compliance records for a case
-router.get('/cases/:caseId/compliance', (req, res) => {
+router.get('/cases/:caseId/compliance', validateParams(caseIdParamSchema), (req, res) => {
   try {
-    const records = listComplianceRecords(req.params.caseId);
+    const records = listComplianceRecords(req.validatedParams.caseId);
     res.json({ ok: true, records });
   } catch (err) {
     log.error('api:security:list-compliance', { error: err.message });
@@ -478,12 +537,10 @@ router.get('/cases/:caseId/compliance', (req, res) => {
 });
 
 // POST /cases/:caseId/compliance/check — run compliance check
-router.post('/cases/:caseId/compliance/check', (req, res) => {
+router.post('/cases/:caseId/compliance/check', validateParams(caseIdParamSchema), validateBody(complianceCheckSchema), (req, res) => {
   try {
-    const body = parsePayload(complianceCheckSchema, req.body || {}, res);
-    if (!body) return;
-    const complianceType = body.complianceType || body.compliance_type;
-    const result = runComplianceCheck(req.params.caseId, complianceType);
+    const complianceType = req.validated.complianceType || req.validated.compliance_type;
+    const result = runComplianceCheck(req.validatedParams.caseId, complianceType);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -493,9 +550,9 @@ router.post('/cases/:caseId/compliance/check', (req, res) => {
 });
 
 // GET /cases/:caseId/compliance/status — overall compliance status
-router.get('/cases/:caseId/compliance/status', (req, res) => {
+router.get('/cases/:caseId/compliance/status', validateParams(caseIdParamSchema), (req, res) => {
   try {
-    const result = getCaseComplianceStatus(req.params.caseId);
+    const result = getCaseComplianceStatus(req.validatedParams.caseId);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:compliance-status', { error: err.message });
@@ -530,9 +587,9 @@ router.get('/security/encryption/status', (_req, res) => {
 });
 
 // POST /security/encryption/encrypt-case/:caseId — encrypt case PII
-router.post('/security/encryption/encrypt-case/:caseId', (req, res) => {
+router.post('/security/encryption/encrypt-case/:caseId', validateParams(caseIdParamSchema), (req, res) => {
   try {
-    const result = encryptCaseSensitiveFields(req.params.caseId);
+    const result = encryptCaseSensitiveFields(req.validatedParams.caseId);
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -542,10 +599,9 @@ router.post('/security/encryption/encrypt-case/:caseId', (req, res) => {
 });
 
 // POST /security/encryption/rotate-key — rotate encryption key
-router.post('/security/encryption/rotate-key', (req, res) => {
+router.post('/security/encryption/rotate-key', validateBody(rotateKeySchema), (req, res) => {
   try {
-    const { oldKeyId, newKeyId } = req.body || {};
-    const result = rotateKey(oldKeyId, newKeyId);
+    const result = rotateKey(req.validated.oldKeyId, req.validated.newKeyId);
     res.json({ ok: true, ...result });
   } catch (err) {
     log.error('api:security:rotate-key', { error: err.message });
@@ -580,9 +636,9 @@ router.get('/security/backups/schedule', (_req, res) => {
 });
 
 // PUT /security/backups/schedule — set backup schedule
-router.put('/security/backups/schedule', (req, res) => {
+router.put('/security/backups/schedule', validateBody(setBackupScheduleSchema), (req, res) => {
   try {
-    const schedule = setBackupSchedule(req.body || {});
+    const schedule = setBackupSchedule(req.validated || {});
     res.json({ ok: true, schedule });
   } catch (err) {
     log.error('api:security:set-backup-schedule', { error: err.message });
@@ -591,9 +647,9 @@ router.put('/security/backups/schedule', (req, res) => {
 });
 
 // POST /security/backups/create — create backup
-router.post('/security/backups/create', async (req, res) => {
+router.post('/security/backups/create', validateBody(createBackupSchema), async (req, res) => {
   try {
-    const result = await createBackup(req.body || {});
+    const result = await createBackup(req.validated || {});
     if (result.error) return res.status(500).json({ ok: false, error: result.error });
     res.json({ ok: true, backup: result });
   } catch (err) {
@@ -603,9 +659,9 @@ router.post('/security/backups/create', async (req, res) => {
 });
 
 // POST /security/backups/:backupId/verify — verify backup
-router.post('/security/backups/:backupId/verify', (req, res) => {
+router.post('/security/backups/:backupId/verify', validateParams(backupIdParamSchema), (req, res) => {
   try {
-    const result = verifyBackup(req.params.backupId);
+    const result = verifyBackup(req.validatedParams.backupId);
     if (result.error) return res.status(404).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -615,9 +671,9 @@ router.post('/security/backups/:backupId/verify', (req, res) => {
 });
 
 // POST /security/backups/:backupId/restore — restore from backup
-router.post('/security/backups/:backupId/restore', (req, res) => {
+router.post('/security/backups/:backupId/restore', validateParams(backupIdParamSchema), (req, res) => {
   try {
-    const result = restoreFromBackup(req.params.backupId);
+    const result = restoreFromBackup(req.validatedParams.backupId);
     if (result.notImplemented) return res.status(501).json({ ok: false, error: result.error, status: result.status });
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
     res.json({ ok: true, ...result });
