@@ -7,10 +7,10 @@
 //
 // ACTIVE PRODUCTION SCOPE:
 //   Lane 1: 1004 single-family residential (ACI)
-//   Lane 2: commercial (Real Quantum)
+//   Lane 2: 1025 small residential income (ACI)
 //
 // DEFERRED (preserved, not extended):
-//   1025, 1073, 1004c
+//   1073, commercial, 1004c
 //
 // Last updated: 2025 - Scope correction applied.
 // See SCOPE.md for full scope definition.
@@ -21,11 +21,11 @@ export const CACC_APPRAISALS_ROOT = process.env.CACC_APPRAISALS_ROOT
 
 // â”€â”€ Active production form types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Only forms with a proven golden-path (import → generate → export) are active.
-export const ACTIVE_FORMS = ['1004', 'commercial'];
+export const ACTIVE_FORMS = ['1004', '1025'];
 
 // â”€â”€ Deferred form types (files preserved, not actively extended) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 1025/1073 moved here — no proven end-to-end golden path yet.
-export const DEFERRED_FORMS = ['1025', '1073', '1004c'];
+export const DEFERRED_FORMS = ['1073', 'commercial', '1004c'];
 
 // â”€â”€ Lane 1: 1004 Single-Family Residential â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const ACTIVE_RESIDENTIAL_LANE = {
@@ -88,9 +88,9 @@ export const PRIORITY_SECTIONS_COMMERCIAL = [
 
 // â”€â”€ Deferred form metadata (for UI display and logging) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DEFERRED_FORM_META = {
-  '1025':  { label: '1025 Small Residential Income', reason: 'No proven end-to-end golden path for generation+export' },
-  '1073':  { label: '1073 Individual Condominium Unit', reason: 'No proven end-to-end golden path for generation+export' },
-  '1004c': { label: '1004C — Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
+  '1073':       { label: '1073 Individual Condominium Unit', reason: 'No proven end-to-end golden path for generation+export' },
+  'commercial': { label: 'Commercial (Real Quantum)', reason: 'Deferred from SaaS v1 active scope' },
+  '1004c':      { label: '1004C — Manufactured Home', reason: 'Lower usage frequency; inherits 1004 fields' },
 };
 
 // â”€â”€ Scope check helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
