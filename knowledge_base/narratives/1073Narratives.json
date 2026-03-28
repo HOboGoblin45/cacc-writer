@@ -1,0 +1,152 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "UAD condition language templates and narrative guidance for 1073 Individual Condominium Unit Appraisal Reports.",
+    "source": "Fannie Mae UAD Appendix D — Condition Ratings, adapted for condominium unit appraisals",
+    "lastUpdated": "2026-03-28"
+  },
+
+  "condition": {
+    "C1": {
+      "uadDefinition": "The improvements have been very recently constructed and have not previously been occupied. The entire structure and all components are new and the property features no physical depreciation. The unit and building are brand new with no prior occupancy.",
+      "narrativeGuidance": "Describe the unit and building as newly constructed with no prior occupancy. All components are new. No physical depreciation is present. The unit is ready for immediate occupancy. Common areas and building systems are also new.",
+      "promptInstruction": "The subject unit and project are rated C1 (new construction, no prior occupancy). Describe the unit interior and building exterior as new. Do not reference any deferred maintenance, wear, or depreciation in the unit, building, or common areas. The unit and project are in move-in-ready condition. Use new construction language throughout."
+    },
+    "C2": {
+      "uadDefinition": "The improvements feature no deferred maintenance, little or no physical depreciation, and require no repairs. Virtually all building components are new or have been recently repaired, refinished, or rehabilitated. The unit and building common areas have been recently updated. All outdated components and finishes have been updated and/or replaced with components that meet current standards.",
+      "narrativeGuidance": "Describe the unit and building as near-new or recently fully renovated. No deferred maintenance in the unit or building. All components updated to current standards. Minimal physical depreciation. The unit and common areas are in excellent condition with updated finishes and systems.",
+      "promptInstruction": "The subject unit and project are rated C2 (near-new or recently fully renovated). Describe the unit and building as having no deferred maintenance and little or no physical depreciation. All major components in the unit and building are new or recently updated. All systems and finishes are current. Avoid any language suggesting wear, aging, or needed repairs in the unit or building."
+    },
+    "C3": {
+      "uadDefinition": "The improvements are well maintained and feature limited physical depreciation due to normal wear and tear. Some components, but not every major building component, may be updated or recently rehabilitated. The unit and common areas have been well maintained. This is the most common condition rating for condominium units.",
+      "narrativeGuidance": "Describe the unit and building as well maintained with limited physical depreciation from normal wear and tear. Some components may be updated in the unit or building common areas. The unit and structure are well maintained overall. This is typical condition for condominium units. Note routine maintenance where appropriate.",
+      "promptInstruction": "The subject unit and project are rated C3 (well maintained, limited depreciation from normal wear and tear). Describe the unit and building as well maintained. Note that some components may be updated or recently rehabilitated, but not all systems require updating. Avoid overstating condition issues — this is average-to-good condition for a condominium unit. Do not imply significant deferred maintenance or needed repairs unless explicitly stated in the facts."
+    },
+    "C4": {
+      "uadDefinition": "The improvements feature some deferred maintenance and physical deterioration due to normal wear and tear. The property has been adequately maintained and requires only minimal repairs to building components, mechanical systems, unit interiors, and cosmetic repairs. All major building components have been adequately maintained and are functionally adequate.",
+      "narrativeGuidance": "Describe the unit and building as adequately maintained with some deferred maintenance and physical deterioration from normal wear and tear. Minimal repairs needed to building and unit components, mechanical systems, and cosmetic items. All major components are functionally adequate. Be specific about deferred maintenance items if provided in facts.",
+      "promptInstruction": "The subject unit and project are rated C4 (adequately maintained, some deferred maintenance and physical deterioration from normal wear and tear). Describe the unit and building as adequately maintained but note specific deferred maintenance items if provided in the facts. Minimal repairs are needed to unit systems and building components. All major building components are functionally adequate. Use measured, factual language — do not overstate condition issues beyond what the facts support."
+    },
+    "C5": {
+      "uadDefinition": "The improvements feature obvious deferred maintenance and are in need of some significant repairs. Some building components, unit interiors, or systems need repairs, rehabilitation, or updating. The functional utility and overall condition is somewhat diminished, but the unit remains useable and marketable.",
+      "narrativeGuidance": "Describe the unit and building as having obvious deferred maintenance in the unit interior or building exterior requiring significant repairs. Some components or systems need repair, rehabilitation, or updating. Functional utility is somewhat diminished but the unit remains useable and marketable. Be specific about items needing repair if provided in facts.",
+      "promptInstruction": "The subject unit and project are rated C5 (obvious deferred maintenance, significant repairs needed). Describe specific components, unit systems, or building elements that need repair, rehabilitation, or updating based on the facts provided. Note that functional utility is somewhat diminished but the unit remains useable and marketable. Use [INSERT] for specific repair items not provided in facts."
+    },
+    "C6": {
+      "uadDefinition": "The improvements have substantial damage or deferred maintenance with deficiencies or defects that are severe enough to affect the safety, soundness, or structural integrity of the improvements. The property is in need of substantial repairs and rehabilitation, including many or most major components. The property's marketability is significantly impaired.",
+      "narrativeGuidance": "Describe the unit and building as having substantial damage or deferred maintenance affecting safety, soundness, or structural integrity. Substantial repairs and rehabilitation are needed including many or most major components. Marketability is significantly impaired. Be specific about deficiencies if provided in facts.",
+      "promptInstruction": "The subject unit and project are rated C6 (substantial damage or deferred maintenance affecting safety, soundness, or structural integrity). Describe the specific deficiencies and defects based on the facts provided. Note that substantial repairs and rehabilitation are needed including many or most major components. Note the significant impact on marketability. Use [INSERT] for specific items not provided in facts. This rating requires careful, factual language — do not speculate beyond what the facts support."
+    }
+  },
+
+  "market_conditions": {
+    "stable": {
+      "definition": "Condominium market conditions are stable with balanced supply and demand for units. Unit prices are stable with minimal appreciation or depreciation. New unit absorption rates are typical for the area.",
+      "narrativeGuidance": "Describe the condominium market as stable. Supply of and demand for units are in balance. Unit prices are stable. Days on market for comparable units are typical. Market fundamentals support stable unit values and continued owner-occupancy demand.",
+      "promptInstruction": "Condominium market conditions are stable. Describe supply and demand for units as balanced. Unit prices in the area are stable with minimal change. Days on market for comparable units are typical for the area. Reference the market statistics chart if a market_stat is provided in the facts. Note that the stable market supports the subject unit's value and marketability."
+    },
+    "appreciating": {
+      "definition": "Condominium market conditions are appreciating with demand for units exceeding supply. Unit prices are increasing. Days on market are below typical levels. Buyer demand is strong, particularly for new construction and well-maintained units.",
+      "narrativeGuidance": "Describe the condominium market as appreciating. Demand for units exceeds available supply. Unit prices are increasing in the area. Days on market are below typical levels, indicating strong buyer demand. The appreciating market supports unit price growth and rapid resale.",
+      "promptInstruction": "Condominium market conditions are appreciating. Describe demand for units as exceeding available supply. Unit prices are increasing. Days on market are below typical levels for the area and unit type. Strong buyer demand may be noted. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific appreciation percentages unless provided in facts. Note how appreciating conditions support the subject unit's value."
+    },
+    "declining": {
+      "definition": "Condominium market conditions are declining with supply of units exceeding demand. Unit prices are decreasing or under downward pressure. Days on market are above typical levels. Buyer demand is weak.",
+      "narrativeGuidance": "Describe the condominium market as declining. Supply of units exceeds demand. Unit prices are under downward pressure or declining in the area. Days on market are above typical levels, indicating weak buyer demand. Market fundamentals pose challenges to maintaining unit values and resale prospects.",
+      "promptInstruction": "Condominium market conditions are declining. Describe supply of units as exceeding demand. Unit prices are under downward pressure or declining. Days on market are above typical levels for the area and unit type. Weak buyer demand may result in longer marketing periods. Reference the market statistics chart if a market_stat is provided in the facts. Do not invent specific decline percentages unless provided in facts. Note the impact on the subject unit's marketability."
+    }
+  },
+
+  "neighborhood_description": {
+    "urban_high_rise": {
+      "definition": "An urban high-rise neighborhood with dense multi-family condominium buildings, mixed residential and commercial land use, and strong proximity to urban employment, public transit, and amenities. Condominium units are the dominant housing type.",
+      "narrativeGuidance": "Describe an urban high-rise neighborhood with dense condominium development. Cover prevalence of multi-family and condo units. Note proximity to employment, public transit, urban amenities, and services. Comment on the condo-dominant character of the neighborhood and buyer demographics.",
+      "promptInstruction": "Describe an urban high-rise condominium neighborhood. Cover density and prevalence of high-rise and mid-rise condominium buildings. Note proximity to employment centers, public transit (subway, bus, rail), and urban amenities (restaurants, retail, entertainment, parks). Comment on factors supporting condo demand such as transit access or job centers. Note any gentrification or neighborhood transition trends if supported by facts. Use direct, factual language."
+    },
+    "suburban_garden_style": {
+      "definition": "A suburban neighborhood with garden-style condominium communities, mixed single-family and multi-family residential land use, convenient proximity to employment centers, schools, and shopping. Condominium and townhome communities are prevalent.",
+      "narrativeGuidance": "Describe a suburban condo neighborhood with garden-style developments. Cover prevalence of condo and townhome communities. Note proximity to employment, schools, shopping, and services. Comment on factors supporting condo demand such as school quality, commuting convenience, or lifestyle appeal.",
+      "promptInstruction": "Describe a suburban garden-style condominium neighborhood. Cover prevalence of condo communities and townhomes. Note proximity to employment centers, schools, shopping, and services. Comment on factors supporting condo and townhome demand such as school quality, commuting ease, or suburban lifestyle appeal. Note built-up percentage and growth rate if provided in facts. Use direct, factual language."
+    },
+    "mixed_density": {
+      "definition": "A mixed-density neighborhood with varied housing types including single-family homes, townhomes, and condominium units. Moderate built-up percentage with mix of owner-occupied and rental properties. Convenient access to employment, schools, and services.",
+      "narrativeGuidance": "Describe a mixed-density neighborhood with diverse housing types including condominiums. Cover land use mix, prevalence of different housing types, and factors supporting condo demand alongside single-family demand. Note built-up percentage and neighborhood character.",
+      "promptInstruction": "Describe a mixed-density neighborhood. Cover the mix of housing types including single-family, townhomes, and condominium units. Note land use distribution and built-up percentage. Cover proximity to employment, schools, shopping, and services. Note factors supporting condo demand within the broader neighborhood context. Use direct, factual language."
+    }
+  },
+
+  "project_analysis": {
+    "warrantable": {
+      "definition": "The condominium project demonstrates sound financial management, adequate reserves, no material litigation, and compliance with applicable lending standards. The project is eligible for FHA, VA, and conventional financing.",
+      "narrativeGuidance": "Describe the project as financially sound with adequate reserves, no pending special assessments, and no material litigation. The project meets lending standards and is considered warrantable for FHA/VA financing. Financing risk is minimal.",
+      "promptInstruction": "The project is warrantable. Describe adequate reserve funding, absence of pending special assessments, and absence of material litigation. Note compliance with FHA/VA lending standards if applicable. Financing for individual units should not face project-level restrictions. The project presents no material financing risk."
+    },
+    "warrantable_with_restrictions": {
+      "definition": "The condominium project is generally sound with adequate reserves and no material litigation, but may have minor FHA/VA restrictions or requirements (e.g., reserve study requirements, small special assessments).",
+      "narrativeGuidance": "Describe the project as generally sound with adequate reserves and no material litigation, but note specific FHA/VA restrictions or requirements. Financing may require additional documentation or conditions but is generally available.",
+      "promptInstruction": "The project is warrantable with restrictions. Describe adequate reserves and sound management while noting any specific FHA/VA requirements (e.g., reserve study on file, architectural review restrictions). Note that financing is generally available but may require additional conditions. Describe any minor special assessments or reserve contributions required."
+    },
+    "non_warrantable": {
+      "definition": "The condominium project exhibits financial or structural concerns that may affect financing eligibility. This may include underfunded reserves, pending special assessments, material litigation, or significant FHA/VA restrictions.",
+      "narrativeGuidance": "Describe specific project concerns: underfunded reserves, pending special assessments, litigation, or FHA/VA restrictions. Note the impact on financing eligibility and resale marketability. Provide specific facts about reserve status and pending assessments.",
+      "promptInstruction": "The project is non-warrantable or has significant restrictions. Describe specific concerns: reserve funding status, any pending or recent special assessments, litigation involving the HOA, or FHA/VA restrictions on financing. Note the specific impact on conventional, FHA, or VA financing availability. Explain how these factors may affect future buyer financing and unit marketability. Use facts provided; use [INSERT] for missing details."
+    }
+  },
+
+  "hoa_analysis": {
+    "adequate_reserves": {
+      "definition": "The HOA maintains adequate reserves (typically 25-50% of annual operating budget) for major capital replacements and unexpected repairs. Reserve funding is consistent with lending standards.",
+      "narrativeGuidance": "Describe adequate reserve funding as a positive factor supporting project financial stability. Reserve levels support the project's ability to handle unexpected repairs and major replacements without special assessments. This is favorable for financing and resale marketability.",
+      "promptInstruction": "The HOA maintains adequate reserves. Describe reserve funding as adequate or fully funded (typically 25-50% of annual budget for major components replacement). Note that adequate reserves reduce likelihood of special assessments and support project financial stability. Describe reserve components (roof, mechanical, parking lot, etc.) if available in facts. Note that adequate reserves are favorable for financing and unit marketability."
+    },
+    "underfunded_reserves": {
+      "definition": "The HOA reserves are below recommended levels (less than 25% of annual operating budget). Special assessments may be necessary in the near term for major repairs or replacements.",
+      "narrativeGuidance": "Describe underfunded reserves as a concern for project financial stability. Note that special assessments may be necessary for major capital repairs. Describe the specific reserve components that are underfunded if available in facts.",
+      "promptInstruction": "The HOA reserves are underfunded. Describe reserve funding as below recommended levels (less than 25% of annual budget). Note that pending or future special assessments may be necessary for major capital components (roof, mechanical systems, parking lot, etc.). Identify which components are of concern if provided in facts. Note the impact on project financing eligibility and unit resale marketability. Use facts provided; use [INSERT] for missing reserve details."
+    },
+    "special_assessment_pending": {
+      "definition": "The HOA has imposed or is planning a special assessment on unit owners for major capital repairs, replacements, or reserve funding. Buyers should be aware of the assessment obligation.",
+      "narrativeGuidance": "Describe the pending or recent special assessment: amount, purpose, and payment schedule. Note the impact on unit owners' monthly housing costs. Explain why the assessment was necessary (reserve funding, major repairs, etc.).",
+      "promptInstruction": "A special assessment is pending or recent. Describe the specific amount per unit, the purpose (roof replacement, mechanical system repair, parking lot resurfacing, reserve funding, etc.), and payment schedule (if available). Note the impact on total monthly housing costs including HOA fees. Explain the underlying cause of the assessment. Note impact on financing and marketability. Use [INSERT] for specific amounts or details not provided in facts."
+    }
+  },
+
+  "highest_best_use": {
+    "owner_occupied": {
+      "definition": "For a condominium unit, highest and best use as improved is continued use as an owner-occupied residential unit. This use is legally permissible, physically possible, financially feasible, and maximally productive given market demand for owner-occupancy.",
+      "narrativeGuidance": "Conclude that continued owner-occupancy is the highest and best use. Support with evidence of strong owner-occupancy demand in the project and market area. Note the four HBU tests as applied to owner-occupancy use.",
+      "promptInstruction": "The highest and best use as improved is continued use as an owner-occupied condominium unit. Support with the four HBU tests: legally permissible (zoning and CC&Rs allow residential use), physically possible (unit and project designed for owner-occupancy), financially feasible (market demand from owner-occupants as evidenced by comparable sales), and maximally productive (owner-occupancy generates market value superior to alternative uses). Use [INSERT] for zoning details if not provided in facts."
+    },
+    "investment_unit": {
+      "definition": "For a condominium unit, highest and best use may be continued use as an investment/rental unit. This use is legally permissible, physically possible, financially feasible given rental demand, and potentially maximally productive given strong rental market conditions.",
+      "narrativeGuidance": "Conclude that investment/rental use is the highest and best use (or shares HBU with owner-occupancy). Support with evidence of strong rental demand and favorable income-producing metrics. Note the four HBU tests as applied to rental use.",
+      "promptInstruction": "The highest and best use as improved includes use as an investment/rental condominium unit. Support with the four HBU tests: legally permissible (CC&Rs and HOA restrictions permit rental use), physically possible (unit design suitable for rental), financially feasible (market demand from investors as evidenced by rental rates and comparable investor sales), and maximally productive (rental income generates competitive returns relative to owner-occupancy). If rental use is NOT permitted, note this restriction. Use [INSERT] for HOA rental restriction details if not provided in facts."
+    }
+  },
+
+  "market_conditions": {
+    "new_construction_available": {
+      "definition": "New construction condominium units are available in the subject's market area. New construction creates competition for resale units and may affect resale demand and pricing.",
+      "narrativeGuidance": "Note the availability of new condominium construction in the area. Describe the competitive position of subject relative to new construction (price, features, HOA fees, warranties, financing incentives).",
+      "promptInstruction": "Note that new condominium construction is available in the subject's market area. Describe the types of new projects (high-rise, garden-style, etc.) and their market positioning. Comment on how new construction affects resale unit demand and pricing (e.g., new units may command pricing premiums, or resale demand may shift toward newer construction). Use facts provided; use [INSERT] for new construction details not available in facts."
+    },
+    "limited_new_construction": {
+      "definition": "New construction condominium units are limited or not available in the subject's market area. Existing/resale units dominate the market with less new competition.",
+      "narrativeGuidance": "Note the limited availability of new condominium construction. This may favor resale unit demand and pricing, particularly for well-maintained units.",
+      "promptInstruction": "Limited or no new condominium construction is available in the subject's market area. Describe the market implications: resale units dominate supply, limiting new competition and supporting resale unit demand and pricing. This is generally favorable for the subject unit's marketability and competitive position. Use facts provided; use [INSERT] if specific new construction information is not available."
+    }
+  },
+
+  "reconciliation": {
+    "single_unit_comparables": {
+      "definition": "The subject unit was valued primarily using comparable condominium units within the same project or nearby comparable projects. This provides the strongest comparability and most reliable value indication.",
+      "narrativeGuidance": "Reconcile using comparable unit sales as the primary evidence. Explain why unit-level comparables provide the best indication of value for the condominium unit.",
+      "promptInstruction": "The Sales Comparison Approach using comparable unit sales provides the best indication of market value for the subject condominium unit. Justify using unit-level comparables: strong comparability in unit design, condition, location within project or nearby, and recent market sales evidence. Note any significant adjustments and their rationale. Conclude that comparable unit sales provide reliable market-based value evidence."
+    },
+    "project_level_adjustments": {
+      "definition": "Project-level factors (HOA fees, amenities, reserve status, financial health) require significant adjustments or considerations in reconciling value.",
+      "narrativeGuidance": "Address how project-level factors (HOA financial status, reserve adequacy, special assessments, amenities) affect the comparability and adjustments made to comparable units.",
+      "promptInstruction": "Project-level factors including [HOA fee differences, reserve status, amenities, financial stability] have been considered and adjusted for in the valuation. Describe how comparables with different HOA fee levels or reserve status were adjusted. Note the impact of the subject project's specific HOA characteristics on the indicated value. Reconcile these project-level considerations into the final value opinion."
+    }
+  }
+}

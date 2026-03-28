@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "form": "uad36",
+  "description": "UAD 3.6 Redesigned URAR Narrative Templates",
+  "lastUpdated": "2026-03-28",
+  "conditionRatingTemplates": {
+    "C1": {
+      "label": "C1 — New",
+      "template": "The subject property is new or just completed with no observable physical deterioration or deferred maintenance. All systems and components are in excellent working condition. The property exhibits no signs of wear and tear."
+    },
+    "C2": {
+      "label": "C2 — Like New",
+      "template": "The subject property is like new with little to no deferred maintenance. Minor wear is observable only on surfaces designed to show wear. All major systems and components are in excellent working condition, and the property has been well-maintained since original construction."
+    },
+    "C3": {
+      "label": "C3 — Well Maintained",
+      "template": "The subject property is well-maintained with normal wear and tear appropriate to its age. Some components may have been updated or rehabilitated, but significant deferred maintenance is not present. The structure and all major systems are sound and functioning properly."
+    },
+    "C4": {
+      "label": "C4 — Average",
+      "template": "The subject property shows average conditions with some deferred maintenance visible. Some components exhibit functional wear but remain serviceable. Minor updates to typical wear items may be needed in the near term, but major structural or system components remain sound."
+    },
+    "C5": {
+      "label": "C5 — Fair",
+      "template": "The subject property exhibits significant deferred maintenance with observable functional and cosmetic deficiencies. Multiple building components show age-related wear and may require repair or replacement in the near to medium term. Major systems are approaching the end of their economic life."
+    },
+    "C6": {
+      "label": "C6 — Poor",
+      "template": "The subject property exhibits substantial deferred maintenance with significant structural, mechanical, and cosmetic deficiencies. Multiple major systems are at or beyond their useful life expectancy and require immediate repair or replacement. The property requires substantial rehabilitation to bring it to acceptable condition."
+    }
+  },
+  "qualityRatingTemplates": {
+    "Q1": {
+      "label": "Q1 — Excellent",
+      "template": "The subject property demonstrates excellent construction quality with the finest materials, superior workmanship, and exceptional design. All systems, finishes, and fixtures are of the highest quality with careful attention to detail throughout the property."
+    },
+    "Q2": {
+      "label": "Q2 — Very Good",
+      "template": "The subject property exhibits very good construction quality with above-average materials and skilled workmanship. Design and layout are well-executed with quality fixtures and finishes throughout the property, reflecting above-standard building practices."
+    },
+    "Q3": {
+      "label": "Q3 — Good",
+      "template": "The subject property demonstrates good construction quality with good materials and quality workmanship consistent with the prevailing market standards for properties of this age and type. Design and layout are functional and well-proportioned."
+    },
+    "Q4": {
+      "label": "Q4 — Average",
+      "template": "The subject property exhibits average construction quality with standard materials and average workmanship typical of homes of this age and type. Design and layout are adequate and functional, consistent with market expectations for this property class."
+    },
+    "Q5": {
+      "label": "Q5 — Fair",
+      "template": "The subject property demonstrates below-average construction quality with fair materials and workmanship. Design and layout are functional but less refined than typical properties, and some systems or components are substandard for the property type."
+    },
+    "Q6": {
+      "label": "Q6 — Poor",
+      "template": "The subject property exhibits poor construction quality with minimal materials and substandard workmanship throughout. Design and layout may have functional limitations, and construction practices do not meet current standards or best practices for this property type."
+    }
+  },
+  "marketConditionsTemplates": {
+    "structuredMarketData": {
+      "appreciationRate": "The market has experienced [APPRECIATION_RATE]% annual appreciation [or depreciation] over the past [PERIOD]. This trend reflects [UNDERLYING_MARKET_FACTORS].",
+      "medianDOM": "Comparable properties in the subject's market show a median days on market (DOM) of approximately [MEDIAN_DOM] days, indicating [MARKET_CHARACTERIZATION].",
+      "listToSaleRatio": "Properties in the market typically sell at approximately [LIST_TO_SALE_RATIO]% of their listing prices, demonstrating [BUYER_SELLER_DYNAMICS].",
+      "inventoryMonths": "Current market inventory represents approximately [INVENTORY_MONTHS] months of supply at the current absorption rate.",
+      "absorptionRate": "The market is absorbing inventory at an estimated rate of [ABSORPTION_RATE]% per month."
+    },
+    "marketSummary": "The subject property's market area is characterized by [STABILITY/GROWTH/DECLINE] with [DEMOGRAPHIC/ECONOMIC_FACTORS]. Market conditions favor [BUYERS/SELLERS/BALANCED]. Supply and demand are [BALANCED/FAVORING_BUYERS/FAVORING_SELLERS]."
+  },
+  "adjustmentAnalysisTemplates": {
+    "quantifiedAdjustments": {
+      "propertyRightsConveyed": "Property Rights Conveyed adjustment: The subject conveys [COMPLETE/LIMITED] property rights. Comparable [NUMBER] adjustment of [DOLLAR_AMOUNT] or [PER_SF_AMOUNT] per square foot.",
+      "financingTerms": "Financing Terms adjustment: The subject was purchased with [FINANCING_TYPE]. Comparable [NUMBER] financed with [COMPARABLE_FINANCING]. Adjustment: [DOLLAR_AMOUNT].",
+      "marketConditions": "Market Conditions adjustment: Based on market trend analysis and days on market data, an adjustment of [DOLLAR_AMOUNT] (or [PERCENTAGE]%) is applied to reflect current market conditions.",
+      "location": "Location adjustment: Comparable [NUMBER] is located in [LOCATION_DESCRIPTION] versus the subject's [SUBJECT_LOCATION]. Adjustment: [DOLLAR_AMOUNT] ([PER_SF_AMOUNT]/SF).",
+      "glaAdjustment": "GLA/Gross Living Area adjustment: Comparable [NUMBER] has [COMPARABLE_GLA] GLA versus subject's [SUBJECT_GLA]. Adjustment: [DOLLAR_AMOUNT] at [RATE_PER_SF] per square foot.",
+      "condition": "Condition adjustment: Comparable [NUMBER] is in [COMP_CONDITION] condition versus subject's [SUBJECT_CONDITION]. Adjustment: [DOLLAR_AMOUNT] ([PERCENTAGE]%).",
+      "quality": "Quality adjustment: Comparable [NUMBER] exhibits [COMP_QUALITY] quality versus subject's [SUBJECT_QUALITY]. Adjustment: [DOLLAR_AMOUNT].",
+      "view": "View adjustment: Comparable [NUMBER] has [COMP_VIEW] view rating versus subject's [SUBJECT_VIEW]. Adjustment: [DOLLAR_AMOUNT]."
+    },
+    "adjustmentReconciliation": "Total adjustments to Comparable [NUMBER]: Gross adjustments of [GROSS_AMOUNT] ([GROSS_PERCENTAGE]%) result in a net adjustment of [NET_AMOUNT] ([NET_PERCENTAGE]%). The adjusted comparable sale price is [ADJUSTED_PRICE]. This adjustment level is [REASONABLE/EXCESSIVE] and [SUPPORTS/QUESTIONS] the comp's reliability."
+  },
+  "viewRatingNarratives": {
+    "N": "The subject property has a neutral view with no beneficial or adverse characteristics affecting marketability or value.",
+    "B": "The subject property has a beneficial view that enhances desirability and supports a positive value adjustment relative to comparable properties without this view characteristic.",
+    "A": "The subject property has an adverse view that negatively impacts desirability and marketability, resulting in a value adjustment relative to comparable properties without this adverse characteristic."
+  },
+  "locationRatingNarratives": {
+    "Urban": "The subject property is located in an urban area characterized by dense development, mixed land uses, proximity to employment centers, public transportation, and substantial commercial and cultural amenities.",
+    "Suburban": "The subject property is located in a suburban area with moderate density, predominantly residential land use, vehicular access as primary transportation, and a moderate range of commercial and community amenities.",
+    "Rural": "The subject property is located in a rural area characterized by lower density, agricultural or open space land use, limited commercial development, and reliance on private transportation."
+  },
+  "reconciliationTemplates": {
+    "singleApproach": "The Sales Comparison Approach is given primary weight as the most direct expression of market value. Comparable properties in the subject's market provide [NUMBER] sales data points supporting a value range of [RANGE]. The [APPROACH_NAME] Approach was not developed due to [REASON].",
+    "twoApproaches": "Both the Sales Comparison Approach and the [SECOND_APPROACH] have been developed and considered. The Sales Comparison Approach is given [WEIGHT_PERCENTAGE]% weight based on [JUSTIFICATION]. The [SECOND_APPROACH] is given [WEIGHT_PERCENTAGE]% weight based on [JUSTIFICATION]. The two approaches [CONVERGE/DIVERGE] with final value indication of [FINAL_VALUE].",
+    "threeApproaches": "All three approaches have been developed: Sales Comparison ([WEIGHT]%, [VALUE_INDICATION]), Cost Approach ([WEIGHT]%, [VALUE_INDICATION]), and Income Approach ([WEIGHT]%, [VALUE_INDICATION]). The approaches [CONVERGENCE_ANALYSIS]. Reconciled final value opinion: [FINAL_VALUE].",
+    "finalOpinionStatement": "The final value opinion of [FINAL_VALUE] as of [EFFECTIVE_DATE] represents the appraiser's estimate of the market value of the subject property in its [CONDITION_STATE]. This opinion is based on a market analysis of comparable sales, the property's physical characteristics, and current market conditions. The appraiser is confident in this conclusion based on the [APPROACH_WEIGHTING] applied and the [DATA_QUALITY] of the supporting market data."
+  },
+  "highestBestUseTemplates": {
+    "fourTestAnalysis": {
+      "physicallyPossible": "Physically Possible: The subject property's location, size, and site characteristics [SUPPORT/DO_NOT_SUPPORT] development as [PROPOSED_USE]. Utilities [AVAILABLE/NOT_AVAILABLE]. Site access is [ADEQUATE/INADEQUATE].",
+      "legallyPermissible": "Legally Permissible: The subject is zoned [ZONING] which [PERMITS/PROHIBITS] [PROPOSED_USE]. Current use is [CONFORMING/NON_CONFORMING]. Deed restrictions or covenants [PRESENT/ABSENT].",
+      "financiallyFeasible": "Financially Feasible: Development as [PROPOSED_USE] would [GENERATE_POSITIVE/NEGATIVE_RETURNS]. Market demand for [PROPOSED_USE] is [STRONG/WEAK/MODERATE]. Financial feasibility [SUPPORTS/CONTRADICTS] development.",
+      "maximallyProductive": "Maximally Productive: Among all physically possible, legally permissible, and financially feasible uses, the [PROPOSED_USE] generates the highest value. Alternative uses would yield [LOWER_VALUES]."
+    },
+    "conclusion": "The highest and best use of the subject property as improved is [CURRENT_USE/ALTERNATIVE_USE]. This use [CURRENT/POTENTIAL] generates the maximum value for the property."
+  },
+  "priorSalesTemplates": {
+    "subjectProperty": "Subject Property Prior Sales: The subject property [HAS_NOT/HAS] sold within the past [TIMEFRAME]. [IF_YES: Sale date [DATE], sale price [PRICE], seller [SELLER_TYPE], circumstances [CIRCUMSTANCES]. [IF_MULTIPLE: Price trend shows [TREND].]]",
+    "comparables": "Comparable [NUMBER] Prior Sales: [PRIOR_SALES_HISTORY]. Any prior sales within the analysis period [SUPPORT/QUESTION] the current market indication."
+  },
+  "energyFeaturesTemplate": "The subject property [INCLUDES/DOES_NOT_INCLUDE] energy-efficient or green features. [IF_YES: Features include [SPECIFIC_FEATURES] which [REDUCE_OPERATING_COSTS/CONTRIBUTE_TO_SUSTAINABILITY]. Market acceptance of these features is [STRONG/MODERATE/LIMITED], with a [POSITIVE/NEUTRAL/MINIMAL] impact on value.]",
+  "aduTemplate": "The subject property [INCLUDES/DOES_NOT_INCLUDE] an accessory dwelling unit (ADU). [IF_YES: The ADU is [DESCRIPTION] with [BEDROOM/BATHROOM_COUNT] and [RENTAL_INCOME/OWNER_OCCUPANCY]. This ADU [INCREASES/DOES_NOT_MATERIALLY_AFFECT] property value and marketability in the subject's market.]"
+}

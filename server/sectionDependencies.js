@@ -193,14 +193,68 @@ export const SECTION_DEPENDENCIES = {
     ],
   },
 
-  // ── DEFERRED: 1073-specific sections ─────────────────────────────────────────
-  // DEFERRED — 1073 form type not in active production scope.
-  // See SCOPE.md. Do not extend these until 1073 lane is activated.
+  // ── 1073-specific sections ──────────────────────────────────────────────────────
 
-  project_information: {
-    // DEFERRED (1073)
+  subject_description: {
+    required:    ['subject.gla', 'subject.beds', 'subject.baths', 'subject.floor'],
+    recommended: ['subject.view', 'subject.parking', 'subject.storageUnit', 'subject.style'],
+  },
+
+  project_description: {
+    required:    ['project.name', 'project.totalUnits', 'project.stories'],
+    recommended: ['project.yearBuilt', 'project.developer', 'project.phase', 'project.percentSold'],
+  },
+
+  project_analysis: {
+    required:    ['project.name', 'hoa.reserves'],
+    recommended: ['hoa.specialAssessments', 'hoa.litigation', 'hoa.reserveAdequacy'],
+  },
+
+  hoa_analysis: {
+    required:    ['hoa.monthlyFee', 'hoa.includes'],
+    recommended: ['hoa.specialAssessments', 'hoa.reserves', 'hoa.reserveAdequacy', 'hoa.litigation'],
+  },
+
+  site_comments: {
+    required:    ['subject.address', 'project.name'],
+    recommended: ['subject.siteSize', 'subject.parking'],
+  },
+
+  // ── UAD 3.6 sections (Redesigned URAR) ──────────────────────────────────────
+
+  quality_rating_detail: {
+    required:    ['subject.qualityRating'],
+    recommended: ['subject.condition', 'subject.yearBuilt', 'subject.style', 'subject.gla'],
+  },
+
+  energy_features: {
+    required:    [],
+    recommended: ['subject.address', 'subject.yearBuilt'],
+  },
+
+  adu_description: {
+    required:    [],
+    recommended: ['subject.address', 'subject.gla'],
+  },
+
+  prior_sales: {
     required:    ['subject.address'],
-    recommended: ['subject.city', 'subject.county'],
+    recommended: ['contract.contractPrice', 'contract.contractDate', 'contract.offeringHistory'],
+  },
+
+  conditions_assumptions: {
+    required:    ['assignment.intendedUse'],
+    recommended: ['assignment.intendedUser', 'assignment.effectiveDate'],
+  },
+
+  extraordinary_assumptions: {
+    required:    [],
+    recommended: ['assignment.extraordinaryAssumptions'],
+  },
+
+  hypothetical_conditions: {
+    required:    [],
+    recommended: ['assignment.hypotheticalConditions'],
   },
 };
 

@@ -38,6 +38,7 @@ import './checkers/complianceSignalChecker.js';
 import './checkers/contradictionGraphChecker.js';
 import './checkers/comparableIntelligenceChecker.js';
 import './checkers/factCompletenessChecker.js';
+import './checkers/uad36ComplianceChecker.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
