@@ -21,6 +21,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { initSchema } from './schema.js';
+export { getUserDb, closeUserDb, closeAllUserDbs } from './userDatabase.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -101,59 +102,6 @@ export function getDbSizeBytes() {
   } catch {
     return 0;
   }
-}
-
-// â”€â”€ Per-user database isolation (SaaS multi-tenant) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const _userDbs = new Map();
-
-/**
- * Get a per-user SQLite database for tenant isolation.
- * Falls back to shared DB for dev-local or missing userId.
- */
-export function getUserDb(userId) {
-  if (!userId || userId === 'dev-local' || userId === 'default') {
-    return getDb();
-  }
-  if (_userDbs.has(userId)) return _userDbs.get(userId);
-
-  const userDir = path.join(DEFAULT_DB_DIR, 'users', userId);
-  fs.mkdirSync(userDir, { recursive: true });
-  const userDbPath = path.join(userDir, 'cacc.db');
-  const db = new BetterSqlite3(userDbPath);
-
-  // Same pragmas as main DB
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-  db.pragma('synchronous = NORMAL');
-  db.pragma('cache_size = -8000');
-  db.pragma('temp_store = MEMORY');
-
-  // Apply schema
-  initSchema(db);
-
-  _userDbs.set(userId, db);
-  return db;
-}
-
-/**
- * Close a specific user's database.
- */
-export function closeUserDb(userId) {
-  const db = _userDbs.get(userId);
-  if (db) {
-    try { db.close(); } catch { /* already closed */ }
-    _userDbs.delete(userId);
-  }
-}
-
-/**
- * Close all user databases. Call on shutdown.
- */
-export function closeAllUserDbs() {
-  for (const [userId, db] of _userDbs) {
-    try { db.close(); } catch { /* ignore */ }
-  }
-  _userDbs.clear();
 }
 
 // â”€â”€ Query helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
