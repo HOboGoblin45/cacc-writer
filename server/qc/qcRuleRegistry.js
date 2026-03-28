@@ -25,7 +25,7 @@ import log from '../logger.js';
 const registry = new Map();
 
 /** Current rule set version — bump when rules change materially */
-export const RULE_SET_VERSION = '7.0.1';
+export const RULE_SET_VERSION = '7.1.0';
 
 // ── Registry API ────────────────────────────────────────────────────────────
 

@@ -195,7 +195,7 @@ describe('assembleDraftPackage', () => {
   it('should warn if reconciliation lacks value conclusion', () => {
     const results = makeFullSectionResults();
     results.reconciliation = makeSectionResult({
-      text: 'The three approaches to value were considered. The sales comparison approach was given primary weight.',
+      text: 'The three approaches were considered for this assignment. Weight was given to the most applicable approach.',
     });
 
     const { warnings } = assembleDraftPackage({
@@ -206,8 +206,26 @@ describe('assembleDraftPackage', () => {
       sectionResults: results,
     });
 
-    // "value" is in the text so this should NOT trigger the warning
-    expect(warnings.some(w => w.type === 'consistency' && w.sectionId === 'reconciliation')).toBe(false);
+    // Text has no value/opinion/conclusion reference — should trigger warning
+    expect(warnings.some(w => w.type === 'consistency' && w.message.includes('value conclusion'))).toBe(true);
+  });
+
+  it('should not warn when reconciliation references all approaches and value', () => {
+    const results = makeFullSectionResults();
+    results.reconciliation = makeSectionResult({
+      text: 'The greatest weight is applied to the Sales Comparison Approach. The Cost Approach was not developed. The Income Approach was not developed. The final estimate of value is supported.',
+    });
+
+    const { warnings } = assembleDraftPackage({
+      runId: 'run-007b',
+      caseId: 'case-abc',
+      context: makeContext(),
+      plan: makePlan(),
+      sectionResults: results,
+    });
+
+    // All approaches referenced + value conclusion present — no consistency warnings
+    expect(warnings.filter(w => w.type === 'consistency').length).toBe(0);
   });
 
   it('should warn about overall performance exceeding 30s', () => {

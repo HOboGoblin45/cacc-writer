@@ -95,12 +95,13 @@ function validateDraft(sectionResults, plan, warnings) {
 
     // Check for unresolved INSERT placeholders
     const insertCount = (result.text.match(/\[INSERT/gi) || []).length;
-    if (insertCount > 3) {
+    if (insertCount > 0) {
+      const severity = insertCount >= 3 ? 'error' : 'warning';
       warnings.push({
         type:      WARNING_TYPES.THIN_SECTION,
         sectionId: def.id,
-        message:   `Section "${def.label || def.id}" has ${insertCount} unresolved [INSERT] placeholders`,
-        severity:  'warning',
+        message:   `Section "${def.label || def.id}" has ${insertCount} unresolved [INSERT] placeholder${insertCount > 1 ? 's' : ''}`,
+        severity,
       });
     }
 
@@ -125,7 +126,7 @@ function validateDraft(sectionResults, plan, warnings) {
     }
   }
 
-  // Consistency check: reconciliation should reference prior sections
+  // Consistency check: reconciliation should reference value conclusion and approaches
   const reconciliation = sectionResults['reconciliation'];
   if (reconciliation?.ok && reconciliation.text) {
     const hasValueRef = /value|opinion|conclusion|estimate/i.test(reconciliation.text);
@@ -134,6 +135,39 @@ function validateDraft(sectionResults, plan, warnings) {
         type:      WARNING_TYPES.CONSISTENCY,
         sectionId: 'reconciliation',
         message:   'Reconciliation section may not contain a clear value conclusion',
+        severity:  'warning',
+      });
+    }
+
+    // Check that reconciliation references the sales comparison approach
+    const hasSalesRef = /sales\s*comparison|comparable\s*sales|market\s*approach/i.test(reconciliation.text);
+    if (!hasSalesRef) {
+      warnings.push({
+        type:      WARNING_TYPES.CONSISTENCY,
+        sectionId: 'reconciliation',
+        message:   'Reconciliation does not reference the Sales Comparison Approach',
+        severity:  'warning',
+      });
+    }
+
+    // Check that reconciliation addresses cost approach (developed or not)
+    const hasCostRef = /cost\s*approach/i.test(reconciliation.text);
+    if (!hasCostRef) {
+      warnings.push({
+        type:      WARNING_TYPES.CONSISTENCY,
+        sectionId: 'reconciliation',
+        message:   'Reconciliation does not address the Cost Approach',
+        severity:  'warning',
+      });
+    }
+
+    // Check that reconciliation addresses income approach (developed or not)
+    const hasIncomeRef = /income\s*approach/i.test(reconciliation.text);
+    if (!hasIncomeRef) {
+      warnings.push({
+        type:      WARNING_TYPES.CONSISTENCY,
+        sectionId: 'reconciliation',
+        message:   'Reconciliation does not address the Income Approach',
         severity:  'warning',
       });
     }
