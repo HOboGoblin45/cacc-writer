@@ -21,6 +21,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { initSchema } from './schema.js';
+import { createAdapter, createUserAdapter } from './adapters/AdapterFactory.js';
+import { createSyncCompat } from './AdapterCompat.js';
 export { getUserDb, closeUserDb, closeAllUserDbs } from './userDatabase.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +43,7 @@ function resolveDbPath() {
 
 // â”€â”€ Singleton connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _db = null;
+let _adapter = null;
 
 /**
  * Get (or initialize) the SQLite database connection.
@@ -229,5 +232,80 @@ export function getTableCounts() {
     }
   }
   return counts;
+}
+
+// ── Adapter support (Phase 1.5 migration) ──────────────────────────────────────────────────────
+
+/**
+ * Get (or initialize) the DatabaseAdapter for the main database.
+ * Idempotent — safe to call multiple times.
+ *
+ * This adapter wraps better-sqlite3 and provides an async interface.
+ * Use this for new code that targets both SQLite and PostgreSQL.
+ *
+ * @async
+ * @returns {Promise<DatabaseAdapter>}
+ */
+export async function getAdapter() {
+  if (_adapter) return _adapter;
+
+  const dbPath = resolveDbPath();
+  _adapter = createAdapter({ filename: dbPath });
+  await _adapter.connect({ filename: dbPath });
+
+  return _adapter;
+}
+
+/**
+ * Get a synchronous wrapper around the main database adapter.
+ * Allows existing sync code to work with the new adapter during migration.
+ *
+ * NOTE: This only works with SQLite. Returns a better-sqlite3-compatible object.
+ * For new code, use getAdapter() and async/await instead.
+ *
+ * @returns {object} A better-sqlite3-compatible object
+ */
+export function getAdapterSync() {
+  if (!_adapter) {
+    throw new Error(
+      'Adapter not initialized. Call getAdapter() first or use getDb() for sync access.'
+    );
+  }
+  return createSyncCompat(_adapter);
+}
+
+/**
+ * Get a user-specific adapter (per-user database isolation).
+ * For SQLite: connects to data/users/{userId}/cacc.db
+ * For PostgreSQL: uses the main database with row-level security
+ *
+ * @async
+ * @param {string} userId - User ID for isolation
+ * @returns {Promise<DatabaseAdapter>}
+ */
+export async function getUserAdapter(userId) {
+  if (!userId || userId === 'dev-local' || userId === 'default') {
+    return getAdapter();
+  }
+
+  const userDbPath = `./data/users/${userId}/cacc.db`;
+  const adapter = createUserAdapter(userId, { filename: userDbPath });
+  await adapter.connect({ filename: userDbPath });
+
+  return adapter;
+}
+
+/**
+ * Close the main database adapter.
+ * Call this on process exit or in tests.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
+export async function closeAdapter() {
+  if (_adapter) {
+    await _adapter.disconnect();
+    _adapter = null;
+  }
 }
 

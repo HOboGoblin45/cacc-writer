@@ -3,12 +3,12 @@
  * ----------------------------------------
  * Phase 20 — AutoTune EMA state and outcome tracking
  *
- * Centralized repository for all auto-tuning SQLite operations:
+ * Centralized repository for all auto-tuning operations:
  *   - autotune_ema_state CRUD (exponential moving average state per context)
  *   - autotune_outcomes logging (quality feedback for tuning)
  *
- * All functions are synchronous (better-sqlite3).
- * Functions take db as first parameter for tenant isolation.
+ * All functions are async and use DatabaseAdapter for database-agnostic operations.
+ * Functions take adapter as first parameter for tenant isolation.
  */
 
 import log from '../../logger.js';
@@ -42,13 +42,14 @@ function now() {
  * Upsert EMA state for a context key.
  * Creates or updates the exponential moving average tuning state.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} contextKey — unique context identifier
  * @param {Object} state — EMA state data
- * @returns {string} context_key
+ * @returns {Promise<string>} context_key
  */
-export function upsertEmaState(db, contextKey, state) {
-  if (!db) throw new Error('db is required');
+export async function upsertEmaState(adapter, contextKey, state) {
+  if (!adapter) throw new Error('adapter is required');
   if (!contextKey) throw new Error('contextKey is required');
   if (!state) throw new Error('state is required');
 
@@ -68,7 +69,7 @@ export function upsertEmaState(db, contextKey, state) {
     throw new Error('formType and sectionId are required in state');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     INSERT INTO autotune_ema_state (
       context_key, form_type, section_id, avg_score, avg_tokens_used,
       optimal_temperature, optimal_max_tokens, optimal_top_p, sample_count,
@@ -83,10 +84,10 @@ export function upsertEmaState(db, contextKey, state) {
       sample_count = excluded.sample_count,
       alpha = excluded.alpha,
       last_updated = excluded.last_updated
-  `);
+  `;
 
   try {
-    statement.run(
+    await adapter.run(sql, [
       contextKey,
       formType,
       sectionId,
@@ -98,8 +99,8 @@ export function upsertEmaState(db, contextKey, state) {
       sampleCount,
       alpha,
       now(),
-      now()
-    );
+      now(),
+    ]);
     log.info(`[AutoTune] Upserted EMA state for context: ${contextKey}`);
     return contextKey;
   } catch (err) {
@@ -111,20 +112,19 @@ export function upsertEmaState(db, contextKey, state) {
 /**
  * Get EMA state for a context key.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} contextKey
- * @returns {Object|null}
+ * @returns {Promise<Object|null>}
  */
-export function getEmaState(db, contextKey) {
-  if (!db) throw new Error('db is required');
+export async function getEmaState(adapter, contextKey) {
+  if (!adapter) throw new Error('adapter is required');
   if (!contextKey) throw new Error('contextKey is required');
 
-  const statement = db.prepare(`
-    SELECT * FROM autotune_ema_state WHERE context_key = ?
-  `);
+  const sql = `SELECT * FROM autotune_ema_state WHERE context_key = ?`;
 
   try {
-    const row = statement.get(contextKey);
+    const row = await adapter.get(sql, [contextKey]);
     if (!row) return null;
 
     return {
@@ -151,18 +151,17 @@ export function getEmaState(db, contextKey) {
 /**
  * Get all EMA states.
  *
- * @param {import('better-sqlite3').Database} db
- * @returns {Object[]}
+ * @async
+ * @param {DatabaseAdapter} adapter
+ * @returns {Promise<Object[]>}
  */
-export function getAllEmaStates(db) {
-  if (!db) throw new Error('db is required');
+export async function getAllEmaStates(adapter) {
+  if (!adapter) throw new Error('adapter is required');
 
-  const statement = db.prepare(`
-    SELECT * FROM autotune_ema_state ORDER BY created_at DESC
-  `);
+  const sql = `SELECT * FROM autotune_ema_state ORDER BY created_at DESC`;
 
   try {
-    const rows = statement.all();
+    const rows = await adapter.all(sql);
     return rows.map(row => ({
       id: row.id,
       contextKey: row.context_key,
@@ -187,20 +186,19 @@ export function getAllEmaStates(db) {
 /**
  * Reset EMA state for a context key (delete it).
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} contextKey
- * @returns {boolean} true if deleted, false if not found
+ * @returns {Promise<boolean>} true if deleted, false if not found
  */
-export function resetEmaState(db, contextKey) {
-  if (!db) throw new Error('db is required');
+export async function resetEmaState(adapter, contextKey) {
+  if (!adapter) throw new Error('adapter is required');
   if (!contextKey) throw new Error('contextKey is required');
 
-  const statement = db.prepare(`
-    DELETE FROM autotune_ema_state WHERE context_key = ?
-  `);
+  const sql = `DELETE FROM autotune_ema_state WHERE context_key = ?`;
 
   try {
-    const result = statement.run(contextKey);
+    const result = await adapter.run(sql, [contextKey]);
     const deleted = result.changes > 0;
     if (deleted) {
       log.info(`[AutoTune] Reset EMA state for context: ${contextKey}`);
@@ -219,12 +217,13 @@ export function resetEmaState(db, contextKey) {
 /**
  * Record an outcome for auto-tuning feedback.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {Object} outcome
- * @returns {number} outcome ID
+ * @returns {Promise<number>} outcome ID
  */
-export function recordOutcome(db, outcome) {
-  if (!db) throw new Error('db is required');
+export async function recordOutcome(adapter, outcome) {
+  if (!adapter) throw new Error('adapter is required');
   if (!outcome) throw new Error('outcome is required');
 
   const {
@@ -243,15 +242,15 @@ export function recordOutcome(db, outcome) {
     throw new Error('contextKey, sectionId, and formType are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     INSERT INTO autotune_outcomes (
       context_key, section_id, form_type, quality_score, tokens_used,
       was_approved, temperature_used, max_tokens_used, user_id, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+  `;
 
   try {
-    const result = statement.run(
+    const result = await adapter.run(sql, [
       contextKey,
       sectionId,
       formType,
@@ -261,8 +260,8 @@ export function recordOutcome(db, outcome) {
       temperatureUsed ?? null,
       maxTokensUsed ?? null,
       userId ?? null,
-      now()
-    );
+      now(),
+    ]);
     log.info(`[AutoTune] Recorded outcome for context: ${contextKey}`);
     return result.lastInsertRowid;
   } catch (err) {
@@ -274,24 +273,25 @@ export function recordOutcome(db, outcome) {
 /**
  * Get outcome history for a context key.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} contextKey
  * @param {number} limit — max number of outcomes to return
- * @returns {Object[]}
+ * @returns {Promise<Object[]>}
  */
-export function getOutcomeHistory(db, contextKey, limit = 100) {
-  if (!db) throw new Error('db is required');
+export async function getOutcomeHistory(adapter, contextKey, limit = 100) {
+  if (!adapter) throw new Error('adapter is required');
   if (!contextKey) throw new Error('contextKey is required');
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT * FROM autotune_outcomes
     WHERE context_key = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `);
+  `;
 
   try {
-    const rows = statement.all(contextKey, limit);
+    const rows = await adapter.all(sql, [contextKey, limit]);
     return rows.map(row => ({
       id: row.id,
       contextKey: row.context_key,
@@ -314,21 +314,22 @@ export function getOutcomeHistory(db, contextKey, limit = 100) {
 /**
  * Delete outcomes older than a specified number of days.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {number} daysOld — delete outcomes older than this
- * @returns {number} number of rows deleted
+ * @returns {Promise<number>} number of rows deleted
  */
-export function deleteOldOutcomes(db, daysOld = 90) {
-  if (!db) throw new Error('db is required');
+export async function deleteOldOutcomes(adapter, daysOld = 90) {
+  if (!adapter) throw new Error('adapter is required');
   if (daysOld < 1) throw new Error('daysOld must be >= 1');
 
-  const statement = db.prepare(`
+  const sql = `
     DELETE FROM autotune_outcomes
     WHERE datetime(created_at) < datetime('now', '-' || ? || ' days')
-  `);
+  `;
 
   try {
-    const result = statement.run(daysOld);
+    const result = await adapter.run(sql, [daysOld]);
     log.info(`[AutoTune] Deleted ${result.changes} outcomes older than ${daysOld} days`);
     return result.changes;
   } catch (err) {

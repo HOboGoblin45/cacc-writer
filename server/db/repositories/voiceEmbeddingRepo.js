@@ -8,8 +8,8 @@
  *   - Retrieve embeddings per user/form/section
  *   - Manage embedding lifecycle
  *
- * All functions are synchronous (better-sqlite3).
- * Functions take db as first parameter for tenant isolation.
+ * All functions are async and use DatabaseAdapter for database-agnostic operations.
+ * Functions take adapter as first parameter for tenant isolation.
  */
 
 import log from '../../logger.js';
@@ -27,12 +27,13 @@ function now() {
 /**
  * Store an embedding for voice reference matching.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {Object} params
- * @returns {number} embedding ID
+ * @returns {Promise<number>} embedding ID
  */
-export function storeEmbedding(db, params) {
-  if (!db) throw new Error('db is required');
+export async function storeEmbedding(adapter, params) {
+  if (!adapter) throw new Error('adapter is required');
   if (!params) throw new Error('params is required');
 
   const {
@@ -48,7 +49,7 @@ export function storeEmbedding(db, params) {
     throw new Error('userId, formType, sectionId, textHash, and embeddingJson are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     INSERT INTO voice_reference_embeddings (
       user_id, form_type, section_id, text_hash, embedding_json, source, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -56,18 +57,18 @@ export function storeEmbedding(db, params) {
     DO UPDATE SET
       embedding_json = excluded.embedding_json,
       source = excluded.source
-  `);
+  `;
 
   try {
-    const result = statement.run(
+    const result = await adapter.run(sql, [
       userId,
       formType,
       sectionId,
       textHash,
       embeddingJson,
       source,
-      now()
-    );
+      now(),
+    ]);
     log.info(
       `[VoiceEmbedding] Stored embedding for user ${userId}, form ${formType}, section ${sectionId}`
     );
@@ -81,26 +82,27 @@ export function storeEmbedding(db, params) {
 /**
  * Get embeddings for a user/form/section combination.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} userId
  * @param {string} formType
  * @param {string} sectionId
- * @returns {Object[]}
+ * @returns {Promise<Object[]>}
  */
-export function getEmbeddings(db, userId, formType, sectionId) {
-  if (!db) throw new Error('db is required');
+export async function getEmbeddings(adapter, userId, formType, sectionId) {
+  if (!adapter) throw new Error('adapter is required');
   if (!userId || !formType || !sectionId) {
     throw new Error('userId, formType, and sectionId are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT * FROM voice_reference_embeddings
     WHERE user_id = ? AND form_type = ? AND section_id = ?
     ORDER BY created_at DESC
-  `);
+  `;
 
   try {
-    const rows = statement.all(userId, formType, sectionId);
+    const rows = await adapter.all(sql, [userId, formType, sectionId]);
     return rows.map(row => ({
       id: row.id,
       userId: row.user_id,
@@ -120,25 +122,26 @@ export function getEmbeddings(db, userId, formType, sectionId) {
 /**
  * Get all embeddings for a user/form combination.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} userId
  * @param {string} formType
- * @returns {Object[]}
+ * @returns {Promise<Object[]>}
  */
-export function getAllEmbeddingsForUser(db, userId, formType) {
-  if (!db) throw new Error('db is required');
+export async function getAllEmbeddingsForUser(adapter, userId, formType) {
+  if (!adapter) throw new Error('adapter is required');
   if (!userId || !formType) {
     throw new Error('userId and formType are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT * FROM voice_reference_embeddings
     WHERE user_id = ? AND form_type = ?
     ORDER BY section_id, created_at DESC
-  `);
+  `;
 
   try {
-    const rows = statement.all(userId, formType);
+    const rows = await adapter.all(sql, [userId, formType]);
     return rows.map(row => ({
       id: row.id,
       userId: row.user_id,
@@ -158,20 +161,19 @@ export function getAllEmbeddingsForUser(db, userId, formType) {
 /**
  * Delete an embedding by ID.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {number} id
- * @returns {boolean} true if deleted, false if not found
+ * @returns {Promise<boolean>} true if deleted, false if not found
  */
-export function deleteEmbedding(db, id) {
-  if (!db) throw new Error('db is required');
+export async function deleteEmbedding(adapter, id) {
+  if (!adapter) throw new Error('adapter is required');
   if (!id) throw new Error('id is required');
 
-  const statement = db.prepare(`
-    DELETE FROM voice_reference_embeddings WHERE id = ?
-  `);
+  const sql = `DELETE FROM voice_reference_embeddings WHERE id = ?`;
 
   try {
-    const result = statement.run(id);
+    const result = await adapter.run(sql, [id]);
     const deleted = result.changes > 0;
     if (deleted) {
       log.info(`[VoiceEmbedding] Deleted embedding ID ${id}`);
@@ -186,24 +188,25 @@ export function deleteEmbedding(db, id) {
 /**
  * Get embedding count for a user/form combination.
  *
- * @param {import('better-sqlite3').Database} db
+ * @async
+ * @param {DatabaseAdapter} adapter
  * @param {string} userId
  * @param {string} formType
- * @returns {number}
+ * @returns {Promise<number>}
  */
-export function getEmbeddingCount(db, userId, formType) {
-  if (!db) throw new Error('db is required');
+export async function getEmbeddingCount(adapter, userId, formType) {
+  if (!adapter) throw new Error('adapter is required');
   if (!userId || !formType) {
     throw new Error('userId and formType are required');
   }
 
-  const statement = db.prepare(`
+  const sql = `
     SELECT COUNT(*) as count FROM voice_reference_embeddings
     WHERE user_id = ? AND form_type = ?
-  `);
+  `;
 
   try {
-    const row = statement.get(userId, formType);
+    const row = await adapter.get(sql, [userId, formType]);
     return row?.count ?? 0;
   } catch (err) {
     log.error(`[VoiceEmbedding] Error getting embedding count: ${err.message}`);
